@@ -78,6 +78,13 @@ const extensionToLanguage: { [key: string]: string } = {
 	r: "r",
 	jl: "julia",
 	ipynb: "jupyter", // Jupyter notebooks
+
+	// 1C
+	bsl: "bsl",
+	mdo: "xml",
+	xdto: "xml",
+	form:"xml",
+	mxlx:"xml",
 }
 
 // Example usage:

@@ -234,6 +234,34 @@ End Namespace
 			expect(block.type).toBe("fallback_chunk")
 		})
 	})
+
+	it("should use fallback chunking for .bsl files", async () => {
+		// Test with .bsl which is in our fallback list
+		const bslContent = `
+&НаКлиенте
+Процедура ПередЗаписью(Отказ)
+	   
+	   Если ЭтоНовый() Тогда
+	       
+	       УстановитьДатуСоздания();
+	       
+	   КонецЕсли;
+	   
+	   Автор = глЗначениеПеременной("глТекущийПользователь");
+	   
+КонецПроцедуры
+		`.trim()
+
+		const result = await parser.parseFile("test.bsl", {
+			content: bslContent,
+			fileHash: "test-hash-bsl",
+		})
+
+		// Should have results from fallback chunking
+		expect(result.length).toBeGreaterThan(0)
+		expect(result[0].type).toBe("fallback_chunk")
+		expect(result[0].content).toBe(bslContent)
+	})
 })
 
 describe("Fallback Extensions Configuration", () => {
@@ -242,6 +270,11 @@ describe("Fallback Extensions Configuration", () => {
 		expect(shouldUseFallbackChunking(".vb")).toBe(true)
 		expect(shouldUseFallbackChunking(".scala")).toBe(true)
 		expect(shouldUseFallbackChunking(".swift")).toBe(true)
+		expect(shouldUseFallbackChunking(".bsl")).toBe(true)
+		expect(shouldUseFallbackChunking(".mdo")).toBe(true)
+		expect(shouldUseFallbackChunking(".xdto")).toBe(true)
+		expect(shouldUseFallbackChunking(".form")).toBe(true)
+		expect(shouldUseFallbackChunking(".mxlx")).toBe(true)
 
 		// Extensions that should not use fallback (have working parsers)
 		expect(shouldUseFallbackChunking(".js")).toBe(false)
