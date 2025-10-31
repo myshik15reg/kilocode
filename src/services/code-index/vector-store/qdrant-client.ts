@@ -525,8 +525,8 @@ export class QdrantVectorStore implements IVectorStore {
 				// upsertPoints stores the relative filePath, not the absolute path
 				const relativePath = path.isAbsolute(filePath) ? path.relative(workspaceRoot, filePath) : filePath
 
-				// Normalize the relative path
-				const normalizedRelativePath = path.normalize(relativePath)
+				// Normalize the relative path to use POSIX separators
+				const normalizedRelativePath = relativePath.replace(/\\/g, "/")
 
 				// Split the path into segments like we do in upsertPoints
 				const segments = normalizedRelativePath.split(path.sep).filter(Boolean)

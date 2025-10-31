@@ -26,6 +26,6 @@ export function generateNormalizedAbsolutePath(filePath: string, workspaceRoot: 
 export function generateRelativeFilePath(normalizedAbsolutePath: string, workspaceRoot: string): string {
 	// Generate the relative path
 	const relativePath = path.relative(workspaceRoot, normalizedAbsolutePath)
-	// Normalize to ensure consistent path separators
-	return path.normalize(relativePath)
+	// Normalize to use POSIX (forward) slashes for consistency
+	return relativePath.replace(/\\/g, "/")
 }

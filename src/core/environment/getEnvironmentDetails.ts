@@ -46,7 +46,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 	const visibleFilePaths = vscode.window.visibleTextEditors
 		?.map((editor) => editor.document?.uri?.fsPath)
 		.filter(Boolean)
-		.map((absolutePath) => path.relative(cline.cwd, absolutePath))
+		.map((absolutePath) => path.relative(cline.cwd, absolutePath).toPosix())
 		.slice(0, maxWorkspaceFiles)
 
 	// Filter paths through rooIgnoreController
@@ -189,7 +189,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		details +=
 			"\n\n# Recently Modified Files\nThese files have been modified since you last accessed them (file was just edited so you may need to re-read it before editing):"
 		for (const filePath of recentlyModifiedFiles) {
-			details += `\n${filePath}`
+			details += `\n${filePath.toPosix()}`
 		}
 	}
 
