@@ -22,6 +22,9 @@ export class CodeIndexConfigManager {
 	private vercelAiGatewayOptions?: { apiKey: string }
 	private qdrantUrl?: string = "http://localhost:6333"
 	private qdrantApiKey?: string
+	// + Чернявский Е.И.
+	private qdrantCollectionName?: string
+	// - Чернявский Е.И.
 	private searchMinScore?: number
 	private searchMaxResults?: number
 
@@ -46,6 +49,9 @@ export class CodeIndexConfigManager {
 		const codebaseIndexConfig = this.contextProxy?.getGlobalState("codebaseIndexConfig") ?? {
 			codebaseIndexEnabled: true,
 			codebaseIndexQdrantUrl: "http://localhost:6333",
+			// + Чернявский Е.И.
+			codebaseIndexQdrantCollectionName: "",
+			// - Чернявский Е.И.
 			codebaseIndexEmbedderProvider: "openai",
 			codebaseIndexEmbedderBaseUrl: "",
 			codebaseIndexEmbedderModelId: "",
@@ -56,6 +62,9 @@ export class CodeIndexConfigManager {
 		const {
 			codebaseIndexEnabled,
 			codebaseIndexQdrantUrl,
+			// + Чернявский Е.И.
+			codebaseIndexQdrantCollectionName,
+			// - Чернявский Е.И.
 			codebaseIndexEmbedderProvider,
 			codebaseIndexEmbedderBaseUrl,
 			codebaseIndexEmbedderModelId,
@@ -76,6 +85,9 @@ export class CodeIndexConfigManager {
 		this.codebaseIndexEnabled = codebaseIndexEnabled ?? true
 		this.qdrantUrl = codebaseIndexQdrantUrl
 		this.qdrantApiKey = qdrantApiKey ?? ""
+		// + Чернявский Е.И.
+		this.qdrantCollectionName = codebaseIndexQdrantCollectionName
+		// - Чернявский Е.И.
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
 
@@ -149,6 +161,9 @@ export class CodeIndexConfigManager {
 			vercelAiGatewayOptions?: { apiKey: string }
 			qdrantUrl?: string
 			qdrantApiKey?: string
+			// + Чернявский Е.И.
+			qdrantCollectionName?: string
+			// - Чернявский Е.И.
 			searchMinScore?: number
 		}
 		requiresRestart: boolean
@@ -169,6 +184,9 @@ export class CodeIndexConfigManager {
 			vercelAiGatewayApiKey: this.vercelAiGatewayOptions?.apiKey ?? "",
 			qdrantUrl: this.qdrantUrl ?? "",
 			qdrantApiKey: this.qdrantApiKey ?? "",
+			// + Чернявский Е.И.
+			qdrantCollectionName: this.qdrantCollectionName ?? "",
+			// - Чернявский Е.И.
 		}
 
 		// Refresh secrets from VSCode storage to ensure we have the latest values
@@ -194,6 +212,9 @@ export class CodeIndexConfigManager {
 				vercelAiGatewayOptions: this.vercelAiGatewayOptions,
 				qdrantUrl: this.qdrantUrl,
 				qdrantApiKey: this.qdrantApiKey,
+				// + Чернявский Е.И.
+				qdrantCollectionName: this.qdrantCollectionName,
+				// - Чернявский Е.И.
 				searchMinScore: this.currentSearchMinScore,
 			},
 			requiresRestart,
@@ -271,7 +292,9 @@ export class CodeIndexConfigManager {
 		const prevVercelAiGatewayApiKey = prev?.vercelAiGatewayApiKey ?? ""
 		const prevQdrantUrl = prev?.qdrantUrl ?? ""
 		const prevQdrantApiKey = prev?.qdrantApiKey ?? ""
-
+		// + Чернявский Е.И.
+		const prevQdrantCollectionName = prev?.qdrantCollectionName ?? ""
+		// - Чернявский Е.И.
 		// 1. Transition from disabled/unconfigured to enabled/configured
 		if ((!prevEnabled || !prevConfigured) && this.codebaseIndexEnabled && nowConfigured) {
 			return true
@@ -309,7 +332,9 @@ export class CodeIndexConfigManager {
 		const currentVercelAiGatewayApiKey = this.vercelAiGatewayOptions?.apiKey ?? ""
 		const currentQdrantUrl = this.qdrantUrl ?? ""
 		const currentQdrantApiKey = this.qdrantApiKey ?? ""
-
+		// + Чернявский Е.И.
+		const currentQdrantCollectionName = this.qdrantCollectionName ?? ""
+		// - Чернявский Е.И.
 		if (prevOpenAiKey !== currentOpenAiKey) {
 			return true
 		}
@@ -346,6 +371,13 @@ export class CodeIndexConfigManager {
 			return true
 		}
 
+		// + Чернявский Е.И.
+		// Check for Qdrant collection name changes
+		if (prevQdrantCollectionName !== currentQdrantCollectionName) {
+			return true
+		}
+		// - Чернявский Е.И.
+		
 		// Vector dimension changes (still important for compatibility)
 		if (this._hasVectorDimensionChanged(prevProvider, prev?.modelId)) {
 			return true
@@ -397,6 +429,9 @@ export class CodeIndexConfigManager {
 			vercelAiGatewayOptions: this.vercelAiGatewayOptions,
 			qdrantUrl: this.qdrantUrl,
 			qdrantApiKey: this.qdrantApiKey,
+			// + Чернявский Е.И.
+			qdrantCollectionName: this.qdrantCollectionName,
+			// - Чернявский Е.И.
 			searchMinScore: this.currentSearchMinScore,
 			searchMaxResults: this.currentSearchMaxResults,
 		}

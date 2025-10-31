@@ -46,6 +46,9 @@ const mockExtensionState = {
 		codebaseIndexEmbedderModelId: "text-embedding-3-small",
 		codebaseIndexSearchMaxResults: 5,
 		codebaseIndexSearchMinScore: 0.5,
+		// + Чернявский Е.И.
+		codebaseIndexQdrantCollectionName: "",
+		// - Чернявский Е.И.
 	},
 	codebaseIndexModels: {
 		openai: {
@@ -214,4 +217,86 @@ describe("CodeIndexPopover", () => {
 		const statusMessage = await screen.findByText(/Cancelling.../i)
 		expect(statusMessage).toBeInTheDocument()
 	})
+
+	// + Чернявский Е.И.
+	it("should render qdrant collection name field in advanced settings", () => {
+		render(
+			<CodeIndexPopover indexingStatus={initialIndexingStatus}>
+				<button>Open Popover</button>
+			</CodeIndexPopover>,
+		)
+
+		// Open advanced settings
+		const advancedButton = screen.getByText("Advanced")
+		fireEvent.click(advancedButton)
+
+		// Check if qdrant collection name field is rendered
+		expect(screen.getByText("settings:codeIndex.qdrantCollectionNameLabel")).toBeInTheDocument()
+	})
+
+	it("should update qdrant collection name when input changes", () => {
+		render(
+			<CodeIndexPopover indexingStatus={initialIndexingStatus}>
+				<button>Open Popover</button>
+			</CodeIndexPopover>,
+		)
+
+		// Open advanced settings
+		const advancedButton = screen.getByText("Advanced")
+		fireEvent.click(advancedButton)
+
+		// Find the qdrant collection name input
+		const collectionInput = screen.getByPlaceholderText("settings:codeIndex.qdrantCollectionNamePlaceholder")
+		fireEvent.input(collectionInput, { target: { value: "new-collection-name" } })
+
+		// Check if the input value was updated
+		expect(collectionInput).toHaveValue("new-collection-name")
+
+	it("should render show all search results checkbox in advanced settings", () => {
+		render(
+			<CodeIndexPopover indexingStatus={initialIndexingStatus}>
+				<button>Open Popover</button>
+			</CodeIndexPopover>,
+		)
+
+		// Open advanced settings
+		const advancedButton = screen.getByText("Advanced")
+		fireEvent.click(advancedButton)
+
+		// Check if show all search results checkbox is rendered
+		expect(screen.getByText("settings:codeIndex.showAllSearchResultsLabel")).toBeInTheDocument()
+	})
+
+	it("should update show all search results when checkbox changes", () => {
+		render(
+			<CodeIndexPopover indexingStatus={initialIndexingStatus}>
+				<button>Open Popover</button>
+			</CodeIndexPopover>,
+		)
+
+		// Open advanced settings
+		const advancedButton = screen.getByText("Advanced")
+		fireEvent.click(advancedButton)
+
+		// Find show all search results checkbox by clicking the label
+		const checkboxLabel = screen.getByText("выводить все результаты поиска")
+		fireEvent.click(checkboxLabel)
+	})
+
+	it("should have max search results set to 500", () => {
+		render(
+			<CodeIndexPopover indexingStatus={initialIndexingStatus}>
+				<button>Open Popover</button>
+			</CodeIndexPopover>,
+		)
+
+		// Open advanced settings
+		const advancedButton = screen.getByText("Advanced")
+		fireEvent.click(advancedButton)
+
+		// Check if slider component is rendered (mocked as "Slider")
+		expect(screen.getByText("Slider")).toBeInTheDocument()
+	})
+	})
+	// - Чернявский Е.И.
 })

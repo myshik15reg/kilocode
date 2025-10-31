@@ -17,6 +17,9 @@ export interface CodeIndexConfig {
 	vercelAiGatewayOptions?: { apiKey: string }
 	qdrantUrl?: string
 	qdrantApiKey?: string
+	// + Чернявский Е.И.
+	qdrantCollectionName?: string
+	// - Чернявский Е.И.
 	searchMinScore?: number
 	searchMaxResults?: number
 }
@@ -39,4 +42,7 @@ export type PreviousConfigSnapshot = {
 	vercelAiGatewayApiKey?: string
 	qdrantUrl?: string
 	qdrantApiKey?: string
+	// + Чернявский Е.И.
+	qdrantCollectionName?: string
+	// - Чернявский Е.И.
 }

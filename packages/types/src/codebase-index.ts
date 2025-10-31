@@ -5,7 +5,10 @@ import { z } from "zod"
  */
 export const CODEBASE_INDEX_DEFAULTS = {
 	MIN_SEARCH_RESULTS: 10,
-	MAX_SEARCH_RESULTS: 200,
+	// + Чернявский Е.И.
+	// MAX_SEARCH_RESULTS: 200,
+	MAX_SEARCH_RESULTS: 500,
+	// - Чернявский Е.И.
 	DEFAULT_SEARCH_RESULTS: 50,
 	SEARCH_RESULTS_STEP: 10,
 	MIN_SEARCH_SCORE: 0,
@@ -21,6 +24,9 @@ export const CODEBASE_INDEX_DEFAULTS = {
 export const codebaseIndexConfigSchema = z.object({
 	codebaseIndexEnabled: z.boolean().optional(),
 	codebaseIndexQdrantUrl: z.string().optional(),
+	// + Чернявский Е.И.
+	codebaseIndexQdrantCollectionName: z.string().optional(),
+	// - Чернявский Е.И.
 	codebaseIndexEmbedderProvider: z
 		.enum(["openai", "ollama", "openai-compatible", "gemini", "mistral", "vercel-ai-gateway"])
 		.optional(),
@@ -33,6 +39,9 @@ export const codebaseIndexConfigSchema = z.object({
 		.min(CODEBASE_INDEX_DEFAULTS.MIN_SEARCH_RESULTS)
 		.max(CODEBASE_INDEX_DEFAULTS.MAX_SEARCH_RESULTS)
 		.optional(),
+	// + Чернявский Е.И.
+	codebaseIndexShowAllSearchResults: z.boolean().optional(),
+	// - Чернявский Е.И.
 	// OpenAI Compatible specific fields
 	codebaseIndexOpenAiCompatibleBaseUrl: z.string().optional(),
 	codebaseIndexOpenAiCompatibleModelDimension: z.number().optional(),

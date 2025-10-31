@@ -106,6 +106,9 @@ describe("CodeIndexConfigManager", () => {
 				ollamaOptions: { ollamaBaseUrl: "" },
 				qdrantUrl: "http://localhost:6333",
 				qdrantApiKey: "",
+				// + Чернявский Е.И.
+				qdrantCollectionName: "",
+				// - Чернявский Е.И.
 				searchMinScore: 0.4,
 			})
 			expect(result.requiresRestart).toBe(false)
@@ -137,6 +140,9 @@ describe("CodeIndexConfigManager", () => {
 				ollamaOptions: { ollamaBaseUrl: "" },
 				qdrantUrl: "http://qdrant.local",
 				qdrantApiKey: "test-qdrant-key",
+				// + Чернявский Е.И.
+				qdrantCollectionName: "",
+				// - Чернявский Е.И.
 				searchMinScore: 0.4,
 			})
 		})
@@ -174,6 +180,9 @@ describe("CodeIndexConfigManager", () => {
 				},
 				qdrantUrl: "http://qdrant.local",
 				qdrantApiKey: "test-qdrant-key",
+				// + Чернявский Е.И.
+				qdrantCollectionName: "",
+				// - Чернявский Е.И.
 				searchMinScore: 0.4,
 			})
 		})
@@ -1296,6 +1305,9 @@ describe("CodeIndexConfigManager", () => {
 				openAiCompatibleOptions: undefined,
 				qdrantUrl: "http://qdrant.local",
 				qdrantApiKey: "test-qdrant-key",
+				// + Чернявский Е.И.
+				qdrantCollectionName: "",
+				// - Чернявский Е.И.
 				searchMinScore: 0.4,
 				searchMaxResults: 50,
 			})

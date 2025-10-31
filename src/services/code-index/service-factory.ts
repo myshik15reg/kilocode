@@ -29,6 +29,18 @@ export class CodeIndexServiceFactory {
 		private readonly cacheManager: CacheManager,
 	) {}
 
+	// + Чернявский Е.И.
+	/**
+	 * Generates a default collection name based on workspace path hash
+	 * @returns Default collection name
+	 */
+	private generateDefaultCollectionName(): string {
+		const crypto = require("crypto")
+		const hash = crypto.createHash("sha256").update(this.workspacePath).digest("hex")
+		return `ws-${hash.substring(0, 16)}`
+	}
+	// - Чернявский Е.И.
+
 	/**
 	 * Creates an embedder instance based on the current configuration.
 	 */
@@ -145,8 +157,16 @@ export class CodeIndexServiceFactory {
 			throw new Error(t("embeddings:serviceFactory.qdrantUrlMissing"))
 		}
 
-		// Assuming constructor is updated: new QdrantVectorStore(workspacePath, url, vectorSize, apiKey?)
-		return new QdrantVectorStore(this.workspacePath, config.qdrantUrl, vectorSize, config.qdrantApiKey)
+		// + Чернявский Е.И.
+		//// Assuming constructor is updated: new QdrantVectorStore(workspacePath, url, vectorSize, apiKey?)
+		//return new QdrantVectorStore(this.workspacePath, config.qdrantUrl, vectorSize, config.qdrantApiKey)
+		
+		// Generate collection name if not provided
+		const collectionName = config.qdrantCollectionName || this.generateDefaultCollectionName()
+		
+		// Assuming constructor is updated: new QdrantVectorStore(workspacePath, url, vectorSize, collectionName, apiKey?)
+		return new QdrantVectorStore(this.workspacePath, config.qdrantUrl, vectorSize, collectionName, config.qdrantApiKey)
+		// - Чернявский Е.И.
 	}
 
 	/**

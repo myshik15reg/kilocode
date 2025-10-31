@@ -2113,6 +2113,9 @@ ${prompt}
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig?.codebaseIndexOpenAiCompatibleBaseUrl,
 				codebaseIndexSearchMaxResults: codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: codebaseIndexConfig?.codebaseIndexSearchMinScore,
+				// + Чернявский Е.И.
+				codebaseIndexQdrantCollectionName: codebaseIndexConfig?.codebaseIndexQdrantCollectionName,
+				// - Чернявский Е.И.
 			},
 			// Only set mdmCompliant if there's an actual MDM policy
 			// undefined means no MDM policy, true means compliant, false means non-compliant
@@ -2362,6 +2365,9 @@ ${prompt}
 					stateValues.codebaseIndexConfig?.codebaseIndexOpenAiCompatibleBaseUrl,
 				codebaseIndexSearchMaxResults: stateValues.codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: stateValues.codebaseIndexConfig?.codebaseIndexSearchMinScore,
+				// + Чернявский Е.И.
+				codebaseIndexQdrantCollectionName: stateValues.codebaseIndexConfig?.codebaseIndexQdrantCollectionName,
+				// - Чернявский Е.И.
 			},
 			profileThresholds: stateValues.profileThresholds ?? {},
 			includeDiagnosticMessages: stateValues.includeDiagnosticMessages ?? true,

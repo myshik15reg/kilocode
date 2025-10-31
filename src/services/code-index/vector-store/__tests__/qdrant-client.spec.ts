@@ -67,8 +67,10 @@ describe("QdrantVectorStore", () => {
 
 		// Mock getWorkspacePath
 		;(getWorkspacePath as any).mockReturnValue(mockWorkspacePath)
-
-		vectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, mockApiKey)
+		// + Чернявский Е.И.
+		// vectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, mockApiKey)
+		vectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, expectedCollectionName, mockApiKey)
+		// - Чернявский Е.И.
 	})
 
 	it("should correctly initialize QdrantClient and collectionName in constructor", () => {
@@ -90,8 +92,10 @@ describe("QdrantVectorStore", () => {
 		expect((vectorStore as any).vectorSize).toBe(mockVectorSize)
 	})
 	it("should handle constructor with default URL when none provided", () => {
-		const vectorStoreWithDefaults = new QdrantVectorStore(mockWorkspacePath, undefined as any, mockVectorSize)
-
+		// + Чернявский Е.И.
+		// const vectorStoreWithDefaults = new QdrantVectorStore(mockWorkspacePath, undefined as any, mockVectorSize)
+		const vectorStoreWithDefaults = new QdrantVectorStore(mockWorkspacePath, undefined as any, mockVectorSize, "", "")
+		// - Чернявский Е.И.
 		expect(QdrantClient).toHaveBeenLastCalledWith({
 			host: "localhost",
 			https: false,
@@ -104,8 +108,10 @@ describe("QdrantVectorStore", () => {
 	})
 
 	it("should handle constructor without API key", () => {
-		const vectorStoreWithoutKey = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize)
-
+		// + Чернявский Е.И.
+		// const vectorStoreWithoutKey = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize)
+		const vectorStoreWithoutKey = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, "", "")
+		// - Чернявский Е.И.
 		expect(QdrantClient).toHaveBeenLastCalledWith({
 			host: "mock-qdrant",
 			https: false,
@@ -124,6 +130,9 @@ describe("QdrantVectorStore", () => {
 					mockWorkspacePath,
 					"https://qdrant.ashbyfam.com",
 					mockVectorSize,
+					// + Чернявский Е.И.
+					"",
+					// - Чернявский Е.И.
 				)
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "qdrant.ashbyfam.com",
@@ -139,7 +148,10 @@ describe("QdrantVectorStore", () => {
 			})
 
 			it("should use explicit port for HTTPS URLs with explicit port", () => {
-				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "https://example.com:9000", mockVectorSize)
+				// + Чернявский Е.И.
+				//const vectorStore = new QdrantVectorStore(mockWorkspacePath, "https://example.com:9000", mockVectorSize)
+				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "https://example.com:9000", mockVectorSize, "", "")
+				// - Чернявский Е.И.
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "example.com",
 					https: true,
@@ -158,6 +170,9 @@ describe("QdrantVectorStore", () => {
 					mockWorkspacePath,
 					"https://example.com/api/v1?key=value",
 					mockVectorSize,
+					// + Чернявский Е.И.
+					"",
+					// - Чернявский Е.И.
 				)
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "example.com",
@@ -175,7 +190,10 @@ describe("QdrantVectorStore", () => {
 
 		describe("HTTP URL handling", () => {
 			it("should use explicit port 80 for HTTP URLs without port", () => {
-				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "http://example.com", mockVectorSize)
+				// + Чернявский Е.И.
+				//const vectorStore = new QdrantVectorStore(mockWorkspacePath, "http://example.com", mockVectorSize)
+				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "http://example.com", mockVectorSize, "")
+				// - Чернявский Е.И.
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "example.com",
 					https: false,
@@ -190,7 +208,10 @@ describe("QdrantVectorStore", () => {
 			})
 
 			it("should use explicit port for HTTP URLs with explicit port", () => {
-				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "http://localhost:8080", mockVectorSize)
+				// + Чернявский Е.И.
+				//const vectorStore = new QdrantVectorStore(mockWorkspacePath, "http://localhost:8080", mockVectorSize)
+				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "http://localhost:8080", mockVectorSize, "", "")
+				// - Чернявский Е.И.
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "localhost",
 					https: false,
@@ -209,6 +230,10 @@ describe("QdrantVectorStore", () => {
 					mockWorkspacePath,
 					"http://example.com/api/v1?key=value",
 					mockVectorSize,
+					// + Чернявский Е.И.
+					"",
+					"",
+					// - Чернявский Е.И.
 				)
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "example.com",
@@ -226,7 +251,10 @@ describe("QdrantVectorStore", () => {
 
 		describe("Hostname handling", () => {
 			it("should convert hostname to http with port 80", () => {
-				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "qdrant.example.com", mockVectorSize)
+				// + Чернявский Е.И.
+				//const vectorStore = new QdrantVectorStore(mockWorkspacePath, "qdrant.example.com", mockVectorSize)
+				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "qdrant.example.com", mockVectorSize, "", "")
+				// - Чернявский Е.И.
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "qdrant.example.com",
 					https: false,
@@ -240,7 +268,10 @@ describe("QdrantVectorStore", () => {
 			})
 
 			it("should handle hostname:port format with explicit port", () => {
-				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "localhost:6333", mockVectorSize)
+				// + Чернявский Е.И.
+				//const vectorStore = new QdrantVectorStore(mockWorkspacePath, "localhost:6333", mockVectorSize)
+				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "localhost:6333", mockVectorSize, "", "")
+				// - Чернявский Е.И.
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "localhost",
 					https: false,
@@ -254,7 +285,10 @@ describe("QdrantVectorStore", () => {
 			})
 
 			it("should handle explicit HTTP URLs correctly", () => {
-				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "http://localhost:9000", mockVectorSize)
+				// + Чернявский Е.И.
+				//const vectorStore = new QdrantVectorStore(mockWorkspacePath, "http://localhost:9000", mockVectorSize)
+				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "http://localhost:9000", mockVectorSize, "", "")
+				// - Чернявский Е.И.
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "localhost",
 					https: false,
@@ -270,7 +304,10 @@ describe("QdrantVectorStore", () => {
 
 		describe("IP address handling", () => {
 			it("should convert IP address to http with port 80", () => {
-				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "192.168.1.100", mockVectorSize)
+				// + Чернявский Е.И.
+				//const vectorStore = new QdrantVectorStore(mockWorkspacePath, "192.168.1.100", mockVectorSize)
+				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "192.168.1.100", mockVectorSize, "", "")
+				// - Чернявский Е.И.
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "192.168.1.100",
 					https: false,
@@ -284,7 +321,10 @@ describe("QdrantVectorStore", () => {
 			})
 
 			it("should handle IP:port format with explicit port", () => {
-				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "192.168.1.100:6333", mockVectorSize)
+				// + Чернявский Е.И.
+				//const vectorStore = new QdrantVectorStore(mockWorkspacePath, "192.168.1.100:6333", mockVectorSize)
+				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "192.168.1.100:6333", mockVectorSize, "", "")
+				// - Чернявский Е.И.
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "192.168.1.100",
 					https: false,
@@ -300,7 +340,10 @@ describe("QdrantVectorStore", () => {
 
 		describe("Edge cases", () => {
 			it("should handle undefined URL with host-based config", () => {
-				const vectorStore = new QdrantVectorStore(mockWorkspacePath, undefined as any, mockVectorSize)
+				// + Чернявский Е.И.
+				//const vectorStore = new QdrantVectorStore(mockWorkspacePath, undefined as any, mockVectorSize)
+				const vectorStore = new QdrantVectorStore(mockWorkspacePath, undefined as any, mockVectorSize, "", "")
+				// - Чернявский Е.И.
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "localhost",
 					https: false,
@@ -314,7 +357,10 @@ describe("QdrantVectorStore", () => {
 			})
 
 			it("should handle empty string URL with host-based config", () => {
-				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "", mockVectorSize)
+				// + Чернявский Е.И.
+				//const vectorStore = new QdrantVectorStore(mockWorkspacePath, "", mockVectorSize)
+				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "", mockVectorSize, "")
+				// - Чернявский Е.И.
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "localhost",
 					https: false,
@@ -328,7 +374,10 @@ describe("QdrantVectorStore", () => {
 			})
 
 			it("should handle whitespace-only URL with host-based config", () => {
-				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "   ", mockVectorSize)
+				// + Чернявский Е.И.
+				//const vectorStore = new QdrantVectorStore(mockWorkspacePath, "   ", mockVectorSize)
+				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "   ", mockVectorSize, "")
+				// - Чернявский Е.И.
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "localhost",
 					https: false,
@@ -344,7 +393,10 @@ describe("QdrantVectorStore", () => {
 
 		describe("Invalid URL fallback", () => {
 			it("should treat invalid URLs as hostnames with port 80", () => {
-				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "invalid-url-format", mockVectorSize)
+				// + Чернявский Е.И.
+				//const vectorStore = new QdrantVectorStore(mockWorkspacePath, "invalid-url-format", mockVectorSize)
+				const vectorStore = new QdrantVectorStore(mockWorkspacePath, "invalid-url-format", mockVectorSize, "", "")
+				// - Чернявский Е.И.
 				expect(QdrantClient).toHaveBeenLastCalledWith({
 					host: "invalid-url-format",
 					https: false,
@@ -365,6 +417,9 @@ describe("QdrantVectorStore", () => {
 				mockWorkspacePath,
 				"http://localhost:6333/some/path",
 				mockVectorSize,
+				// + Чернявский Е.И.
+				"",
+				// - Чернявский Е.И.
 			)
 			expect(QdrantClient).toHaveBeenLastCalledWith({
 				host: "localhost",
@@ -384,6 +439,9 @@ describe("QdrantVectorStore", () => {
 				mockWorkspacePath,
 				"http://localhost:6333/",
 				mockVectorSize,
+				// + Чернявский Е.И.
+				"",
+				// - Чернявский Е.И.
 			)
 			expect(QdrantClient).toHaveBeenLastCalledWith({
 				host: "localhost",
@@ -403,6 +461,9 @@ describe("QdrantVectorStore", () => {
 				mockWorkspacePath,
 				"https://qdrant.ashbyfam.com/api",
 				mockVectorSize,
+				// + Чернявский Е.И.
+				"",
+				// - Чернявский Е.И.
 			)
 			expect(QdrantClient).toHaveBeenLastCalledWith({
 				host: "qdrant.ashbyfam.com",
@@ -422,6 +483,9 @@ describe("QdrantVectorStore", () => {
 				mockWorkspacePath,
 				"http://localhost:6333/api/",
 				mockVectorSize,
+				// + Чернявский Е.И.
+				"",
+				// - Чернявский Е.И.
 			)
 			expect(QdrantClient).toHaveBeenLastCalledWith({
 				host: "localhost",
@@ -441,6 +505,9 @@ describe("QdrantVectorStore", () => {
 				mockWorkspacePath,
 				"http://localhost:6333/api///",
 				mockVectorSize,
+				// + Чернявский Е.И.
+				"",
+				// - Чернявский Е.И.
 			)
 			expect(QdrantClient).toHaveBeenLastCalledWith({
 				host: "localhost",
@@ -460,6 +527,9 @@ describe("QdrantVectorStore", () => {
 				mockWorkspacePath,
 				"http://localhost:6333/api/v1/qdrant",
 				mockVectorSize,
+				// + Чернявский Е.И.
+				"",
+				// - Чернявский Е.И.
 			)
 			expect(QdrantClient).toHaveBeenLastCalledWith({
 				host: "localhost",
@@ -476,7 +546,10 @@ describe("QdrantVectorStore", () => {
 
 		it("should handle complex URL with multiple segments, multiple trailing slashes, query params, and fragment", () => {
 			const complexUrl = "https://example.com/ollama/api/v1///?key=value#pos"
-			const vectorStoreComplex = new QdrantVectorStore(mockWorkspacePath, complexUrl, mockVectorSize)
+			// + Чернявский Е.И.
+			//const vectorStoreComplex = new QdrantVectorStore(mockWorkspacePath, complexUrl, mockVectorSize)
+			const vectorStoreComplex = new QdrantVectorStore(mockWorkspacePath, complexUrl, mockVectorSize, "", "")
+			// - Чернявский Е.И.
 			expect(QdrantClient).toHaveBeenLastCalledWith({
 				host: "example.com",
 				https: true,
@@ -495,6 +568,10 @@ describe("QdrantVectorStore", () => {
 				mockWorkspacePath,
 				"http://localhost:6333/api/path?key=value#fragment",
 				mockVectorSize,
+				// + Чернявский Е.И.
+				"",
+				"",
+				// - Чернявский Е.И.
 			)
 			expect(QdrantClient).toHaveBeenLastCalledWith({
 				host: "localhost",
@@ -539,6 +616,9 @@ describe("QdrantVectorStore", () => {
 					ef_construct: 512,
 					on_disk: true,
 				},
+				// + Чернявский Е.И.
+				collection_name: expectedCollectionName,
+				// - Чернявский Е.И.
 			})
 			expect(mockQdrantClientInstance.deleteCollection).not.toHaveBeenCalled()
 
@@ -883,8 +963,10 @@ describe("QdrantVectorStore", () => {
 			const newVectorSize = 768
 
 			// Create a new vector store with the new dimension
-			const newVectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, newVectorSize, mockApiKey)
-
+			// + Чернявский Е.И.
+			//const newVectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, newVectorSize, mockApiKey)
+			const newVectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, newVectorSize, "", mockApiKey)
+			// - Чернявский Е.И.
 			mockQdrantClientInstance.getCollection
 				.mockResolvedValueOnce({
 					config: {
@@ -1748,5 +1830,60 @@ describe("QdrantVectorStore", () => {
 				})
 			})
 		})
+		// + Чернявский Е.И.
+		describe("qdrantCollectionName functionality", () => {
+				it("should use default collection name when qdrantCollectionName is not provided", () => {
+					const vectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, "", mockApiKey)
+					
+					// Access private member for testing
+					expect((vectorStore as any).collectionName).toBe(expectedCollectionName)
+				})
+		
+				it("should use custom collection name when qdrantCollectionName is provided", () => {
+					const customCollectionName = "my-custom-collection"
+					const vectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, customCollectionName, mockApiKey)
+					
+					// Access private member for testing
+					expect((vectorStore as any).collectionName).toBe(customCollectionName)
+				})
+		
+				it("should use custom collection name in QdrantClient operations", async () => {
+					const customCollectionName = "my-custom-collection"
+					const vectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, customCollectionName, mockApiKey)
+					
+					// Mock getCollection to return 404 (collection doesn't exist)
+					mockQdrantClientInstance.getCollection.mockRejectedValue({
+						response: { status: 404 },
+						message: "Not found",
+					})
+					mockQdrantClientInstance.createCollection.mockResolvedValue(true as any)
+					mockQdrantClientInstance.createPayloadIndex.mockResolvedValue({} as any)
+		
+					await vectorStore.initialize()
+		
+					// Verify that custom collection name was used in Qdrant operations
+					expect(mockQdrantClientInstance.getCollection).toHaveBeenCalledWith(customCollectionName)
+					expect(mockQdrantClientInstance.createCollection).toHaveBeenCalledWith(customCollectionName, {
+						vectors: {
+							size: mockVectorSize,
+							distance: "Cosine",
+							on_disk: true,
+						},
+						hnsw_config: {
+							m: 64,
+							ef_construct: 512,
+							on_disk: true,
+						},
+					})
+					expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(5)
+					for (let i = 0; i <= 4; i++) {
+						expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledWith(customCollectionName, {
+							field_name: `pathSegments.${i}`,
+							field_schema: "keyword",
+						})
+					}
+				})
+			})
+			// - Чернявский Е.И.
+		})
 	})
-})

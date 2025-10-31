@@ -23,14 +23,24 @@ export class QdrantVectorStore implements IVectorStore {
 	 * Creates a new Qdrant vector store
 	 * @param workspacePath Path to the workspace
 	 * @param url Optional URL to the Qdrant server
+	 // + Чернявский Е.И.
+	 * @param collectionName Name of the collection to use
+	 // - Чернявский Е.И.
 	 */
-	constructor(workspacePath: string, url: string, vectorSize: number, apiKey?: string) {
+	// + Чернявский Е.И.
+	//	constructor(workspacePath: string, url: string, vectorSize: number, apiKey?: string) {
+	constructor(workspacePath: string, url: string, vectorSize: number, collectionName: string, apiKey?: string) {
+	// - Чернявский Е.И.
 		// Parse the URL to determine the appropriate QdrantClient configuration
 		const parsedUrl = this.parseQdrantUrl(url)
 
 		// Store the resolved URL for our property
 		this.qdrantUrl = parsedUrl
 		this.workspacePath = workspacePath
+		// + Чернявский Е.И.
+		this.vectorSize = vectorSize
+		this.collectionName = collectionName
+		// - Чернявский Е.И.
 
 		try {
 			const urlObj = new URL(parsedUrl)
@@ -77,10 +87,12 @@ export class QdrantVectorStore implements IVectorStore {
 			})
 		}
 
-		// Generate collection name from workspace path
-		const hash = createHash("sha256").update(workspacePath).digest("hex")
-		this.vectorSize = vectorSize
-		this.collectionName = `ws-${hash.substring(0, 16)}`
+		// + Чернявский Е.И.
+		//// Generate collection name from workspace path
+		//const hash = createHash("sha256").update(workspacePath).digest("hex")
+		//this.vectorSize = vectorSize
+		//this.collectionName = `ws-${hash.substring(0, 16)}`
+		// - Чернявский Е.И.
 	}
 
 	/**
@@ -169,8 +181,10 @@ export class QdrantVectorStore implements IVectorStore {
 			} else {
 				// Collection exists, check vector size
 				const vectorsConfig = collectionInfo.config?.params?.vectors
-				let existingVectorSize: number
-
+				// + Чернявский Е.И.
+				// let existingVectorSize: number
+				let existingVectorSize: number | null = null
+				// - Чернявский Е.И.
 				if (typeof vectorsConfig === "number") {
 					existingVectorSize = vectorsConfig
 				} else if (
@@ -180,8 +194,28 @@ export class QdrantVectorStore implements IVectorStore {
 					typeof vectorsConfig.size === "number"
 				) {
 					existingVectorSize = vectorsConfig.size
-				} else {
-					existingVectorSize = 0 // Fallback for unknown configuration
+				// + Чернявский Е.И.
+				// 	} else {
+				//	existingVectorSize = 0 // Fallback for unknown configuration
+				} else if (
+					vectorsConfig &&
+					typeof vectorsConfig === "object" &&
+					"vectors" in vectorsConfig &&
+					typeof vectorsConfig.vectors === "object" &&
+					vectorsConfig.vectors &&
+					"size" in vectorsConfig.vectors &&
+					typeof vectorsConfig.vectors.size === "number"
+				) {
+					// Handle nested vectors configuration
+					existingVectorSize = vectorsConfig.vectors.size
+				}
+
+				// If we couldn't determine the vector size, throw an informative error
+				if (existingVectorSize === null) {
+					throw new Error(
+						`Unable to determine vector size for existing collection "${this.collectionName}". The collection configuration is not in a recognized format. Please check the Qdrant collection configuration or recreate the collection manually.`,
+					)
+				// - Чернявский Е.И.
 				}
 
 				if (existingVectorSize === this.vectorSize) {
@@ -228,22 +262,46 @@ export class QdrantVectorStore implements IVectorStore {
 		let recreationAttempted = false
 
 		try {
-			// Step 1: Attempt to delete the existing collection
+			// + Чернявский Е.И.
+			// Step 1: Verify the collection actually exists before attempting deletion
+			const collectionExists = await this.collectionExists()
+			if (!collectionExists) {
+				console.warn(
+					`[QdrantVectorStore] Collection ${this.collectionName} was expected to exist but doesn't. Creating new collection.`,
+				)
+				// Collection doesn't exist, just create it with the correct dimensions
+				await this.client.createCollection(this.collectionName, {
+					vectors: {
+						size: this.vectorSize,
+						distance: this.DISTANCE_METRIC,
+						on_disk: true,
+					},
+					hnsw_config: {
+						m: 64,
+						ef_construct: 512,
+						on_disk: true,
+					},
+				})
+				console.log(`[QdrantVectorStore] Successfully created new collection ${this.collectionName}`)
+				return true
+			}
+			// Step 2: Attempt to delete the existing collection
+			// - Чернявский Е.И.
 			console.log(`[QdrantVectorStore] Deleting existing collection ${this.collectionName}...`)
 			await this.client.deleteCollection(this.collectionName)
 			deletionSucceeded = true
 			console.log(`[QdrantVectorStore] Successfully deleted collection ${this.collectionName}`)
 
-			// Step 2: Wait a brief moment to ensure deletion is processed
+			// Step 3: Wait a brief moment to ensure deletion is processed
 			await new Promise((resolve) => setTimeout(resolve, 100))
 
-			// Step 3: Verify the collection is actually deleted
+			// Step 4: Verify the collection is actually deleted
 			const verificationInfo = await this.getCollectionInfo()
 			if (verificationInfo !== null) {
 				throw new Error("Collection still exists after deletion attempt")
 			}
 
-			// Step 4: Create the new collection with correct dimensions
+			// Step 5: Create the new collection with correct dimensions
 			console.log(
 				`[QdrantVectorStore] Creating new collection ${this.collectionName} with vector size ${this.vectorSize}...`,
 			)

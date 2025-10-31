@@ -374,6 +374,9 @@ export interface WebviewMessage {
 		// Global state settings
 		codebaseIndexEnabled: boolean
 		codebaseIndexQdrantUrl: string
+		// + Чернявский Е.И.
+		codebaseIndexQdrantCollectionName?: string
+		// - Чернявский Е.И.
 		codebaseIndexEmbedderProvider:
 			| "openai"
 			| "ollama"

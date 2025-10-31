@@ -64,6 +64,10 @@ interface LocalCodeIndexSettings {
 	codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
 	codebaseIndexSearchMaxResults?: number
 	codebaseIndexSearchMinScore?: number
+	// + Чернявский Е.И.
+	codebaseIndexQdrantCollectionName?: string
+	codebaseIndexShowAllSearchResults?: boolean
+	// - Чернявский Е.И.
 
 	// Secret settings (start empty, will be loaded separately)
 	codeIndexOpenAiKey?: string
@@ -84,6 +88,9 @@ const createValidationSchema = (provider: EmbedderProvider, t: any) => {
 			.min(1, t("settings:codeIndex.validation.qdrantUrlRequired"))
 			.url(t("settings:codeIndex.validation.invalidQdrantUrl")),
 		codeIndexQdrantApiKey: z.string().optional(),
+		// + Чернявский Е.И.
+		codebaseIndexQdrantCollectionName: z.string().optional(),
+		// - Чернявский Е.И.
 	})
 
 	switch (provider) {
@@ -187,6 +194,10 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexEmbedderModelDimension: undefined,
 		codebaseIndexSearchMaxResults: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 		codebaseIndexSearchMinScore: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+		// + Чернявский Е.И.
+		codebaseIndexQdrantCollectionName: "",
+		codebaseIndexShowAllSearchResults: false,
+		// - Чернявский Е.И.
 		codeIndexOpenAiKey: "",
 		codeIndexQdrantApiKey: "",
 		codebaseIndexOpenAiCompatibleBaseUrl: "",
@@ -222,6 +233,10 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					codebaseIndexConfig.codebaseIndexSearchMaxResults ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 				codebaseIndexSearchMinScore:
 					codebaseIndexConfig.codebaseIndexSearchMinScore ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+				// + Чернявский Е.И.
+				codebaseIndexQdrantCollectionName: codebaseIndexConfig.codebaseIndexQdrantCollectionName || undefined,
+				codebaseIndexShowAllSearchResults: codebaseIndexConfig.codebaseIndexShowAllSearchResults || false,
+				// - Чернявский Е.И.
 				codeIndexOpenAiKey: "",
 				codeIndexQdrantApiKey: "",
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl || "",
@@ -1298,6 +1313,37 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 											</VSCodeButton>
 										</div>
 									</div>
+									{/* + Чернявский Е.И.*/}
+									{/* Show All Search Results Checkbox */}
+									<div className="flex items-center gap-2">
+										<VSCodeCheckbox
+											checked={currentSettings.codebaseIndexShowAllSearchResults || false}
+											onChange={(e: any) => updateSetting("codebaseIndexShowAllSearchResults", e.target.checked)}>
+										</VSCodeCheckbox>
+										<span className="text-sm font-medium">{t("settings:codeIndex.showAllSearchResultsLabel")}</span>
+									</div>
+
+									{/* Qdrant Collection Name */}
+									<div className="space-y-2">
+										<div className="flex items-center gap-2">
+											<label className="text-sm font-medium">
+												{t("settings:codeIndex.qdrantCollectionNameLabel")}
+											</label>
+											<StandardTooltip
+												content={t("settings:codeIndex.qdrantCollectionNameDescription")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+										<VSCodeTextField
+											value={currentSettings.codebaseIndexQdrantCollectionName || ""}
+											onInput={(e: any) =>
+												updateSetting("codebaseIndexQdrantCollectionName", e.target.value)
+											}
+											placeholder={t("settings:codeIndex.qdrantCollectionNamePlaceholder")}
+											className="w-full"
+										/>
+									</div>
+									{/* + Чернявский Е.И.*/}
 								</div>
 							)}
 						</div>
