@@ -50,10 +50,10 @@ export class CodeIndexManager {
 			}
 		}
 
-		if (!CodeIndexManager.instances.has(workspacePath)) {
+		if (workspacePath && !CodeIndexManager.instances.has(workspacePath)) {
 			CodeIndexManager.instances.set(workspacePath, new CodeIndexManager(workspacePath, context))
 		}
-		return CodeIndexManager.instances.get(workspacePath)!
+		return workspacePath ? CodeIndexManager.instances.get(workspacePath)! : undefined
 	}
 
 	public static disposeAll(): void {
@@ -134,7 +134,11 @@ export class CodeIndexManager {
 		// 3. Check if workspace is available
 		const workspacePath = this.workspacePath
 		if (!workspacePath) {
-			this._stateManager.setSystemState("Standby", "No workspace folder open")
+			this._stateManager.setSystemState(
+				"Standby",
+				"No workspace folder open",
+				this._serviceFactory?.getDefaultCollectionName(),
+			)
 			return { requiresRestart }
 		}
 
@@ -240,7 +244,7 @@ export class CodeIndexManager {
 		this._isRecoveringFromError = true
 		try {
 			// Clear error state
-			this._stateManager.setSystemState("Standby", "")
+			this._stateManager.setSystemState("Standby", "", this._serviceFactory?.getDefaultCollectionName())
 		} catch (error) {
 			// Log error but continue with recovery - clearing service instances is more important
 			console.error("Failed to clear error state during recovery:", error)
@@ -284,9 +288,25 @@ export class CodeIndexManager {
 
 	public getCurrentStatus() {
 		const status = this._stateManager.getCurrentStatus()
+		const config = this.isInitialized ? this.getConfig() : undefined
+
 		return {
 			...status,
 			workspacePath: this.workspacePath,
+			defaultQdrantCollectionName: config?.defaultQdrantCollectionName,
+		}
+	}
+
+	public getConfig() {
+		if (!this.isFeatureConfigured || !this._configManager || !this._serviceFactory) {
+			return undefined
+		}
+		const config = this._configManager.getConfig()
+		const defaultQdrantCollectionName = this._serviceFactory.getDefaultCollectionName()
+
+		return {
+			...config,
+			defaultQdrantCollectionName,
 		}
 	}
 
@@ -322,7 +342,7 @@ export class CodeIndexManager {
 		const workspacePath = this.workspacePath
 
 		if (!workspacePath) {
-			this._stateManager.setSystemState("Standby", "")
+			this._stateManager.setSystemState("Standby", "", this._serviceFactory?.getDefaultCollectionName())
 			return
 		}
 
@@ -363,7 +383,11 @@ export class CodeIndexManager {
 			const validationResult = await this._serviceFactory.validateEmbedder(embedder)
 			if (!validationResult.valid) {
 				const errorMessage = validationResult.error || "Embedder configuration validation failed"
-				this._stateManager.setSystemState("Error", errorMessage)
+				this._stateManager.setSystemState(
+					"Error",
+					errorMessage,
+					this._serviceFactory.getDefaultCollectionName(),
+				)
 				throw new Error(errorMessage)
 			}
 		}
@@ -389,7 +413,7 @@ export class CodeIndexManager {
 		)
 
 		// Clear any error state after successful recreation
-		this._stateManager.setSystemState("Standby", "")
+		this._stateManager.setSystemState("Standby", "", this._serviceFactory.getDefaultCollectionName())
 	}
 
 	/**
@@ -412,7 +436,11 @@ export class CodeIndexManager {
 					this._orchestrator.stopWatcher()
 				}
 				// Set state to indicate service is disabled
-				this._stateManager.setSystemState("Standby", "Code indexing is disabled")
+				this._stateManager.setSystemState(
+					"Standby",
+					"Code indexing is disabled",
+					this._serviceFactory?.getDefaultCollectionName(),
+				)
 				return
 			}
 

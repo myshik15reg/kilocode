@@ -25,6 +25,10 @@ export const IndexingStatusBadge: React.FC<IndexingStatusBadgeProps> = ({ classN
 		processedItems: 0,
 		totalItems: 0,
 		currentItemUnit: "items",
+		config: {
+			isConfigured: false,
+			embedderProvider: "openai",
+		},
 	})
 
 	useEffect(() => {

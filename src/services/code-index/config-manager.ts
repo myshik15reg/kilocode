@@ -1,3 +1,6 @@
+// + Чернявский
+import * as vscode from "vscode"
+// - Чернявский
 import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
@@ -49,9 +52,6 @@ export class CodeIndexConfigManager {
 		const codebaseIndexConfig = this.contextProxy?.getGlobalState("codebaseIndexConfig") ?? {
 			codebaseIndexEnabled: true,
 			codebaseIndexQdrantUrl: "http://localhost:6333",
-			// + Чернявский Е.И.
-			codebaseIndexQdrantCollectionName: "",
-			// - Чернявский Е.И.
 			codebaseIndexEmbedderProvider: "openai",
 			codebaseIndexEmbedderBaseUrl: "",
 			codebaseIndexEmbedderModelId: "",
@@ -62,9 +62,6 @@ export class CodeIndexConfigManager {
 		const {
 			codebaseIndexEnabled,
 			codebaseIndexQdrantUrl,
-			// + Чернявский Е.И.
-			codebaseIndexQdrantCollectionName,
-			// - Чернявский Е.И.
 			codebaseIndexEmbedderProvider,
 			codebaseIndexEmbedderBaseUrl,
 			codebaseIndexEmbedderModelId,
@@ -85,11 +82,25 @@ export class CodeIndexConfigManager {
 		this.codebaseIndexEnabled = codebaseIndexEnabled ?? true
 		this.qdrantUrl = codebaseIndexQdrantUrl
 		this.qdrantApiKey = qdrantApiKey ?? ""
-		// + Чернявский Е.И.
-		this.qdrantCollectionName = codebaseIndexQdrantCollectionName
-		// - Чернявский Е.И.
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
+
+		// + Чернявский Е.И. -> Handle collection name with workspace override
+		// Load collection name from workspace settings first (priority)
+		const workspaceConfig = vscode.workspace.getConfiguration(
+			"kilocode.codebaseIndex",
+			vscode.workspace.workspaceFolders?.[0]
+		)
+		const workspaceCollectionName = workspaceConfig.get<string>("qdrantCollectionName")
+
+		// If a collection name is found in workspace settings, it takes precedence.
+		if (workspaceCollectionName) {
+			this.qdrantCollectionName = workspaceCollectionName
+		} else {
+			// Otherwise, fall back to the global state.
+			this.qdrantCollectionName = codebaseIndexConfig.codebaseIndexQdrantCollectionName
+		}
+		// - Чернявский Е.И.
 
 		// Validate and set model dimension
 		const rawDimension = codebaseIndexConfig.codebaseIndexEmbedderModelDimension

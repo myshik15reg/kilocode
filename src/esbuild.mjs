@@ -37,7 +37,10 @@ async function main() {
 
 	if (fs.existsSync(distDir)) {
 		console.log(`[${name}] Cleaning dist directory: ${distDir}`)
-		fs.rmSync(distDir, { recursive: true, force: true })
+		// + Чернявский
+		//	fs.rmSync(distDir, { recursive: true, force: true })
+		fs.rmSync(distDir, { recursive: true })
+		// - Чернявский
 	}
 
 	/**
@@ -95,7 +98,16 @@ async function main() {
 		{
 			name: "copyLocales",
 			setup(build) {
-				build.onEnd(() => copyLocales(srcDir, distDir))
+				// + Чернявский
+				// build.onEnd(() => copyLocales(srcDir, distDir))
+				build.onEnd(() => {
+					const localesPath = path.join(distDir, "i18n", "locales")
+					if (fs.existsSync(localesPath)) {
+						fs.rmSync(localesPath, { recursive: true })
+					}
+					copyLocales(srcDir, distDir)
+				})
+				// - Чернявский
 			},
 		},
 		{
@@ -143,6 +155,12 @@ async function main() {
 
 	if (watch) {
 		await Promise.all([extensionCtx.watch(), workerCtx.watch()])
+		// + Чернявский
+		const localesPath = path.join(distDir, "i18n", "locales")
+		if (fs.existsSync(localesPath)) {
+			fs.rmSync(localesPath, { recursive: true })
+		}
+		// - Чернявский
 		copyLocales(srcDir, distDir)
 		setupLocaleWatcher(srcDir, distDir)
 	} else {

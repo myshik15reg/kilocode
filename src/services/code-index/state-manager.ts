@@ -8,6 +8,7 @@ export class CodeIndexStateManager {
 	private _processedItems: number = 0
 	private _totalItems: number = 0
 	private _currentItemUnit: string = "blocks"
+	private _defaultQdrantCollectionName: string = ""
 	private _progressEmitter = new vscode.EventEmitter<ReturnType<typeof this.getCurrentStatus>>()
 
 	// --- Public API ---
@@ -25,14 +26,26 @@ export class CodeIndexStateManager {
 			processedItems: this._processedItems,
 			totalItems: this._totalItems,
 			currentItemUnit: this._currentItemUnit,
+			defaultQdrantCollectionName: this._defaultQdrantCollectionName,
 		}
 	}
 
 	// --- State Management ---
 
-	public setSystemState(newState: IndexingState, message?: string): void {
+	public setSystemState(
+		newState: IndexingState,
+		message?: string,
+		defaultQdrantCollectionName?: string,
+	): void {
 		const stateChanged =
-			newState !== this._systemStatus || (message !== undefined && message !== this._statusMessage)
+			newState !== this._systemStatus ||
+			(message !== undefined && message !== this._statusMessage) ||
+			(defaultQdrantCollectionName !== undefined &&
+				defaultQdrantCollectionName !== this._defaultQdrantCollectionName)
+
+		if (defaultQdrantCollectionName) {
+			this._defaultQdrantCollectionName = defaultQdrantCollectionName
+		}
 
 		if (stateChanged) {
 			this._systemStatus = newState

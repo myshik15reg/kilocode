@@ -1,3 +1,4 @@
+import * as path from "path"
 import * as vscode from "vscode"
 import { OpenAiEmbedder } from "./embedders/openai"
 import { CodeIndexOllamaEmbedder } from "./embedders/ollama"
@@ -35,11 +36,28 @@ export class CodeIndexServiceFactory {
 	 * @returns Default collection name
 	 */
 	private generateDefaultCollectionName(): string {
-		const crypto = require("crypto")
-		const hash = crypto.createHash("sha256").update(this.workspacePath).digest("hex")
-		return `ws-${hash.substring(0, 16)}`
+		const workspaceName = path.basename(this.workspacePath)
+		// Sanitize for Qdrant: lowercase, letters, numbers, and underscores
+		const sanitized = workspaceName
+			.toLowerCase()
+			.replace(/[^a-z0-9_]/g, "_") // Replace invalid chars with underscore
+			.replace(/_+/g, "_") // Collapse multiple underscores
+			.replace(/^_|_$/g, "") // Remove leading/trailing underscores
+
+		if (!sanitized) {
+			// Fallback to a hash-based name if sanitization results in an empty string
+			const crypto = require("crypto")
+			const hash = crypto.createHash("sha256").update(this.workspacePath).digest("hex")
+			return `ws-${hash.substring(0, 16)}`
+		}
+
+		return sanitized
 	}
 	// - Чернявский Е.И.
+
+	public getDefaultCollectionName(): string {
+		return this.generateDefaultCollectionName()
+	}
 
 	/**
 	 * Creates an embedder instance based on the current configuration.

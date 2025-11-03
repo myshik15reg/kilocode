@@ -24,5 +24,9 @@
 	"markdown.copyFiles.destination": {
 		"**/*": "/static/img/${documentBaseName}/${documentBaseName}.${fileName/(.*)\\.(.*)/$2/}"
 	},
-	"java.configuration.updateBuildConfiguration": "interactive"
+	// + Чернявский
+	// 	"java.configuration.updateBuildConfiguration": "interactive"
+	"java.configuration.updateBuildConfiguration": "interactive",
+	"kilo-code.code-index.qdrantCollectionName": "bge-m3"
+	// - Чернявский
 }

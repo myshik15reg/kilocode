@@ -46,6 +46,8 @@ export type UpdateGlobalStateMessage<K extends keyof GlobalState = keyof GlobalS
 
 export interface WebviewMessage {
 	type:
+		| "response"
+		| "saveCodeIndexSettingsResponse"
 		| "updateTodoList"
 		| "deleteMultipleTasksWithIds"
 		| "currentApiConfigName"
@@ -440,6 +442,11 @@ export interface BalanceDataResponsePayload {
 	error?: string
 }
 
+export interface SaveCodeIndexSettingsResponsePayload {
+	success: boolean
+	error?: string
+}
+
 export interface SeeNewChangesPayload {
 	commitRange: CommitRange
 }
@@ -511,6 +518,7 @@ export type WebViewMessagePayload =
 	// kilocode_change start
 	| ProfileDataResponsePayload
 	| BalanceDataResponsePayload
+	| SaveCodeIndexSettingsResponsePayload
 	| SeeNewChangesPayload
 	| TasksByIdRequestPayload
 	| TaskHistoryRequestPayload

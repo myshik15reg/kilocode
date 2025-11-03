@@ -22,6 +22,7 @@ export interface CodeIndexConfig {
 	// - Чернявский Е.И.
 	searchMinScore?: number
 	searchMaxResults?: number
+	showAllSearchResults?: boolean
 }
 
 /**

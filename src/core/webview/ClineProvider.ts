@@ -1977,6 +1977,11 @@ ${prompt}
 		const mergedDeniedCommands = this.mergeDeniedCommands(deniedCommands)
 		const cwd = this.cwd
 
+		// + Чернявский
+		const workspaceQdrantCollectionName = vscode.workspace
+			.getConfiguration("kilo-code.codebaseIndex", cwd ? vscode.Uri.file(cwd) : undefined)
+			.get<string>("qdrantCollectionName")
+		// - Чернявский
 		// Check if there's a system prompt override for the current mode
 		const currentMode = mode ?? defaultModeSlug
 		const hasSystemPromptOverride = await this.hasFileBasedSystemPromptOverride(currentMode)
@@ -2116,7 +2121,8 @@ ${prompt}
 				codebaseIndexSearchMaxResults: codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: codebaseIndexConfig?.codebaseIndexSearchMinScore,
 				// + Чернявский Е.И.
-				codebaseIndexQdrantCollectionName: codebaseIndexConfig?.codebaseIndexQdrantCollectionName,
+				codebaseIndexQdrantCollectionName:
+					workspaceQdrantCollectionName ?? codebaseIndexConfig?.codebaseIndexQdrantCollectionName,
 				// - Чернявский Е.И.
 			},
 			// Only set mdmCompliant if there's an actual MDM policy
@@ -2221,6 +2227,11 @@ ${prompt}
 
 		let organizationSettingsVersion: number = -1
 
+		// + Чернявский
+		const workspaceQdrantCollectionName = vscode.workspace
+			.getConfiguration("kilo-code.codebaseIndex", this.cwd ? vscode.Uri.file(this.cwd) : undefined)
+			.get<string>("qdrantCollectionName")
+		// - Чернявский
 		try {
 			if (CloudService.hasInstance()) {
 				const settings = CloudService.instance.getOrganizationSettings()
@@ -2369,7 +2380,8 @@ ${prompt}
 				codebaseIndexSearchMaxResults: stateValues.codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: stateValues.codebaseIndexConfig?.codebaseIndexSearchMinScore,
 				// + Чернявский Е.И.
-				codebaseIndexQdrantCollectionName: stateValues.codebaseIndexConfig?.codebaseIndexQdrantCollectionName,
+				codebaseIndexQdrantCollectionName:
+					workspaceQdrantCollectionName ?? stateValues.codebaseIndexConfig?.codebaseIndexQdrantCollectionName,
 				// - Чернявский Е.И.
 			},
 			profileThresholds: stateValues.profileThresholds ?? {},

@@ -15,8 +15,9 @@ import { AlertTriangle } from "lucide-react"
 import { CODEBASE_INDEX_DEFAULTS } from "@roo-code/types"
 
 import type { EmbedderProvider } from "@roo/embeddingModels"
-import type { IndexingStatus } from "@roo/ExtensionMessage"
+import type { CodeIndexConfig, IndexingStatus } from "@roo/ExtensionMessage"
 
+import { requestResponse } from "@src/utils/message"
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
@@ -173,6 +174,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	const [isSetupSettingsOpen, setIsSetupSettingsOpen] = useState(false)
 
 	const [indexingStatus, setIndexingStatus] = useState<IndexingStatus>(externalIndexingStatus)
+	const [isSaving, setIsSaving] = useState(false)
 
 	const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
 	const [saveError, setSaveError] = useState<string | null>(null)
@@ -195,8 +197,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexSearchMaxResults: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 		codebaseIndexSearchMinScore: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
 		// + Чернявский Е.И.
-		codebaseIndexQdrantCollectionName: "",
-		codebaseIndexShowAllSearchResults: false,
+		codebaseIndexQdrantCollectionName: codebaseIndexConfig?.codebaseIndexQdrantCollectionName || "",
+		codebaseIndexShowAllSearchResults: codebaseIndexConfig?.codebaseIndexShowAllSearchResults || false,
 		// - Чернявский Е.И.
 		codeIndexOpenAiKey: "",
 		codeIndexQdrantApiKey: "",
@@ -218,6 +220,11 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		setIndexingStatus(externalIndexingStatus)
 	}, [externalIndexingStatus])
 
+
+	// This effect synchronizes the local UI state with the authoritative configuration from the backend (indexingStatus.config).
+	// It ensures that any changes made outside this component (e.g., from a different VS Code window) are reflected here.
+	// It updates both `initialSettings` and `currentSettings` to prevent false "unsaved changes" flags.
+
 	// Initialize settings from global state
 	useEffect(() => {
 		if (codebaseIndexConfig) {
@@ -234,7 +241,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				codebaseIndexSearchMinScore:
 					codebaseIndexConfig.codebaseIndexSearchMinScore ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
 				// + Чернявский Е.И.
-				codebaseIndexQdrantCollectionName: codebaseIndexConfig.codebaseIndexQdrantCollectionName || undefined,
+				codebaseIndexQdrantCollectionName: codebaseIndexConfig.codebaseIndexQdrantCollectionName || "",
 				codebaseIndexShowAllSearchResults: codebaseIndexConfig.codebaseIndexShowAllSearchResults || false,
 				// - Чернявский Е.И.
 				codeIndexOpenAiKey: "",
@@ -277,47 +284,23 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	const currentSettingsRef = useRef(currentSettings)
 	currentSettingsRef.current = currentSettings
 
-	// Listen for indexing status updates and save responses
+	// Listen for indexing status updates
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent<any>) => {
 			if (event.data.type === "indexingStatusUpdate") {
 				if (!event.data.values.workspacePath || event.data.values.workspacePath === cwd) {
-					setIndexingStatus({
-						systemStatus: event.data.values.systemStatus,
-						message: event.data.values.message || "",
-						processedItems: event.data.values.processedItems,
-						totalItems: event.data.values.totalItems,
-						currentItemUnit: event.data.values.currentItemUnit || "items",
-					})
-				}
-			} else if (event.data.type === "codeIndexSettingsSaved") {
-				if (event.data.success) {
-					setSaveStatus("saved")
-					// Update initial settings to match current settings after successful save
-					// This ensures hasUnsavedChanges becomes false
-					const savedSettings = { ...currentSettingsRef.current }
-					setInitialSettings(savedSettings)
-					// Also update current settings to maintain consistency
-					setCurrentSettings(savedSettings)
-					// Request secret status to ensure we have the latest state
-					// This is important to maintain placeholder display after save
-
-					vscode.postMessage({ type: "requestCodeIndexSecretStatus" })
-
-					setSaveStatus("idle")
-				} else {
-					setSaveStatus("error")
-					setSaveError(event.data.error || t("settings:codeIndex.saveError"))
-					// Clear error message after 5 seconds
-					setSaveStatus("idle")
-					setSaveError(null)
+					// Merge with previous state to preserve fields like defaultQdrantCollectionName
+					setIndexingStatus((prevStatus) => ({
+						...prevStatus,
+						...event.data.values,
+					}))
 				}
 			}
 		}
 
 		window.addEventListener("message", handleMessage)
 		return () => window.removeEventListener("message", handleMessage)
-	}, [t, cwd])
+	}, [cwd])
 
 	// Listen for secret status
 	useEffect(() => {
@@ -508,12 +491,13 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	}, [t])
 	// kilocode_change end
 
-	const handleSaveSettings = () => {
+	const handleSaveSettings = async () => {
 		// Validate settings before saving
 		if (!validateSettings()) {
 			return
 		}
 
+		setIsSaving(true)
 		setSaveStatus("saving")
 		setSaveError(null)
 
@@ -537,11 +521,30 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		// Always include codebaseIndexEnabled to ensure it's persisted
 		settingsToSave.codebaseIndexEnabled = currentSettings.codebaseIndexEnabled
 
-		// Save settings to backend
-		vscode.postMessage({
-			type: "saveCodeIndexSettingsAtomic",
-			codeIndexSettings: settingsToSave,
-		})
+		try {
+			// Save settings to backend
+			const message: { type: "saveCodeIndexSettingsAtomic"; codeIndexSettings: any } = {
+				type: "saveCodeIndexSettingsAtomic",
+				codeIndexSettings: settingsToSave,
+			}
+			await requestResponse(message, "saveCodeIndexSettingsResponse")
+
+			setSaveStatus("saved")
+			const savedSettings = { ...currentSettingsRef.current }
+			setInitialSettings(savedSettings)
+			setCurrentSettings(savedSettings)
+			vscode.postMessage({ type: "requestCodeIndexSecretStatus" })
+			setTimeout(() => setSaveStatus("idle"), 2000)
+		} catch (error: any) {
+			setSaveStatus("error")
+			setSaveError(error?.message || t("settings:codeIndex.saveError"))
+			setTimeout(() => {
+				setSaveStatus("idle")
+				setSaveError(null)
+			}, 5000)
+		} finally {
+			setIsSaving(false)
+		}
 	}
 
 	const progressPercentage = useMemo(
@@ -561,6 +564,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		return models ? Object.keys(models) : []
 	}
 
+	// Debug logging for initial value
 	const portalContainer = useRooPortal("roo-portal")
 
 	return (
@@ -1405,8 +1409,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 							<VSCodeButton
 								onClick={handleSaveSettings}
-								disabled={!hasUnsavedChanges || saveStatus === "saving"}>
-								{saveStatus === "saving"
+								disabled={!hasUnsavedChanges || isSaving}>
+								{isSaving
 									? t("settings:codeIndex.saving")
 									: t("settings:codeIndex.saveSettings")}
 							</VSCodeButton>

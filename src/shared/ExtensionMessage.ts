@@ -19,6 +19,7 @@ import type {
 import { GitCommit } from "../utils/git"
 
 import { McpServer } from "./mcp"
+import type { CodeIndexConfig } from "../services/code-index/interfaces/config"
 import { McpMarketplaceCatalog, McpDownloadResponse } from "./kilocode/mcp"
 import { Mode } from "./modes"
 import { ModelRecord, RouterModels } from "./api"
@@ -28,6 +29,7 @@ import {
 	BalanceDataResponsePayload,
 	TaskHistoryResponsePayload,
 	TasksByIdResponsePayload,
+	SaveCodeIndexSettingsResponsePayload,
 } from "./WebviewMessage"
 import { ClineRulesToggles } from "./cline-rules"
 import { KiloCodeWrapperProperties } from "./kilocode/wrapper"
@@ -56,6 +58,7 @@ export interface IndexingStatus {
 	totalItems: number
 	currentItemUnit?: string
 	workspacePath?: string
+	config: CodeIndexConfig
 }
 
 export interface IndexingStatusUpdateMessage {
@@ -73,10 +76,12 @@ export interface LanguageModelChatSelector {
 // Represents JSON data that is sent from extension to webview, called
 // ExtensionMessage and has 'type' enum which can be 'plusButtonClicked' or
 // 'settingsButtonClicked' or 'hello'. Webview will hold state.
+export type { CodeIndexConfig }
 export interface ExtensionMessage {
 	type:
 		| "action"
 		| "state"
+		| "saveCodeIndexSettingsResponse"
 		| "selectedImages"
 		| "theme"
 		| "workspaceUpdated"
@@ -162,6 +167,7 @@ export interface ExtensionMessage {
 		| BalanceDataResponsePayload
 		| TasksByIdResponsePayload
 		| TaskHistoryResponsePayload
+		| SaveCodeIndexSettingsResponsePayload
 	// kilocode_change end
 	action?:
 		| "chatButtonClicked"
@@ -568,6 +574,12 @@ export interface ClineApiReqInfo {
 	cancelReason?: ClineApiReqCancelReason
 	streamingFailedMessage?: string
 	apiProtocol?: "anthropic" | "openai"
+}
+
+export interface SaveCodeIndexSettingsAtomic {
+	type: "saveCodeIndexSettingsAtomic"
+	requestId: string
+	codeIndexSettings: CodeIndexConfig
 }
 
 export type ClineApiReqCancelReason = "streaming_failed" | "user_cancelled"

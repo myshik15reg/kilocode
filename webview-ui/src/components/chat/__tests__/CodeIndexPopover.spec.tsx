@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@/utils/test-utils"
 import React from "react"
-import type { IndexingStatus } from "@roo/ExtensionMessage"
+import type { CodeIndexConfig, IndexingStatus } from "@roo/ExtensionMessage"
 import { CodeIndexPopover } from "../CodeIndexPopover"
 import { vscode } from "@src/utils/vscode"
 
@@ -175,6 +175,7 @@ describe("CodeIndexPopover", () => {
 		processedItems: 0,
 		totalItems: 0,
 		currentItemUnit: "items",
+		config: { isConfigured: false, embedderProvider: "openai" },
 	}
 
 	it("should render the popover window content", () => {
@@ -200,6 +201,7 @@ describe("CodeIndexPopover", () => {
 			processedItems: 50,
 			totalItems: 100,
 			currentItemUnit: "items",
+			config: { isConfigured: true, embedderProvider: "openai" },
 		}
 
 		render(
