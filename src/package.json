@@ -596,7 +596,6 @@
 					"minimum": 1,
 					"maximum": 200,
 					"description": "%settings.codeIndex.embeddingBatchSize.description%"
-				// + Чернявский
 				},
 				"kilo-code.code-index.qdrantCollectionName": {
 					"type": "string",
@@ -609,7 +608,6 @@
 				                "description": "The name of the Qdrant collection for the code index.",
 				                "scope": "resource"
 				            }
-				// - Чернявский
 			}
 		},
 		"codeActions": [
