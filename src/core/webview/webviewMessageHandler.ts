@@ -29,6 +29,7 @@ import {
 	fastApplyModelSchema,
 	// kilocode_change end
 	UserSettingsConfig,
+	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -87,12 +88,14 @@ import { seeNewChanges } from "../checkpoints/kilocode/seeNewChanges" // kilocod
 import { getTaskHistory } from "../../shared/kilocode/getTaskHistory" // kilocode_change
 import { fetchAndRefreshOrganizationModesOnStartup, refreshOrganizationModes } from "./kiloWebviewMessgeHandlerHelpers"
 import { AutoPurgeScheduler } from "../../services/auto-purge" // kilocode_change
+import { ManagedIndexer } from "../../services/code-index/managed/ManagedIndexer"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
 	message: MaybeTypedWebviewMessage, // kilocode_change switch to MaybeTypedWebviewMessage for better type-safety
 	marketplaceManager?: MarketplaceManager,
 ) => {
+	console.log("[webviewMessageHandler]", message)
 	// Utility functions provided for concise get/update of global state via contextProxy API.
 	const getGlobalState = <K extends keyof GlobalState>(key: K) => provider.contextProxy.getValue(key)
 	const updateGlobalState = async <K extends keyof GlobalState>(key: K, value: GlobalState[K]) =>
@@ -800,24 +803,34 @@ export const webviewMessageHandler = async (
 		case "requestRouterModels":
 			const { apiConfiguration } = await provider.getState()
 
-			const routerModels: Record<RouterName, ModelRecord> = {
-				openrouter: {},
-				gemini: {}, // kilocode_change
-				"vercel-ai-gateway": {},
-				huggingface: {},
-				litellm: {},
-				"kilocode-openrouter": {}, // kilocode_change
-				deepinfra: {},
-				"io-intelligence": {},
-				requesty: {},
-				unbound: {},
-				glama: {},
-				chutes: {}, // kilocode_change
-				ollama: {},
-				lmstudio: {},
-				ovhcloud: {}, // kilocode_change
-				inception: {}, // kilocode_change
-			}
+			// Optional single provider filter from webview
+			const requestedProvider = message?.values?.provider
+			const providerFilter = requestedProvider ? toRouterName(requestedProvider) : undefined
+
+			const routerModels: Record<RouterName, ModelRecord> = providerFilter
+				? ({} as Record<RouterName, ModelRecord>)
+				: {
+						// kilocode_change start
+						ovhcloud: {},
+						inception: {},
+						kilocode: {},
+						gemini: {},
+						// kilocode_change end
+						openrouter: {},
+						"vercel-ai-gateway": {},
+						huggingface: {},
+						litellm: {},
+						deepinfra: {},
+						"io-intelligence": {},
+						requesty: {},
+						unbound: {},
+						glama: {},
+						ollama: {},
+						lmstudio: {},
+						roo: {},
+						synthetic: {}, // kilocode_change
+						chutes: {},
+					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
 				try {
@@ -836,7 +849,8 @@ export const webviewMessageHandler = async (
 			const openRouterApiKey = apiConfiguration.openRouterApiKey || message?.values?.openRouterApiKey
 			const openRouterBaseUrl = apiConfiguration.openRouterBaseUrl || message?.values?.openRouterBaseUrl
 
-			const modelFetchPromises: Array<{ key: RouterName; options: GetModelsOptions }> = [
+			// Base candidates (only those handled by this aggregate fetcher)
+			const candidates: { key: RouterName; options: GetModelsOptions }[] = [
 				{
 					key: "openrouter",
 					options: { provider: "openrouter", apiKey: openRouterApiKey, baseUrl: openRouterBaseUrl },
@@ -859,11 +873,10 @@ export const webviewMessageHandler = async (
 				},
 				{ key: "glama", options: { provider: "glama" } },
 				{ key: "unbound", options: { provider: "unbound", apiKey: apiConfiguration.unboundApiKey } },
-				{ key: "chutes", options: { provider: "chutes", apiKey: apiConfiguration.chutesApiKey } }, // kilocode_change
 				{
-					key: "kilocode-openrouter",
+					key: "kilocode",
 					options: {
-						provider: "kilocode-openrouter",
+						provider: "kilocode",
 						kilocodeToken: apiConfiguration.kilocodeToken,
 						kilocodeOrganizationId: apiConfiguration.kilocodeOrganizationId,
 					},
@@ -894,31 +907,47 @@ export const webviewMessageHandler = async (
 						baseUrl: apiConfiguration.inceptionLabsBaseUrl,
 					},
 				},
+				{ key: "synthetic", options: { provider: "synthetic", apiKey: apiConfiguration.syntheticApiKey } }, // kilocode_change
+				{
+					key: "roo",
+					options: {
+						provider: "roo",
+						baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+						apiKey: CloudService.hasInstance()
+							? CloudService.instance.authService?.getSessionToken()
+							: undefined,
+					},
+				},
+				{
+					key: "chutes",
+					options: { provider: "chutes", apiKey: apiConfiguration.chutesApiKey },
+				},
 			]
 			// kilocode_change end
 
-			// Add IO Intelligence if API key is provided.
-			const ioIntelligenceApiKey = apiConfiguration.ioIntelligenceApiKey
-
-			if (ioIntelligenceApiKey) {
-				modelFetchPromises.push({
+			// IO Intelligence is conditional on api key
+			if (apiConfiguration.ioIntelligenceApiKey) {
+				candidates.push({
 					key: "io-intelligence",
-					options: { provider: "io-intelligence", apiKey: ioIntelligenceApiKey },
+					options: { provider: "io-intelligence", apiKey: apiConfiguration.ioIntelligenceApiKey },
 				})
 			}
 
-			// Don't fetch Ollama and LM Studio models by default anymore.
-			// They have their own specific handlers: requestOllamaModels and requestLmStudioModels.
-
+			// LiteLLM is conditional on baseUrl+apiKey
 			const litellmApiKey = apiConfiguration.litellmApiKey || message?.values?.litellmApiKey
 			const litellmBaseUrl = apiConfiguration.litellmBaseUrl || message?.values?.litellmBaseUrl
 
 			if (litellmApiKey && litellmBaseUrl) {
-				modelFetchPromises.push({
+				candidates.push({
 					key: "litellm",
 					options: { provider: "litellm", apiKey: litellmApiKey, baseUrl: litellmBaseUrl },
 				})
 			}
+
+			// Apply single provider filter if specified
+			const modelFetchPromises = providerFilter
+				? candidates.filter(({ key }) => key === providerFilter)
+				: candidates
 
 			const results = await Promise.allSettled(
 				modelFetchPromises.map(async ({ key, options }) => {
@@ -933,18 +962,7 @@ export const webviewMessageHandler = async (
 				if (result.status === "fulfilled") {
 					routerModels[routerName] = result.value.models
 
-					// Ollama and LM Studio settings pages still need these events.
-					if (routerName === "ollama" && Object.keys(result.value.models).length > 0) {
-						provider.postMessageToWebview({
-							type: "ollamaModels",
-							ollamaModels: result.value.models,
-						})
-					} else if (routerName === "lmstudio" && Object.keys(result.value.models).length > 0) {
-						provider.postMessageToWebview({
-							type: "lmStudioModels",
-							lmStudioModels: result.value.models,
-						})
-					}
+					// Ollama and LM Studio settings pages still need these events. They are not fetched here.
 				} else {
 					// Handle rejection: Post a specific error message for this provider.
 					const errorMessage = result.reason instanceof Error ? result.reason.message : String(result.reason)
@@ -961,7 +979,11 @@ export const webviewMessageHandler = async (
 				}
 			})
 
-			provider.postMessageToWebview({ type: "routerModels", routerModels })
+			provider.postMessageToWebview({
+				type: "routerModels",
+				routerModels,
+				values: providerFilter ? { provider: requestedProvider } : undefined,
+			})
 			break
 		case "requestOllamaModels": {
 			// Specific handler for Ollama models only.
@@ -1007,6 +1029,38 @@ export const webviewMessageHandler = async (
 			} catch (error) {
 				// Silently fail - user hasn't configured LM Studio yet.
 				console.debug("LM Studio models fetch failed:", error)
+			}
+			break
+		}
+		case "requestRooModels": {
+			// Specific handler for Roo models only - flushes cache to ensure fresh auth token is used
+			try {
+				// Flush cache first to ensure fresh models with current auth state
+				await flushModels("roo")
+
+				const rooModels = await getModels({
+					provider: "roo",
+					baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+					apiKey: CloudService.hasInstance()
+						? CloudService.instance.authService?.getSessionToken()
+						: undefined,
+				})
+
+				// Always send a response, even if no models are returned
+				provider.postMessageToWebview({
+					type: "singleRouterModelFetchResponse",
+					success: true,
+					values: { provider: "roo", models: rooModels },
+				})
+			} catch (error) {
+				// Send error response
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.postMessageToWebview({
+					type: "singleRouterModelFetchResponse",
+					success: false,
+					error: errorMessage,
+					values: { provider: "roo" },
+				})
 			}
 			break
 		}
@@ -1153,7 +1207,7 @@ export const webviewMessageHandler = async (
 			await provider.cancelTask()
 			break
 		case "allowedCommands": {
-			// Validate and sanitize the commands array
+			// Validate and sanitize commands array
 			const commands = message.commands ?? []
 			const validCommands = Array.isArray(commands)
 				? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
@@ -1169,7 +1223,7 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "deniedCommands": {
-			// Validate and sanitize the commands array
+			// Validate and sanitize commands array
 			const commands = message.commands ?? []
 			const validCommands = Array.isArray(commands)
 				? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
@@ -1194,13 +1248,13 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "openKeyboardShortcuts": {
-			// Open VSCode keyboard shortcuts settings and optionally filter to show the Roo Code commands
+			// Open VSCode keyboard shortcuts settings and optionally filter to show Kilo Code commands
 			const searchQuery = message.text || ""
 			if (searchQuery) {
 				// Open with a search query pre-filled
 				await vscode.commands.executeCommand("workbench.action.openGlobalKeybindings", searchQuery)
 			} else {
-				// Just open the keyboard shortcuts settings
+				// Just open keyboard shortcuts settings
 				await vscode.commands.executeCommand("workbench.action.openGlobalKeybindings")
 			}
 			break
@@ -1249,7 +1303,7 @@ export const webviewMessageHandler = async (
 				await provider.getMcpHub()?.deleteServer(message.serverName, message.source as "global" | "project")
 				provider.log(`Successfully deleted MCP server: ${message.serverName}`)
 
-				// Refresh the webview state
+				// Refresh webview state
 				await provider.postStateToWebview()
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error)
@@ -1435,6 +1489,11 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("enableCheckpoints", enableCheckpoints)
 			await provider.postStateToWebview()
 			break
+		case "checkpointTimeout":
+			const checkpointTimeout = message.value ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS
+			await updateGlobalState("checkpointTimeout", checkpointTimeout)
+			await provider.postStateToWebview()
+			break
 		case "browserViewportSize":
 			const browserViewportSize = message.text ?? "900x600"
 			await updateGlobalState("browserViewportSize", browserViewportSize)
@@ -1461,7 +1520,7 @@ export const webviewMessageHandler = async (
 				const chromeHostUrl = await discoverChromeHostUrl()
 
 				if (chromeHostUrl) {
-					// Send the result back to the webview
+					// Send result back to webview
 					await provider.postMessageToWebview({
 						type: "browserConnectionResult",
 						success: !!chromeHostUrl,
@@ -1472,15 +1531,15 @@ export const webviewMessageHandler = async (
 					await provider.postMessageToWebview({
 						type: "browserConnectionResult",
 						success: false,
-						text: "No Chrome instances found on the network. Make sure Chrome is running with remote debugging enabled (--remote-debugging-port=9222).",
+						text: "No Chrome instances found on network. Make sure Chrome is running with remote debugging enabled (--remote-debugging-port=9222).",
 					})
 				}
 			} else {
-				// Test the provided URL
+				// Test provided URL
 				const customHostUrl = message.text
 				const hostIsValid = await tryChromeHostUrl(message.text)
 
-				// Send the result back to the webview
+				// Send result back to webview
 				await provider.postMessageToWebview({
 					type: "browserConnectionResult",
 					success: hostIsValid,
@@ -1559,7 +1618,7 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		case "terminalOutputLineLimit":
-			// Validate that the line limit is a positive number
+			// Validate that line limit is a positive number
 			const lineLimit = message.value
 			if (typeof lineLimit === "number" && lineLimit > 0) {
 				await updateGlobalState("terminalOutputLineLimit", lineLimit)
@@ -1571,7 +1630,7 @@ export const webviewMessageHandler = async (
 			}
 			break
 		case "terminalOutputCharacterLimit":
-			// Validate that the character limit is a positive number
+			// Validate that character limit is a positive number
 			const charLimit = message.value
 			if (typeof charLimit === "number" && charLimit > 0) {
 				await updateGlobalState("terminalOutputCharacterLimit", charLimit)
@@ -1655,7 +1714,7 @@ export const webviewMessageHandler = async (
 					return
 				}
 
-				// Replace all prompts with the new values from the cached state
+				// Replace all prompts with new values from cached state
 				await updateGlobalState("customSupportPrompts", message.values)
 				await provider.postStateToWebview()
 			} catch (error) {
@@ -1821,22 +1880,30 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		case "includeDiagnosticMessages":
-			// Only apply default if the value is truly undefined (not false)
+			// Only apply default if value is truly undefined (not false)
 			const includeValue = message.bool !== undefined ? message.bool : true
 			await updateGlobalState("includeDiagnosticMessages", includeValue)
+			await provider.postStateToWebview()
+			break
+		case "includeCurrentTime":
+			await updateGlobalState("includeCurrentTime", message.bool ?? true)
+			await provider.postStateToWebview()
+			break
+		case "includeCurrentCost":
+			await updateGlobalState("includeCurrentCost", message.bool ?? true)
 			await provider.postStateToWebview()
 			break
 		case "maxDiagnosticMessages":
 			await updateGlobalState("maxDiagnosticMessages", message.value ?? 50)
 			await provider.postStateToWebview()
 			break
-		case "setHistoryPreviewCollapsed": // Add the new case handler
+		case "setHistoryPreviewCollapsed": // Add new case handler
 			await updateGlobalState("historyPreviewCollapsed", message.bool ?? false)
-			// No need to call postStateToWebview here as the UI already updated optimistically
+			// No need to call postStateToWebview here as UI already updated optimistically
 			break
 		case "setReasoningBlockCollapsed":
 			await updateGlobalState("reasoningBlockCollapsed", message.bool ?? true)
-			// No need to call postStateToWebview here as the UI already updated optimistically
+			// No need to call postStateToWebview here as UI already updated optimistically
 			break
 		case "toggleApiConfigPin":
 			if (message.text) {
@@ -1889,12 +1956,18 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("condensingApiConfigId", message.text)
 			await provider.postStateToWebview()
 			break
+		// kilocode_change start: AI gatekeeper for YOLO mode
+		case "yoloGatekeeperApiConfigId":
+			await updateGlobalState("yoloGatekeeperApiConfigId", message.text)
+			await provider.postStateToWebview()
+			break
+		// kilocode_change end
 		case "updateCondensingPrompt":
-			// Store the condensing prompt in customSupportPrompts["CONDENSE"] instead of customCondensingPrompt
+			// Store condensing prompt in customSupportPrompts["CONDENSE"] instead of customCondensingPrompt
 			const currentSupportPrompts = getGlobalState("customSupportPrompts") ?? {}
 			const updatedSupportPrompts = { ...currentSupportPrompts, CONDENSE: message.text }
 			await updateGlobalState("customSupportPrompts", updatedSupportPrompts)
-			// Also update the old field for backward compatibility during migration
+			// Also update old field for backward compatibility during migration
 			await updateGlobalState("customCondensingPrompt", message.text)
 			await provider.postStateToWebview()
 			break
@@ -2045,7 +2118,7 @@ export const webviewMessageHandler = async (
 				const results = await searchWorkspaceFiles(
 					message.query || "",
 					workspacePath,
-					20, // Use default limit, as filtering is now done in the backend
+					20, // Use default limit, as filtering is now done in backend
 				)
 
 				// Send results back to webview
@@ -2118,23 +2191,27 @@ export const webviewMessageHandler = async (
 						await refreshOrganizationModes(message, provider, updateGlobalState)
 
 						// Flush and refetch models
-						await flushModels("kilocode-openrouter")
+						await flushModels("kilocode")
 						const models = await getModels({
-							provider: "kilocode-openrouter",
+							provider: "kilocode",
 							kilocodeOrganizationId: message.apiConfiguration.kilocodeOrganizationId,
 							kilocodeToken: message.apiConfiguration.kilocodeToken,
 						})
 						provider.postMessageToWebview({
 							type: "routerModels",
-							routerModels: { "kilocode-openrouter": models } as Record<RouterName, ModelRecord>,
+							routerModels: { kilocode: models } as Record<RouterName, ModelRecord>,
 						})
 					}
 				} catch (error) {
 					// Config might not exist yet, that's fine
 				}
 
-				await provider.upsertProviderProfile(message.text, configToSave)
-				vscode.commands.executeCommand("kilo-code.ghost.reload") // kilocode_change: Reload ghost model when API provider settings change
+				// kilocode_change start: If we're updating the active profile, we need to activate it to ensure it's persisted
+				const currentApiConfigName = getGlobalState("currentApiConfigName")
+				const isActiveProfile = message.text === currentApiConfigName
+				await provider.upsertProviderProfile(message.text, configToSave, isActiveProfile) // Activate if it's current active profile
+				vscode.commands.executeCommand("kilo-code.ghost.reload")
+				// kilocode_change end
 
 				// Ensure state is posted to webview after profile update to reflect organization mode changes
 				if (organizationChanged) {
@@ -2152,13 +2229,13 @@ export const webviewMessageHandler = async (
 						break
 					}
 
-					// Load the old configuration to get its ID.
+					// Load old configuration to get its ID.
 					const { id } = await provider.providerSettingsManager.getProfile({ name: oldName })
 
-					// Create a new configuration with the new name and old ID.
+					// Create a new configuration with new name and old ID.
 					await provider.providerSettingsManager.saveConfig(newName, { ...message.apiConfiguration, id })
 
-					// Delete the old configuration.
+					// Delete old configuration.
 					await provider.providerSettingsManager.deleteConfig(oldName)
 
 					// Re-activate to update the global settings related to the
@@ -2197,6 +2274,21 @@ export const webviewMessageHandler = async (
 				}
 			}
 			break
+		// kilocode_change start: Load profile configuration for editing without activating
+		case "getProfileConfigurationForEditing":
+			if (message.text) {
+				const { name: _, ...profileConfig } = await provider.providerSettingsManager.getProfile({
+					name: message.text,
+				})
+				// Send configuration back to webview without activating it
+				await provider.postMessageToWebview({
+					type: "profileConfigurationForEditing",
+					text: message.text,
+					apiConfiguration: profileConfig,
+				})
+			}
+			break
+		// kilocode_change end
 		case "deleteApiConfiguration":
 			if (message.text) {
 				const answer = await vscode.window.showInformationMessage(
@@ -2307,7 +2399,7 @@ export const webviewMessageHandler = async (
 				const isNewMode = !existingModes.some((mode) => mode.slug === message.modeConfig?.slug)
 
 				await provider.customModesManager.updateCustomMode(message.modeConfig.slug, message.modeConfig)
-				// Update state after saving the mode
+				// Update state after saving mode
 				const customModes = await provider.customModesManager.getCustomModes()
 				await updateGlobalState("customModes", customModes)
 				await updateGlobalState("mode", message.modeConfig.slug)
@@ -2331,7 +2423,7 @@ export const webviewMessageHandler = async (
 										JSON.stringify((message.modeConfig as Record<string, unknown>)[key]),
 								)
 							: []
-
+						)
 						if (changedSettings.length > 0) {
 							TelemetryService.instance.captureModeSettingChanged(changedSettings[0])
 						}
@@ -2341,7 +2433,7 @@ export const webviewMessageHandler = async (
 			break
 		case "deleteCustomMode":
 			if (message.slug) {
-				// Get the mode details to determine source and rules folder path
+				// Get mode details to determine source and rules folder path
 				const customModes = await provider.customModesManager.getCustomModes()
 				const modeToDelete = customModes.find((mode) => mode.slug === message.slug)
 
@@ -2349,10 +2441,10 @@ export const webviewMessageHandler = async (
 					break
 				}
 
-				// Determine the scope based on source (project or global)
+				// Determine scope based on source (project or global)
 				const scope = modeToDelete.source || "global"
 
-				// Determine the rules folder path
+				// Determine rules folder path
 				let rulesFolderPath: string
 				if (scope === "project") {
 					const workspacePath = getWorkspacePath()
@@ -2367,10 +2459,10 @@ export const webviewMessageHandler = async (
 					rulesFolderPath = path.join(homeDir, ".roo", `rules-${message.slug}`)
 				}
 
-				// Check if the rules folder exists
+				// Check if rules folder exists
 				const rulesFolderExists = await fileExistsAtPath(rulesFolderPath)
 
-				// If this is a check request, send back the folder info
+				// If this is a check request, send back folder info
 				if (message.checkOnly) {
 					await provider.postMessageToWebview({
 						type: "deleteCustomModeCheck",
@@ -2380,19 +2472,19 @@ export const webviewMessageHandler = async (
 					break
 				}
 
-				// Delete the mode
+				// Delete mode
 				await provider.customModesManager.deleteCustomMode(message.slug)
 
-				// Delete the rules folder if it exists
+				// Delete rules folder if it exists
 				if (rulesFolderExists) {
 					try {
 						await fs.rm(rulesFolderPath, { recursive: true, force: true })
 						provider.log(`Deleted rules folder for mode ${message.slug}: ${rulesFolderPath}`)
 					} catch (error) {
 						provider.log(`Failed to delete rules folder for mode ${message.slug}: ${error}`)
-						// Notify the user about the failure
+						// Notify user about failure
 						vscode.window.showErrorMessage(
-							t("common:errors.delete_rules_folder_failed", {
+							t("kilocode:rules.errors.failedToDeleteRuleFile", {
 								rulesFolderPath,
 								error: error instanceof Error ? error.message : String(error),
 							}),
@@ -2413,7 +2505,7 @@ export const webviewMessageHandler = async (
 					const customModePrompts = getGlobalState("customModePrompts") || {}
 					const customPrompt = customModePrompts[message.slug]
 
-					// Export the mode with any customizations merged directly
+					// Export mode with any customizations merged directly
 					const result = await provider.customModesManager.exportModeWithRules(message.slug, customPrompt)
 
 					if (result.success && result.yaml) {
@@ -2422,7 +2514,7 @@ export const webviewMessageHandler = async (
 						let defaultUri: vscode.Uri
 
 						if (lastExportPath) {
-							// Use the directory from the last export
+							// Use directory from last export
 							const lastDir = path.dirname(lastExportPath)
 							defaultUri = vscode.Uri.file(path.join(lastDir, `${message.slug}-export.yaml`))
 						} else {
@@ -2447,10 +2539,10 @@ export const webviewMessageHandler = async (
 						})
 
 						if (saveUri && result.yaml) {
-							// Save the directory for next time
+							// Save directory for next time
 							await updateGlobalState("lastModeExportPath", saveUri.fsPath)
 
-							// Write the file to the selected location
+							// Write file to selected location
 							await fs.writeFile(saveUri.fsPath, result.yaml, "utf-8")
 
 							// Send success message to webview
@@ -2463,7 +2555,7 @@ export const webviewMessageHandler = async (
 							// Show info message
 							vscode.window.showInformationMessage(t("common:info.mode_exported", { mode: message.slug }))
 						} else {
-							// User cancelled the save dialog
+							// User cancelled save dialog - reset the importing state
 							provider.postMessageToWebview({
 								type: "exportModeResult",
 								success: false,
@@ -2501,7 +2593,7 @@ export const webviewMessageHandler = async (
 				let defaultUri: vscode.Uri | undefined
 
 				if (lastImportPath) {
-					// Use the directory from the last import
+					// Use directory from last import
 					const lastDir = path.dirname(lastImportPath)
 					defaultUri = vscode.Uri.file(lastDir)
 				} else {
@@ -2525,13 +2617,13 @@ export const webviewMessageHandler = async (
 				})
 
 				if (fileUri && fileUri[0]) {
-					// Save the directory for next time
+					// Save directory for next time
 					await updateGlobalState("lastModeImportPath", fileUri[0].fsPath)
 
-					// Read the file content
+					// Read file content
 					const yamlContent = await fs.readFile(fileUri[0].fsPath, "utf-8")
 
-					// Import the mode with the specified source level
+					// Import mode with specified source level
 					const result = await provider.customModesManager.importModeWithRules(
 						yamlContent,
 						message.source || "project", // Default to project if not specified
@@ -2563,7 +2655,7 @@ export const webviewMessageHandler = async (
 						vscode.window.showErrorMessage(t("common:errors.mode_import_failed", { error: result.error }))
 					}
 				} else {
-					// User cancelled the file dialog - reset the importing state
+					// User cancelled file dialog - reset the importing state
 					provider.postMessageToWebview({
 						type: "importModeResult",
 						success: false,
@@ -2580,9 +2672,6 @@ export const webviewMessageHandler = async (
 					success: false,
 					error: errorMessage,
 				})
-
-				// Show error message
-				vscode.window.showErrorMessage(t("common:errors.mode_import_failed", { error: errorMessage }))
 			}
 			break
 		case "checkRulesDirectory":
@@ -2636,7 +2725,7 @@ export const webviewMessageHandler = async (
 					"Content-Type": "application/json",
 				}
 
-				// Add X-KILOCODE-TESTER: SUPPRESS header if the setting is enabled
+				// Add X-KILOCODE-TESTER: SUPPRESS header if setting is enabled
 				if (
 					apiConfiguration.kilocodeTesterWarningsDisabledUntil &&
 					apiConfiguration.kilocodeTesterWarningsDisabledUntil > Date.now()
@@ -2647,7 +2736,7 @@ export const webviewMessageHandler = async (
 				const url = getKiloUrlFromToken("https://api.kilocode.ai/api/profile", kilocodeToken)
 				const response = await axios.get<Omit<ProfileData, "kilocodeToken">>(url, { headers })
 
-				// Go back to Personal when no longer part of the current set organization
+				// Go back to Personal when no longer part of current set organization
 				const organizationExists = (response.data.organizations ?? []).some(
 					({ id }) => id === apiConfiguration?.kilocodeOrganizationId,
 				)
@@ -2732,7 +2821,7 @@ export const webviewMessageHandler = async (
 					headers["X-KiloCode-OrganizationId"] = kilocodeOrganizationId
 				}
 
-				// Add X-KILOCODE-TESTER: SUPPRESS header if the setting is enabled
+				// Add X-KILOCODE-TESTER: SUPPRESS header if setting is enabled
 				if (
 					apiConfiguration.kilocodeTesterWarningsDisabledUntil &&
 					apiConfiguration.kilocodeTesterWarningsDisabledUntil > Date.now()
@@ -2893,7 +2982,7 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "cloudButtonClicked": {
-			// Navigate to the cloud tab.
+			// Navigate to cloud tab.
 			provider.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
 			break
 		}
@@ -2917,6 +3006,7 @@ export const webviewMessageHandler = async (
 				provider.log(`CloudService#login failed: ${error}`)
 				vscode.window.showErrorMessage("Sign in failed.")
 			}
+
 			break
 		}
 		case "rooCloudSignOut": {
@@ -2938,7 +3028,7 @@ export const webviewMessageHandler = async (
 					break
 				}
 
-				// Parse the callback URL to extract parameters
+				// Parse callback URL to extract parameters
 				const callbackUrl = message.text.trim()
 				const uri = vscode.Uri.parse(callbackUrl)
 
@@ -2955,7 +3045,7 @@ export const webviewMessageHandler = async (
 					throw new Error(t("common:errors.manual_url_missing_params"))
 				}
 
-				// Reuse the existing authentication flow
+				// Reuse existing authentication flow
 				await CloudService.instance.handleAuthCallback(
 					code,
 					state,
@@ -2977,10 +3067,10 @@ export const webviewMessageHandler = async (
 			try {
 				const organizationId = message.organizationId ?? null
 
-				// Switch to the new organization context
+				// Switch to new organization context
 				await CloudService.instance.switchOrganization(organizationId)
 
-				// Refresh the state to update UI
+				// Refresh state to update UI
 				await provider.postStateToWebview()
 
 				// Send success response back to webview
@@ -3055,34 +3145,42 @@ export const webviewMessageHandler = async (
 				await updateGlobalState("codebaseIndexConfig", globalStateConfig)
 
 				// Save secrets directly using context proxy
-				const secretPromises = [
-					settings.codeIndexOpenAiKey !== undefined &&
-						provider.contextProxy.storeSecret("codeIndexOpenAiKey", settings.codeIndexOpenAiKey),
-					settings.codeIndexQdrantApiKey !== undefined &&
-						provider.contextProxy.storeSecret("codeIndexQdrantApiKey", settings.codeIndexQdrantApiKey),
-					settings.codebaseIndexOpenAiCompatibleApiKey !== undefined &&
-						provider.contextProxy.storeSecret(
-							"codebaseIndexOpenAiCompatibleApiKey",
-							settings.codebaseIndexOpenAiCompatibleApiKey,
-						),
-					settings.codebaseIndexGeminiApiKey !== undefined &&
-						provider.contextProxy.storeSecret(
-							"codebaseIndexGeminiApiKey",
-							settings.codebaseIndexGeminiApiKey,
-						),
-					settings.codebaseIndexMistralApiKey !== undefined &&
-						provider.contextProxy.storeSecret(
-							"codebaseIndexMistralApiKey",
-							settings.codebaseIndexMistralApiKey,
-						),
-					settings.codebaseIndexVercelAiGatewayApiKey !== undefined &&
-						provider.contextProxy.storeSecret(
-							"codebaseIndexVercelAiGatewayApiKey",
-							settings.codebaseIndexVercelAiGatewayApiKey,
-						),
-				]
-
-				await Promise.all(secretPromises.filter(Boolean))
+				if (settings.codeIndexOpenAiKey !== undefined) {
+					await provider.contextProxy.storeSecret("codeIndexOpenAiKey", settings.codeIndexOpenAiKey)
+				}
+				if (settings.codeIndexQdrantApiKey !== undefined) {
+					await provider.contextProxy.storeSecret("codeIndexQdrantApiKey", settings.codeIndexQdrantApiKey)
+				}
+				if (settings.codebaseIndexOpenAiCompatibleApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexOpenAiCompatibleApiKey",
+						settings.codebaseIndexOpenAiCompatibleApiKey,
+					)
+				}
+				if (settings.codebaseIndexGeminiApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexGeminiApiKey",
+						settings.codebaseIndexGeminiApiKey,
+					)
+				}
+				if (settings.codebaseIndexMistralApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexMistralApiKey",
+						settings.codebaseIndexMistralApiKey,
+					)
+				}
+				if (settings.codebaseIndexVercelAiGatewayApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexVercelAiGatewayApiKey",
+						settings.codebaseIndexVercelAiGatewayApiKey,
+					)
+				}
+				if (settings.codebaseIndexOpenRouterApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codeIndexOpenRouterApiKey",
+						settings.codebaseIndexOpenRouterApiKey,
+					)
+				}
 
 				// Send success response
 				if (requestId) {
@@ -3093,7 +3191,7 @@ export const webviewMessageHandler = async (
 					})
 				}
 
-				// Then handle validation and initialization for the current workspace
+				// Then handle validation and initialization for current workspace
 				const currentCodeIndexManager = provider.getCurrentWorkspaceCodeIndexManager()
 				if (currentCodeIndexManager) {
 					if (embedderProviderChanged) {
@@ -3157,7 +3255,7 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "requestCodeIndexSecretStatus": {
-			// Check if secrets are set using the VSCode context directly for async access
+			// Check if secrets are set using VSCode context directly for async access
 			const hasOpenAiKey = !!(await provider.context.secrets.get("codeIndexOpenAiKey"))
 			const hasQdrantApiKey = !!(await provider.context.secrets.get("codeIndexQdrantApiKey"))
 			const hasOpenAiCompatibleApiKey = !!(await provider.context.secrets.get(
@@ -3168,6 +3266,7 @@ export const webviewMessageHandler = async (
 			const hasVercelAiGatewayApiKey = !!(await provider.context.secrets.get(
 				"codebaseIndexVercelAiGatewayApiKey",
 			))
+			const hasOpenRouterApiKey = !!(await provider.context.secrets.get("codebaseIndexOpenRouterApiKey"))
 
 			provider.postMessageToWebview({
 				type: "codeIndexSecretStatus",
@@ -3178,6 +3277,7 @@ export const webviewMessageHandler = async (
 					hasGeminiApiKey,
 					hasMistralApiKey,
 					hasVercelAiGatewayApiKey,
+					hasOpenRouterApiKey,
 				},
 			})
 			break
@@ -3201,18 +3301,26 @@ export const webviewMessageHandler = async (
 					return
 				}
 				if (manager.isFeatureEnabled && manager.isFeatureConfigured) {
-					if (!manager.isInitialized) {
-						await manager.initialize(provider.contextProxy)
-					}
+					// Mimic extension startup behavior: initialize first, which will
+					// check if Qdrant container is active and reuse existing collection
+					await manager.initialize(provider.contextProxy)
 
-					// startIndexing now handles error recovery internally
-					manager.startIndexing()
-
-					// If startIndexing recovered from error, we need to reinitialize
-					if (!manager.isInitialized) {
-						await manager.initialize(provider.contextProxy)
-						// Try starting again after initialization
+					// Only call startIndexing if we're in a state that requires it
+					// (e.g., Standby or Error). If already Indexed or Indexing,
+					// initialize() call above will have already started the watcher.
+					const currentState = manager.state
+					if (currentState === "Standby" || currentState === "Error") {
+						// startIndexing now handles error recovery internally
 						manager.startIndexing()
+
+						// If startIndexing recovered from error, we need to reinitialize
+						if (!manager.isInitialized) {
+							await manager.initialize(provider.contextProxy)
+							// Try starting again after initialization
+							if (manager.state === "Standby" || manager.state === "Error") {
+								manager.startIndexing()
+							}
+						}
 					}
 				}
 			} catch (error) {
@@ -3349,7 +3457,7 @@ export const webviewMessageHandler = async (
 			break
 		// kilocode_change end
 		case "focusPanelRequest": {
-			// Execute the focusPanel command to focus the WebView
+			// Execute focusPanel command to focus the WebView
 			await vscode.commands.executeCommand(getCommand("focusPanel"))
 			break
 		}
@@ -3528,7 +3636,7 @@ export const webviewMessageHandler = async (
 				const { getCommands } = await import("../../services/command/commands")
 				const commands = await getCommands(getCurrentCwd())
 
-				// Convert to the format expected by the frontend
+				// Convert to format expected by frontend
 				const commandList = commands.map((command) => ({
 					name: command.name,
 					source: command.source,
@@ -3589,7 +3697,7 @@ export const webviewMessageHandler = async (
 					const command = await getCommand(getCurrentCwd(), message.text)
 
 					if (command && command.filePath) {
-						// Delete the command file
+						// Delete command file
 						await fs.unlink(command.filePath)
 						provider.log(`Deleted command file: ${command.filePath}`)
 					} else {
@@ -3612,7 +3720,7 @@ export const webviewMessageHandler = async (
 					break
 				}
 
-				// Determine the commands directory based on source
+				// Determine commands directory based on source
 				let commandsDir: string
 				if (source === "global") {
 					const globalConfigDir = path.join(os.homedir(), ".roo")
@@ -3631,7 +3739,7 @@ export const webviewMessageHandler = async (
 					commandsDir = path.join(workspaceRoot, ".roo", "commands")
 				}
 
-				// Ensure the commands directory exists
+				// Ensure commands directory exists
 				await fs.mkdir(commandsDir, { recursive: true })
 
 				// Use provided filename or generate a unique one
@@ -3649,14 +3757,13 @@ export const webviewMessageHandler = async (
 						cleanFileName = cleanFileName.slice(0, -3)
 					}
 
-					// Slugify the command name: lowercase, replace spaces with dashes, remove special characters
+					// Slugify command name: lowercase, replace spaces with dashes, remove special characters
 					commandName = cleanFileName
 						.toLowerCase()
 						.replace(/\s+/g, "-") // Replace spaces with dashes
 						.replace(/[^a-z0-9-]/g, "") // Remove special characters except dashes
 						.replace(/-+/g, "-") // Replace multiple dashes with single dash
 						.replace(/^-|-$/g, "") // Remove leading/trailing dashes
-
 					// Ensure we have a valid command name
 					if (!commandName || commandName.length === 0) {
 						commandName = "new-command"
@@ -3692,13 +3799,13 @@ export const webviewMessageHandler = async (
 					break
 				}
 
-				// Create the command file with template content
+				// Create command file with template content
 				const templateContent = t("common:errors.command_template_content")
 
 				await fs.writeFile(filePath, templateContent, "utf8")
 				provider.log(`Created new command file: ${filePath}`)
 
-				// Open the new file in the editor
+				// Open new file in editor
 				openFile(filePath)
 
 				// Refresh commands list
@@ -3725,7 +3832,7 @@ export const webviewMessageHandler = async (
 		case "insertTextIntoTextarea": {
 			const text = message.text
 			if (text) {
-				// Send message to insert text into the chat textarea
+				// Send message to insert text into chat textarea
 				await provider.postMessageToWebview({
 					type: "insertTextIntoTextarea",
 					text: text,
@@ -3799,6 +3906,7 @@ export const webviewMessageHandler = async (
 				vscode.window.showErrorMessage(`Manual purge failed: ${errorMessage}`)
 			}
 			break
+		}
 
 		// kilocode_change end
 
@@ -3828,14 +3936,14 @@ export const webviewMessageHandler = async (
 					// Get current list of dismissed upsells
 					const dismissedUpsells = getGlobalState("dismissedUpsells") || []
 
-					// Add the new upsell ID if not already present
+					// Add new upsell ID if not already present
 					let updatedList = dismissedUpsells
 					if (!dismissedUpsells.includes(message.upsellId)) {
 						updatedList = [...dismissedUpsells, message.upsellId]
 						await updateGlobalState("dismissedUpsells", updatedList)
 					}
 
-					// Send updated list back to webview (use the already computed updatedList)
+					// Send updated list back to webview (use already computed updatedList)
 					await provider.postMessageToWebview({
 						type: "dismissedUpsells",
 						list: updatedList,
@@ -3848,7 +3956,7 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "getDismissedUpsells": {
-			// Send the current list of dismissed upsells to the webview
+			// Send current list of dismissed upsells to webview
 			const dismissedUpsells = getGlobalState("dismissedUpsells") || []
 			await provider.postMessageToWebview({
 				type: "dismissedUpsells",
@@ -3856,5 +3964,41 @@ export const webviewMessageHandler = async (
 			})
 			break
 		}
+		// kilocode_change start - ManagedIndexer state
+		case "requestManagedIndexerState": {
+			try {
+				const state = ManagedIndexer.getInstance()?.getWorkspaceFolderStateSnapshot() || []
+				await provider.postMessageToWebview({
+					type: "managedIndexerState",
+					managedIndexerState: state,
+				})
+			} catch (error) {
+				provider.log(
+					`Error getting managed indexer state: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				await provider.postMessageToWebview({
+					type: "managedIndexerState",
+					managedIndexerState: [],
+				})
+			}
+			break
+		}
+
+		// we're going to delete this message at some point and use apiConfiguration
+		// probably. So casting as any as to not define a more permanent type
+		case "requestManagedIndexerEnabled" as any: {
+			try {
+				const managedIndexerEnabled = (await ManagedIndexer.getInstance()?.isEnabled()) || false
+				await provider.postMessageToWebview({
+					type: "managedIndexerEnabled",
+					managedIndexerEnabled,
+				} as any)
+			} catch (error) {
+				provider.log(
+					`Error getting managed indexer state: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+		}
+		// kilocode_change end
 	}
 }

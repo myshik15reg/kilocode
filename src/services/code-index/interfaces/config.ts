@@ -15,6 +15,7 @@ export interface CodeIndexConfig {
 	geminiOptions?: { apiKey: string }
 	mistralOptions?: { apiKey: string }
 	vercelAiGatewayOptions?: { apiKey: string }
+	openRouterOptions?: { apiKey: string }
 	qdrantUrl?: string
 	qdrantApiKey?: string
 	// + Чернявский Е.И.
@@ -41,6 +42,7 @@ export type PreviousConfigSnapshot = {
 	geminiApiKey?: string
 	mistralApiKey?: string
 	vercelAiGatewayApiKey?: string
+	openRouterApiKey?: string
 	qdrantUrl?: string
 	qdrantApiKey?: string
 	// + Чернявский Е.И.

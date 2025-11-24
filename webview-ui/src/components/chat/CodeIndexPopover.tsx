@@ -52,6 +52,12 @@ const DEFAULT_OLLAMA_URL = "http://localhost:11434"
 
 interface CodeIndexPopoverProps {
 	children: React.ReactNode
+	// kilocode_change start - Support showing contentOnly and allow external open state control
+	contentOnly?: boolean
+	open?: boolean
+	onOpenChange?: (open: boolean) => void
+	onRegisterCloseHandler?: (handler: () => void) => void
+	// kilocode_change end - Support showing contentOnly and allow external open state control
 	indexingStatus: IndexingStatus
 }
 
@@ -78,6 +84,7 @@ interface LocalCodeIndexSettings {
 	codebaseIndexGeminiApiKey?: string
 	codebaseIndexMistralApiKey?: string
 	codebaseIndexVercelAiGatewayApiKey?: string
+	codebaseIndexOpenRouterApiKey?: string
 }
 
 // Validation schema for codebase index settings
@@ -157,19 +164,44 @@ const createValidationSchema = (provider: EmbedderProvider, t: any) => {
 					.min(1, t("settings:codeIndex.validation.modelSelectionRequired")),
 			})
 
+		case "openrouter":
+			return baseSchema.extend({
+				codebaseIndexOpenRouterApiKey: z
+					.string()
+					.min(1, t("settings:codeIndex.validation.openRouterApiKeyRequired")),
+				codebaseIndexEmbedderModelId: z
+					.string()
+					.min(1, t("settings:codeIndex.validation.modelSelectionRequired")),
+			})
+
 		default:
 			return baseSchema
 	}
 }
 
+// kilcode_change start - Allow rendering just the content of CodeIndexPopover
+const NoOpWrapper: React.FC<Record<string, any> & { children?: React.ReactNode }> = ({ children }) => <>{children}</>
+// kilcode_change end - Allow rendering just the content of CodeIndexPopover
+
 export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	children,
+	// kilocode_change start - Support contentOnly and external state control
+	contentOnly,
+	open: externalOpen,
+	onOpenChange: externalOnOpenChange,
+	onRegisterCloseHandler,
+	// kilocode_change end - Support contentOnly and external state control
 	indexingStatus: externalIndexingStatus,
 }) => {
 	const SECRET_PLACEHOLDER = "••••••••••••••••"
 	const { t } = useAppTranslation()
 	const { codebaseIndexConfig, codebaseIndexModels, cwd } = useExtensionState()
-	const [open, setOpen] = useState(false)
+
+	// kilocode_change start - Controlled/uncontrolled pattern for open state
+	// const [open, setOpen] = useState(false) // kilocode_change
+	const [internalOpen, setInternalOpen] = useState(false)
+	const open = externalOpen ?? internalOpen
+	// kilocode_change end - Controlled/uncontrolled pattern for open state
 	const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false)
 	const [isSetupSettingsOpen, setIsSetupSettingsOpen] = useState(false)
 
@@ -207,6 +239,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexGeminiApiKey: "",
 		codebaseIndexMistralApiKey: "",
 		codebaseIndexVercelAiGatewayApiKey: "",
+		codebaseIndexOpenRouterApiKey: "",
 	})
 
 	// Initial settings state - stores the settings when popover opens
@@ -251,6 +284,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				codebaseIndexGeminiApiKey: "",
 				codebaseIndexMistralApiKey: "",
 				codebaseIndexVercelAiGatewayApiKey: "",
+				codebaseIndexOpenRouterApiKey: "",
 			}
 			setInitialSettings(settings)
 			setCurrentSettings(settings)
@@ -343,6 +377,14 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 							? SECRET_PLACEHOLDER
 							: ""
 					}
+					if (
+						!prev.codebaseIndexOpenRouterApiKey ||
+						prev.codebaseIndexOpenRouterApiKey === SECRET_PLACEHOLDER
+					) {
+						updated.codebaseIndexOpenRouterApiKey = secretStatus.hasOpenRouterApiKey
+							? SECRET_PLACEHOLDER
+							: ""
+					}
 
 					return updated
 				}
@@ -416,7 +458,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					key === "codebaseIndexOpenAiCompatibleApiKey" ||
 					key === "codebaseIndexGeminiApiKey" ||
 					key === "codebaseIndexMistralApiKey" ||
-					key === "codebaseIndexVercelAiGatewayApiKey"
+					key === "codebaseIndexVercelAiGatewayApiKey" ||
+					key === "codebaseIndexOpenRouterApiKey"
 				) {
 					dataToValidate[key] = "placeholder-valid"
 				}
@@ -470,12 +513,43 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		[initialSettings],
 	)
 
+	// kilocode_change start - Register close handler for parent popover control
+	const handleRequestClose = useCallback(() => {
+		// Handler that checks unsaved changes before allowing close
+		checkUnsavedChanges(() => {
+			if (externalOnOpenChange) {
+				externalOnOpenChange(false)
+			} else {
+				setInternalOpen(false)
+			}
+		})
+	}, [checkUnsavedChanges, externalOnOpenChange])
+
+	useEffect(() => {
+		onRegisterCloseHandler?.(handleRequestClose)
+	}, [onRegisterCloseHandler, handleRequestClose])
+
+	// For direct onOpenChange calls (non-contentOnly mode), wrap to check unsaved changes
+	const wrappedOnOpenChange = useCallback(
+		(newOpen: boolean) => {
+			if (!newOpen) {
+				handleRequestClose()
+			} else {
+				externalOnOpenChange?.(true)
+				setInternalOpen(true)
+			}
+		},
+		[handleRequestClose, externalOnOpenChange],
+	)
+	const setOpen = externalOnOpenChange ? wrappedOnOpenChange : setInternalOpen
+	// kilocode_change end - Register close handler for parent popover control
+
 	// Handle popover close with unsaved changes check
 	const handlePopoverClose = useCallback(() => {
 		checkUnsavedChanges(() => {
 			setOpen(false)
 		})
-	}, [checkUnsavedChanges])
+	}, [checkUnsavedChanges, setOpen]) // kilocode_change
 
 	// Use the shared ESC key handler hook - respects unsaved changes logic
 	useEscapeKey(open, handlePopoverClose)
@@ -567,9 +641,15 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	// Debug logging for initial value
 	const portalContainer = useRooPortal("roo-portal")
 
+	// kilcode_change start - Allow rendering just the content of CodeIndexPopover
+	const MaybePopover = !contentOnly ? Popover : NoOpWrapper
+	const MaybePopoverContent = !contentOnly ? PopoverContent : NoOpWrapper
+	// kilcode_change end - Allow rendering just the content of CodeIndexPopover
+
 	return (
 		<>
-			<Popover
+			{/* kilocode_change - Popover -> MaybePopover */}
+			<MaybePopover
 				open={open}
 				onOpenChange={(newOpen) => {
 					if (!newOpen) {
@@ -580,7 +660,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					}
 				}}>
 				{children}
-				<PopoverContent
+				{/* kilocode_change - PopoverContent -> MaybePopoverContent */}
+				<MaybePopoverContent
 					className="w-[calc(100vw-32px)] max-w-[450px] max-h-[80vh] overflow-y-auto p-0"
 					align="end"
 					alignOffset={0}
@@ -698,6 +779,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 												</SelectItem>
 												<SelectItem value="vercel-ai-gateway">
 													{t("settings:codeIndex.vercelAiGatewayProvider")}
+												</SelectItem>
+												<SelectItem value="openrouter">
+													{t("settings:codeIndex.openRouterProvider")}
 												</SelectItem>
 											</SelectContent>
 										</Select>
@@ -1161,6 +1245,71 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 										</>
 									)}
 
+									{currentSettings.codebaseIndexEmbedderProvider === "openrouter" && (
+										<>
+											<div className="space-y-2">
+												<label className="text-sm font-medium">
+													{t("settings:codeIndex.openRouterApiKeyLabel")}
+												</label>
+												<VSCodeTextField
+													type="password"
+													value={currentSettings.codebaseIndexOpenRouterApiKey || ""}
+													onInput={(e: any) =>
+														updateSetting("codebaseIndexOpenRouterApiKey", e.target.value)
+													}
+													placeholder={t("settings:codeIndex.openRouterApiKeyPlaceholder")}
+													className={cn("w-full", {
+														"border-red-500": formErrors.codebaseIndexOpenRouterApiKey,
+													})}
+												/>
+												{formErrors.codebaseIndexOpenRouterApiKey && (
+													<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+														{formErrors.codebaseIndexOpenRouterApiKey}
+													</p>
+												)}
+											</div>
+
+											<div className="space-y-2">
+												<label className="text-sm font-medium">
+													{t("settings:codeIndex.modelLabel")}
+												</label>
+												<VSCodeDropdown
+													value={currentSettings.codebaseIndexEmbedderModelId}
+													onChange={(e: any) =>
+														updateSetting("codebaseIndexEmbedderModelId", e.target.value)
+													}
+													className={cn("w-full", {
+														"border-red-500": formErrors.codebaseIndexEmbedderModelId,
+													})}>
+													<VSCodeOption value="" className="p-2">
+														{t("settings:codeIndex.selectModel")}
+													</VSCodeOption>
+													{getAvailableModels().map((modelId) => {
+														const model =
+															codebaseIndexModels?.[
+																currentSettings.codebaseIndexEmbedderProvider
+															]?.[modelId]
+														return (
+															<VSCodeOption key={modelId} value={modelId} className="p-2">
+																{modelId}{" "}
+																{model
+																	? t("settings:codeIndex.modelDimensions", {
+																			dimension: model.dimension,
+																		})
+																	: ""}
+															</VSCodeOption>
+														)
+													})}
+												</VSCodeDropdown>
+												{formErrors.codebaseIndexEmbedderModelId && (
+													<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+														{formErrors.codebaseIndexEmbedderModelId}
+													</p>
+												)}
+											</div>
+										</>
+									)}
+
 									{/* Qdrant Settings */}
 									<div className="space-y-2">
 										<label className="text-sm font-medium">
@@ -1425,8 +1574,10 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 							</div>
 						)}
 					</div>
-				</PopoverContent>
-			</Popover>
+					{/* kilocode_change - PopoverContent -> MaybePopoverContent */}
+				</MaybePopoverContent>
+				{/* kilocode_change - Popover -> MaybePopover */}
+			</MaybePopover>
 
 			{/* Discard Changes Dialog */}
 			<AlertDialog open={isDiscardDialogShow} onOpenChange={setDiscardDialogShow}>

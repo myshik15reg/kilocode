@@ -8,7 +8,12 @@ export class CodeIndexStateManager {
 	private _processedItems: number = 0
 	private _totalItems: number = 0
 	private _currentItemUnit: string = "blocks"
-	private _defaultQdrantCollectionName: string = ""
+	private _gitBranch?: string
+	private _manifest?: {
+		totalFiles: number
+		totalChunks: number
+		lastUpdated: string
+	}
 	private _progressEmitter = new vscode.EventEmitter<ReturnType<typeof this.getCurrentStatus>>()
 
 	// --- Public API ---
@@ -26,7 +31,8 @@ export class CodeIndexStateManager {
 			processedItems: this._processedItems,
 			totalItems: this._totalItems,
 			currentItemUnit: this._currentItemUnit,
-			defaultQdrantCollectionName: this._defaultQdrantCollectionName,
+			gitBranch: this._gitBranch,
+			manifest: this._manifest,
 		}
 	}
 
@@ -35,22 +41,35 @@ export class CodeIndexStateManager {
 	public setSystemState(
 		newState: IndexingState,
 		message?: string,
-		defaultQdrantCollectionName?: string,
+		manifest?: {
+			totalFiles: number
+			totalChunks: number
+			lastUpdated: string
+		},
+		gitBranch?: string,
 	): void {
 		const stateChanged =
 			newState !== this._systemStatus ||
 			(message !== undefined && message !== this._statusMessage) ||
-			(defaultQdrantCollectionName !== undefined &&
-				defaultQdrantCollectionName !== this._defaultQdrantCollectionName)
-
-		if (defaultQdrantCollectionName) {
-			this._defaultQdrantCollectionName = defaultQdrantCollectionName
-		}
+			(manifest !== undefined && 
+				(
+					this._manifest?.totalFiles !== manifest.totalFiles ||
+					this._manifest?.totalChunks !== manifest.totalChunks ||
+					this._manifest?.lastUpdated !== manifest.lastUpdated
+				)
+			) ||
+			(gitBranch !== undefined && gitBranch !== this._gitBranch)
 
 		if (stateChanged) {
 			this._systemStatus = newState
 			if (message !== undefined) {
 				this._statusMessage = message
+			}
+			if (manifest !== undefined) {
+				this._manifest = manifest
+			}
+			if (gitBranch !== undefined) {
+				this._gitBranch = gitBranch
 			}
 
 			// Reset progress counters if moving to a non-indexing state or starting fresh
@@ -58,10 +77,15 @@ export class CodeIndexStateManager {
 				this._processedItems = 0
 				this._totalItems = 0
 				this._currentItemUnit = "blocks" // Reset to default unit
-				// Optionally clear the message or set a default for non-indexing states
+				// Optionally clear message or set a default for non-indexing states
 				if (newState === "Standby" && message === undefined) this._statusMessage = "Ready."
 				if (newState === "Indexed" && message === undefined) this._statusMessage = "Index up-to-date."
 				if (newState === "Error" && message === undefined) this._statusMessage = "An error occurred."
+			}
+
+			// Clear manifest if not in Indexed state
+			if (newState !== "Indexed") {
+				this._manifest = undefined
 			}
 
 			this._progressEmitter.fire(this.getCurrentStatus())
@@ -71,7 +95,7 @@ export class CodeIndexStateManager {
 	public reportBlockIndexingProgress(processedItems: number, totalItems: number): void {
 		const progressChanged = processedItems !== this._processedItems || totalItems !== this._totalItems
 
-		// Update if progress changes OR if the system wasn't already in 'Indexing' state
+		// Update if progress changes OR if system wasn't already in 'Indexing' state
 		if (progressChanged || this._systemStatus !== "Indexing") {
 			this._processedItems = processedItems
 			this._totalItems = totalItems

@@ -95,11 +95,8 @@ jobs:
                   else
                     # Extract changelog for current version
                     echo "Extracting changelog for version ${current_package_version}"
-                    # Try with 'v' prefix first (newer format), then without (older format)
-                    changelog_content=$(sed -n "/## \\[v${current_package_version}\\]/,/## \\[/p" CHANGELOG.md | sed '$d')
-                    if [ -z "$changelog_content" ]; then
-                      changelog_content=$(sed -n "/## \\[${current_package_version}\\]/,/## \\[/p" CHANGELOG.md | sed '$d')
-                    fi
+                    # Match version headers: ## [vX.X.X], ## [X.X.X], ## X.X.X (brackets and v are optional)
+                    changelog_content=$(sed -E -n "/## \\[?v?${current_package_version}\\]?/,/## /p" CHANGELOG.md | sed '$d')
 
                     # If changelog extraction failed, use a default message
                     if [ -z "$changelog_content" ]; then
@@ -159,7 +156,9 @@ jobs:
                   OVSX_PAT: ${{ secrets.OVSX_TOKEN }}
               run: |
                   current_package_version="${{ needs.create-release.outputs.version }}"
-                  pnpm --filter kilo-code publish:marketplace
+                  cd src
+                  npx vsce publish --packagePath ../bin/kilo-code-${current_package_version}.vsix
+                  npx ovsx publish ../bin/kilo-code-${current_package_version}.vsix
                   echo "Successfully published version $current_package_version to VS Code Marketplace"
 
     publish-jetbrains:
