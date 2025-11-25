@@ -4,6 +4,7 @@ import { CodeIndexConfigManager } from "./config-manager"
 import { CodeIndexStateManager, IndexingState } from "./state-manager"
 import { IFileWatcher, IVectorStore, BatchProcessingSummary } from "./interfaces"
 import { DirectoryScanner } from "./processors"
+import { GraphProcessor } from "./processors/graph-processor"
 import { CacheManager } from "./cache-manager"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
@@ -25,6 +26,7 @@ export class CodeIndexOrchestrator {
 		private readonly vectorStore: IVectorStore,
 		private readonly scanner: DirectoryScanner,
 		private readonly fileWatcher: IFileWatcher,
+		private readonly graphProcessor: GraphProcessor,
 	) {}
 
 	/**
@@ -177,19 +179,22 @@ export class CodeIndexOrchestrator {
 					this.stateManager.reportBlockIndexingProgress(cumulativeBlocksIndexed, cumulativeBlocksFoundSoFar)
 				}
 
-				// Run incremental scan - scanner will skip unchanged files using cache
-				const result = await this.scanner.scanDirectory(
-					this.workspacePath,
-					(batchError: Error) => {
-						console.error(
-							`[CodeIndexOrchestrator] Error during incremental scan batch: ${batchError.message}`,
-							batchError,
-						)
-						batchErrors.push(batchError)
-					},
-					handleBlocksIndexed,
-					handleFileParsed,
-				)
+				// Run incremental scan and graph processing in parallel
+				const [result] = await Promise.all([
+					this.scanner.scanDirectory(
+						this.workspacePath,
+						(batchError: Error) => {
+							console.error(
+								`[CodeIndexOrchestrator] Error during incremental scan batch: ${batchError.message}`,
+								batchError,
+							)
+							batchErrors.push(batchError)
+						},
+						handleBlocksIndexed,
+						handleFileParsed,
+					),
+					this.graphProcessor.scanDirectory(this.workspacePath),
+				])
 
 				if (!result) {
 					throw new Error("Incremental scan failed, is scanner initialized?")
@@ -241,18 +246,21 @@ export class CodeIndexOrchestrator {
 					this.stateManager.reportBlockIndexingProgress(cumulativeBlocksIndexed, cumulativeBlocksFoundSoFar)
 				}
 
-				const result = await this.scanner.scanDirectory(
-					this.workspacePath,
-					(batchError: Error) => {
-						console.error(
-							`[CodeIndexOrchestrator] Error during initial scan batch: ${batchError.message}`,
-							batchError,
-						)
-						batchErrors.push(batchError)
-					},
-					handleBlocksIndexed,
-					handleFileParsed,
-				)
+				const [result] = await Promise.all([
+					this.scanner.scanDirectory(
+						this.workspacePath,
+						(batchError: Error) => {
+							console.error(
+								`[CodeIndexOrchestrator] Error during initial scan batch: ${batchError.message}`,
+								batchError,
+							)
+							batchErrors.push(batchError)
+						},
+						handleBlocksIndexed,
+						handleFileParsed,
+					),
+					this.graphProcessor.scanDirectory(this.workspacePath),
+				])
 
 				if (!result) {
 					throw new Error("Scan failed, is scanner initialized?")

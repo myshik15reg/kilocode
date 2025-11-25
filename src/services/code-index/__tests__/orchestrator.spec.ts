@@ -56,6 +56,7 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 	let vectorStore: any
 	let scanner: any
 	let fileWatcher: any
+	let graphProcessor: any
 
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -100,6 +101,12 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 			onDidFinishBatchProcessing: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 			dispose: vi.fn(),
 		}
+
+		graphProcessor = {
+			start: vi.fn(),
+			stop: vi.fn(),
+			push: vi.fn(),
+		}
 	})
 
 	it("should not call clearCollection() or clear cache when initialize() fails (indexing not started)", async () => {
@@ -114,6 +121,7 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 			vectorStore,
 			scanner,
 			fileWatcher,
+			graphProcessor,
 		)
 
 		// Act
@@ -143,6 +151,7 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 			vectorStore,
 			scanner,
 			fileWatcher,
+			graphProcessor,
 		)
 
 		// Act

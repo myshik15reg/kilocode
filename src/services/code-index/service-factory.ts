@@ -1,5 +1,6 @@
 import * as path from "path"
 import * as vscode from "vscode"
+import * as crypto from "crypto"
 import { OpenAiEmbedder } from "./embedders/openai"
 import { CodeIndexOllamaEmbedder } from "./embedders/ollama"
 import { OpenAICompatibleEmbedder } from "./embedders/openai-compatible"
@@ -20,6 +21,8 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { Package } from "../../shared/package"
 import { BATCH_SEGMENT_THRESHOLD } from "./constants"
+import { GraphProcessor } from "./processors/graph-processor"
+import { Neo4jGraphService } from "./graph-service"
 
 /**
  * Factory class responsible for creating and configuring code indexing service dependencies.
@@ -47,7 +50,6 @@ export class CodeIndexServiceFactory {
 
 		if (!sanitized) {
 			// Fallback to a hash-based name if sanitization results in an empty string
-			const crypto = require("crypto")
 			const hash = crypto.createHash("sha256").update(this.workspacePath).digest("hex")
 			return `ws-${hash.substring(0, 16)}`
 		}
@@ -184,13 +186,52 @@ export class CodeIndexServiceFactory {
 		// + Чернявский Е.И.
 		//// Assuming constructor is updated: new QdrantVectorStore(workspacePath, url, vectorSize, apiKey?)
 		//return new QdrantVectorStore(this.workspacePath, config.qdrantUrl, vectorSize, config.qdrantApiKey)
-		
+
 		// Generate collection name if not provided
-		const collectionName = config.qdrantCollectionName || this.generateDefaultCollectionName()
-		
+		const collectionName = config.CollectionName || this.generateDefaultCollectionName()
+
 		// Assuming constructor is updated: new QdrantVectorStore(workspacePath, url, vectorSize, collectionName, apiKey?)
-		return new QdrantVectorStore(this.workspacePath, config.qdrantUrl, vectorSize, collectionName, config.qdrantApiKey)
+		return new QdrantVectorStore(
+			this.workspacePath,
+			config.qdrantUrl,
+			vectorSize,
+			collectionName,
+			config.qdrantApiKey,
+		)
 		// - Чернявский Е.И.
+	}
+
+	/**
+	 * Creates a Neo4j graph service instance.
+	 */
+	public createNeo4jService(): Neo4jGraphService {
+		const config = this.configManager.getConfig()
+		const collectionName = config.CollectionName || this.generateDefaultCollectionName()
+
+		const { neo4jUri, neo4jUser, neo4jPassword } = config
+
+		if (!neo4jUri || !neo4jUser || !neo4jPassword) {
+			throw new Error("Neo4j configuration is missing (URI, user, or password).")
+		}
+
+		if (!collectionName) {
+			throw new Error("Qdrant collection name is not configured, cannot generate Neo4j database name.")
+		}
+
+		return new Neo4jGraphService({
+			uri: neo4jUri,
+			user: neo4jUser,
+			password: neo4jPassword,
+			database: `${collectionName}_graph`, // Генерируем имя БД
+		})
+	}
+
+	/**
+	 * Creates a graph processor instance.
+	 */
+	public createGraphProcessor(graphService: Neo4jGraphService, cacheManager: CacheManager): GraphProcessor {
+		const parser = codeParser
+		return new GraphProcessor(graphService, parser as any, cacheManager)
 	}
 
 	/**
@@ -263,6 +304,8 @@ export class CodeIndexServiceFactory {
 		parser: ICodeParser
 		scanner: DirectoryScanner
 		fileWatcher: IFileWatcher
+		graphProcessor: GraphProcessor
+		neo4jService: Neo4jGraphService
 	} {
 		if (!this.configManager.isFeatureConfigured) {
 			throw new Error(t("embeddings:serviceFactory.codeIndexingNotConfigured"))
@@ -270,6 +313,7 @@ export class CodeIndexServiceFactory {
 
 		const embedder = this.createEmbedder()
 		const vectorStore = this.createVectorStore()
+		const neo4jService = this.createNeo4jService()
 		const parser = codeParser
 		const scanner = this.createDirectoryScanner(embedder, vectorStore, parser, ignoreInstance)
 		const fileWatcher = this.createFileWatcher(
@@ -280,6 +324,7 @@ export class CodeIndexServiceFactory {
 			ignoreInstance,
 			rooIgnoreController,
 		)
+		const graphProcessor = this.createGraphProcessor(neo4jService, cacheManager)
 
 		return {
 			embedder,
@@ -287,6 +332,8 @@ export class CodeIndexServiceFactory {
 			parser,
 			scanner,
 			fileWatcher,
+			graphProcessor,
+			neo4jService,
 		}
 	}
 }

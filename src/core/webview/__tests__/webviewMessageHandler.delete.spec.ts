@@ -53,6 +53,7 @@ vi.mock("vscode", () => ({
 describe("webviewMessageHandler delete functionality", () => {
 	let provider: any
 	let getCurrentTaskMock: any
+	let marketplaceManager: any
 
 	beforeEach(() => {
 		// Reset all mocks
@@ -79,6 +80,7 @@ describe("webviewMessageHandler delete functionality", () => {
 			log: vi.fn(),
 			cwd: "/test/cwd",
 		}
+		marketplaceManager = {}
 	})
 
 	describe("handleDeleteMessageConfirm", () => {
@@ -105,10 +107,14 @@ describe("webviewMessageHandler delete functionality", () => {
 			]
 
 			// Call delete for the user message
-			await webviewMessageHandler(provider, {
-				type: "deleteMessageConfirm",
-				messageTs: userMessageTs,
-			})
+			await webviewMessageHandler(
+				provider,
+				{
+					type: "deleteMessageConfirm",
+					messageTs: userMessageTs,
+				},
+				marketplaceManager,
+			)
 
 			// Verify that clineMessages was truncated at the correct index
 			expect(getCurrentTaskMock.overwriteClineMessages).toHaveBeenCalledWith([])
@@ -135,10 +141,14 @@ describe("webviewMessageHandler delete functionality", () => {
 			]
 
 			// Call delete
-			await webviewMessageHandler(provider, {
-				type: "deleteMessageConfirm",
-				messageTs: messageTs,
-			})
+			await webviewMessageHandler(
+				provider,
+				{
+					type: "deleteMessageConfirm",
+					messageTs: messageTs,
+				},
+				marketplaceManager,
+			)
 
 			// Verify truncation at correct indices
 			expect(getCurrentTaskMock.overwriteClineMessages).toHaveBeenCalledWith([
@@ -156,10 +166,14 @@ describe("webviewMessageHandler delete functionality", () => {
 			getCurrentTaskMock.apiConversationHistory = []
 
 			// Call delete with non-existent timestamp
-			await webviewMessageHandler(provider, {
-				type: "deleteMessageConfirm",
-				messageTs: 9999,
-			})
+			await webviewMessageHandler(
+				provider,
+				{
+					type: "deleteMessageConfirm",
+					messageTs: 9999,
+				},
+				marketplaceManager,
+			)
 
 			// Verify error message was shown (expecting translation key since t() is mocked to return the key)
 			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("common:errors.message.message_not_found")
@@ -198,10 +212,14 @@ describe("webviewMessageHandler delete functionality", () => {
 			]
 
 			// Call delete for the user message
-			await webviewMessageHandler(provider, {
-				type: "deleteMessageConfirm",
-				messageTs: userMessageTs,
-			})
+			await webviewMessageHandler(
+				provider,
+				{
+					type: "deleteMessageConfirm",
+					messageTs: userMessageTs,
+				},
+				marketplaceManager,
+			)
 
 			// Verify that clineMessages was truncated
 			expect(getCurrentTaskMock.overwriteClineMessages).toHaveBeenCalledWith([])
@@ -227,10 +245,14 @@ describe("webviewMessageHandler delete functionality", () => {
 				{ ts: 2500, role: "assistant", content: { type: "text", text: "Response to delete" } },
 			]
 
-			await webviewMessageHandler(provider, {
-				type: "deleteMessageConfirm",
-				messageTs: messageTs,
-			})
+			await webviewMessageHandler(
+				provider,
+				{
+					type: "deleteMessageConfirm",
+					messageTs: messageTs,
+				},
+				marketplaceManager,
+			)
 
 			// Should preserve messages before the deleted one
 			expect(getCurrentTaskMock.overwriteClineMessages).toHaveBeenCalledWith([

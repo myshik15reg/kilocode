@@ -53,6 +53,7 @@ describe("webviewMessageHandler - requestRouterModels provider filter", () => {
 		contextProxy: any
 		log: ReturnType<typeof vi.fn>
 	}
+	let marketplaceManager: any
 
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -68,6 +69,7 @@ describe("webviewMessageHandler - requestRouterModels provider filter", () => {
 			},
 			log: vi.fn(),
 		} as any
+		marketplaceManager = {}
 
 		// Default mock: return distinct model maps per provider so we can verify keys
 		getModelsMock.mockImplementation(async (options: any) => {
@@ -103,6 +105,7 @@ describe("webviewMessageHandler - requestRouterModels provider filter", () => {
 				type: "requestRouterModels",
 				values: { provider: "roo" },
 			} as any,
+			marketplaceManager,
 		)
 
 		// Should post a single routerModels message
@@ -133,6 +136,7 @@ describe("webviewMessageHandler - requestRouterModels provider filter", () => {
 			{
 				type: "requestRouterModels",
 			} as any,
+			marketplaceManager,
 		)
 
 		const call = (mockProvider.postMessageToWebview as any).mock.calls.find(
@@ -154,6 +158,7 @@ describe("webviewMessageHandler - requestRouterModels provider filter", () => {
 				type: "requestRouterModels",
 				values: { provider: "openrouter" },
 			} as any,
+			marketplaceManager,
 		)
 
 		const call = (mockProvider.postMessageToWebview as any).mock.calls.find(

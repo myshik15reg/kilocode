@@ -30,7 +30,7 @@ export class QdrantVectorStore implements IVectorStore {
 	// + Чернявский Е.И.
 	//	constructor(workspacePath: string, url: string, vectorSize: number, apiKey?: string) {
 	constructor(workspacePath: string, url: string, vectorSize: number, collectionName: string, apiKey?: string) {
-	// - Чернявский Е.И.
+		// - Чернявский Е.И.
 		// Parse the URL to determine the appropriate QdrantClient configuration
 		const parsedUrl = this.parseQdrantUrl(url)
 
@@ -194,9 +194,9 @@ export class QdrantVectorStore implements IVectorStore {
 					typeof vectorsConfig.size === "number"
 				) {
 					existingVectorSize = vectorsConfig.size
-				// + Чернявский Е.И.
-				// 	} else {
-				//	existingVectorSize = 0 // Fallback for unknown configuration
+					// + Чернявский Е.И.
+					// 	} else {
+					//	existingVectorSize = 0 // Fallback for unknown configuration
 				} else if (
 					vectorsConfig &&
 					typeof vectorsConfig === "object" &&
@@ -215,7 +215,7 @@ export class QdrantVectorStore implements IVectorStore {
 					throw new Error(
 						`Unable to determine vector size for existing collection "${this.collectionName}". The collection configuration is not in a recognized format. Please check the Qdrant collection configuration or recreate the collection manually.`,
 					)
-				// - Чернявский Е.И.
+					// - Чернявский Е.И.
 				}
 
 				if (existingVectorSize === this.vectorSize) {

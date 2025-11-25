@@ -5,7 +5,7 @@ import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { Database, FoldVertical } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Button } from "@/components/ui"
+import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Button, TextField } from "@/components/ui"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -24,7 +24,10 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	maxTotalImageSize?: number
 	maxConcurrentFileReads?: number
 	allowVeryLargeReads?: boolean // kilocode_change
-	profileThresholds?: Record<string, number>
+		useCodeGraph?: boolean // kilocode_change
+	neo4jCachePath?: string
+	cachePath?: string
+		profileThresholds?: Record<string, number>
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
 	writeDelayMs: number
@@ -41,7 +44,10 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "maxTotalImageSize"
 		| "maxConcurrentFileReads"
 		| "allowVeryLargeReads" // kilocode_change
-		| "profileThresholds"
+			| "useCodeGraph" // kilocode_change
+		| "neo4jCachePath"
+		| "cachePath"
+			| "profileThresholds"
 		| "includeDiagnosticMessages"
 		| "maxDiagnosticMessages"
 		| "writeDelayMs"
@@ -63,6 +69,9 @@ export const ContextManagementSettings = ({
 	maxTotalImageSize,
 	maxConcurrentFileReads,
 	allowVeryLargeReads, // kilocode_change
+	useCodeGraph, // kilocode_change
+	neo4jCachePath,
+	cachePath,
 	profileThresholds = {},
 	includeDiagnosticMessages,
 	maxDiagnosticMessages,
@@ -234,6 +243,51 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 				{/*kilocode_change end*/}
+
+				{/*kilocode_change start*/}
+				<div>
+					<VSCodeCheckbox
+						checked={useCodeGraph}
+						onChange={(e: any) => setCachedStateField("useCodeGraph", e.target.checked)}>
+						<label className="block font-medium mb-1">
+							{t("kilocode:settings.contextManagement.useCodeGraph.label")}
+						</label>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("kilocode:settings.contextManagement.useCodeGraph.description")}
+					</div>
+					{useCodeGraph && (
+						<div className="mt-2">
+							<Button
+								variant="secondary"
+								onClick={() => vscode.postMessage({ type: "clearCodeGraphCache" })}>
+								{t("kilocode:settings.contextManagement.clearCodeGraphCache.label")}
+							</Button>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								{t("kilocode:settings.contextManagement.clearCodeGraphCache.description")}
+							</div>
+						</div>
+					)}
+				</div>
+				{/*kilocode_change end*/}
+
+				<div className="flex flex-col gap-2">
+				  <label htmlFor="neo4j-cache-path">{t("settings:contextManagement.neo4jCachePath")}</label>
+				  <TextField
+				    id="neo4j-cache-path"
+				    value={neo4jCachePath}
+				    onChange={(e) => setCachedStateField("neo4jCachePath", e.target.value)}
+				  />
+				</div>
+
+				<div className="flex flex-col gap-2">
+				  <label htmlFor="cache-path">{t("settings:contextManagement.cachePath")}</label>
+				  <TextField
+				    id="cache-path"
+				    value={cachePath}
+				    onChange={(e) => setCachedStateField("cachePath", e.target.value)}
+				  />
+				</div>
 
 				<div>
 					<div className="flex flex-col gap-2">

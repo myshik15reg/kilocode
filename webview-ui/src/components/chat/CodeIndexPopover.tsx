@@ -72,7 +72,7 @@ interface LocalCodeIndexSettings {
 	codebaseIndexSearchMaxResults?: number
 	codebaseIndexSearchMinScore?: number
 	// + Чернявский Е.И.
-	codebaseIndexQdrantCollectionName?: string
+	codebaseIndexCollectionName?: string
 	codebaseIndexShowAllSearchResults?: boolean
 	// - Чернявский Е.И.
 
@@ -97,7 +97,7 @@ const createValidationSchema = (provider: EmbedderProvider, t: any) => {
 			.url(t("settings:codeIndex.validation.invalidQdrantUrl")),
 		codeIndexQdrantApiKey: z.string().optional(),
 		// + Чернявский Е.И.
-		codebaseIndexQdrantCollectionName: z.string().optional(),
+		codebaseIndexCollectionName: z.string().optional(),
 		// - Чернявский Е.И.
 	})
 
@@ -229,7 +229,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexSearchMaxResults: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 		codebaseIndexSearchMinScore: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
 		// + Чернявский Е.И.
-		codebaseIndexQdrantCollectionName: codebaseIndexConfig?.codebaseIndexQdrantCollectionName || "",
+		codebaseIndexCollectionName: codebaseIndexConfig?.codebaseIndexCollectionName || "",
 		codebaseIndexShowAllSearchResults: codebaseIndexConfig?.codebaseIndexShowAllSearchResults || false,
 		// - Чернявский Е.И.
 		codeIndexOpenAiKey: "",
@@ -274,7 +274,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				codebaseIndexSearchMinScore:
 					codebaseIndexConfig.codebaseIndexSearchMinScore ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
 				// + Чернявский Е.И.
-				codebaseIndexQdrantCollectionName: codebaseIndexConfig.codebaseIndexQdrantCollectionName || "",
+				codebaseIndexCollectionName: codebaseIndexConfig.codebaseIndexCollectionName || "",
 				codebaseIndexShowAllSearchResults: codebaseIndexConfig.codebaseIndexShowAllSearchResults || false,
 				// - Чернявский Е.И.
 				codeIndexOpenAiKey: "",

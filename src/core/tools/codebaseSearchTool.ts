@@ -142,7 +142,7 @@ export async function codebaseSearchTool(
 		}
 		// kilocode_change end
 
-		const searchResults: VectorStoreSearchResult[] = await manager.searchIndex(query, directoryPrefix)
+		const searchResults: VectorStoreSearchResult[] = await manager.searchManagedIndex(query, directoryPrefix)
 
 		// 3. Format and push results
 		if (!searchResults || searchResults.length === 0) {

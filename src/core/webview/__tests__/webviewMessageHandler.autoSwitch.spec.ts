@@ -66,9 +66,6 @@ vi.mock("@roo-code/cloud", () => ({
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
 import { getModels, flushModels } from "../../../api/providers/fetchers/modelCache"
-import { showSystemNotification } from "../../../integrations/notifications"
-import { refreshOrganizationModes } from "../kiloWebviewMessgeHandlerHelpers"
-import { CloudService } from "@roo-code/cloud"
 
 describe("webviewMessageHandler - Automatic Organization Switching", () => {
 	let mockProvider: ClineProvider
@@ -79,6 +76,7 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 	let mockPostStateToWebview: Mock
 	let mockLog: Mock
 	let mockProviderSettingsManager: any
+	let marketplaceManager: any
 
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -93,6 +91,7 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 		mockProviderSettingsManager = {
 			getProfile: vi.fn().mockResolvedValue({}),
 		}
+		marketplaceManager = {}
 
 		// Create mock provider
 		mockProvider = {
@@ -134,9 +133,13 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			;(axios.get as Mock).mockResolvedValueOnce({ data: mockProfileData })
 			;(getModels as Mock).mockResolvedValueOnce({ "model-1": {} })
 
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "fetchProfileDataRequest",
+				},
+				marketplaceManager,
+			)
 
 			// Verify organization ID was set to first org (via recursive upsertApiConfiguration call)
 			expect(mockUpsertProviderProfile).toHaveBeenCalledWith(
@@ -150,20 +153,6 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 
 			// Verify flag was set to true after the recursive call
 			expect(mockUpdateGlobalState).toHaveBeenCalledWith("hasPerformedOrganizationAutoSwitch", true)
-
-			// Verify organization modes were fetched (via upsertApiConfiguration handler)
-			expect(refreshOrganizationModes).toHaveBeenCalled()
-
-			// Verify models were flushed and refetched (via upsertApiConfiguration handler)
-			expect(flushModels).toHaveBeenCalledWith("kilocode")
-			expect(getModels).toHaveBeenCalledWith({
-				provider: "kilocode",
-				kilocodeOrganizationId: "org-1",
-				kilocodeToken: "test-token",
-			})
-
-			// Verify webview state was updated (via upsertApiConfiguration handler)
-			expect(mockPostStateToWebview).toHaveBeenCalled()
 		})
 
 		it("should send VSCode notification after successful auto-switch", async () => {
@@ -175,9 +164,13 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			;(axios.get as Mock).mockResolvedValueOnce({ data: mockProfileData })
 			;(getModels as Mock).mockResolvedValueOnce({ "model-1": {} })
 
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "fetchProfileDataRequest",
+				},
+				marketplaceManager,
+			)
 
 			// Verify VSCode notification was shown
 			const vscode = await import("vscode")
@@ -185,28 +178,6 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 				expect.stringContaining("Automatically switched to organization:"),
 			)
 			expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(expect.stringContaining("Test Org 1"))
-		})
-
-		it("should fetch organization modes after auto-switch", async () => {
-			const mockProfileData = {
-				organizations: [{ id: "org-1", name: "Test Org 1", balance: 100, role: "owner" }],
-			}
-
-			mockGetGlobalState.mockReturnValue(undefined)
-			;(axios.get as Mock).mockResolvedValueOnce({ data: mockProfileData })
-			;(getModels as Mock).mockResolvedValueOnce({ "model-1": {} })
-
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
-
-			// Verify refreshOrganizationModes was called (via upsertApiConfiguration)
-			expect(refreshOrganizationModes).toHaveBeenCalled()
-
-			// Verify it was called with an object containing the organization ID
-			const callArgs = (refreshOrganizationModes as Mock).mock.calls[0]
-			expect(callArgs[0].apiConfiguration.kilocodeOrganizationId).toBe("org-1")
-			expect(callArgs[1]).toBe(mockProvider)
 		})
 
 		it("should flush and refetch models after auto-switch", async () => {
@@ -218,9 +189,13 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			;(axios.get as Mock).mockResolvedValueOnce({ data: mockProfileData })
 			;(getModels as Mock).mockResolvedValueOnce({ "model-1": {}, "model-2": {} })
 
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "fetchProfileDataRequest",
+				},
+				marketplaceManager,
+			)
 
 			// Verify flushModels was called (via upsertApiConfiguration)
 			expect(flushModels).toHaveBeenCalledWith("kilocode")
@@ -261,14 +236,18 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			mockGetGlobalState.mockReturnValue(undefined)
 			;(axios.get as Mock).mockResolvedValueOnce({ data: mockProfileData })
 
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "fetchProfileDataRequest",
+				},
+				marketplaceManager,
+			)
 
 			// Verify no auto-switch occurred
 			expect(mockUpsertProviderProfile).not.toHaveBeenCalled()
 			expect(mockUpdateGlobalState).not.toHaveBeenCalledWith("hasPerformedOrganizationAutoSwitch", true)
-			expect(refreshOrganizationModes).not.toHaveBeenCalled()
+
 			expect(flushModels).not.toHaveBeenCalled()
 		})
 
@@ -284,13 +263,16 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			})
 			;(axios.get as Mock).mockResolvedValueOnce({ data: mockProfileData })
 
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "fetchProfileDataRequest",
+				},
+				marketplaceManager,
+			)
 
 			// Verify no auto-switch occurred
 			expect(mockUpsertProviderProfile).not.toHaveBeenCalled()
-			expect(refreshOrganizationModes).not.toHaveBeenCalled()
 			expect(flushModels).not.toHaveBeenCalled()
 		})
 
@@ -302,9 +284,13 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			mockGetGlobalState.mockReturnValue(undefined)
 			;(axios.get as Mock).mockResolvedValueOnce({ data: mockProfileData })
 
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "fetchProfileDataRequest",
+				},
+				marketplaceManager,
+			)
 
 			// Verify no auto-switch occurred
 			expect(mockUpsertProviderProfile).not.toHaveBeenCalled()
@@ -319,9 +305,13 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			mockGetGlobalState.mockReturnValue(undefined)
 			;(axios.get as Mock).mockResolvedValueOnce({ data: mockProfileData })
 
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "fetchProfileDataRequest",
+				},
+				marketplaceManager,
+			)
 
 			// Verify no auto-switch occurred
 			expect(mockUpsertProviderProfile).not.toHaveBeenCalled()
@@ -337,14 +327,18 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 				kilocodeOrganizationId: "org-1",
 			})
 
-			await webviewMessageHandler(mockProvider, {
-				type: "upsertApiConfiguration",
-				text: "default",
-				apiConfiguration: {
-					kilocodeToken: "new-token",
-					kilocodeOrganizationId: "org-1",
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "upsertApiConfiguration",
+					text: "default",
+					apiConfiguration: {
+						kilocodeToken: "new-token",
+						kilocodeOrganizationId: "org-1",
+					},
 				},
-			})
+				marketplaceManager,
+			)
 
 			// Verify flag was reset
 			expect(mockUpdateGlobalState).toHaveBeenCalledWith("hasPerformedOrganizationAutoSwitch", undefined)
@@ -367,14 +361,18 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 				kilocodeOrganizationId: "org-1",
 			})
 
-			await webviewMessageHandler(mockProvider, {
-				type: "upsertApiConfiguration",
-				text: "default",
-				apiConfiguration: {
-					kilocodeToken: "same-token",
-					kilocodeOrganizationId: "org-1",
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "upsertApiConfiguration",
+					text: "default",
+					apiConfiguration: {
+						kilocodeToken: "same-token",
+						kilocodeOrganizationId: "org-1",
+					},
 				},
-			})
+				marketplaceManager,
+			)
 
 			// Verify flag was NOT reset
 			expect(mockUpdateGlobalState).not.toHaveBeenCalledWith("hasPerformedOrganizationAutoSwitch", undefined)
@@ -386,13 +384,17 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 				kilocodeToken: undefined,
 			})
 
-			await webviewMessageHandler(mockProvider, {
-				type: "upsertApiConfiguration",
-				text: "default",
-				apiConfiguration: {
-					kilocodeToken: "new-token",
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "upsertApiConfiguration",
+					text: "default",
+					apiConfiguration: {
+						kilocodeToken: "new-token",
+					},
 				},
-			})
+				marketplaceManager,
+			)
 
 			// Verify flag was NOT reset (no previous token to change from)
 			expect(mockUpdateGlobalState).not.toHaveBeenCalledWith("hasPerformedOrganizationAutoSwitch", undefined)
@@ -411,9 +413,13 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			// Make upsertProviderProfile throw an error (called during recursive upsertApiConfiguration)
 			mockUpsertProviderProfile.mockRejectedValueOnce(new Error("Database error"))
 
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "fetchProfileDataRequest",
+				},
+				marketplaceManager,
+			)
 
 			// Verify error was logged
 			expect(mockLog).toHaveBeenCalledWith(expect.stringContaining("Error during automatic organization switch"))
@@ -431,38 +437,6 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			})
 		})
 
-		it("should handle organization modes fetch failure gracefully", async () => {
-			const mockProfileData = {
-				organizations: [{ id: "org-1", name: "Test Org 1", balance: 100, role: "owner" }],
-			}
-
-			mockGetGlobalState.mockReturnValue(undefined)
-			;(axios.get as Mock).mockResolvedValueOnce({ data: mockProfileData })
-			;(getModels as Mock).mockResolvedValueOnce({ "model-1": {} })
-
-			// Make refreshOrganizationModes throw an error (called during upsertApiConfiguration)
-			;(refreshOrganizationModes as Mock).mockRejectedValueOnce(new Error("Network error"))
-
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
-
-			// Note: Error handling now happens within upsertApiConfiguration handler, not in auto-switch
-			// The auto-switch will complete successfully even if refreshOrganizationModes fails
-			// because upsertApiConfiguration has its own error handling
-
-			// Verify profile fetch still succeeded
-			expect(mockPostMessageToWebview).toHaveBeenCalledWith({
-				type: "profileDataResponse",
-				payload: expect.objectContaining({
-					success: true,
-				}),
-			})
-
-			// Verify the auto-switch completed (flag was set)
-			expect(mockUpdateGlobalState).toHaveBeenCalledWith("hasPerformedOrganizationAutoSwitch", true)
-		})
-
 		it("should handle models refetch failure gracefully", async () => {
 			const mockProfileData = {
 				organizations: [{ id: "org-1", name: "Test Org 1", balance: 100, role: "owner" }],
@@ -474,9 +448,13 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			// Make getModels throw an error on all calls (called during upsertApiConfiguration)
 			;(getModels as Mock).mockRejectedValue(new Error("API error"))
 
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "fetchProfileDataRequest",
+				},
+				marketplaceManager,
+			)
 
 			// The auto-switch will fail, but profile fetch should still succeed
 			// Verify profile fetch succeeded
@@ -507,9 +485,13 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			;(axios.get as Mock).mockResolvedValueOnce({ data: mockProfileData })
 			;(getModels as Mock).mockResolvedValueOnce({ "model-1": {} })
 
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "fetchProfileDataRequest",
+				},
+				marketplaceManager,
+			)
 
 			// Verify first organization was selected (index 0)
 			expect(mockUpsertProviderProfile).toHaveBeenCalledWith(
@@ -536,9 +518,13 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			;(axios.get as Mock).mockResolvedValueOnce({ data: mockProfileData })
 			;(getModels as Mock).mockResolvedValueOnce({ "model-1": {} })
 
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "fetchProfileDataRequest",
+				},
+				marketplaceManager,
+			)
 
 			// Verify postStateToWebview was called after auto-switch
 			expect(mockPostStateToWebview).toHaveBeenCalled()
@@ -556,9 +542,6 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 
 			mockUpsertProviderProfile.mockImplementation(async () => {
 				callOrder.push("upsertProviderProfile")
-			})
-			;(refreshOrganizationModes as Mock).mockImplementation(async () => {
-				callOrder.push("refreshOrganizationModes")
 			})
 			;(flushModels as Mock).mockImplementation(async () => {
 				callOrder.push("flushModels")
@@ -579,14 +562,17 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 				// Don't track postMessageToWebview in call order
 			})
 
-			await webviewMessageHandler(mockProvider, {
-				type: "fetchProfileDataRequest",
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "fetchProfileDataRequest",
+				},
+				marketplaceManager,
+			)
 
 			// Verify operations occurred in the correct order
 			// All operations except setFlag happen within the recursive upsertApiConfiguration call
 			expect(callOrder).toContain("upsertProviderProfile")
-			expect(callOrder).toContain("refreshOrganizationModes")
 			expect(callOrder).toContain("flushModels")
 			expect(callOrder).toContain("setFlag")
 			expect(callOrder).toContain("postStateToWebview")

@@ -26,6 +26,7 @@ vi.mock("../../../integrations/editor/DecorationController", () => ({
 describe("webviewMessageHandler - checkpoint operations", () => {
 	let mockProvider: any
 	let mockCline: any
+	let marketplaceManager: any
 
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -62,6 +63,7 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 				globalStorageUri: { fsPath: "/test/storage" },
 			},
 		}
+		marketplaceManager = {}
 	})
 
 	describe("delete operations with checkpoint restoration", () => {
@@ -70,11 +72,15 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 			;(handleCheckpointRestoreOperation as any).mockResolvedValue(undefined)
 
 			// Call the handler with delete confirmation
-			await webviewMessageHandler(mockProvider, {
-				type: "deleteMessageConfirm",
-				messageTs: 1,
-				restoreCheckpoint: true,
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "deleteMessageConfirm",
+					messageTs: 1,
+					restoreCheckpoint: true,
+				},
+				marketplaceManager,
+			)
 
 			// Verify handleCheckpointRestoreOperation was called with correct parameters
 			expect(handleCheckpointRestoreOperation).toHaveBeenCalledWith({
@@ -89,11 +95,15 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 
 		it("should save messages for non-checkpoint deletes", async () => {
 			// Call the handler with delete confirmation (no checkpoint restoration)
-			await webviewMessageHandler(mockProvider, {
-				type: "deleteMessageConfirm",
-				messageTs: 2,
-				restoreCheckpoint: false,
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "deleteMessageConfirm",
+					messageTs: 2,
+					restoreCheckpoint: false,
+				},
+				marketplaceManager,
+			)
 
 			// Verify saveTaskMessages was called
 			expect(saveTaskMessages).toHaveBeenCalledWith({
@@ -113,12 +123,16 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 			;(handleCheckpointRestoreOperation as any).mockResolvedValue(undefined)
 
 			// Call the handler with edit confirmation
-			await webviewMessageHandler(mockProvider, {
-				type: "editMessageConfirm",
-				messageTs: 1,
-				text: "Edited checkpoint message",
-				restoreCheckpoint: true,
-			})
+			await webviewMessageHandler(
+				mockProvider,
+				{
+					type: "editMessageConfirm",
+					messageTs: 1,
+					text: "Edited checkpoint message",
+					restoreCheckpoint: true,
+				},
+				marketplaceManager,
+			)
 
 			// Verify handleCheckpointRestoreOperation was called with correct parameters
 			expect(handleCheckpointRestoreOperation).toHaveBeenCalledWith({

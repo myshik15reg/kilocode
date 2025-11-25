@@ -51,13 +51,10 @@ export class CodeIndexStateManager {
 		const stateChanged =
 			newState !== this._systemStatus ||
 			(message !== undefined && message !== this._statusMessage) ||
-			(manifest !== undefined && 
-				(
-					this._manifest?.totalFiles !== manifest.totalFiles ||
+			(manifest !== undefined &&
+				(this._manifest?.totalFiles !== manifest.totalFiles ||
 					this._manifest?.totalChunks !== manifest.totalChunks ||
-					this._manifest?.lastUpdated !== manifest.lastUpdated
-				)
-			) ||
+					this._manifest?.lastUpdated !== manifest.lastUpdated)) ||
 			(gitBranch !== undefined && gitBranch !== this._gitBranch)
 
 		if (stateChanged) {

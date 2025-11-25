@@ -27,6 +27,6 @@
 	// + Чернявский
 	// 	"java.configuration.updateBuildConfiguration": "interactive"
 	"java.configuration.updateBuildConfiguration": "interactive",
-	"kilo-code.code-index.qdrantCollectionName": "bge-m3"
+	"kilo-code.code-index.qdrantCollectionName": ""
 	// - Чернявский
 }

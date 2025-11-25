@@ -599,17 +599,12 @@
 					"maximum": 200,
 					"description": "%settings.codeIndex.embeddingBatchSize.description%"
 				},
-				"kilo-code.code-index.qdrantCollectionName": {
+				"kilo-code.codebaseIndex.CollectionName": {
 					"type": "string",
-					"scope": "resource",
-					"description": "Qdrant collection name for codebase index"
-				},
-				"kilo-code.codebaseIndex.qdrantCollectionName": {
-				                "type": "string",
-				                "default": "",
-				                "description": "The name of the Qdrant collection for the code index.",
-				                "scope": "resource"
-				            }
+					"default": "",
+					"description": "The name of the Qdrant collection for the code index.",
+					"scope": "resource"
+				}
 			}
 		},
 		"codeActions": [

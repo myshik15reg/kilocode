@@ -47,6 +47,7 @@ import type { ApiMessage } from "../../task-persistence/apiMessages"
 describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 	let mockClineProvider: ClineProvider
 	let mockCurrentTask: any
+	let marketplaceManager: any
 
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -72,6 +73,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 			},
 			log: vi.fn(),
 		} as unknown as ClineProvider
+		marketplaceManager = {}
 	})
 
 	it("should not modify API history when apiConversationHistoryIndex is -1", async () => {
@@ -125,12 +127,16 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 		] as ApiMessage[]
 
 		// Trigger edit confirmation
-		await webviewMessageHandler(mockClineProvider, {
-			type: "editMessageConfirm",
-			messageTs: userMessageTs,
-			text: "Hello World", // edited content
-			restoreCheckpoint: false,
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "editMessageConfirm",
+				messageTs: userMessageTs,
+				text: "Hello World", // edited content
+				restoreCheckpoint: false,
+			},
+			marketplaceManager,
+		)
 
 		// Verify that UI messages were truncated at the correct index
 		expect(mockCurrentTask.overwriteClineMessages).toHaveBeenCalledWith(
@@ -182,12 +188,16 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 			},
 		] as ApiMessage[]
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "editMessageConfirm",
-			messageTs: userMessageTs,
-			text: "Hello World",
-			restoreCheckpoint: false,
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "editMessageConfirm",
+				messageTs: userMessageTs,
+				text: "Hello World",
+				restoreCheckpoint: false,
+			},
+			marketplaceManager,
+		)
 
 		// Verify UI messages were truncated to preserve earlier message
 		expect(mockCurrentTask.overwriteClineMessages).toHaveBeenCalledWith([
@@ -242,12 +252,16 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 			},
 		] as ApiMessage[]
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "editMessageConfirm",
-			messageTs: userMessageTs,
-			text: "Hello World",
-			restoreCheckpoint: false,
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "editMessageConfirm",
+				messageTs: userMessageTs,
+				text: "Hello World",
+				restoreCheckpoint: false,
+			},
+			marketplaceManager,
+		)
 
 		// Both should be truncated at index 0
 		expect(mockCurrentTask.overwriteClineMessages).toHaveBeenCalledWith([])
@@ -280,12 +294,16 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 			},
 		] as ApiMessage[]
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "editMessageConfirm",
-			messageTs: userMessageTs,
-			text: "Hello World",
-			restoreCheckpoint: false,
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "editMessageConfirm",
+				messageTs: userMessageTs,
+				text: "Hello World",
+				restoreCheckpoint: false,
+			},
+			marketplaceManager,
+		)
 
 		// UI messages truncated
 		expect(mockCurrentTask.overwriteClineMessages).toHaveBeenCalledWith([])
@@ -308,12 +326,16 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 
 		mockCurrentTask.apiConversationHistory = []
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "editMessageConfirm",
-			messageTs: userMessageTs,
-			text: "Hello World",
-			restoreCheckpoint: false,
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "editMessageConfirm",
+				messageTs: userMessageTs,
+				text: "Hello World",
+				restoreCheckpoint: false,
+			},
+			marketplaceManager,
+		)
 
 		// UI messages should be truncated
 		expect(mockCurrentTask.overwriteClineMessages).toHaveBeenCalledWith([])
@@ -377,12 +399,16 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 		] as ApiMessage[]
 
 		// Edit the first user message
-		await webviewMessageHandler(mockClineProvider, {
-			type: "editMessageConfirm",
-			messageTs: userMessageTs,
-			text: "Do something else",
-			restoreCheckpoint: false,
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "editMessageConfirm",
+				messageTs: userMessageTs,
+				text: "Do something else",
+				restoreCheckpoint: false,
+			},
+			marketplaceManager,
+		)
 
 		// UI messages truncated at edited message
 		expect(mockCurrentTask.overwriteClineMessages).toHaveBeenCalledWith([])

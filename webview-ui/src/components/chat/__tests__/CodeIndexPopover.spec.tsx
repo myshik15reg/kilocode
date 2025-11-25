@@ -47,7 +47,7 @@ const mockExtensionState = {
 		codebaseIndexSearchMaxResults: 5,
 		codebaseIndexSearchMinScore: 0.5,
 		// + Чернявский Е.И.
-		codebaseIndexQdrantCollectionName: "",
+		codebaseIndexCollectionName: "",
 		// - Чернявский Е.И.
 	},
 	codebaseIndexModels: {

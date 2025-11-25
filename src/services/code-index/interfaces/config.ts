@@ -19,11 +19,18 @@ export interface CodeIndexConfig {
 	qdrantUrl?: string
 	qdrantApiKey?: string
 	// + Чернявский Е.И.
-	qdrantCollectionName?: string
+	CollectionName?: string
 	// - Чернявский Е.И.
 	searchMinScore?: number
 	searchMaxResults?: number
 	showAllSearchResults?: boolean
+	cachePath?: string
+
+	neo4jUri?: string
+	neo4jUser?: string
+	neo4jPassword?: string
+	neo4jCachePath?: string
+	useCodeGraph?: boolean
 }
 
 /**
@@ -46,6 +53,10 @@ export type PreviousConfigSnapshot = {
 	qdrantUrl?: string
 	qdrantApiKey?: string
 	// + Чернявский Е.И.
-	qdrantCollectionName?: string
+	CollectionName?: string
 	// - Чернявский Е.И.
+	neo4jUri?: string
+	neo4jUser?: string
+	neo4jPassword?: string
+	useCodeGraph?: boolean
 }

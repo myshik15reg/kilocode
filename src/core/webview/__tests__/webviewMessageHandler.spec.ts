@@ -38,6 +38,7 @@ const mockClineProvider = {
 	getTaskWithId: vi.fn(),
 	createTaskWithHistoryItem: vi.fn(),
 } as unknown as ClineProvider
+const marketplaceManager = {} as any
 
 import { t } from "../../../i18n"
 
@@ -126,9 +127,13 @@ describe("webviewMessageHandler - requestLmStudioModels", () => {
 
 		mockGetModels.mockResolvedValue(mockModels)
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "requestLmStudioModels",
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "requestLmStudioModels",
+			},
+			marketplaceManager,
+		)
 
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "lmstudio", baseUrl: "http://localhost:1234" })
 
@@ -168,9 +173,13 @@ describe("webviewMessageHandler - requestOllamaModels", () => {
 
 		mockGetModels.mockResolvedValue(mockModels)
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "requestOllamaModels",
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "requestOllamaModels",
+			},
+			marketplaceManager,
+		)
 
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "ollama", baseUrl: "http://localhost:1234" })
 
@@ -222,9 +231,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 
 		mockGetModels.mockResolvedValue(mockModels)
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "requestRouterModels",
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "requestRouterModels",
+			},
+			marketplaceManager,
+		)
 
 		// Verify getModels was called for each provider
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "openrouter", apiKey: "openrouter-key" }) // kilocode_change: apiKey
@@ -310,13 +323,17 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 
 		mockGetModels.mockResolvedValue(mockModels)
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "requestRouterModels",
-			values: {
-				litellmApiKey: "message-litellm-key",
-				litellmBaseUrl: "http://message-url:4000",
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "requestRouterModels",
+				values: {
+					litellmApiKey: "message-litellm-key",
+					litellmBaseUrl: "http://message-url:4000",
+				},
 			},
-		})
+			marketplaceManager,
+		)
 
 		// Verify LiteLLM was called with values from message
 		expect(mockGetModels).toHaveBeenCalledWith({
@@ -352,10 +369,14 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 
 		mockGetModels.mockResolvedValue(mockModels)
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "requestRouterModels",
-			// No values provided
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "requestRouterModels",
+				// No values provided
+			},
+			marketplaceManager,
+		)
 
 		// Verify LiteLLM was NOT called
 		expect(mockGetModels).not.toHaveBeenCalledWith(
@@ -419,9 +440,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "requestRouterModels",
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "requestRouterModels",
+			},
+			marketplaceManager,
+		)
 
 		// Verify error messages were sent for failed providers (these come first)
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
@@ -516,9 +541,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "requestRouterModels",
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "requestRouterModels",
+			},
+			marketplaceManager,
+		)
 
 		// Verify error handling for different error types
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
@@ -636,13 +665,17 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		const mockModels: ModelRecord = {}
 		mockGetModels.mockResolvedValue(mockModels)
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "requestRouterModels",
-			values: {
-				litellmApiKey: "message-key",
-				litellmBaseUrl: "http://message-url",
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "requestRouterModels",
+				values: {
+					litellmApiKey: "message-key",
+					litellmBaseUrl: "http://message-url",
+				},
 			},
-		})
+			marketplaceManager,
+		)
 
 		// Verify config values are used over message values
 		expect(mockGetModels).toHaveBeenCalledWith({
@@ -677,7 +710,7 @@ describe("webviewMessageHandler - deleteCustomMode", () => {
 		vi.mocked(fsUtils.fileExistsAtPath).mockResolvedValue(true)
 		vi.mocked(mockClineProvider.customModesManager.deleteCustomMode).mockResolvedValue(undefined)
 
-		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug })
+		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug }, marketplaceManager)
 
 		// The confirmation dialog is now handled in the webview, so we don't expect showInformationMessage to be called
 		expect(vscode.window.showInformationMessage).not.toHaveBeenCalled()
@@ -702,7 +735,7 @@ describe("webviewMessageHandler - deleteCustomMode", () => {
 		vi.mocked(fsUtils.fileExistsAtPath).mockResolvedValue(true)
 		vi.mocked(mockClineProvider.customModesManager.deleteCustomMode).mockResolvedValue(undefined)
 
-		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug })
+		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug }, marketplaceManager)
 
 		// The confirmation dialog is now handled in the webview, so we don't expect showInformationMessage to be called
 		expect(vscode.window.showInformationMessage).not.toHaveBeenCalled()
@@ -724,7 +757,7 @@ describe("webviewMessageHandler - deleteCustomMode", () => {
 		vi.mocked(fsUtils.fileExistsAtPath).mockResolvedValue(false)
 		vi.mocked(mockClineProvider.customModesManager.deleteCustomMode).mockResolvedValue(undefined)
 
-		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug })
+		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug }, marketplaceManager)
 
 		// The confirmation dialog is now handled in the webview, so we don't expect showInformationMessage to be called
 		expect(vscode.window.showInformationMessage).not.toHaveBeenCalled()
@@ -750,7 +783,7 @@ describe("webviewMessageHandler - deleteCustomMode", () => {
 		vi.mocked(mockClineProvider.customModesManager.deleteCustomMode).mockResolvedValue(undefined)
 		vi.mocked(fs.rm).mockRejectedValue(error)
 
-		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug })
+		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug }, marketplaceManager)
 
 		expect(mockClineProvider.customModesManager.deleteCustomMode).toHaveBeenCalledWith(slug)
 		expect(fs.rm).toHaveBeenCalledWith(rulesFolderPath, { recursive: true, force: true })
@@ -786,10 +819,14 @@ describe("webviewMessageHandler - message dialog preferences", () => {
 				apiConversationHistory: [],
 			} as any) // Mock current cline with proper structure
 
-			await webviewMessageHandler(mockClineProvider, {
-				type: "deleteMessage",
-				value: 123456789, // Changed from messageTs to value
-			})
+			await webviewMessageHandler(
+				mockClineProvider,
+				{
+					type: "deleteMessage",
+					value: 123456789, // Changed from messageTs to value
+				},
+				marketplaceManager,
+			)
 
 			expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 				type: "showDeleteMessageDialog",
@@ -806,11 +843,15 @@ describe("webviewMessageHandler - message dialog preferences", () => {
 				apiConversationHistory: [],
 			} as any) // Mock current cline with proper structure
 
-			await webviewMessageHandler(mockClineProvider, {
-				type: "submitEditedMessage",
-				value: 123456789,
-				editedMessageContent: "edited content",
-			})
+			await webviewMessageHandler(
+				mockClineProvider,
+				{
+					type: "submitEditedMessage",
+					value: 123456789,
+					editedMessageContent: "edited content",
+				},
+				marketplaceManager,
+			)
 
 			expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 				type: "showEditMessageDialog",
@@ -839,10 +880,14 @@ describe("webviewMessageHandler - mcpEnabled", () => {
 	})
 
 	it("delegates enable=true to McpHub and posts updated state", async () => {
-		await webviewMessageHandler(mockClineProvider, {
-			type: "mcpEnabled",
-			bool: true,
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "mcpEnabled",
+				bool: true,
+			},
+			marketplaceManager,
+		)
 
 		expect((mockClineProvider as any).getMcpHub).toHaveBeenCalledTimes(1)
 		expect(mockMcpHub.handleMcpEnabledChange).toHaveBeenCalledTimes(1)
@@ -851,10 +896,14 @@ describe("webviewMessageHandler - mcpEnabled", () => {
 	})
 
 	it("delegates enable=false to McpHub and posts updated state", async () => {
-		await webviewMessageHandler(mockClineProvider, {
-			type: "mcpEnabled",
-			bool: false,
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "mcpEnabled",
+				bool: false,
+			},
+			marketplaceManager,
+		)
 
 		expect((mockClineProvider as any).getMcpHub).toHaveBeenCalledTimes(1)
 		expect(mockMcpHub.handleMcpEnabledChange).toHaveBeenCalledTimes(1)
@@ -865,10 +914,14 @@ describe("webviewMessageHandler - mcpEnabled", () => {
 	it("handles missing McpHub instance gracefully and still posts state", async () => {
 		;(mockClineProvider as any).getMcpHub = vi.fn().mockReturnValue(undefined)
 
-		await webviewMessageHandler(mockClineProvider, {
-			type: "mcpEnabled",
-			bool: true,
-		})
+		await webviewMessageHandler(
+			mockClineProvider,
+			{
+				type: "mcpEnabled",
+				bool: true,
+			},
+			marketplaceManager,
+		)
 
 		expect((mockClineProvider as any).getMcpHub).toHaveBeenCalledTimes(1)
 		expect(mockClineProvider.postStateToWebview).toHaveBeenCalledTimes(1)

@@ -113,7 +113,6 @@ export interface WebviewMessage {
 		| "allowedMaxRequests"
 		| "allowedMaxCost"
 		| "alwaysAllowSubtasks"
-		| "alwaysAllowUpdateTodoList"
 		| "autoCondenseContext"
 		| "autoCondenseContextPercent"
 		| "condensingApiConfigId"
@@ -257,7 +256,6 @@ export interface WebviewMessage {
 		| "indexCleared"
 		| "focusPanelRequest"
 		| "profileThresholds"
-		| "setHistoryPreviewCollapsed"
 		| "clearUsageData" // kilocode_change
 		| "getUsageData" // kilocode_change
 		| "usageDataResponse" // kilocode_change
@@ -282,7 +280,6 @@ export interface WebviewMessage {
 		| "marketplaceInstallResult"
 		| "fetchMarketplaceData"
 		| "switchTab"
-		| "profileThresholds"
 		| "editMessage" // kilocode_change
 		| "systemNotificationsEnabled" // kilocode_change
 		| "dismissNotificationId" // kilocode_change
@@ -321,6 +318,65 @@ export interface WebviewMessage {
 		| "dismissUpsell"
 		| "getDismissedUpsells"
 		| "requestManagedIndexerState" // kilocode_change
+		// From webviewMessageHandler
+		| "addCodeSymbol"
+		| "addCodeNode"
+		| "addCodeEdge"
+		| "searchCodeGraph"
+		| "copyToClipboard"
+		| "showInformationMessage"
+		| "showErrorMessage"
+		| "openUrl"
+		| "getTheme"
+		| "getHistory"
+		| "clearHistory"
+		| "deleteTask"
+		| "deleteMultipleTasks"
+		| "exportTask"
+		| "restoreTask"
+		| "condenseTaskContext"
+		| "editTask"
+		| "getSettings"
+		| "updateSetting"
+		| "updateCodebaseIndexConfig"
+		| "reindexCodebase"
+		| "pauseCodebaseIndexing"
+		| "resumeCodebaseIndexing"
+		| "cancelCodebaseIndexing"
+		| "resetTerminals"
+		| "newProviderProfile"
+		| "deleteProviderProfile"
+		| "activateProviderProfile"
+		| "updateCustomInstructions"
+		| "request"
+		| "messageResponse"
+		| "userActionResponse"
+		| "toolResponse"
+		| "tool-result"
+		| "new-task"
+		| "clear-task"
+		| "insertAtCursor"
+		| "open-in-new-editor"
+		| "replace-selection-with-text"
+		| "get-active-editor-selection"
+		| "new-mode"
+		| "delete-mode"
+		| "mode-api-config-change"
+		| "mode-switch"
+		| "open-mode-selector"
+		| "open-router-auth-callback"
+		| "glama-auth-callback"
+		| "requesty-auth-callback"
+		| "kilocode-auth-callback"
+		| "webview-loaded"
+		| "refresh-workspace"
+		| "execute-mcp-command"
+		| "connect-mcp-server"
+		| "disconnect-mcp-server"
+		| "install-mcp-server"
+		| "uninstall-mcp-server"
+		| "fetch-mcp-readme"
+
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -331,7 +387,7 @@ export interface WebviewMessage {
 	apiConfiguration?: ProviderSettings
 	images?: string[]
 	bool?: boolean
-	value?: number
+	value?: any
 	commands?: string[]
 	audioType?: AudioType
 	// kilocode_change begin
@@ -352,11 +408,12 @@ export interface WebviewMessage {
 	notificationId?: string // kilocode_change
 	commandIds?: string[] // kilocode_change: For getKeybindings
 	// kilocode_change end
+	name?: string
 	serverName?: string
 	toolName?: string
 	alwaysAllow?: boolean
 	isEnabled?: boolean
-	mode?: Mode
+	mode?: string
 	promptMode?: PromptMode
 	customPrompt?: PromptComponent
 	dataUrls?: string[]
@@ -418,6 +475,33 @@ export interface WebviewMessage {
 		codebaseIndexVercelAiGatewayApiKey?: string
 		codebaseIndexOpenRouterApiKey?: string
 	}
+	// Added from webviewMessageHandler
+	symbol?: any // CodeSymbol
+	node?: any // CodeNode
+	edge?: any // CodeEdge
+	searchType?: "exact" | "fuzzy"
+	path?: string
+	id?: string
+	taskId?: string
+	key?: string
+	providerSettings?: ProviderSettings
+	activate?: boolean
+	profile?: any
+	instructions?: string
+	userAction?: any
+	tool?: any
+	language?: string
+	customMode?: any
+	configId?: string
+	code?: string
+	baseUrl?: string
+	token?: string
+	command?: string
+	args?: any[]
+	item?: any
+	repo?: string
+	editedContent?: string
+	force?: boolean
 }
 
 // kilocode_change: Create discriminated union for type-safe messages

@@ -59,7 +59,7 @@ describe("CacheManager", () => {
 		;(vscode.Uri.joinPath as Mock).mockReturnValue(mockCachePath)
 
 		// Create cache manager instance
-		cacheManager = new CacheManager(mockContext, mockWorkspacePath)
+		cacheManager = new CacheManager(mockContext, mockWorkspacePath, {} as any)
 	})
 
 	describe("constructor", () => {

@@ -628,11 +628,11 @@ export class McpHub {
 		return state.mcpEnabled ?? true
 	}
 
-	private async connectToServer(
+	public async connectToServer(
 		name: string,
 		config: z.infer<typeof ServerConfigSchema>,
 		source: "global" | "project" = "global",
-	): Promise<void> {
+	): Promise<McpConnection> {
 		// Remove existing connection if it exists with the same source
 		await this.deleteConnection(name, source)
 
@@ -642,7 +642,7 @@ export class McpHub {
 			// Still create a connection object to track the server, but don't actually connect
 			const connection = this.createPlaceholderConnection(name, config, source, DisableReason.MCP_DISABLED)
 			this.connections.push(connection)
-			return
+			return connection
 		}
 
 		// Skip connecting to disabled servers
@@ -650,7 +650,7 @@ export class McpHub {
 			// Still create a connection object to track the server, but don't actually connect
 			const connection = this.createPlaceholderConnection(name, config, source, DisableReason.SERVER_DISABLED)
 			this.connections.push(connection)
-			return
+			return connection
 		}
 
 		// Set up file watchers for enabled servers
@@ -856,6 +856,7 @@ export class McpHub {
 
 			// Initial fetch of tools and resources
 			await this.fetchAvailableServerCapabilities(name, source) // kilocode_change: logic moved into method
+			return connection
 		} catch (error) {
 			// Update status with error
 			const connection = this.findConnection(name, source)
@@ -1434,8 +1435,8 @@ export class McpHub {
 						await this.deleteConnection(serverName, serverSource)
 						// Re-add as a disabled connection
 						// Re-read config from file to get updated disabled state
-					const updatedConfig = await this.readServerConfigFromFile(serverName, serverSource)
-					await this.connectToServer(serverName, updatedConfig, serverSource)
+						const updatedConfig = await this.readServerConfigFromFile(serverName, serverSource)
+						await this.connectToServer(serverName, updatedConfig, serverSource)
 					} else if (!disabled && connection.server.status === "disconnected") {
 						// If enabling a disabled server, connect it
 						// Re-read config from file to get updated disabled state

@@ -2010,7 +2010,6 @@ ${prompt}
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
-			organizationAllowList,
 			organizationSettingsVersion,
 			maxConcurrentFileReads,
 			allowVeryLargeReads, // kilocode_change
@@ -2039,7 +2038,7 @@ ${prompt}
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
 			yoloMode, // kilocode_change
-			yoloGatekeeperApiConfigId, // kilocode_change: AI gatekeeper for YOLO mode
+			yoloGatekeeperApiConfigId, // kilocode_change
 		} = await this.getState()
 
 		// kilocode_change start: Get active model for virtual quota fallback UI display
@@ -2067,9 +2066,9 @@ ${prompt}
 		const cwd = this.cwd
 
 		// + Чернявский
-		const workspaceQdrantCollectionName = vscode.workspace
+		const workspaceCollectionName = vscode.workspace
 			.getConfiguration("kilo-code.codebaseIndex", cwd ? vscode.Uri.file(cwd) : undefined)
-			.get<string>("qdrantCollectionName")
+			.get<string>("CollectionName")
 		// - Чернявский
 		// Check if there's a system prompt override for the current mode
 		const currentMode = mode ?? defaultModeSlug
@@ -2189,7 +2188,6 @@ ${prompt}
 			cloudIsAuthenticated: cloudIsAuthenticated ?? false,
 			cloudOrganizations,
 			sharingEnabled: sharingEnabled ?? false,
-			organizationAllowList,
 			// kilocode_change start
 			ghostServiceSettings: ghostServiceSettings,
 			// kilocode_change end
@@ -2210,7 +2208,7 @@ ${prompt}
 				codebaseIndexSearchMinScore: codebaseIndexConfig?.codebaseIndexSearchMinScore,
 				// + Чернявский Е.И.
 				codebaseIndexQdrantCollectionName:
-					workspaceQdrantCollectionName ?? codebaseIndexConfig?.codebaseIndexQdrantCollectionName,
+					workspaceCollectionName ?? codebaseIndexConfig?.codebaseIndexQdrantCollectionName,
 				// - Чернявский Е.И.
 			},
 			// Only set mdmCompliant if there's an actual MDM policy
@@ -2333,9 +2331,9 @@ ${prompt}
 		let organizationSettingsVersion: number = -1
 
 		// + Чернявский
-		const workspaceQdrantCollectionName = vscode.workspace
+		const workspaceCollectionName = vscode.workspace
 			.getConfiguration("kilo-code.codebaseIndex", this.cwd ? vscode.Uri.file(this.cwd) : undefined)
-			.get<string>("qdrantCollectionName")
+			.get<string>("CollectionName")
 		// - Чернявский
 		try {
 			if (CloudService.hasInstance()) {
@@ -2471,7 +2469,6 @@ ${prompt}
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
-			organizationAllowList,
 			organizationSettingsVersion,
 			condensingApiConfigId: stateValues.condensingApiConfigId,
 			customCondensingPrompt: stateValues.customCondensingPrompt,
@@ -2493,7 +2490,7 @@ ${prompt}
 				codebaseIndexSearchMinScore: stateValues.codebaseIndexConfig?.codebaseIndexSearchMinScore,
 				// + Чернявский Е.И.
 				codebaseIndexQdrantCollectionName:
-					workspaceQdrantCollectionName ?? stateValues.codebaseIndexConfig?.codebaseIndexQdrantCollectionName,
+					workspaceCollectionName ?? stateValues.codebaseIndexConfig?.codebaseIndexQdrantCollectionName,
 				// - Чернявский Е.И.
 			},
 			profileThresholds: stateValues.profileThresholds ?? {},
@@ -2552,7 +2549,7 @@ ${prompt}
 	// ContextProxy
 
 	// @deprecated - Use `ContextProxy#setValue` instead.
-	private async updateGlobalState<K extends keyof GlobalState>(key: K, value: GlobalState[K]) {
+	public async updateGlobalState<K extends keyof GlobalState>(key: K, value: GlobalState[K]) {
 		await this.contextProxy.setValue(key, value)
 	}
 
@@ -2866,7 +2863,6 @@ ${prompt}
 
 		const {
 			apiConfiguration,
-			organizationAllowList,
 			diffEnabled: enableDiff,
 			enableCheckpoints,
 			checkpointTimeout,
@@ -2876,7 +2872,7 @@ ${prompt}
 			remoteControlEnabled,
 		} = await this.getState()
 
-		if (!ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList)) {
+		if (!ProfileValidator.isProfileAllowed(apiConfiguration, ORGANIZATION_ALLOW_ALL)) {
 			throw new OrganizationAllowListViolationError(t("common:errors.violated_organization_allowlist"))
 		}
 

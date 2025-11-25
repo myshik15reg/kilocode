@@ -144,37 +144,37 @@ export interface ExtensionMessage {
 		| "balanceDataResponse" // kilocode_change
 		| "updateProfileData" // kilocode_change
 		| "profileConfigurationForEditing" // kilocode_change: Response with profile config for editing
-	| "authenticatedUser"
+		| "authenticatedUser"
 		| "condenseTaskContextResponse"
 		| "singleRouterModelFetchResponse"
 		| "indexingStatusUpdate"
 		| "indexCleared"
 		| "codebaseIndexConfig"
 		| "rulesData" // kilocode_change
-	| "marketplaceInstallResult"
-	| "marketplaceRemoveResult"
-	| "marketplaceData"
-	| "mermaidFixResponse" // kilocode_change
-	| "tasksByIdResponse" // kilocode_change
-	| "taskHistoryResponse" // kilocode_change
-	| "shareTaskSuccess"
+		| "marketplaceInstallResult"
+		| "marketplaceRemoveResult"
+		| "marketplaceData"
+		| "mermaidFixResponse" // kilocode_change
+		| "tasksByIdResponse" // kilocode_change
+		| "taskHistoryResponse" // kilocode_change
+		| "shareTaskSuccess"
 		| "codeIndexSettingsSaved"
 		| "codeIndexSecretStatus"
 		| "showDeleteMessageDialog"
 		| "showEditMessageDialog"
-	| "kilocodeNotificationsResponse" // kilocode_change
-	| "usageDataResponse" // kilocode_change
-	| "keybindingsResponse" // kilocode_change
-	| "autoPurgeEnabled" // kilocode_change
-	| "autoPurgeDefaultRetentionDays" // kilocode_change
-	| "autoPurgeFavoritedTaskRetentionDays" // kilocode_change
-	| "autoPurgeCompletedTaskRetentionDays" // kilocode_change
-	| "autoPurgeIncompleteTaskRetentionDays" // kilocode_change
-	| "manualPurge" // kilocode_change
-	| "dismissedUpsells"
-	| "showTimestamps" // kilocode_change
-	| "organizationSwitchResult"
-	| "managedIndexerState" // kilocode_change
+		| "kilocodeNotificationsResponse" // kilocode_change
+		| "usageDataResponse" // kilocode_change
+		| "keybindingsResponse" // kilocode_change
+		| "autoPurgeEnabled" // kilocode_change
+		| "autoPurgeDefaultRetentionDays" // kilocode_change
+		| "autoPurgeFavoritedTaskRetentionDays" // kilocode_change
+		| "autoPurgeCompletedTaskRetentionDays" // kilocode_change
+		| "autoPurgeIncompleteTaskRetentionDays" // kilocode_change
+		| "manualPurge" // kilocode_change
+		| "dismissedUpsells"
+		| "showTimestamps" // kilocode_change
+		| "organizationSwitchResult"
+		| "managedIndexerState" // kilocode_change
 	text?: string
 	// kilocode_change start
 	payload?:
@@ -423,7 +423,7 @@ export type ExtensionState = Pick<
 	| "reasoningBlockCollapsed"
 	| "includeCurrentTime"
 	| "includeCurrentCost"
-	> & {
+> & {
 	version: string
 	clineMessages: ClineMessage[]
 	currentTaskItem?: HistoryItem

@@ -7,6 +7,8 @@ import { CodeIndexStateManager } from "./state-manager"
 import { CodeIndexServiceFactory } from "./service-factory"
 import { CodeIndexSearchService } from "./search-service"
 import { CodeIndexOrchestrator } from "./orchestrator"
+import { GraphProcessor } from "./processors/graph-processor"
+import { Neo4jGraphService } from "./graph-service"
 import { CacheManager } from "./cache-manager"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
 import fs from "fs/promises"
@@ -30,6 +32,8 @@ export class CodeIndexManager {
 	private _serviceFactory: CodeIndexServiceFactory | undefined
 	private _orchestrator: CodeIndexOrchestrator | undefined
 	private _searchService: CodeIndexSearchService | undefined
+	private _graphProcessor: GraphProcessor | undefined
+	private _neo4jService: Neo4jGraphService | undefined
 	private _cacheManager: CacheManager | undefined
 
 	// kilocode_change start: Managed indexing (new standalone system)
@@ -150,17 +154,14 @@ export class CodeIndexManager {
 		// 3. Check if workspace is available
 		const workspacePath = this.workspacePath
 		if (!workspacePath) {
-			this._stateManager.setSystemState(
-				"Standby",
-				"No workspace folder open",
-				this._serviceFactory?.getDefaultCollectionName(),
-			)
+			this._stateManager.setSystemState("Standby", "No workspace folder open", undefined)
 			return { requiresRestart }
 		}
 
 		// 4. CacheManager Initialization
 		if (!this._cacheManager) {
-			this._cacheManager = new CacheManager(this.context, this.workspacePath)
+			const config = this._configManager.getConfig()
+			this._cacheManager = new CacheManager(this.context, this.workspacePath, config)
 			await this._cacheManager.initialize()
 		}
 
@@ -269,7 +270,7 @@ export class CodeIndexManager {
 		this._isRecoveringFromError = true
 		try {
 			// Clear error state
-			this._stateManager.setSystemState("Standby", "", this._serviceFactory?.getDefaultCollectionName())
+			this._stateManager.setSystemState("Standby", "", undefined)
 		} catch (error) {
 			// Log error but continue with recovery - clearing service instances is more important
 			console.error("Failed to clear error state during recovery:", error)
@@ -280,6 +281,8 @@ export class CodeIndexManager {
 			this._serviceFactory = undefined
 			this._orchestrator = undefined
 			this._searchService = undefined
+			this._graphProcessor = undefined
+			this._neo4jService = undefined
 
 			// Reset flag after recovery is complete
 			this._isRecoveringFromError = false
@@ -350,6 +353,8 @@ export class CodeIndexManager {
 		// Clear existing services to ensure clean state
 		this._orchestrator = undefined
 		this._searchService = undefined
+		this._graphProcessor = undefined
+		this._neo4jService = undefined
 
 		// (Re)Initialize service factory
 		this._serviceFactory = new CodeIndexServiceFactory(
@@ -362,7 +367,7 @@ export class CodeIndexManager {
 		const workspacePath = this.workspacePath
 
 		if (!workspacePath) {
-			this._stateManager.setSystemState("Standby", "", this._serviceFactory?.getDefaultCollectionName())
+			this._stateManager.setSystemState("Standby", "", undefined)
 			return
 		}
 
@@ -387,12 +392,10 @@ export class CodeIndexManager {
 		await rooIgnoreController.initialize()
 
 		// (Re)Create shared service instances
-		const { embedder, vectorStore, scanner, fileWatcher } = this._serviceFactory.createServices(
-			this.context,
-			this._cacheManager!,
-			ignoreInstance,
-			rooIgnoreController,
-		)
+		const { embedder, vectorStore, scanner, fileWatcher, graphProcessor, neo4jService } =
+			this._serviceFactory.createServices(this.context, this._cacheManager!, ignoreInstance, rooIgnoreController)
+		this._graphProcessor = graphProcessor
+		this._neo4jService = neo4jService
 
 		// kilocode_change start: Handle Kilo org mode (no embedder/vector store validation needed)
 		const isKiloOrgMode = this._configManager!.isKiloOrgMode
@@ -406,11 +409,7 @@ export class CodeIndexManager {
 				const validationResult = await this._serviceFactory.validateEmbedder(embedder)
 				if (!validationResult.valid) {
 					const errorMessage = validationResult.error || "Embedder configuration validation failed"
-					this._stateManager.setSystemState(
-						"Error",
-						errorMessage,
-						this._serviceFactory.getDefaultCollectionName(),
-					)
+					this._stateManager.setSystemState("Error", errorMessage, undefined)
 					throw new Error(errorMessage)
 				}
 			}
@@ -426,6 +425,7 @@ export class CodeIndexManager {
 			vectorStore,
 			scanner,
 			fileWatcher,
+			graphProcessor,
 		)
 
 		// kilocode_change start: Always create search service (it handles both local and Kilo org mode)
@@ -435,6 +435,7 @@ export class CodeIndexManager {
 			this._stateManager,
 			embedder,
 			vectorStore,
+			this._neo4jService,
 		)
 		// kilocode_change end
 
@@ -462,11 +463,7 @@ export class CodeIndexManager {
 					this._orchestrator.stopWatcher()
 				}
 				// Set state to indicate service is disabled
-				this._stateManager.setSystemState(
-					"Standby",
-					"Code indexing is disabled",
-					this._serviceFactory?.getDefaultCollectionName(),
-				)
+				this._stateManager.setSystemState("Standby", "Code indexing is disabled", undefined)
 				return
 			}
 
@@ -474,7 +471,8 @@ export class CodeIndexManager {
 				try {
 					// Ensure cacheManager is initialized before recreating services
 					if (!this._cacheManager) {
-						this._cacheManager = new CacheManager(this.context, this.workspacePath)
+						const config = this._configManager.getConfig()
+						this._cacheManager = new CacheManager(this.context, this.workspacePath, config)
 						await this._cacheManager.initialize()
 					}
 

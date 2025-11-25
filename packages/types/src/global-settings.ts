@@ -288,6 +288,9 @@ export const SECRET_STATE_KEYS = [
 export const GLOBAL_SECRET_KEYS = [
 	"openRouterImageApiKey", // For image generation
 	"kiloCodeImageApiKey",
+	"codeIndexNeo4jUri",
+	"codeIndexNeo4jUser",
+	"codeIndexNeo4jPassword",
 ] as const
 
 // Type for the actual secret storage keys

@@ -27,10 +27,15 @@ export class CodeIndexConfigManager {
 	private qdrantUrl?: string = "http://localhost:6333"
 	private qdrantApiKey?: string
 	// + Чернявский Е.И.
-	private qdrantCollectionName?: string
+	private CollectionName?: string
 	// - Чернявский Е.И.
+	private neo4jUri?: string
+	private neo4jUser?: string
+	private neo4jPassword?: string
 	private searchMinScore?: number
 	private searchMaxResults?: number
+	private neo4jCachePath?: string
+	private cachePath?: string
 
 	// kilocode_change start: Kilo org indexing props
 	private _kiloOrgProps: {
@@ -114,6 +119,9 @@ export class CodeIndexConfigManager {
 		const mistralApiKey = this.contextProxy?.getSecret("codebaseIndexMistralApiKey") ?? ""
 		const vercelAiGatewayApiKey = this.contextProxy?.getSecret("codebaseIndexVercelAiGatewayApiKey") ?? ""
 		const openRouterApiKey = this.contextProxy?.getSecret("codebaseIndexOpenRouterApiKey") ?? ""
+		const neo4jUri = this.contextProxy?.getSecret("codeIndexNeo4jUri") ?? ""
+		const neo4jUser = this.contextProxy?.getSecret("codeIndexNeo4jUser") ?? ""
+		const neo4jPassword = this.contextProxy?.getSecret("codeIndexNeo4jPassword") ?? ""
 
 		// Update instance variables with configuration
 		this.codebaseIndexEnabled = codebaseIndexEnabled ?? true
@@ -121,21 +129,26 @@ export class CodeIndexConfigManager {
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
+		this.neo4jUri = neo4jUri
+		this.neo4jUser = neo4jUser
+		this.neo4jPassword = neo4jPassword
 
 		// + Чернявский Е.И. -> Handle collection name with workspace override
 		// Load collection name from workspace settings first (priority)
 		const workspaceConfig = vscode.workspace.getConfiguration(
 			"kilocode.codebaseIndex",
-			vscode.workspace.workspaceFolders?.[0]
+			vscode.workspace.workspaceFolders?.[0],
 		)
-		const workspaceCollectionName = workspaceConfig.get<string>("qdrantCollectionName")
+		this.neo4jCachePath = workspaceConfig.get("neo4jCachePath")
+		this.cachePath = workspaceConfig.get("cachePath")
+		const workspaceCollectionName = workspaceConfig.get<string>("CollectionName")
 
 		// If a collection name is found in workspace settings, it takes precedence.
 		if (workspaceCollectionName) {
-			this.qdrantCollectionName = workspaceCollectionName
+			this.CollectionName = workspaceCollectionName
 		} else {
 			// Otherwise, fall back to the global state.
-			this.qdrantCollectionName = codebaseIndexConfig.codebaseIndexQdrantCollectionName
+			this.CollectionName = codebaseIndexConfig.codebaseIndexQdrantCollectionName
 		}
 		// - Чернявский Е.И.
 
@@ -214,9 +227,12 @@ export class CodeIndexConfigManager {
 			qdrantUrl?: string
 			qdrantApiKey?: string
 			// + Чернявский Е.И.
-			qdrantCollectionName?: string
+			CollectionName?: string
 			// - Чернявский Е.И.
 			searchMinScore?: number
+			neo4jUri?: string
+			neo4jUser?: string
+			neo4jPassword?: string
 		}
 		requiresRestart: boolean
 	}> {
@@ -238,8 +254,11 @@ export class CodeIndexConfigManager {
 			qdrantUrl: this.qdrantUrl ?? "",
 			qdrantApiKey: this.qdrantApiKey ?? "",
 			// + Чернявский Е.И.
-			qdrantCollectionName: this.qdrantCollectionName ?? "",
+			CollectionName: this.CollectionName ?? "",
 			// - Чернявский Е.И.
+			neo4jUri: this.neo4jUri ?? "",
+			neo4jUser: this.neo4jUser ?? "",
+			neo4jPassword: this.neo4jPassword ?? "",
 		}
 
 		// Refresh secrets from VSCode storage to ensure we have the latest values
@@ -267,8 +286,11 @@ export class CodeIndexConfigManager {
 				qdrantUrl: this.qdrantUrl,
 				qdrantApiKey: this.qdrantApiKey,
 				// + Чернявский Е.И.
-				qdrantCollectionName: this.qdrantCollectionName,
+				CollectionName: this.CollectionName,
 				// - Чернявский Е.И.
+				neo4jUri: this.neo4jUri,
+				neo4jUser: this.neo4jUser,
+				neo4jPassword: this.neo4jPassword,
 				searchMinScore: this.currentSearchMinScore,
 			},
 			requiresRestart,
@@ -360,8 +382,11 @@ export class CodeIndexConfigManager {
 		const prevQdrantUrl = prev?.qdrantUrl ?? ""
 		const prevQdrantApiKey = prev?.qdrantApiKey ?? ""
 		// + Чернявский Е.И.
-		const prevQdrantCollectionName = prev?.qdrantCollectionName ?? ""
+		const prevCollectionName = prev?.CollectionName ?? ""
 		// - Чернявский Е.И.
+		const prevNeo4jUri = prev?.neo4jUri ?? ""
+		const prevNeo4jUser = prev?.neo4jUser ?? ""
+		const prevNeo4jPassword = prev?.neo4jPassword ?? ""
 		// 1. Transition from disabled/unconfigured to enabled/configured
 		if ((!prevEnabled || !prevConfigured) && this.codebaseIndexEnabled && nowConfigured) {
 			return true
@@ -401,8 +426,12 @@ export class CodeIndexConfigManager {
 		const currentQdrantUrl = this.qdrantUrl ?? ""
 		const currentQdrantApiKey = this.qdrantApiKey ?? ""
 		// + Чернявский Е.И.
-		const currentQdrantCollectionName = this.qdrantCollectionName ?? ""
+		const currentCollectionName = this.CollectionName ?? ""
 		// - Чернявский Е.И.
+		const currentNeo4jUri = this.neo4jUri ?? ""
+		const currentNeo4jUser = this.neo4jUser ?? ""
+		const currentNeo4jPassword = this.neo4jPassword ?? ""
+
 		if (prevOpenAiKey !== currentOpenAiKey) {
 			return true
 		}
@@ -445,11 +474,19 @@ export class CodeIndexConfigManager {
 
 		// + Чернявский Е.И.
 		// Check for Qdrant collection name changes
-		if (prevQdrantCollectionName !== currentQdrantCollectionName) {
+		if (prevCollectionName !== currentCollectionName) {
 			return true
 		}
 		// - Чернявский Е.И.
-		
+
+		if (
+			prevNeo4jUri !== currentNeo4jUri ||
+			prevNeo4jUser !== currentNeo4jUser ||
+			prevNeo4jPassword !== currentNeo4jPassword
+		) {
+			return true
+		}
+
 		// Vector dimension changes (still important for compatibility)
 		if (this._hasVectorDimensionChanged(prevProvider, prev?.modelId)) {
 			return true
@@ -503,10 +540,15 @@ export class CodeIndexConfigManager {
 			qdrantUrl: this.qdrantUrl,
 			qdrantApiKey: this.qdrantApiKey,
 			// + Чернявский Е.И.
-			qdrantCollectionName: this.qdrantCollectionName,
+			CollectionName: this.CollectionName,
 			// - Чернявский Е.И.
+			neo4jUri: this.neo4jUri,
+			neo4jUser: this.neo4jUser,
+			neo4jPassword: this.neo4jPassword,
 			searchMinScore: this.currentSearchMinScore,
 			searchMaxResults: this.currentSearchMaxResults,
+			neo4jCachePath: this.neo4jCachePath,
+			cachePath: this.cachePath,
 		}
 	}
 
