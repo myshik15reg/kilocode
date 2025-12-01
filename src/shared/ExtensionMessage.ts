@@ -20,7 +20,6 @@ import type {
 import { GitCommit } from "../utils/git"
 
 import { McpServer } from "./mcp"
-import type { CodeIndexConfig } from "../services/code-index/interfaces/config"
 import { McpMarketplaceCatalog, McpDownloadResponse } from "./kilocode/mcp"
 import { Mode } from "./modes"
 import { ModelRecord, RouterModels } from "./api"
@@ -30,10 +29,10 @@ import {
 	BalanceDataResponsePayload,
 	TaskHistoryResponsePayload,
 	TasksByIdResponsePayload,
-	SaveCodeIndexSettingsResponsePayload,
 } from "./WebviewMessage"
 import { ClineRulesToggles } from "./cline-rules"
 import { KiloCodeWrapperProperties } from "./kilocode/wrapper"
+import { DeploymentRecord } from "../api/providers/fetchers/sap-ai-core"
 // kilocode_change end
 
 // Command interface for frontend/backend communication
@@ -59,14 +58,12 @@ export interface IndexingStatus {
 	totalItems: number
 	currentItemUnit?: string
 	workspacePath?: string
-	// kilocode_change start
 	gitBranch?: string // Current git branch being indexed
 	manifest?: {
 		totalFiles: number
 		totalChunks: number
 		lastUpdated: string
 	}
-	// kilocode_change end
 }
 
 export interface IndexingStatusUpdateMessage {
@@ -84,12 +81,10 @@ export interface LanguageModelChatSelector {
 // Represents JSON data that is sent from extension to webview, called
 // ExtensionMessage and has 'type' enum which can be 'plusButtonClicked' or
 // 'settingsButtonClicked' or 'hello'. Webview will hold state.
-export type { CodeIndexConfig }
 export interface ExtensionMessage {
 	type:
 		| "action"
 		| "state"
-		| "saveCodeIndexSettingsResponse"
 		| "selectedImages"
 		| "theme"
 		| "workspaceUpdated"
@@ -105,6 +100,8 @@ export interface ExtensionMessage {
 		| "lmStudioModels"
 		| "vsCodeLmModels"
 		| "huggingFaceModels"
+		| "sapAiCoreModels" // kilocode_change
+		| "sapAiCoreDeployments" // kilocode_change
 		| "vsCodeLmApiAvailable"
 		| "updatePrompt"
 		| "systemPrompt"
@@ -171,18 +168,30 @@ export interface ExtensionMessage {
 		| "autoPurgeCompletedTaskRetentionDays" // kilocode_change
 		| "autoPurgeIncompleteTaskRetentionDays" // kilocode_change
 		| "manualPurge" // kilocode_change
+		| "commands"
+		| "insertTextIntoTextarea"
 		| "dismissedUpsells"
-		| "showTimestamps" // kilocode_change
+		| "interactionRequired"
 		| "organizationSwitchResult"
+		| "showTimestamps" // kilocode_change
+		| "apiMessagesSaved" // kilocode_change: File save event for API messages
+		| "taskMessagesSaved" // kilocode_change: File save event for task messages
+		| "taskMetadataSaved" // kilocode_change: File save event for task metadata
 		| "managedIndexerState" // kilocode_change
+		| "singleCompletionResult" // kilocode_change
+		| "managedIndexerState" // kilocode_change
+		| "managedIndexerEnabled" // kilocode_change
 	text?: string
 	// kilocode_change start
+	completionRequestId?: string // Correlation ID from request
+	completionText?: string // The completed text
+	completionError?: string // Error message if failed
 	payload?:
 		| ProfileDataResponsePayload
 		| BalanceDataResponsePayload
 		| TasksByIdResponsePayload
 		| TaskHistoryResponsePayload
-		| SaveCodeIndexSettingsResponsePayload
+		| [string, string] // For file save events [taskId, filePath]
 	// kilocode_change end
 	// Checkpoint warning message
 	checkpointWarning?: {
@@ -235,6 +244,8 @@ export interface ExtensionMessage {
 			}
 		}>
 	}>
+	sapAiCoreModels?: ModelRecord // kilocode_change
+	sapAiCoreDeployments?: DeploymentRecord // kilocode_change
 	mcpServers?: McpServer[]
 	commits?: GitCommit[]
 	listApiConfig?: ProviderSettingsEntry[]
@@ -269,11 +280,9 @@ export interface ExtensionMessage {
 	localRules?: ClineRulesToggles
 	globalWorkflows?: ClineRulesToggles
 	localWorkflows?: ClineRulesToggles
-	globalWorkflowToggles?: ClineRulesToggles
-	localWorkflowToggles?: ClineRulesToggles
 	marketplaceItems?: MarketplaceItem[]
 	organizationMcps?: MarketplaceItem[]
-	marketplaceInstalledMetadata?: { project: Record<string, any>; global: Record<string, any> }
+	marketplaceInstalledMetadata?: MarketplaceInstalledMetadata
 	fixedCode?: string | null // For mermaidFixResponse // kilocode_change
 	errors?: string[]
 	visibility?: ShareVisibility
@@ -297,6 +306,8 @@ export interface ExtensionMessage {
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
+	// kilocode_change start: Managed Indexer
+	managedIndexerEnabled?: boolean
 	managedIndexerState?: Array<{
 		workspaceFolderPath: string
 		workspaceFolderName: string
@@ -316,7 +327,7 @@ export interface ExtensionMessage {
 				operation?: string
 			}
 		}
-	}> // kilocode_change
+	}> // kilocode_change end: Managed Indexer
 }
 
 export type ExtensionState = Pick<
@@ -324,9 +335,7 @@ export type ExtensionState = Pick<
 	| "currentApiConfigName"
 	| "listApiConfigMeta"
 	| "pinnedApiConfigs"
-	// | "lastShownAnnouncementId"
 	| "customInstructions"
-	| "taskHistory" // Optional in GlobalSettings, required here.
 	| "dismissedUpsells"
 	| "autoApprovalEnabled"
 	| "yoloMode" // kilocode_change
@@ -335,14 +344,13 @@ export type ExtensionState = Pick<
 	| "alwaysAllowWrite"
 	| "alwaysAllowWriteOutsideWorkspace"
 	| "alwaysAllowWriteProtected"
-	| "alwaysAllowExecute"
 	| "alwaysAllowBrowser"
 	| "alwaysApproveResubmit"
-	| "requestDelaySeconds"
 	| "alwaysAllowMcp"
 	| "alwaysAllowModeSwitch"
 	| "alwaysAllowSubtasks"
 	| "alwaysAllowFollowupQuestions"
+	| "alwaysAllowExecute"
 	| "alwaysAllowUpdateTodoList"
 	| "followupAutoApproveTimeoutMs"
 	| "allowedCommands"
@@ -357,16 +365,11 @@ export type ExtensionState = Pick<
 	| "remoteBrowserEnabled"
 	| "cachedChromeHostUrl"
 	| "remoteBrowserHost"
-	// | "enableCheckpoints" // Optional in GlobalSettings, required here.
 	| "ttsEnabled"
 	| "ttsSpeed"
 	| "soundEnabled"
 	| "soundVolume"
-	| "maxOpenTabsContext" // Optional in GlobalSettings, required here.
-	// | "maxWorkspaceFiles" // Optional in GlobalSettings, required here.
-	// | "showRooIgnoredFiles" // Optional in GlobalSettings, required here.
-	// | "maxReadFileLine" // Optional in GlobalSettings, required here.
-	| "maxConcurrentFileReads" // Optional in GlobalSettings, required here.
+	| "maxConcurrentFileReads"
 	| "allowVeryLargeReads" // kilocode_change
 	| "terminalOutputLineLimit"
 	| "terminalOutputCharacterLimit"
@@ -384,14 +387,10 @@ export type ExtensionState = Pick<
 	| "fuzzyMatchThreshold"
 	| "morphApiKey" // kilocode_change: Morph fast apply - global setting
 	| "fastApplyModel" // kilocode_change: Fast Apply model selection
+	| "fastApplyApiProvider" // kilocode_change: Fast Apply model api base url
 	// | "experiments" // Optional in GlobalSettings, required here.
 	| "language"
-	// | "telemetrySetting" // Optional in GlobalSettings, required here.
-	// | "mcpEnabled"
-	// | "enableMcpServerCreation" // Optional in GlobalSettings, required here.
-	// | "mode" // Optional in GlobalSettings, required here.
 	| "modeApiConfigs"
-	| "customModes" // Optional in GlobalSettings, required here.
 	| "customModePrompts"
 	| "customSupportPrompts"
 	| "enhancementApiConfigId"
@@ -449,7 +448,7 @@ export type ExtensionState = Pick<
 	maxWorkspaceFiles: number // Maximum number of files to include in current working directory details (0-500)
 	showRooIgnoredFiles: boolean // Whether to show .kilocodeignore'd files in listings
 	maxReadFileLine: number // Maximum number of lines to read from a file before truncating
-	showAutoApproveMenu: boolean // kilocode_change: Whether to show auto-approve menu in chat view
+	showAutoApproveMenu: boolean // kilocode_change: Whether to show the auto-approve menu in the chat view
 	maxImageFileSize: number // Maximum size of image files to process in MB
 	maxTotalImageSize: number // Maximum total size for all images in a single read operation in MB
 
@@ -479,6 +478,7 @@ export type ExtensionState = Pick<
 	cloudApiUrl?: string
 	cloudOrganizations?: CloudOrganizationMembership[]
 	sharingEnabled: boolean
+	organizationAllowList: OrganizationAllowList
 	organizationSettingsVersion?: number
 
 	autoCondenseContext: boolean
@@ -498,7 +498,7 @@ export type ExtensionState = Pick<
 	mdmCompliant?: boolean
 	remoteControlEnabled: boolean
 	taskSyncEnabled: boolean
-	featureRoomoteControlEnabled?: boolean
+	featureRoomoteControlEnabled: boolean
 	virtualQuotaActiveModel?: { id: string; info: ModelInfo } // kilocode_change: Add virtual quota active model for UI display
 	showTimestamps?: boolean // kilocode_change: Show timestamps in chat messages
 }
@@ -522,10 +522,13 @@ export interface ClineSayTool {
 		| "generateImage"
 		| "imageGenerated"
 		| "runSlashCommand"
+		| "updateTodoList"
 		| "deleteFile" // kilocode_change: Handles both files and directories
 	path?: string
 	diff?: string
 	content?: string
+	// Unified diff statistics computed by the extension
+	diffStats?: { added: number; removed: number }
 	regex?: string
 	filePattern?: string
 	mode?: string
@@ -555,6 +558,8 @@ export interface ClineSayTool {
 		changeCount: number
 		key: string
 		content: string
+		// Per-file unified diff statistics computed by the extension
+		diffStats?: { added: number; removed: number }
 		diffs?: Array<{
 			content: string
 			startLine?: number
@@ -628,12 +633,6 @@ export interface ClineApiReqInfo {
 	cancelReason?: ClineApiReqCancelReason
 	streamingFailedMessage?: string
 	apiProtocol?: "anthropic" | "openai"
-}
-
-export interface SaveCodeIndexSettingsAtomic {
-	type: "saveCodeIndexSettingsAtomic"
-	requestId: string
-	codeIndexSettings: CodeIndexConfig
 }
 
 export type ClineApiReqCancelReason = "streaming_failed" | "user_cancelled"

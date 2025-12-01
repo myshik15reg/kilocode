@@ -7,6 +7,10 @@ import { EmbedderProvider } from "./manager"
 export interface CodeIndexConfig {
 	isConfigured: boolean
 	embedderProvider: EmbedderProvider
+	// kilocode_change start
+	vectorStoreProvider?: "lancedb" | "qdrant"
+	lancedbVectorStoreDirectoryPlaceholder?: string
+	// kilocode_change end
 	modelId?: string
 	modelDimension?: number // Generic dimension property for all providers
 	openAiOptions?: ApiHandlerOptions
@@ -18,9 +22,7 @@ export interface CodeIndexConfig {
 	openRouterOptions?: { apiKey: string }
 	qdrantUrl?: string
 	qdrantApiKey?: string
-	// + Чернявский Е.И.
-	CollectionName?: string
-	// - Чернявский Е.И.
+	codebaseIndexQdrantCollectionName?: string
 	searchMinScore?: number
 	searchMaxResults?: number
 	showAllSearchResults?: boolean
@@ -40,6 +42,10 @@ export type PreviousConfigSnapshot = {
 	enabled: boolean
 	configured: boolean
 	embedderProvider: EmbedderProvider
+	// kilocode_change start
+	vectorStoreProvider?: "lancedb" | "qdrant"
+	lancedbVectorStoreDirectory?: string
+	// kilocode_change end
 	modelId?: string
 	modelDimension?: number // Generic dimension property
 	openAiKey?: string
@@ -52,9 +58,7 @@ export type PreviousConfigSnapshot = {
 	openRouterApiKey?: string
 	qdrantUrl?: string
 	qdrantApiKey?: string
-	// + Чернявский Е.И.
-	CollectionName?: string
-	// - Чернявский Е.И.
+	codebaseIndexQdrantCollectionName?: string
 	neo4jUri?: string
 	neo4jUser?: string
 	neo4jPassword?: string

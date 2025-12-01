@@ -13,6 +13,30 @@ import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "..
  * Handles loading, validating, and providing access to configuration values.
  */
 export class CodeIndexConfigManager {
+	/**
+	 * Validates the collection name.
+	 * Allowed characters: letters, numbers, hyphens, and underscores.
+	 * Length: 3 to 63 characters.
+	 * Format: Cannot start or end with a hyphen.
+	 * @param name The collection name to validate.
+	 * @returns An error message if invalid, otherwise null.
+	 */
+	public validateCollectionName(name: string): string | null {
+		if (!name) {
+			return "Collection name is required."
+		}
+		if (name.length < 3 || name.length > 63) {
+			return "Collection name must be between 3 and 63 characters long."
+		}
+		if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+			return "Collection name can only contain letters, numbers, hyphens, and underscores."
+		}
+		if (name.startsWith("-") || name.endsWith("-")) {
+			return "Collection name cannot start or end with a hyphen."
+		}
+		return null
+	}
+
 	private codebaseIndexEnabled: boolean = true
 	private embedderProvider: EmbedderProvider = "openai"
 	private modelId?: string
@@ -26,9 +50,7 @@ export class CodeIndexConfigManager {
 	private openRouterOptions?: { apiKey: string }
 	private qdrantUrl?: string = "http://localhost:6333"
 	private qdrantApiKey?: string
-	// + Чернявский Е.И.
-	private CollectionName?: string
-	// - Чернявский Е.И.
+	private codebaseIndexQdrantCollectionName?: string
 	private neo4jUri?: string
 	private neo4jUser?: string
 	private neo4jPassword?: string
@@ -141,16 +163,15 @@ export class CodeIndexConfigManager {
 		)
 		this.neo4jCachePath = workspaceConfig.get("neo4jCachePath")
 		this.cachePath = workspaceConfig.get("cachePath")
-		const workspaceCollectionName = workspaceConfig.get<string>("CollectionName")
+		const workspaceCollectionName = workspaceConfig.get<string>("codebaseIndexQdrantCollectionName")
 
 		// If a collection name is found in workspace settings, it takes precedence.
 		if (workspaceCollectionName) {
-			this.CollectionName = workspaceCollectionName
+			this.codebaseIndexQdrantCollectionName = workspaceCollectionName
 		} else {
 			// Otherwise, fall back to the global state.
-			this.CollectionName = codebaseIndexConfig.codebaseIndexQdrantCollectionName
+			this.codebaseIndexQdrantCollectionName = codebaseIndexConfig.codebaseIndexQdrantCollectionName
 		}
-		// - Чернявский Е.И.
 
 		// Validate and set model dimension
 		const rawDimension = codebaseIndexConfig.codebaseIndexEmbedderModelDimension
@@ -226,9 +247,7 @@ export class CodeIndexConfigManager {
 			openRouterOptions?: { apiKey: string }
 			qdrantUrl?: string
 			qdrantApiKey?: string
-			// + Чернявский Е.И.
-			CollectionName?: string
-			// - Чернявский Е.И.
+			codebaseIndexQdrantCollectionName?: string
 			searchMinScore?: number
 			neo4jUri?: string
 			neo4jUser?: string
@@ -253,9 +272,7 @@ export class CodeIndexConfigManager {
 			openRouterApiKey: this.openRouterOptions?.apiKey ?? "",
 			qdrantUrl: this.qdrantUrl ?? "",
 			qdrantApiKey: this.qdrantApiKey ?? "",
-			// + Чернявский Е.И.
-			CollectionName: this.CollectionName ?? "",
-			// - Чернявский Е.И.
+			codebaseIndexQdrantCollectionName: this.codebaseIndexQdrantCollectionName ?? "",
 			neo4jUri: this.neo4jUri ?? "",
 			neo4jUser: this.neo4jUser ?? "",
 			neo4jPassword: this.neo4jPassword ?? "",
@@ -285,9 +302,7 @@ export class CodeIndexConfigManager {
 				openRouterOptions: this.openRouterOptions,
 				qdrantUrl: this.qdrantUrl,
 				qdrantApiKey: this.qdrantApiKey,
-				// + Чернявский Е.И.
-				CollectionName: this.CollectionName,
-				// - Чернявский Е.И.
+				codebaseIndexQdrantCollectionName: this.codebaseIndexQdrantCollectionName,
 				neo4jUri: this.neo4jUri,
 				neo4jUser: this.neo4jUser,
 				neo4jPassword: this.neo4jPassword,
@@ -381,9 +396,7 @@ export class CodeIndexConfigManager {
 		const prevOpenRouterApiKey = prev?.openRouterApiKey ?? ""
 		const prevQdrantUrl = prev?.qdrantUrl ?? ""
 		const prevQdrantApiKey = prev?.qdrantApiKey ?? ""
-		// + Чернявский Е.И.
-		const prevCollectionName = prev?.CollectionName ?? ""
-		// - Чернявский Е.И.
+		const prevCollectionName = prev?.codebaseIndexQdrantCollectionName ?? ""
 		const prevNeo4jUri = prev?.neo4jUri ?? ""
 		const prevNeo4jUser = prev?.neo4jUser ?? ""
 		const prevNeo4jPassword = prev?.neo4jPassword ?? ""
@@ -425,9 +438,7 @@ export class CodeIndexConfigManager {
 		const currentOpenRouterApiKey = this.openRouterOptions?.apiKey ?? ""
 		const currentQdrantUrl = this.qdrantUrl ?? ""
 		const currentQdrantApiKey = this.qdrantApiKey ?? ""
-		// + Чернявский Е.И.
-		const currentCollectionName = this.CollectionName ?? ""
-		// - Чернявский Е.И.
+		const currentCollectionName = this.codebaseIndexQdrantCollectionName ?? ""
 		const currentNeo4jUri = this.neo4jUri ?? ""
 		const currentNeo4jUser = this.neo4jUser ?? ""
 		const currentNeo4jPassword = this.neo4jPassword ?? ""
@@ -472,12 +483,10 @@ export class CodeIndexConfigManager {
 			return true
 		}
 
-		// + Чернявский Е.И.
 		// Check for Qdrant collection name changes
 		if (prevCollectionName !== currentCollectionName) {
 			return true
 		}
-		// - Чернявский Е.И.
 
 		if (
 			prevNeo4jUri !== currentNeo4jUri ||
@@ -539,9 +548,7 @@ export class CodeIndexConfigManager {
 			openRouterOptions: this.openRouterOptions,
 			qdrantUrl: this.qdrantUrl,
 			qdrantApiKey: this.qdrantApiKey,
-			// + Чернявский Е.И.
-			CollectionName: this.CollectionName,
-			// - Чернявский Е.И.
+			codebaseIndexQdrantCollectionName: this.codebaseIndexQdrantCollectionName,
 			neo4jUri: this.neo4jUri,
 			neo4jUser: this.neo4jUser,
 			neo4jPassword: this.neo4jPassword,

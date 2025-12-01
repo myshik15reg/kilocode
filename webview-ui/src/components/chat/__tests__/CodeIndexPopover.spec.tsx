@@ -46,9 +46,7 @@ const mockExtensionState = {
 		codebaseIndexEmbedderModelId: "text-embedding-3-small",
 		codebaseIndexSearchMaxResults: 5,
 		codebaseIndexSearchMinScore: 0.5,
-		// + Чернявский Е.И.
 		codebaseIndexCollectionName: "",
-		// - Чернявский Е.И.
 	},
 	codebaseIndexModels: {
 		openai: {
@@ -118,6 +116,21 @@ vi.mock("@vscode/webview-ui-toolkit/react", () => ({
 }))
 
 vi.mock("@src/components/ui", () => ({
+	Button: ({
+		children,
+		onClick,
+		disabled,
+		...props
+	}: {
+		children: React.ReactNode
+		onClick?: () => void
+		disabled?: boolean
+		[key: string]: any
+	}) => (
+		<button onClick={onClick} disabled={disabled} {...props}>
+			{children}
+		</button>
+	),
 	Popover: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 	PopoverTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 	PopoverContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -253,6 +266,7 @@ describe("CodeIndexPopover", () => {
 
 		// Check if the input value was updated
 		expect(collectionInput).toHaveValue("new-collection-name")
+	})
 
 	it("should render show all search results checkbox in advanced settings", () => {
 		render(
@@ -281,7 +295,7 @@ describe("CodeIndexPopover", () => {
 		fireEvent.click(advancedButton)
 
 		// Find show all search results checkbox by clicking the label
-		const checkboxLabel = screen.getByText("выводить все результаты поиска")
+		const checkboxLabel = screen.getByText("settings:codeIndex.showAllSearchResultsLabel")
 		fireEvent.click(checkboxLabel)
 	})
 
@@ -297,8 +311,8 @@ describe("CodeIndexPopover", () => {
 		fireEvent.click(advancedButton)
 
 		// Check if slider component is rendered (mocked as "Slider")
-		expect(screen.getByText("Slider")).toBeInTheDocument()
-	})
+		const sliders = screen.getAllByText("Slider")
+		expect(sliders.length).toBeGreaterThan(0)
 	})
 	// - Чернявский Е.И.
 })

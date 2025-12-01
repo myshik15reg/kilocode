@@ -1,9 +1,11 @@
 // Mock VSCode API for Vitest tests
-const mockEventEmitter = () => ({
-	event: () => () => {},
-	fire: () => {},
-	dispose: () => {},
-})
+const mockEventEmitter = class {
+	constructor() {
+		this.event = vi.fn();
+		this.fire = vi.fn();
+		this.dispose = vi.fn();
+	}
+};
 
 const mockDisposable = {
 	dispose: () => {},
@@ -12,6 +14,12 @@ const mockDisposable = {
 const mockUri = {
 	file: (path) => ({ fsPath: path, path, scheme: "file", toString: () => path }),
 	parse: (path) => ({ fsPath: path, path, scheme: "file", toString: () => path }),
+    joinPath: (base, ...parts) => {
+        const basePath = base ? base.path || '' : '';
+        const newPath = [basePath, ...parts].join('/');
+        const scheme = base ? base.scheme || 'file' : 'file';
+        return { fsPath: newPath, path: newPath, scheme: scheme, toString: () => newPath };
+    }
 }
 
 const mockRange = class {

@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import {
+	type RooCodeSettings,
 	type ProviderSettings,
 	type PromptComponent,
 	type ModeConfig,
@@ -46,8 +47,6 @@ export type UpdateGlobalStateMessage<K extends keyof GlobalState = keyof GlobalS
 
 export interface WebviewMessage {
 	type:
-		| "response"
-		| "saveCodeIndexSettingsResponse"
 		| "updateTodoList"
 		| "deleteMultipleTasksWithIds"
 		| "currentApiConfigName"
@@ -60,17 +59,6 @@ export interface WebviewMessage {
 		| "renameApiConfiguration"
 		| "getListApiConfiguration"
 		| "customInstructions"
-		| "allowedCommands"
-		| "deniedCommands"
-		| "alwaysAllowReadOnly"
-		| "alwaysAllowReadOnlyOutsideWorkspace"
-		| "alwaysAllowWrite"
-		| "alwaysAllowWriteOutsideWorkspace"
-		| "alwaysAllowWriteProtected"
-		| "alwaysAllowExecute"
-		| "alwaysAllowFollowupQuestions"
-		| "alwaysAllowUpdateTodoList"
-		| "followupAutoApproveTimeoutMs"
 		| "webviewDidLaunch"
 		| "newTask"
 		| "askResponse"
@@ -99,6 +87,8 @@ export interface WebviewMessage {
 		| "requestRooModels"
 		| "requestVsCodeLmModels"
 		| "requestHuggingFaceModels"
+		| "requestSapAiCoreModels" // kilocode_change
+		| "requestSapAiCoreDeployments" // kilocode_change
 		| "openImage"
 		| "saveImage"
 		| "openFile"
@@ -107,30 +97,13 @@ export interface WebviewMessage {
 		| "updateVSCodeSetting"
 		| "getVSCodeSetting"
 		| "vsCodeSetting"
-		| "alwaysAllowBrowser"
-		| "alwaysAllowMcp"
-		| "alwaysAllowModeSwitch"
-		| "allowedMaxRequests"
-		| "allowedMaxCost"
-		| "alwaysAllowSubtasks"
-		| "autoCondenseContext"
-		| "autoCondenseContextPercent"
-		| "condensingApiConfigId"
 		| "updateCondensingPrompt"
 		| "yoloGatekeeperApiConfigId" // kilocode_change: AI gatekeeper for YOLO mode
 		| "playSound"
 		| "playTts"
 		| "stopTts"
-		| "soundEnabled"
 		| "ttsEnabled"
 		| "ttsSpeed"
-		| "soundVolume"
-		| "diffEnabled"
-		| "enableCheckpoints"
-		| "checkpointTimeout"
-		| "browserViewportSize"
-		| "screenshotQuality"
-		| "remoteBrowserHost"
 		| "openKeyboardShortcuts"
 		| "openMcpSettings"
 		| "openProjectMcpSettings"
@@ -140,11 +113,9 @@ export interface WebviewMessage {
 		| "toggleToolEnabledForPrompt"
 		| "toggleMcpServer"
 		| "updateMcpTimeout"
-		| "fuzzyMatchThreshold"
 		| "morphApiKey" // kilocode_change: Morph fast apply - global setting
 		| "fastApplyModel" // kilocode_change: Fast Apply model selection
-		| "writeDelayMs"
-		| "diagnosticsEnabled"
+		| "fastApplyApiProvider" // kilocode_change: Fast Apply model api base url
 		| "enhancePrompt"
 		| "enhancedPrompt"
 		| "draggedImages"
@@ -152,28 +123,13 @@ export interface WebviewMessage {
 		| "deleteMessageConfirm"
 		| "submitEditedMessage"
 		| "editMessageConfirm"
-		| "terminalOutputLineLimit"
-		| "terminalOutputCharacterLimit"
-		| "terminalShellIntegrationTimeout"
-		| "terminalShellIntegrationDisabled"
-		| "terminalCommandDelay"
-		| "terminalPowershellCounter"
-		| "terminalZshClearEolMark"
-		| "terminalZshOhMy"
-		| "terminalZshP10k"
-		| "terminalZdotdir"
-		| "terminalCompressProgressBar"
-		| "mcpEnabled"
 		| "enableMcpServerCreation"
 		| "remoteControlEnabled"
 		| "taskSyncEnabled"
 		| "searchCommits"
-		| "alwaysApproveResubmit"
-		| "requestDelaySeconds"
 		| "setApiConfigPassword"
 		| "mode"
 		| "updatePrompt"
-		| "updateSupportPrompt"
 		| "getSystemPrompt"
 		| "copySystemPrompt"
 		| "systemPrompt"
@@ -181,8 +137,6 @@ export interface WebviewMessage {
 		| "commitMessageApiConfigId" // kilocode_change
 		| "terminalCommandApiConfigId" // kilocode_change
 		| "ghostServiceSettings" // kilocode_change
-		| "includeTaskHistoryInEnhance"
-		| "updateExperimental"
 		| "autoApprovalEnabled"
 		| "yoloMode" // kilocode_change
 		| "updateCustomMode"
@@ -194,32 +148,15 @@ export interface WebviewMessage {
 		| "requestCheckpointRestoreApproval"
 		| "seeNewChanges" // kilocode_change
 		| "deleteMcpServer"
-		| "maxOpenTabsContext"
-		| "maxWorkspaceFiles"
 		| "humanRelayResponse"
 		| "humanRelayCancel"
 		| "insertTextToChatArea" // kilocode_change
-		| "browserToolEnabled"
 		| "codebaseIndexEnabled"
 		| "telemetrySetting"
-		| "showRooIgnoredFiles"
 		| "testBrowserConnection"
 		| "browserConnectionResult"
-		| "remoteBrowserEnabled"
-		| "language"
-		| "maxReadFileLine"
-		| "maxImageFileSize"
-		| "maxTotalImageSize"
-		| "maxConcurrentFileReads"
 		| "allowVeryLargeReads" // kilocode_change
-		| "includeDiagnosticMessages"
-		| "maxDiagnosticMessages"
-		| "includeCurrentTime"
-		| "includeCurrentCost"
-		| "searchFiles"
-		| "setHistoryPreviewCollapsed"
 		| "showFeedbackOptions" // kilocode_change
-		| "toggleApiConfigPin"
 		| "fetchMcpMarketplace" // kilocode_change
 		| "silentlyRefreshMcpMarketplace" // kilocode_change
 		| "fetchLatestMcpServersFromHub" // kilocode_change
@@ -240,6 +177,8 @@ export interface WebviewMessage {
 		| "toggleRule" // kilocode_change
 		| "createRuleFile" // kilocode_change
 		| "deleteRuleFile" // kilocode_change
+		| "searchFiles"
+		| "toggleApiConfigPin"
 		| "hasOpenedModeSelector"
 		| "cloudButtonClicked"
 		| "rooCloudSignIn"
@@ -255,7 +194,6 @@ export interface WebviewMessage {
 		| "indexingStatusUpdate"
 		| "indexCleared"
 		| "focusPanelRequest"
-		| "profileThresholds"
 		| "clearUsageData" // kilocode_change
 		| "getUsageData" // kilocode_change
 		| "usageDataResponse" // kilocode_change
@@ -269,6 +207,7 @@ export interface WebviewMessage {
 		| "openGlobalKeybindings" // kilocode_change
 		| "getKeybindings" // kilocode_change
 		| "setReasoningBlockCollapsed"
+		| "setHistoryPreviewCollapsed" // kilocode_change
 		| "openExternal"
 		| "filterMarketplaceItems"
 		| "mcpButtonClicked"
@@ -309,75 +248,18 @@ export interface WebviewMessage {
 		| "insertTextIntoTextarea"
 		| "showMdmAuthRequiredNotification"
 		| "imageGenerationSettings"
-		| "openRouterImageApiKey"
-		| "kiloCodeImageApiKey"
-		| "openRouterImageGenerationSelectedModel"
+		| "kiloCodeImageApiKey" // kilocode_change
 		| "queueMessage"
 		| "removeQueuedMessage"
 		| "editQueuedMessage"
 		| "dismissUpsell"
 		| "getDismissedUpsells"
+		| "updateSettings"
 		| "requestManagedIndexerState" // kilocode_change
-		// From webviewMessageHandler
-		| "addCodeSymbol"
-		| "addCodeNode"
-		| "addCodeEdge"
-		| "searchCodeGraph"
-		| "copyToClipboard"
-		| "showInformationMessage"
-		| "showErrorMessage"
-		| "openUrl"
-		| "getTheme"
-		| "getHistory"
-		| "clearHistory"
-		| "deleteTask"
-		| "deleteMultipleTasks"
-		| "exportTask"
-		| "restoreTask"
-		| "condenseTaskContext"
-		| "editTask"
-		| "getSettings"
-		| "updateSetting"
-		| "updateCodebaseIndexConfig"
-		| "reindexCodebase"
-		| "pauseCodebaseIndexing"
-		| "resumeCodebaseIndexing"
-		| "cancelCodebaseIndexing"
-		| "resetTerminals"
-		| "newProviderProfile"
-		| "deleteProviderProfile"
-		| "activateProviderProfile"
-		| "updateCustomInstructions"
-		| "request"
-		| "messageResponse"
-		| "userActionResponse"
-		| "toolResponse"
-		| "tool-result"
-		| "new-task"
-		| "clear-task"
-		| "insertAtCursor"
-		| "open-in-new-editor"
-		| "replace-selection-with-text"
-		| "get-active-editor-selection"
-		| "new-mode"
-		| "delete-mode"
-		| "mode-api-config-change"
-		| "mode-switch"
-		| "open-mode-selector"
-		| "open-router-auth-callback"
-		| "glama-auth-callback"
-		| "requesty-auth-callback"
-		| "kilocode-auth-callback"
-		| "webview-loaded"
-		| "refresh-workspace"
-		| "execute-mcp-command"
-		| "connect-mcp-server"
-		| "disconnect-mcp-server"
-		| "install-mcp-server"
-		| "uninstall-mcp-server"
-		| "fetch-mcp-readme"
-
+		| "addTaskToHistory" // kilocode_change
+		| "singleCompletion" // kilocode_change
 	text?: string
+	completionRequestId?: string // kilocode_change
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
 	disabled?: boolean
@@ -387,7 +269,7 @@ export interface WebviewMessage {
 	apiConfiguration?: ProviderSettings
 	images?: string[]
 	bool?: boolean
-	value?: any
+	value?: number
 	commands?: string[]
 	audioType?: AudioType
 	// kilocode_change begin
@@ -408,12 +290,11 @@ export interface WebviewMessage {
 	notificationId?: string // kilocode_change
 	commandIds?: string[] // kilocode_change: For getKeybindings
 	// kilocode_change end
-	name?: string
 	serverName?: string
 	toolName?: string
 	alwaysAllow?: boolean
 	isEnabled?: boolean
-	mode?: string
+	mode?: Mode
 	promptMode?: PromptMode
 	customPrompt?: PromptComponent
 	dataUrls?: string[]
@@ -444,13 +325,11 @@ export interface WebviewMessage {
 	upsellId?: string // For dismissUpsell
 	list?: string[] // For dismissedUpsells response
 	organizationId?: string | null // For organization switching
+	historyItem?: HistoryItem // kilocode_change For addTaskToHistory
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean
 		codebaseIndexQdrantUrl: string
-		// + Чернявский Е.И.
-		codebaseIndexQdrantCollectionName?: string
-		// - Чернявский Е.И.
 		codebaseIndexEmbedderProvider:
 			| "openai"
 			| "ollama"
@@ -459,6 +338,8 @@ export interface WebviewMessage {
 			| "mistral"
 			| "vercel-ai-gateway"
 			| "openrouter"
+		codebaseIndexVectorStoreProvider?: "lancedb" | "qdrant" // kilocode_change
+		codebaseIndexLancedbVectorStoreDirectory?: string // kilocode_change
 		codebaseIndexEmbedderBaseUrl?: string
 		codebaseIndexEmbedderModelId: string
 		codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
@@ -475,33 +356,7 @@ export interface WebviewMessage {
 		codebaseIndexVercelAiGatewayApiKey?: string
 		codebaseIndexOpenRouterApiKey?: string
 	}
-	// Added from webviewMessageHandler
-	symbol?: any // CodeSymbol
-	node?: any // CodeNode
-	edge?: any // CodeEdge
-	searchType?: "exact" | "fuzzy"
-	path?: string
-	id?: string
-	taskId?: string
-	key?: string
-	providerSettings?: ProviderSettings
-	activate?: boolean
-	profile?: any
-	instructions?: string
-	userAction?: any
-	tool?: any
-	language?: string
-	customMode?: any
-	configId?: string
-	code?: string
-	baseUrl?: string
-	token?: string
-	command?: string
-	args?: any[]
-	item?: any
-	repo?: string
-	editedContent?: string
-	force?: boolean
+	updatedSettings?: RooCodeSettings
 }
 
 // kilocode_change: Create discriminated union for type-safe messages
@@ -539,11 +394,6 @@ export interface BalanceDataResponsePayload {
 	// New: Payload for balance data
 	success: boolean
 	data?: any // Replace 'any' with a more specific type if known for balance
-	error?: string
-}
-
-export interface SaveCodeIndexSettingsResponsePayload {
-	success: boolean
 	error?: string
 }
 
@@ -627,7 +477,6 @@ export type WebViewMessagePayload =
 	// kilocode_change start
 	| ProfileDataResponsePayload
 	| BalanceDataResponsePayload
-	| SaveCodeIndexSettingsResponsePayload
 	| SeeNewChangesPayload
 	| TasksByIdRequestPayload
 	| TaskHistoryRequestPayload

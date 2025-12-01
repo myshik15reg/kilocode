@@ -105,11 +105,9 @@ export const ContextManagementSettings = ({
 				...profileThresholds,
 				[selectedThresholdProfile]: value,
 			}
+
 			setCachedStateField("profileThresholds", newThresholds)
-			vscode.postMessage({
-				type: "profileThresholds",
-				values: newThresholds,
-			})
+			vscode.postMessage({ type: "updateSettings", updatedSettings: { profileThresholds: newThresholds } })
 		}
 	}
 	return (

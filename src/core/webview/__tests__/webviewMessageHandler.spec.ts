@@ -38,7 +38,6 @@ const mockClineProvider = {
 	getTaskWithId: vi.fn(),
 	createTaskWithHistoryItem: vi.fn(),
 } as unknown as ClineProvider
-const marketplaceManager = {} as any
 
 import { t } from "../../../i18n"
 
@@ -127,13 +126,9 @@ describe("webviewMessageHandler - requestLmStudioModels", () => {
 
 		mockGetModels.mockResolvedValue(mockModels)
 
-		await webviewMessageHandler(
-			mockClineProvider,
-			{
-				type: "requestLmStudioModels",
-			},
-			marketplaceManager,
-		)
+		await webviewMessageHandler(mockClineProvider, {
+			type: "requestLmStudioModels",
+		})
 
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "lmstudio", baseUrl: "http://localhost:1234" })
 
@@ -173,13 +168,9 @@ describe("webviewMessageHandler - requestOllamaModels", () => {
 
 		mockGetModels.mockResolvedValue(mockModels)
 
-		await webviewMessageHandler(
-			mockClineProvider,
-			{
-				type: "requestOllamaModels",
-			},
-			marketplaceManager,
-		)
+		await webviewMessageHandler(mockClineProvider, {
+			type: "requestOllamaModels",
+		})
 
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "ollama", baseUrl: "http://localhost:1234" })
 
@@ -205,6 +196,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				chutesApiKey: "chutes-key",
 				geminiApiKey: "gemini-key",
 				googleGeminiBaseUrl: "https://gemini.example.com",
+				nanoGptApiKey: "nano-gpt-key",
 				ovhCloudAiEndpointsApiKey: "ovhcloud-key",
 				inceptionLabsApiKey: "inception-key",
 				inceptionLabsBaseUrl: "https://api.inceptionlabs.ai/v1/",
@@ -231,13 +223,9 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 
 		mockGetModels.mockResolvedValue(mockModels)
 
-		await webviewMessageHandler(
-			mockClineProvider,
-			{
-				type: "requestRouterModels",
-			},
-			marketplaceManager,
-		)
+		await webviewMessageHandler(mockClineProvider, {
+			type: "requestRouterModels",
+		})
 
 		// Verify getModels was called for each provider
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "openrouter", apiKey: "openrouter-key" }) // kilocode_change: apiKey
@@ -255,6 +243,11 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			provider: "inception",
 			apiKey: "inception-key",
 			baseUrl: "https://api.inceptionlabs.ai/v1/",
+		})
+		expect(mockGetModels).toHaveBeenCalledWith({
+			provider: "nano-gpt",
+			apiKey: "nano-gpt-key",
+			nanoGptModelList: undefined,
 		})
 		// kilocode_change end
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
@@ -286,6 +279,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				unbound: mockModels,
 				litellm: mockModels,
 				kilocode: mockModels,
+				"nano-gpt": mockModels, // kilocode_change
 				roo: mockModels,
 				chutes: mockModels,
 				ollama: mockModels, // kilocode_change
@@ -295,6 +289,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				"io-intelligence": {},
 				ovhcloud: mockModels, // kilocode_change
 				inception: mockModels, // kilocode_change
+				"sap-ai-core": {}, // kilocode_change
 			},
 			values: undefined,
 		})
@@ -323,17 +318,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 
 		mockGetModels.mockResolvedValue(mockModels)
 
-		await webviewMessageHandler(
-			mockClineProvider,
-			{
-				type: "requestRouterModels",
-				values: {
-					litellmApiKey: "message-litellm-key",
-					litellmBaseUrl: "http://message-url:4000",
-				},
+		await webviewMessageHandler(mockClineProvider, {
+			type: "requestRouterModels",
+			values: {
+				litellmApiKey: "message-litellm-key",
+				litellmBaseUrl: "http://message-url:4000",
 			},
-			marketplaceManager,
-		)
+		})
 
 		// Verify LiteLLM was called with values from message
 		expect(mockGetModels).toHaveBeenCalledWith({
@@ -353,6 +344,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				// kilocode_change start
 				ovhCloudAiEndpointsApiKey: "ovhcloud-key",
 				chutesApiKey: "chutes-key",
+				nanoGptApiKey: "nano-gpt-key",
 				// kilocode_change end
 				// Missing litellm config
 			},
@@ -369,14 +361,10 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 
 		mockGetModels.mockResolvedValue(mockModels)
 
-		await webviewMessageHandler(
-			mockClineProvider,
-			{
-				type: "requestRouterModels",
-				// No values provided
-			},
-			marketplaceManager,
-		)
+		await webviewMessageHandler(mockClineProvider, {
+			type: "requestRouterModels",
+			// No values provided
+		})
 
 		// Verify LiteLLM was NOT called
 		expect(mockGetModels).not.toHaveBeenCalledWith(
@@ -400,6 +388,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				chutes: mockModels,
 				litellm: {},
 				kilocode: mockModels,
+				"nano-gpt": mockModels, // kilocode_change
 				ollama: mockModels, // kilocode_change
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
@@ -407,6 +396,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				"io-intelligence": {},
 				ovhcloud: mockModels, // kilocode_change
 				inception: mockModels, // kilocode_change
+				"sap-ai-core": {}, // kilocode_change
 			},
 			values: undefined,
 		})
@@ -433,6 +423,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Ollama API error")) // kilocode_change
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway
 			.mockResolvedValueOnce(mockModels) // deepinfra
+			.mockResolvedValueOnce(mockModels) // nano-gpt // kilocode_change
 			.mockResolvedValueOnce(mockModels) // kilocode_change ovhcloud
 			.mockRejectedValueOnce(new Error("Inception API error")) // kilocode_change
 			.mockRejectedValueOnce(new Error("Synthetic API error")) // kilocode_change
@@ -440,13 +431,9 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
-		await webviewMessageHandler(
-			mockClineProvider,
-			{
-				type: "requestRouterModels",
-			},
-			marketplaceManager,
-		)
+		await webviewMessageHandler(mockClineProvider, {
+			type: "requestRouterModels",
+		})
 
 		// Verify error messages were sent for failed providers (these come first)
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
@@ -512,10 +499,12 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				"io-intelligence": {},
 				// kilocode_change start
 				kilocode: mockModels,
+				"nano-gpt": mockModels,
 				inception: {},
 				synthetic: {},
 				gemini: mockModels,
 				ovhcloud: mockModels,
+				"sap-ai-core": {},
 				// kilocode_change end
 			},
 			values: undefined,
@@ -534,6 +523,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Ollama API error")) // ollama
 			.mockRejectedValueOnce(new Error("Vercel AI Gateway error")) // vercel-ai-gateway
 			.mockRejectedValueOnce(new Error("DeepInfra API error")) // deepinfra
+			.mockRejectedValueOnce(new Error("Nano-GPT API error")) // nano-gpt // kilocode_change
 			.mockRejectedValueOnce(new Error("OVHcloud AI Endpoints error")) // ovhcloud // kilocode_change
 			.mockRejectedValueOnce(new Error("Inception API error")) // kilocode_change inception
 			.mockRejectedValueOnce(new Error("Synthetic API error")) // kilocode_change synthetic
@@ -541,13 +531,9 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
-		await webviewMessageHandler(
-			mockClineProvider,
-			{
-				type: "requestRouterModels",
-			},
-			marketplaceManager,
-		)
+		await webviewMessageHandler(mockClineProvider, {
+			type: "requestRouterModels",
+		})
 
 		// Verify error handling for different error types
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
@@ -617,6 +603,15 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			values: { provider: "deepinfra" },
 		})
 
+		// kilocode_change start
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
+			error: "Nano-GPT API error",
+			values: { provider: "nano-gpt" },
+		})
+		// kilocode_change end
+
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "singleRouterModelFetchResponse",
 			success: false,
@@ -665,17 +660,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		const mockModels: ModelRecord = {}
 		mockGetModels.mockResolvedValue(mockModels)
 
-		await webviewMessageHandler(
-			mockClineProvider,
-			{
-				type: "requestRouterModels",
-				values: {
-					litellmApiKey: "message-key",
-					litellmBaseUrl: "http://message-url",
-				},
+		await webviewMessageHandler(mockClineProvider, {
+			type: "requestRouterModels",
+			values: {
+				litellmApiKey: "message-key",
+				litellmBaseUrl: "http://message-url",
 			},
-			marketplaceManager,
-		)
+		})
 
 		// Verify config values are used over message values
 		expect(mockGetModels).toHaveBeenCalledWith({
@@ -710,7 +701,7 @@ describe("webviewMessageHandler - deleteCustomMode", () => {
 		vi.mocked(fsUtils.fileExistsAtPath).mockResolvedValue(true)
 		vi.mocked(mockClineProvider.customModesManager.deleteCustomMode).mockResolvedValue(undefined)
 
-		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug }, marketplaceManager)
+		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug })
 
 		// The confirmation dialog is now handled in the webview, so we don't expect showInformationMessage to be called
 		expect(vscode.window.showInformationMessage).not.toHaveBeenCalled()
@@ -735,7 +726,7 @@ describe("webviewMessageHandler - deleteCustomMode", () => {
 		vi.mocked(fsUtils.fileExistsAtPath).mockResolvedValue(true)
 		vi.mocked(mockClineProvider.customModesManager.deleteCustomMode).mockResolvedValue(undefined)
 
-		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug }, marketplaceManager)
+		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug })
 
 		// The confirmation dialog is now handled in the webview, so we don't expect showInformationMessage to be called
 		expect(vscode.window.showInformationMessage).not.toHaveBeenCalled()
@@ -757,7 +748,7 @@ describe("webviewMessageHandler - deleteCustomMode", () => {
 		vi.mocked(fsUtils.fileExistsAtPath).mockResolvedValue(false)
 		vi.mocked(mockClineProvider.customModesManager.deleteCustomMode).mockResolvedValue(undefined)
 
-		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug }, marketplaceManager)
+		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug })
 
 		// The confirmation dialog is now handled in the webview, so we don't expect showInformationMessage to be called
 		expect(vscode.window.showInformationMessage).not.toHaveBeenCalled()
@@ -783,7 +774,7 @@ describe("webviewMessageHandler - deleteCustomMode", () => {
 		vi.mocked(mockClineProvider.customModesManager.deleteCustomMode).mockResolvedValue(undefined)
 		vi.mocked(fs.rm).mockRejectedValue(error)
 
-		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug }, marketplaceManager)
+		await webviewMessageHandler(mockClineProvider, { type: "deleteCustomMode", slug })
 
 		expect(mockClineProvider.customModesManager.deleteCustomMode).toHaveBeenCalledWith(slug)
 		expect(fs.rm).toHaveBeenCalledWith(rulesFolderPath, { recursive: true, force: true })
@@ -819,14 +810,10 @@ describe("webviewMessageHandler - message dialog preferences", () => {
 				apiConversationHistory: [],
 			} as any) // Mock current cline with proper structure
 
-			await webviewMessageHandler(
-				mockClineProvider,
-				{
-					type: "deleteMessage",
-					value: 123456789, // Changed from messageTs to value
-				},
-				marketplaceManager,
-			)
+			await webviewMessageHandler(mockClineProvider, {
+				type: "deleteMessage",
+				value: 123456789, // Changed from messageTs to value
+			})
 
 			expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 				type: "showDeleteMessageDialog",
@@ -843,15 +830,11 @@ describe("webviewMessageHandler - message dialog preferences", () => {
 				apiConversationHistory: [],
 			} as any) // Mock current cline with proper structure
 
-			await webviewMessageHandler(
-				mockClineProvider,
-				{
-					type: "submitEditedMessage",
-					value: 123456789,
-					editedMessageContent: "edited content",
-				},
-				marketplaceManager,
-			)
+			await webviewMessageHandler(mockClineProvider, {
+				type: "submitEditedMessage",
+				value: 123456789,
+				editedMessageContent: "edited content",
+			})
 
 			expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 				type: "showEditMessageDialog",
@@ -880,14 +863,10 @@ describe("webviewMessageHandler - mcpEnabled", () => {
 	})
 
 	it("delegates enable=true to McpHub and posts updated state", async () => {
-		await webviewMessageHandler(
-			mockClineProvider,
-			{
-				type: "mcpEnabled",
-				bool: true,
-			},
-			marketplaceManager,
-		)
+		await webviewMessageHandler(mockClineProvider, {
+			type: "updateSettings",
+			updatedSettings: { mcpEnabled: true },
+		})
 
 		expect((mockClineProvider as any).getMcpHub).toHaveBeenCalledTimes(1)
 		expect(mockMcpHub.handleMcpEnabledChange).toHaveBeenCalledTimes(1)
@@ -896,14 +875,10 @@ describe("webviewMessageHandler - mcpEnabled", () => {
 	})
 
 	it("delegates enable=false to McpHub and posts updated state", async () => {
-		await webviewMessageHandler(
-			mockClineProvider,
-			{
-				type: "mcpEnabled",
-				bool: false,
-			},
-			marketplaceManager,
-		)
+		await webviewMessageHandler(mockClineProvider, {
+			type: "updateSettings",
+			updatedSettings: { mcpEnabled: false },
+		})
 
 		expect((mockClineProvider as any).getMcpHub).toHaveBeenCalledTimes(1)
 		expect(mockMcpHub.handleMcpEnabledChange).toHaveBeenCalledTimes(1)
@@ -914,14 +889,10 @@ describe("webviewMessageHandler - mcpEnabled", () => {
 	it("handles missing McpHub instance gracefully and still posts state", async () => {
 		;(mockClineProvider as any).getMcpHub = vi.fn().mockReturnValue(undefined)
 
-		await webviewMessageHandler(
-			mockClineProvider,
-			{
-				type: "mcpEnabled",
-				bool: true,
-			},
-			marketplaceManager,
-		)
+		await webviewMessageHandler(mockClineProvider, {
+			type: "updateSettings",
+			updatedSettings: { mcpEnabled: true },
+		})
 
 		expect((mockClineProvider as any).getMcpHub).toHaveBeenCalledTimes(1)
 		expect(mockClineProvider.postStateToWebview).toHaveBeenCalledTimes(1)

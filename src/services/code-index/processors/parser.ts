@@ -149,11 +149,20 @@ export class CodeParser implements ICodeParser {
 			return []
 		}
 
-		const tree = language.parser.parse(content)
-
-		// We don't need to get the query string from languageQueries since it's already loaded
-		// in the language object
-		const captures = tree ? language.query.captures(tree.rootNode) : []
+		let tree
+		let captures
+		try {
+			tree = language.parser.parse(content)
+			captures = tree ? language.query.captures(tree.rootNode) : []
+		} catch (error) {
+			console.error(`Error parsing file ${filePath}:`, error)
+			TelemetryService.instance.captureEvent(TelemetryEventName.PARSER_ERROR, {
+				filePath,
+				language: ext,
+				error: String(error),
+			})
+			return []
+		}
 
 		// Check if captures are empty
 		if (captures.length === 0) {

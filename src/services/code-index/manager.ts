@@ -7,8 +7,6 @@ import { CodeIndexStateManager } from "./state-manager"
 import { CodeIndexServiceFactory } from "./service-factory"
 import { CodeIndexSearchService } from "./search-service"
 import { CodeIndexOrchestrator } from "./orchestrator"
-import { GraphProcessor } from "./processors/graph-processor"
-import { Neo4jGraphService } from "./graph-service"
 import { CacheManager } from "./cache-manager"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
 import fs from "fs/promises"
@@ -16,11 +14,6 @@ import ignore from "ignore"
 import path from "path"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
-// kilocode_change start: Managed indexing (new standalone system)
-import { startIndexing as startManagedIndexing, search as searchManaged, createManagedIndexingConfig } from "./managed"
-import type { IndexerState as ManagedIndexerState } from "./managed"
-import { ManagedIndexer } from "./managed/ManagedIndexer"
-// kilocode_change end
 
 export class CodeIndexManager {
 	// --- Singleton Implementation ---
@@ -32,21 +25,13 @@ export class CodeIndexManager {
 	private _serviceFactory: CodeIndexServiceFactory | undefined
 	private _orchestrator: CodeIndexOrchestrator | undefined
 	private _searchService: CodeIndexSearchService | undefined
-	private _graphProcessor: GraphProcessor | undefined
-	private _neo4jService: Neo4jGraphService | undefined
 	private _cacheManager: CacheManager | undefined
-
-	// kilocode_change start: Managed indexing (new standalone system)
-	public managedIndexer = ManagedIndexer.getInstance()
-	private _managedIndexerDisposable: vscode.Disposable | undefined
-	private _managedIndexerState: ManagedIndexerState | undefined
-	// kilocode_change end
 
 	// Flag to prevent race conditions during error recovery
 	private _isRecoveringFromError = false
 
 	public static getInstance(context: vscode.ExtensionContext, workspacePath?: string): CodeIndexManager | undefined {
-		// If workspacePath is not provided, try to get it from active editor or first workspace folder
+		// If workspacePath is not provided, try to get it from the active editor or first workspace folder
 		if (!workspacePath) {
 			const activeEditor = vscode.window.activeTextEditor
 			if (activeEditor) {
@@ -59,15 +44,15 @@ export class CodeIndexManager {
 				if (!workspaceFolders || workspaceFolders.length === 0) {
 					return undefined
 				}
-				// Use first workspace folder as fallback
+				// Use the first workspace folder as fallback
 				workspacePath = workspaceFolders[0].uri.fsPath
 			}
 		}
 
-		if (workspacePath && !CodeIndexManager.instances.has(workspacePath)) {
+		if (!CodeIndexManager.instances.has(workspacePath)) {
 			CodeIndexManager.instances.set(workspacePath, new CodeIndexManager(workspacePath, context))
 		}
-		return workspacePath ? CodeIndexManager.instances.get(workspacePath)! : undefined
+		return CodeIndexManager.instances.get(workspacePath)!
 	}
 
 	public static disposeAll(): void {
@@ -108,11 +93,11 @@ export class CodeIndexManager {
 	}
 
 	public get isFeatureEnabled(): boolean {
-		return (this._configManager?.isFeatureEnabled || !!this.managedIndexer.organization) ?? false
+		return this._configManager?.isFeatureEnabled ?? false
 	}
 
 	public get isFeatureConfigured(): boolean {
-		return (this._configManager?.isFeatureConfigured || !!this.managedIndexer.organization) ?? false
+		return this._configManager?.isFeatureConfigured ?? false
 	}
 
 	public get isInitialized(): boolean {
@@ -125,7 +110,7 @@ export class CodeIndexManager {
 	}
 
 	/**
-	 * Initializes manager with configuration and dependent services.
+	 * Initializes the manager with configuration and dependent services.
 	 * Must be called before using any other methods.
 	 * @returns Object indicating if a restart is needed
 	 */
@@ -133,11 +118,6 @@ export class CodeIndexManager {
 		// 1. ConfigManager Initialization and Configuration Loading
 		if (!this._configManager) {
 			this._configManager = new CodeIndexConfigManager(contextProxy)
-		}
-
-		// Pass Kilo org props to config manager if available
-		if (this._kiloOrgCodeIndexProps) {
-			this._configManager.setKiloOrgProps(this._kiloOrgCodeIndexProps)
 		}
 
 		// Load configuration once to get current state and restart requirements
@@ -154,14 +134,13 @@ export class CodeIndexManager {
 		// 3. Check if workspace is available
 		const workspacePath = this.workspacePath
 		if (!workspacePath) {
-			this._stateManager.setSystemState("Standby", "No workspace folder open", undefined)
+			this._stateManager.setSystemState("Standby", "No workspace folder open")
 			return { requiresRestart }
 		}
 
 		// 4. CacheManager Initialization
 		if (!this._cacheManager) {
-			const config = this._configManager.getConfig()
-			this._cacheManager = new CacheManager(this.context, this.workspacePath, config)
+			this._cacheManager = new CacheManager(this.context, this.workspacePath)
 			await this._cacheManager.initialize()
 		}
 
@@ -173,7 +152,7 @@ export class CodeIndexManager {
 			try {
 				await this._recreateServices()
 			} catch (error) {
-				// Log error and set error state
+				// Log the error and set error state
 				console.error("[CodeIndexManager] Failed to recreate services:", error)
 				this._stateManager.setSystemState(
 					"Error",
@@ -200,7 +179,7 @@ export class CodeIndexManager {
 	}
 
 	/**
-	 * Initiates indexing process (initial scan and starts watcher).
+	 * Initiates the indexing process (initial scan and starts watcher).
 	 * Automatically recovers from error state if needed before starting.
 	 *
 	 * @important This method should NEVER be awaited as it starts a long-running background process.
@@ -217,7 +196,7 @@ export class CodeIndexManager {
 			await this.recoverFromError()
 
 			// After recovery, we need to reinitialize since recoverFromError clears all services
-			// This will be handled by caller (webviewMessageHandler) checking isInitialized
+			// This will be handled by the caller (webviewMessageHandler) checking isInitialized
 			return
 		}
 
@@ -226,7 +205,7 @@ export class CodeIndexManager {
 	}
 
 	/**
-	 * Stops file watcher and potentially cleans up resources.
+	 * Stops the file watcher and potentially cleans up resources.
 	 */
 	public stopWatcher(): void {
 		if (!this.isFeatureEnabled) {
@@ -252,8 +231,12 @@ export class CodeIndexManager {
 	// kilocode_change end
 
 	/**
-	 * Recovers from error state by clearing error and resetting internal state.
-	 * This allows manager to be re-initialized after a recoverable error.
+	 * Recovers from error state by clearing the error and resetting internal state.
+	 * This allows the manager to be re-initialized after a recoverable error.
+	 *
+	 * This method clears all service instances (configManager, serviceFactory, orchestrator, searchService)
+	 * to force a complete re-initialization on the next operation. This ensures a clean slate
+	 * after recovering from errors such as network failures or configuration issues.
 	 *
 	 * @remarks
 	 * - Safe to call even when not in error state (idempotent)
@@ -270,7 +253,7 @@ export class CodeIndexManager {
 		this._isRecoveringFromError = true
 		try {
 			// Clear error state
-			this._stateManager.setSystemState("Standby", "", undefined)
+			this._stateManager.setSystemState("Standby", "")
 		} catch (error) {
 			// Log error but continue with recovery - clearing service instances is more important
 			console.error("Failed to clear error state during recovery:", error)
@@ -281,30 +264,25 @@ export class CodeIndexManager {
 			this._serviceFactory = undefined
 			this._orchestrator = undefined
 			this._searchService = undefined
-			this._graphProcessor = undefined
-			this._neo4jService = undefined
 
-			// Reset flag after recovery is complete
+			// Reset the flag after recovery is complete
 			this._isRecoveringFromError = false
 		}
 	}
 
 	/**
-	 * Cleans up manager instance.
+	 * Cleans up the manager instance.
 	 */
 	public dispose(): void {
 		if (this._orchestrator) {
 			this.stopWatcher()
 		}
-		// kilocode_change start
-		this.stopManagedIndexing()
-		// kilocode_change end
 		this._stateManager.dispose()
 	}
 
 	/**
-	 * Clears all index data by stopping watcher, clearing Qdrant collection,
-	 * and deleting cache file.
+	 * Clears all index data by stopping the watcher, clearing the Qdrant collection,
+	 * and deleting the cache file.
 	 */
 	public async clearIndexData(): Promise<void> {
 		if (!this.isFeatureEnabled) {
@@ -315,30 +293,29 @@ export class CodeIndexManager {
 		await this._cacheManager!.clearCacheFile()
 	}
 
+	public validateCollectionName(name: string): string | null {
+		if (!this._configManager) {
+			return "Configuration manager not available. Cannot validate collection name."
+		}
+		return this._configManager.validateCollectionName(name)
+	}
+
 	// --- Private Helpers ---
 
 	public getCurrentStatus() {
 		const status = this._stateManager.getCurrentStatus()
-		const config = this.isInitialized ? this.getConfig() : undefined
-
 		return {
 			...status,
 			workspacePath: this.workspacePath,
-			defaultQdrantCollectionName: config?.defaultQdrantCollectionName,
 		}
 	}
 
-	public getConfig() {
-		if (!this.isFeatureConfigured || !this._configManager || !this._serviceFactory) {
-			return undefined
+	public async searchIndex(query: string, directoryPrefix?: string): Promise<VectorStoreSearchResult[]> {
+		if (!this.isFeatureEnabled) {
+			return []
 		}
-		const config = this._configManager.getConfig()
-		const defaultQdrantCollectionName = this._serviceFactory.getDefaultCollectionName()
-
-		return {
-			...config,
-			defaultQdrantCollectionName,
-		}
+		this.assertInitialized()
+		return this._searchService!.searchIndex(query, directoryPrefix)
 	}
 
 	/**
@@ -353,8 +330,6 @@ export class CodeIndexManager {
 		// Clear existing services to ensure clean state
 		this._orchestrator = undefined
 		this._searchService = undefined
-		this._graphProcessor = undefined
-		this._neo4jService = undefined
 
 		// (Re)Initialize service factory
 		this._serviceFactory = new CodeIndexServiceFactory(
@@ -367,7 +342,7 @@ export class CodeIndexManager {
 		const workspacePath = this.workspacePath
 
 		if (!workspacePath) {
-			this._stateManager.setSystemState("Standby", "", undefined)
+			this._stateManager.setSystemState("Standby", "")
 			return
 		}
 
@@ -392,16 +367,18 @@ export class CodeIndexManager {
 		await rooIgnoreController.initialize()
 
 		// (Re)Create shared service instances
-		const { embedder, vectorStore, scanner, fileWatcher, graphProcessor, neo4jService } =
-			this._serviceFactory.createServices(this.context, this._cacheManager!, ignoreInstance, rooIgnoreController)
-		this._graphProcessor = graphProcessor
-		this._neo4jService = neo4jService
+		const { embedder, vectorStore, scanner, fileWatcher } = this._serviceFactory.createServices(
+			this.context,
+			this._cacheManager!,
+			ignoreInstance,
+			rooIgnoreController,
+		)
 
 		// kilocode_change start: Handle Kilo org mode (no embedder/vector store validation needed)
 		const isKiloOrgMode = this._configManager!.isKiloOrgMode
 
 		if (!isKiloOrgMode) {
-			// Only validate embedder if it matches currently configured provider
+			// Only validate the embedder if it matches the currently configured provider
 			const config = this._configManager!.getConfig()
 			const shouldValidate = embedder && embedder.embedderInfo.name === config.embedderProvider
 
@@ -409,7 +386,7 @@ export class CodeIndexManager {
 				const validationResult = await this._serviceFactory.validateEmbedder(embedder)
 				if (!validationResult.valid) {
 					const errorMessage = validationResult.error || "Embedder configuration validation failed"
-					this._stateManager.setSystemState("Error", errorMessage, undefined)
+					this._stateManager.setSystemState("Error", errorMessage)
 					throw new Error(errorMessage)
 				}
 			}
@@ -425,29 +402,27 @@ export class CodeIndexManager {
 			vectorStore,
 			scanner,
 			fileWatcher,
-			graphProcessor,
 		)
 
 		// kilocode_change start: Always create search service (it handles both local and Kilo org mode)
-		// In Kilo org mode, embedder and vectorStore will be null, but search service handles this
+		// In Kilo org mode, embedder and vectorStore ill be null, but search service handles this
 		this._searchService = new CodeIndexSearchService(
 			this._configManager!,
 			this._stateManager,
 			embedder,
 			vectorStore,
-			this._neo4jService,
 		)
 		// kilocode_change end
 
-		// Clear any error state after successful recreation
+		// Clear any error state after successful recwreation
 		this._stateManager.setSystemState("Standby", "")
 	}
 
 	/**
 	 * Handle code index settings changes.
 	 * This method should be called when code index settings are updated
-	 * to ensure CodeIndexConfigManager picks up new configuration.
-	 * If configuration changes require a restart, service will be restarted.
+	 * to ensure the CodeIndexConfigManager picks up the new configuration.
+	 * If the configuration changes require a restart, the service will be restarted.
 	 */
 	public async handleSettingsChange(): Promise<void> {
 		if (this._configManager) {
@@ -456,14 +431,14 @@ export class CodeIndexManager {
 			const isFeatureEnabled = this.isFeatureEnabled
 			const isFeatureConfigured = this.isFeatureConfigured
 
-			// If feature is disabled, stop service
+			// If feature is disabled, stop the service
 			if (!isFeatureEnabled) {
-				// Stop orchestrator if it exists
+				// Stop the orchestrator if it exists
 				if (this._orchestrator) {
 					this._orchestrator.stopWatcher()
 				}
 				// Set state to indicate service is disabled
-				this._stateManager.setSystemState("Standby", "Code indexing is disabled", undefined)
+				this._stateManager.setSystemState("Standby", "Code indexing is disabled")
 				return
 			}
 
@@ -471,8 +446,7 @@ export class CodeIndexManager {
 				try {
 					// Ensure cacheManager is initialized before recreating services
 					if (!this._cacheManager) {
-						const config = this._configManager.getConfig()
-						this._cacheManager = new CacheManager(this.context, this.workspacePath, config)
+						this._cacheManager = new CacheManager(this.context, this.workspacePath)
 						await this._cacheManager.initialize()
 					}
 
@@ -491,124 +465,5 @@ export class CodeIndexManager {
 				}
 			}
 		}
-	}
-
-	// kilocode_change start Add ability to set kilo specific props
-	private _kiloOrgCodeIndexProps: {
-		organizationId: string
-		kilocodeToken: string
-		projectId: string
-	} | null = null
-
-	public setKiloOrgCodeIndexProps(props: NonNullable<typeof this._kiloOrgCodeIndexProps>) {
-		// this gets called more often than you'd expect so only actually kick off a new manager if things change
-		if (
-			props.kilocodeToken === this._kiloOrgCodeIndexProps?.kilocodeToken &&
-			props.organizationId === this._kiloOrgCodeIndexProps?.organizationId &&
-			props.projectId === this._kiloOrgCodeIndexProps?.projectId
-		) {
-			// No change in token, no need to restart indexing
-			return
-		}
-
-		this._kiloOrgCodeIndexProps = props
-
-		// Pass props to config manager if it exists
-		if (this._configManager) {
-			this._configManager.setKiloOrgProps(props)
-		}
-
-		// Start managed indexing automatically
-		this.startManagedIndexing().catch((error) => {
-			const err = error instanceof Error ? error : new Error(String(error))
-			console.error("[CodeIndexManager] Failed to start managed indexing:", err.message)
-			if (err.stack) {
-				console.error("[CodeIndexManager] Stack trace:", err.stack)
-			}
-			// Don't throw - allow the manager to continue functioning
-			// Set error state so UI can show the issue
-			this._stateManager.setSystemState("Error", `Failed to start indexing: ${err.message}`)
-		})
-	}
-
-	public getKiloOrgCodeIndexProps() {
-		return this._kiloOrgCodeIndexProps
-	}
-
-	// --- Managed Indexing Methods ---
-
-	/**
-	 * Starts the managed indexer (for organization users)
-	 * This is the new standalone indexing system that uses delta-based indexing
-	 */
-	public async startManagedIndexing(): Promise<void> {}
-
-	/**
-	 * Stops managed indexer
-	 */
-	public stopManagedIndexing(): void {
-		if (this._managedIndexerDisposable) {
-			console.info("[CodeIndexManager] Stopping existing managed indexer")
-			this._managedIndexerDisposable.dispose()
-			this._managedIndexerDisposable = undefined
-			this._managedIndexerState = undefined
-		} else {
-			console.info("[CodeIndexManager] - [stopManagedIndexing] No managed indexer to stop")
-		}
-	}
-
-	/**
-	 * Searches using the managed indexer
-	 */
-	public async searchManagedIndex(query: string, directoryPrefix?: string): Promise<VectorStoreSearchResult[]> {
-		if (!this._kiloOrgCodeIndexProps) {
-			return []
-		}
-
-		try {
-			const config = createManagedIndexingConfig(
-				this._kiloOrgCodeIndexProps.organizationId,
-				this._kiloOrgCodeIndexProps.projectId,
-				this._kiloOrgCodeIndexProps.kilocodeToken,
-				this.workspacePath,
-			)
-
-			const results = await searchManaged(query, config, directoryPrefix)
-
-			// Convert to VectorStoreSearchResult format
-			return results.map((result) => ({
-				id: result.id,
-				score: result.score,
-				payload: {
-					filePath: result.filePath,
-					codeChunk: "", // Managed indexing doesn't return code chunks
-					startLine: result.startLine,
-					endLine: result.endLine,
-				},
-			}))
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			console.error("[CodeIndexManager] Managed search failed:", error)
-			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: errorMessage,
-				stack: error instanceof Error ? error.stack : undefined,
-				location: "searchManagedIndex",
-			})
-			return []
-		}
-	}
-
-	/**
-	 * Gets the managed indexer state
-	 */
-	public getManagedIndexerState(): ManagedIndexerState | undefined {
-		return this._managedIndexerState
-	}
-
-	/**
-	 * Checks if managed indexing is available (has org credentials)
-	 */
-	public get isManagedIndexingAvailable(): boolean {
-		return !!this._kiloOrgCodeIndexProps
 	}
 }

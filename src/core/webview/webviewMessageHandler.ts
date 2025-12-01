@@ -214,6 +214,21 @@ export async function webviewMessageHandler(
 			case "updateCodebaseIndexConfig": {
 				const { config } = message
 				if (config) {
+					const codeIndexManager = provider.getCurrentWorkspaceCodeIndexManager()
+					if (!codeIndexManager) {
+						log("No active code index manager to update config.")
+						return
+					}
+					if (config.codebaseIndexQdrantCollectionName) {
+						const validationError = codeIndexManager.validateCollectionName(
+							config.codebaseIndexQdrantCollectionName,
+						)
+						if (validationError) {
+							vscode.window.showErrorMessage(`Invalid collection name: ${validationError}`)
+							return
+						}
+					}
+
 					const currentConfig = (await provider.getState()).codebaseIndexConfig
 					await contextProxy.setValue("codebaseIndexConfig", { ...currentConfig, ...config })
 					await provider.postStateToWebview()

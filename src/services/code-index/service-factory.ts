@@ -188,7 +188,7 @@ export class CodeIndexServiceFactory {
 		//return new QdrantVectorStore(this.workspacePath, config.qdrantUrl, vectorSize, config.qdrantApiKey)
 
 		// Generate collection name if not provided
-		const collectionName = config.CollectionName || this.generateDefaultCollectionName()
+		const collectionName = config.codebaseIndexQdrantCollectionName || this.generateDefaultCollectionName()
 
 		// Assuming constructor is updated: new QdrantVectorStore(workspacePath, url, vectorSize, collectionName, apiKey?)
 		return new QdrantVectorStore(
@@ -205,10 +205,10 @@ export class CodeIndexServiceFactory {
 	 * Creates a Neo4j graph service instance.
 	 */
 	public createNeo4jService(): Neo4jGraphService {
-		const config = this.configManager.getConfig()
-		const collectionName = config.CollectionName || this.generateDefaultCollectionName()
+	 const config = this.configManager.getConfig()
+	 const collectionName = config.codebaseIndexQdrantCollectionName || this.generateDefaultCollectionName()
 
-		const { neo4jUri, neo4jUser, neo4jPassword } = config
+	 const { neo4jUri, neo4jUser, neo4jPassword } = config
 
 		if (!neo4jUri || !neo4jUser || !neo4jPassword) {
 			throw new Error("Neo4j configuration is missing (URI, user, or password).")

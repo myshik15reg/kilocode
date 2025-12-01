@@ -138,6 +138,11 @@ export class CodeIndexSearchService {
 				normalizedPrefix = path.normalize(directoryPrefix)
 			}
 
+			const timeout = (ms: number, promiseName: string) =>
+				new Promise<never>((_, reject) =>
+					setTimeout(() => reject(new Error(`Timeout: ${promiseName} took too long`)), ms),
+				)
+
 			const semanticPromise = this.vectorStore.search(vector, normalizedPrefix, minScore, maxResults)
 			let structuralPromise: Promise<CodeSymbol[]> = Promise.resolve([])
 
@@ -145,7 +150,10 @@ export class CodeIndexSearchService {
 				structuralPromise = this.neo4jService.searchByTerm(query)
 			}
 
-			const [semanticSettled, structuralSettled] = await Promise.allSettled([semanticPromise, structuralPromise])
+			const [semanticSettled, structuralSettled] = await Promise.allSettled([
+				Promise.race([semanticPromise, timeout(5000, "Semantic Search")]),
+				Promise.race([structuralPromise, timeout(5000, "Structural Search")]),
+			])
 
 			const semanticResults = semanticSettled.status === "fulfilled" ? semanticSettled.value : []
 			if (semanticSettled.status === "rejected") {

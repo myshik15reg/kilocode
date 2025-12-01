@@ -262,6 +262,9 @@ This approach allows us to focus on the most relevant parts of the code (defined
  * @returns A formatted string with code definitions or null if no definitions found
  */
 
+// Common HTML elements pattern
+const HTML_ELEMENTS_REGEX = /^[^A-Z]*<\/?(?:div|span|button|input|h[1-6]|p|a|img|ul|li|form)\b/
+
 /**
  * Process captures from tree-sitter or markdown parser
  *
@@ -277,10 +280,8 @@ function processCaptures(captures: QueryCapture[], lines: string[], language: st
 	// Filter function to exclude HTML elements if needed
 	const isNotHtmlElement = (line: string): boolean => {
 		if (!needsHtmlFiltering) return true
-		// Common HTML elements pattern
-		const HTML_ELEMENTS = /^[^A-Z]*<\/?(?:div|span|button|input|h[1-6]|p|a|img|ul|li|form)\b/
 		const trimmedLine = line.trim()
-		return !HTML_ELEMENTS.test(trimmedLine)
+		return !HTML_ELEMENTS_REGEX.test(trimmedLine)
 	}
 
 	// No definitions found
