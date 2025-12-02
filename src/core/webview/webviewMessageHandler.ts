@@ -1,6 +1,12 @@
 import * as vscode from "vscode"
 
-import { type HistoryItem, type ProviderSettings, type RooCodeSettings, ORGANIZATION_ALLOW_ALL } from "@roo-code/types"
+import {
+	type HistoryItem,
+	type ProviderSettings,
+	type RooCodeSettings,
+	ORGANIZATION_ALLOW_ALL,
+	type EditQueuedMessagePayload,
+} from "@roo-code/types"
 
 // Local type definitions for missing imports
 interface CodeSymbol {
@@ -26,6 +32,14 @@ interface CodeEdge {
 import { ProfileValidator } from "../../shared/ProfileValidator"
 import { getModeBySlug } from "../../shared/modes"
 import { experiments } from "../../shared/experiments"
+import * as path from "path"
+import * as os from "os"
+import * as fs from "fs-extra"
+import { getCurrentCwd } from "../../utils/system"
+import { getGlobalState, updateGlobalState } from "../../utils/state"
+import { AutoPurgeScheduler } from "../../services/auto-purge/AutoPurgeScheduler"
+import { singleCompletionHandler } from "../llm/singleCompletionHandler"
+import { ManagedIndexer } from "../../services/code-index/managed/ManagedIndexer"
 
 import { Terminal } from "../../integrations/terminal/Terminal"
 // import { resetAllTerminals } from "../../integrations/terminal/resetAllTerminals"
@@ -579,9 +593,340 @@ export async function webviewMessageHandler(
 				if (message.mcpId) await provider.downloadMcp(message.mcpId)
 				break
 			// kilocode_change end
-			default:
-				log(`Unknown message type: ${type}`)
+			case "createCommand": {
+				try {
+					const source = message.values?.source as "global" | "project"
+					const fileName = message.text // Custom filename from user input
+
+					if (!source) {
+						provider.log("Missing source for createCommand")
+						break
+					}
+
+					// Determine the commands directory based on source
+					let commandsDir: string
+					if (source === "global") {
+						const globalConfigDir = path.join(os.homedir(), ".roo")
+						commandsDir = path.join(globalConfigDir, "commands")
+					} else {
+						if (!vscode.workspace.workspaceFolders?.length) {
+							vscode.window.showErrorMessage(t("common:errors.no_workspace"))
+							return
+						}
+						// Project commands
+						const workspaceRoot = getCurrentCwd()
+						if (!workspaceRoot) {
+							vscode.window.showErrorMessage(t("common:errors.no_workspace_for_project_command"))
+							break
+						}
+						commandsDir = path.join(workspaceRoot, ".roo", "commands")
+					}
+
+					// Ensure the commands directory exists
+					await fs.mkdir(commandsDir, { recursive: true })
+
+					// Use provided filename or generate a unique one
+					let commandName: string
+					if (fileName && fileName.trim()) {
+						let cleanFileName = fileName.trim()
+
+						// Strip leading slash if present
+						if (cleanFileName.startsWith("/")) {
+							cleanFileName = cleanFileName.substring(1)
+						}
+
+						// Remove .md extension if present BEFORE slugification
+						if (cleanFileName.toLowerCase().endsWith(".md")) {
+							cleanFileName = cleanFileName.slice(0, -3)
+						}
+
+						// Slugify the command name: lowercase, replace spaces with dashes, remove special characters
+						commandName = cleanFileName
+							.toLowerCase()
+							.replace(/\s+/g, "-") // Replace spaces with dashes
+							.replace(/[^a-z0-9-]/g, "") // Remove special characters except dashes
+							.replace(/-+/g, "-") // Replace multiple dashes with single dash
+							.replace(/^-|-$/g, "") // Remove leading/trailing dashes
+
+						// Ensure we have a valid command name
+						if (!commandName || commandName.length === 0) {
+							commandName = "new-command"
+						}
+					} else {
+						// Generate a unique command name
+						commandName = "new-command"
+						let counter = 1
+						let filePath = path.join(commandsDir, `${commandName}.md`)
+
+						while (
+							await fs
+								.access(filePath)
+								.then(() => true)
+								.catch(() => false)
+						) {
+							commandName = `new-command-${counter}`
+							filePath = path.join(commandsDir, `${commandName}.md`)
+							counter++
+						}
+					}
+
+					const filePath = path.join(commandsDir, `${commandName}.md`)
+
+					// Check if file already exists
+					if (
+						await fs
+							.access(filePath)
+							.then(() => true)
+							.catch(() => false)
+					) {
+						vscode.window.showErrorMessage(t("common:errors.command_already_exists", { commandName }))
+						break
+					}
+
+					// Create the command file with template content
+					const templateContent = t("common:errors.command_template_content")
+
+					await fs.writeFile(filePath, templateContent, "utf8")
+					provider.log(`Created new command file: ${filePath}`)
+
+					// Open the new file in the editor
+					openFile(filePath)
+
+					// Refresh commands list
+					const { getCommands } = await import("../../services/command/commands")
+					const commands = await getCommands(getCurrentCwd() || "")
+					const commandList = commands.map((command) => ({
+						name: command.name,
+						source: command.source,
+						filePath: command.filePath,
+						description: command.description,
+						argumentHint: command.argumentHint,
+					}))
+					await provider.postMessageToWebview({
+						type: "commands",
+						commands: commandList,
+					})
+				} catch (error) {
+					provider.log(
+						`Error creating command: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+					)
+					vscode.window.showErrorMessage(t("common:errors.create_command_failed"))
+				}
 				break
+			}
+			case "insertTextIntoTextarea": {
+				const text = message.text
+				if (text) {
+					// Send message to insert text into the chat textarea
+					await provider.postMessageToWebview({
+						type: "insertTextIntoTextarea",
+						text: text,
+					})
+				}
+				break
+			}
+			case "showMdmAuthRequiredNotification": {
+				// Show notification that organization requires authentication
+				vscode.window.showWarningMessage(t("common:mdm.info.organization_requires_auth"))
+				break
+			}
+
+			// kilocode_change start - Auto-purge settings handlers
+			case "autoPurgeEnabled":
+				await updateGlobalState("autoPurgeEnabled", message.bool ?? false)
+				await provider.postStateToWebview()
+				break
+			case "autoPurgeDefaultRetentionDays":
+				await updateGlobalState("autoPurgeDefaultRetentionDays", message.value ?? 30)
+				await provider.postStateToWebview()
+				break
+			case "autoPurgeFavoritedTaskRetentionDays":
+				await updateGlobalState("autoPurgeFavoritedTaskRetentionDays", message.value ?? null)
+				await provider.postStateToWebview()
+				break
+			case "autoPurgeCompletedTaskRetentionDays":
+				await updateGlobalState("autoPurgeCompletedTaskRetentionDays", message.value ?? 30)
+				await provider.postStateToWebview()
+				break
+			case "autoPurgeIncompleteTaskRetentionDays":
+				await updateGlobalState("autoPurgeIncompleteTaskRetentionDays", message.value ?? 7)
+				await provider.postStateToWebview()
+				break
+			case "manualPurge":
+				try {
+					const state = await provider.getState()
+					const autoPurgeSettings = {
+						enabled: state.autoPurgeEnabled ?? false,
+						defaultRetentionDays: state.autoPurgeDefaultRetentionDays ?? 30,
+						favoritedTaskRetentionDays: state.autoPurgeFavoritedTaskRetentionDays ?? null,
+						completedTaskRetentionDays: state.autoPurgeCompletedTaskRetentionDays ?? 30,
+						incompleteTaskRetentionDays: state.autoPurgeIncompleteTaskRetentionDays ?? 7,
+						lastRunTimestamp: state.autoPurgeLastRunTimestamp,
+					}
+
+					if (!autoPurgeSettings.enabled) {
+						vscode.window.showWarningMessage("Auto-purge is disabled. Please enable it in settings first.")
+						break
+					}
+
+					const scheduler = new AutoPurgeScheduler(provider.contextProxy.globalStorageUri.fsPath)
+					const currentTaskId = provider.getCurrentTask()?.taskId
+
+					await scheduler.triggerManualPurge(
+						autoPurgeSettings,
+						provider.getTaskHistory(),
+						currentTaskId,
+						async (taskId: string) => {
+							// Remove task from state when purged
+							await provider.deleteTaskFromState(taskId)
+						},
+					)
+
+					// Update last run timestamp
+					await updateGlobalState("autoPurgeLastRunTimestamp", Date.now())
+					await provider.postStateToWebview()
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error)
+					provider.log(`Error in manual purge: ${errorMessage}`)
+					vscode.window.showErrorMessage(`Manual purge failed: ${errorMessage}`)
+				}
+				break
+
+			// kilocode_change end
+
+			/**
+			 * Chat Message Queue
+			 */
+
+			case "queueMessage": {
+				provider.getCurrentTask()?.messageQueueService.addMessage(message.text ?? "", message.images)
+				break
+			}
+			case "removeQueuedMessage": {
+				provider.getCurrentTask()?.messageQueueService.removeMessage(message.text ?? "")
+				break
+			}
+			case "editQueuedMessage": {
+				if (message.payload) {
+					const { id, text, images } = message.payload as EditQueuedMessagePayload
+					provider.getCurrentTask()?.messageQueueService.updateMessage(id, text, images)
+				}
+
+				break
+			}
+
+			case "dismissUpsell": {
+				if (message.upsellId) {
+					try {
+						// Get current list of dismissed upsells
+						const dismissedUpsells = getGlobalState("dismissedUpsells") || []
+
+						// Add the new upsell ID if not already present
+						let updatedList = dismissedUpsells
+						if (!dismissedUpsells.includes(message.upsellId)) {
+							updatedList = [...dismissedUpsells, message.upsellId]
+							await updateGlobalState("dismissedUpsells", updatedList)
+						}
+
+						// Send updated list back to webview (use the already computed updatedList)
+						await provider.postMessageToWebview({
+							type: "dismissedUpsells",
+							list: updatedList,
+						})
+					} catch (error) {
+						// Fail silently as per Bruno's comment - it's OK to fail silently in this case
+						provider.log(`Failed to dismiss upsell: ${error instanceof Error ? error.message : String(error)}`)
+					}
+				}
+				break
+			}
+			case "getDismissedUpsells": {
+				// Send the current list of dismissed upsells to the webview
+				const dismissedUpsells = getGlobalState("dismissedUpsells") || []
+				await provider.postMessageToWebview({
+					type: "dismissedUpsells",
+					list: dismissedUpsells,
+				})
+				break
+			}
+			// kilocode_change start
+			case "addTaskToHistory": {
+				if (message.historyItem) {
+					await provider.updateTaskHistory(message.historyItem)
+					await provider.postStateToWebview()
+				}
+				break
+			}
+			case "singleCompletion": {
+				try {
+					const { text, completionRequestId } = message
+
+					if (!completionRequestId) {
+						throw new Error("Missing completionRequestId")
+					}
+
+					if (!text) {
+						throw new Error("Missing prompt text")
+					}
+
+					// Always use current configuration
+					const config = (await provider.getState()).apiConfiguration
+
+					// Call the single completion handler
+					const result = await singleCompletionHandler(config, text)
+
+					// Send success response
+					await provider.postMessageToWebview({
+						type: "singleCompletionResult",
+						completionRequestId,
+						completionText: result,
+						success: true,
+					})
+				} catch (error) {
+					// Send error response
+					await provider.postMessageToWebview({
+						type: "singleCompletionResult",
+						completionRequestId: message.completionRequestId,
+						completionError: error instanceof Error ? error.message : String(error),
+						success: false,
+					})
+				}
+				break
+			}
+			// kilocode_change end
+			// kilocode_change start - ManagedIndexer state
+			case "requestManagedIndexerState": {
+				ManagedIndexer.getInstance()?.sendStateToWebview()
+				break
+			}
+			// kilocode_change end
+			default: {
+				// console.log(`Unhandled message type: ${message.type}`)
+				//
+				// Currently unhandled:
+				//
+				// "currentApiConfigName" |
+				// "codebaseIndexEnabled" |
+				// "enhancedPrompt" |
+				// "systemPrompt" |
+				// "exportModeResult" |
+				// "importModeResult" |
+				// "checkRulesDirectoryResult" |
+				// "browserConnectionResult" |
+				// "vsCodeSetting" |
+				// "indexingStatusUpdate" |
+				// "indexCleared" |
+				// "marketplaceInstallResult" |
+				// "shareTaskSuccess" |
+				// "playSound" |
+				// "draggedImages" |
+				// "setApiConfigPassword" |
+				// "setopenAiCustomModelInfo" |
+				// "marketplaceButtonClicked" |
+				// "cancelMarketplaceInstall" |
+				// "imageGenerationSettings"
+				break
+			}
 		}
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error)
