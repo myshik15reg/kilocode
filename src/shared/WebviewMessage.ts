@@ -388,7 +388,7 @@ export interface WebviewMessage {
 	images?: string[]
 	bool?: boolean
 	value?: any
-	commands?: string[]
+	command?: string
 	audioType?: AudioType
 	// kilocode_change begin
 	notificationOptions?: {
