@@ -2,7 +2,7 @@ import { z } from "zod"
 
 import { providerNames } from "./provider-settings.js"
 import { clineMessageSchema } from "./message.js"
-import { toolUseStylesSchema } from "./kilocode/native-function-calling"
+import { toolUseStylesSchema } from "./kilocode/native-function-calling.js"
 
 /**
  * TelemetrySetting
