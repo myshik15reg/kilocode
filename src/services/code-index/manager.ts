@@ -161,7 +161,7 @@ export class CodeIndexManager {
 		// 4. CacheManager Initialization
 		if (!this._cacheManager) {
 			const config = this._configManager.getConfig()
-			this._cacheManager = new CacheManager(this.context, this.workspacePath, config)
+			this._cacheManager = new CacheManager(this.context, this.workspacePath, config!)
 			await this._cacheManager.initialize()
 		}
 
@@ -435,7 +435,7 @@ export class CodeIndexManager {
 			this._stateManager,
 			embedder,
 			vectorStore,
-			this._neo4jService,
+			this._neo4jService!,
 		)
 		// kilocode_change end
 
@@ -472,7 +472,7 @@ export class CodeIndexManager {
 					// Ensure cacheManager is initialized before recreating services
 					if (!this._cacheManager) {
 						const config = this._configManager.getConfig()
-						this._cacheManager = new CacheManager(this.context, this.workspacePath, config)
+						this._cacheManager = new CacheManager(this.context, this.workspacePath, config!)
 						await this._cacheManager.initialize()
 					}
 
