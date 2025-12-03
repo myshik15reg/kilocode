@@ -206,15 +206,15 @@ export async function webviewMessageHandler(
 					} else if (key === "terminalCommandDelay") {
 						Terminal.setCommandDelay(value as number)
 					} else if (key === "terminalZshClearEolMark") {
-						Terminal.setTerminalZshClearEolMark(value as boolean)
+						Terminal.setTerminalZshClearEolMark(Boolean(value))
 					} else if (key === "terminalZshOhMy") {
-						Terminal.setTerminalZshOhMy(value as boolean)
+						Terminal.setTerminalZshOhMy(Boolean(value))
 					} else if (key === "terminalZshP10k") {
-						Terminal.setTerminalZshP10k(value as boolean)
+						Terminal.setTerminalZshP10k(Boolean(value))
 					} else if (key === "terminalZdotdir") {
-						Terminal.setTerminalZdotdir(value as boolean)
+						Terminal.setTerminalZdotdir(Boolean(value))
 					} else if (key === "terminalPowershellCounter") {
-						Terminal.setPowershellCounter(value as boolean)
+						Terminal.setPowershellCounter(Boolean(value))
 					} else if (key === "kilocodeToken") {
 						await updateCodeIndexWithKiloProps(provider)
 					} else if (key === "kilocodeOrganizationId") {

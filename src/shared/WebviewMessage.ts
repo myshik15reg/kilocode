@@ -269,8 +269,8 @@ export interface WebviewMessage {
 	apiConfiguration?: ProviderSettings
 	images?: string[]
 	bool?: boolean
-	value?: number
-	commands?: string[]
+	value?: any
+	command?: string
 	audioType?: AudioType
 	// kilocode_change begin
 	notificationOptions?: {
