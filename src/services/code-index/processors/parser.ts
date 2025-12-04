@@ -4,21 +4,34 @@ import * as path from "path"
 import { Node } from "web-tree-sitter"
 import { LanguageParser, loadRequiredLanguageParsers } from "../../tree-sitter/languageParser"
 import { parseMarkdown } from "../../tree-sitter/markdownParser"
-import { ICodeParser, CodeBlock } from "../interfaces"
+import { ICodeParser as ICodeParserInterface, CodeBlock } from "../interfaces"
 import { scannerExtensions, shouldUseFallbackChunking } from "../shared/supported-extensions"
 import { MAX_BLOCK_CHARS, MIN_BLOCK_CHARS, MIN_CHUNK_REMAINDER_CHARS, MAX_CHARS_TOLERANCE_FACTOR } from "../constants"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
+import { ICodeParser, CodeSymbol } from "./graph-processor"
 
 /**
  * Implementation of the code parser interface
  */
-export class CodeParser implements ICodeParser {
+export class CodeParser implements ICodeParserInterface, ICodeParser {
 	private loadedParsers: LanguageParser = {}
 	private pendingLoads: Map<string, Promise<LanguageParser>> = new Map()
 	// Markdown files are now supported using the custom markdown parser
 	// which extracts headers and sections for semantic indexing
+
+	// Implement ICodeParser for GraphProcessor
+	async parse(filePath: string, fileContent: string): Promise<CodeSymbol[]> {
+		// TODO: Implement symbol parsing logic here
+		// For now, return an empty array to satisfy the interface
+		return []
+	}
+
+	isSupportedFile(filePath: string): boolean {
+		const ext = path.extname(filePath).toLowerCase()
+		return this.isSupportedLanguage(ext)
+	}
 
 	/**
 	 * Parses a code file into code blocks

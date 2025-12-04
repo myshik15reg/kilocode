@@ -4,11 +4,11 @@ import * as fs from "fs/promises"
 import * as path from "path"
 import { Neo4jGraphService } from "../graph-service"
 // import { ICodeParser, CodeSymbol } from '../../../code-symbols/types';
-interface ICodeParser {
+export interface ICodeParser {
 	parse(filePath: string, fileContent: string): Promise<CodeSymbol[]>
 	isSupportedFile(filePath: string): boolean
 }
-interface CodeSymbol {
+export interface CodeSymbol {
 	name: string
 	kind: string
 	filePath: string

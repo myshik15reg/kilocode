@@ -8,12 +8,14 @@ import { CodeIndexServiceFactory } from "./service-factory"
 import { CodeIndexSearchService } from "./search-service"
 import { CodeIndexOrchestrator } from "./orchestrator"
 import { CacheManager } from "./cache-manager"
+import { GraphProcessor } from "./processors/graph-processor"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
-import fs from "fs/promises"
+import * as fs from "fs/promises"
 import ignore from "ignore"
-import path from "path"
+import * as path from "path"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
+import { codeParser } from "./processors/parser"
 
 export class CodeIndexManager {
 	// --- Singleton Implementation ---
@@ -403,7 +405,7 @@ export class CodeIndexManager {
 			vectorStore,
 			scanner,
 			fileWatcher,
-			new GraphProcessor(this.workspacePath),
+			new GraphProcessor(this._serviceFactory.createNeo4jService(), codeParser, this._cacheManager!),
 		)
 
 		// kilocode_change start: Always create search service (it handles both local and Kilo org mode)

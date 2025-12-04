@@ -35,9 +35,8 @@ import { experiments } from "../../shared/experiments"
 import * as path from "path"
 import * as os from "os"
 import * as fs from "fs-extra"
-import { getGlobalState, updateGlobalState } from "../../utils/state"
 import { AutoPurgeScheduler } from "../../services/auto-purge/AutoPurgeScheduler"
-import { singleCompletionHandler } from "../llm/singleCompletionHandler"
+import { singleCompletionHandler } from "../../utils/single-completion-handler"
 import { ManagedIndexer } from "../../services/code-index/managed/ManagedIndexer"
 
 import { Terminal } from "../../integrations/terminal/Terminal"
@@ -48,7 +47,6 @@ import { getTheme } from "../../integrations/theme/getTheme"
 
 import { McpServerManager } from "../../services/mcp/McpServerManager"
 import { MarketplaceManager } from "../../services/marketplace/MarketplaceManager"
-import { updateCodeIndexWithKiloProps } from "../../services/code-index/managed/webview"
 
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
 // import { getActiveEditorSelection } from "../../utils/getActiveEditorSelection"
@@ -214,10 +212,6 @@ export async function webviewMessageHandler(
 						Terminal.setTerminalZdotdir(Boolean(value))
 					} else if (key === "terminalPowershellCounter") {
 						Terminal.setPowershellCounter(Boolean(value))
-					} else if (key === "kilocodeToken") {
-						await updateCodeIndexWithKiloProps(provider)
-					} else if (key === "kilocodeOrganizationId") {
-						await updateCodeIndexWithKiloProps(provider)
 					}
 
 					await provider.postStateToWebview()
@@ -732,23 +726,23 @@ export async function webviewMessageHandler(
 
 			// kilocode_change start - Auto-purge settings handlers
 			case "autoPurgeEnabled":
-				await updateGlobalState("autoPurgeEnabled", message.bool ?? false)
+				await provider.contextProxy.updateGlobalState("autoPurgeEnabled", message.bool ?? false)
 				await provider.postStateToWebview()
 				break
 			case "autoPurgeDefaultRetentionDays":
-				await updateGlobalState("autoPurgeDefaultRetentionDays", message.value ?? 30)
+				await provider.contextProxy.updateGlobalState("autoPurgeDefaultRetentionDays", message.value ?? 30)
 				await provider.postStateToWebview()
 				break
 			case "autoPurgeFavoritedTaskRetentionDays":
-				await updateGlobalState("autoPurgeFavoritedTaskRetentionDays", message.value ?? null)
+				await provider.contextProxy.updateGlobalState("autoPurgeFavoritedTaskRetentionDays", message.value ?? null)
 				await provider.postStateToWebview()
 				break
 			case "autoPurgeCompletedTaskRetentionDays":
-				await updateGlobalState("autoPurgeCompletedTaskRetentionDays", message.value ?? 30)
+				await provider.contextProxy.updateGlobalState("autoPurgeCompletedTaskRetentionDays", message.value ?? 30)
 				await provider.postStateToWebview()
 				break
 			case "autoPurgeIncompleteTaskRetentionDays":
-				await updateGlobalState("autoPurgeIncompleteTaskRetentionDays", message.value ?? 7)
+				await provider.contextProxy.updateGlobalState("autoPurgeIncompleteTaskRetentionDays", message.value ?? 7)
 				await provider.postStateToWebview()
 				break
 			case "manualPurge":
@@ -782,7 +776,7 @@ export async function webviewMessageHandler(
 					)
 
 					// Update last run timestamp
-					await updateGlobalState("autoPurgeLastRunTimestamp", Date.now())
+					await provider.contextProxy.updateGlobalState("autoPurgeLastRunTimestamp", Date.now())
 					await provider.postStateToWebview()
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error)
@@ -818,13 +812,13 @@ export async function webviewMessageHandler(
 				if (message.upsellId) {
 					try {
 						// Get current list of dismissed upsells
-						const dismissedUpsells = getGlobalState("dismissedUpsells") || []
+						const dismissedUpsells = provider.contextProxy.getGlobalState("dismissedUpsells") || []
 
 						// Add the new upsell ID if not already present
 						let updatedList = dismissedUpsells
 						if (!dismissedUpsells.includes(message.upsellId)) {
 							updatedList = [...dismissedUpsells, message.upsellId]
-							await updateGlobalState("dismissedUpsells", updatedList)
+							await provider.contextProxy.updateGlobalState("dismissedUpsells", updatedList)
 						}
 
 						// Send updated list back to webview (use the already computed updatedList)
@@ -841,7 +835,7 @@ export async function webviewMessageHandler(
 			}
 			case "getDismissedUpsells": {
 				// Send the current list of dismissed upsells to the webview
-				const dismissedUpsells = getGlobalState("dismissedUpsells") || []
+				const dismissedUpsells = provider.contextProxy.getGlobalState("dismissedUpsells") || []
 				await provider.postMessageToWebview({
 					type: "dismissedUpsells",
 					list: dismissedUpsells,

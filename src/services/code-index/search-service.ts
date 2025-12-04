@@ -31,7 +31,7 @@ export class CodeIndexSearchService {
 		private readonly stateManager: CodeIndexStateManager,
 		private readonly embedder: IEmbedder,
 		private readonly vectorStore: IVectorStore,
-		private readonly neo4jService: Neo4jGraphService,
+		private readonly neo4jService?: Neo4jGraphService,
 	) {}
 
 	/**
@@ -146,7 +146,7 @@ export class CodeIndexSearchService {
 			const semanticPromise = this.vectorStore.search(vector, normalizedPrefix, minScore, maxResults)
 			let structuralPromise: Promise<CodeSymbol[]> = Promise.resolve([])
 
-			if (this.configManager.getConfig().useCodeGraph) {
+			if (this.configManager.getConfig().useCodeGraph && this.neo4jService) {
 				structuralPromise = this.neo4jService.searchByTerm(query)
 			}
 
