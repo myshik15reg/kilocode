@@ -403,6 +403,7 @@ export class CodeIndexManager {
 			vectorStore,
 			scanner,
 			fileWatcher,
+			new GraphProcessor(this.workspacePath),
 		)
 
 		// kilocode_change start: Always create search service (it handles both local and Kilo org mode)
@@ -412,7 +413,6 @@ export class CodeIndexManager {
 			this._stateManager,
 			embedder,
 			vectorStore,
-			this._neo4jService!,
 		)
 		// kilocode_change end
 

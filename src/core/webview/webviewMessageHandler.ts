@@ -35,7 +35,6 @@ import { experiments } from "../../shared/experiments"
 import * as path from "path"
 import * as os from "os"
 import * as fs from "fs-extra"
-import { getCurrentCwd } from "../../utils/system"
 import { getGlobalState, updateGlobalState } from "../../utils/state"
 import { AutoPurgeScheduler } from "../../services/auto-purge/AutoPurgeScheduler"
 import { singleCompletionHandler } from "../llm/singleCompletionHandler"
@@ -614,7 +613,7 @@ export async function webviewMessageHandler(
 							return
 						}
 						// Project commands
-						const workspaceRoot = getCurrentCwd()
+						const workspaceRoot = provider.cwd
 						if (!workspaceRoot) {
 							vscode.window.showErrorMessage(t("common:errors.no_workspace_for_project_command"))
 							break
@@ -694,7 +693,7 @@ export async function webviewMessageHandler(
 
 					// Refresh commands list
 					const { getCommands } = await import("../../services/command/commands")
-					const commands = await getCommands(getCurrentCwd() || "")
+					const commands = await getCommands(provider.cwd || "")
 					const commandList = commands.map((command) => ({
 						name: command.name,
 						source: command.source,

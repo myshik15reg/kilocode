@@ -258,8 +258,12 @@ export interface WebviewMessage {
 		| "requestManagedIndexerState" // kilocode_change
 		| "addTaskToHistory" // kilocode_change
 		| "singleCompletion" // kilocode_change
-	text?: string
-	completionRequestId?: string // kilocode_change
+		| "addCodeSymbol"
+		| "addCodeNode"
+		| "addCodeEdge"
+		| "searchCodeGraph"
+		text?: string
+		completionRequestId?: string // kilocode_change
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
 	disabled?: boolean
@@ -300,6 +304,10 @@ export interface WebviewMessage {
 	dataUrls?: string[]
 	values?: Record<string, any>
 	query?: string
+	searchType?: string
+	symbol?: any
+	node?: any
+	edge?: any
 	setting?: string
 	slug?: string
 	modeConfig?: ModeConfig
