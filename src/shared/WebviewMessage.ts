@@ -417,6 +417,25 @@ export interface WebviewMessage {
 		codebaseIndexOpenRouterApiKey?: string
 	}
 	updatedSettings?: RooCodeSettings
+	name?: string
+	providerSettings?: ProviderSettings
+	activate?: boolean
+	profile?: string
+	instructions?: string
+	userAction?: string
+	tool?: string
+	id?: string
+	language?: string
+	key?: string
+	path?: string
+	taskId?: string
+	code?: string
+	baseUrl?: string
+	token?: string
+	args?: any[]
+	item?: MarketplaceItem
+	editedContent?: string
+	force?: boolean
 }
 
 // kilocode_change: Create discriminated union for type-safe messages
