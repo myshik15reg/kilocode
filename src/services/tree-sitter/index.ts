@@ -103,6 +103,12 @@ const extensions = [
 	"erb",
 	// Visual Basic .NET
 	"vb",
+	// 1C:Enterprise
+	"bsl",
+	"mdo",
+	"xdto",
+	"form",
+	"mxlx",
 ].map((e) => `.${e}`)
 
 export { extensions }
