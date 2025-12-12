@@ -28,6 +28,8 @@ import {
 	YAML,
 	Json,
 	Markdown,
+	BSL,
+	XML,
 } from "./AutocompleteLanguageInfo"
 
 describe("AutocompleteLanguageInfo", () => {
@@ -190,6 +192,17 @@ describe("AutocompleteLanguageInfo", () => {
 			it("should return Markdown for .md files", () => {
 				expect(languageForFilepath("README.md")).toBe(Markdown)
 			})
+
+			it("should return BSL for .bsl files", () => {
+				expect(languageForFilepath("Module.bsl")).toBe(BSL)
+			})
+
+			it("should return XML for 1C metadata files", () => {
+				expect(languageForFilepath("Configuration.mdo")).toBe(XML)
+				expect(languageForFilepath("DataType.xdto")).toBe(XML)
+				expect(languageForFilepath("Form.form")).toBe(XML)
+				expect(languageForFilepath("Template.mxlx")).toBe(XML)
+			})
 		})
 
 		describe("fallback behavior", () => {
@@ -266,6 +279,8 @@ describe("AutocompleteLanguageInfo", () => {
 			testLanguageProperties("YAML", YAML)
 			testLanguageProperties("JSON", Json)
 			testLanguageProperties("Markdown", Markdown)
+			testLanguageProperties("1C:Enterprise", BSL)
+			testLanguageProperties("XML", XML)
 		})
 
 		describe("singleLineComment property", () => {
@@ -281,6 +296,8 @@ describe("AutocompleteLanguageInfo", () => {
 				expect(Lua.singleLineComment).toBe("--")
 				expect(Clojure.singleLineComment).toBe(";")
 				expect(Ruby.singleLineComment).toBe("#")
+				expect(BSL.singleLineComment).toBe("//")
+				expect(XML.singleLineComment).toBe("<!--")
 			})
 
 			it("should have empty string for Markdown", () => {
@@ -295,6 +312,7 @@ describe("AutocompleteLanguageInfo", () => {
 				expect(Java.endOfLine).toContain(";")
 				expect(Cpp.endOfLine).toContain(";")
 				expect(CSharp.endOfLine).toContain(";")
+				expect(BSL.endOfLine).toContain(";")
 			})
 
 			it("should have empty array for languages without explicit line endings", () => {
@@ -302,6 +320,7 @@ describe("AutocompleteLanguageInfo", () => {
 				expect(Go.endOfLine).toEqual([])
 				expect(Ruby.endOfLine).toEqual([])
 				expect(Markdown.endOfLine).toEqual([])
+				expect(XML.endOfLine).toEqual([])
 			})
 
 			it("should have JSON-specific end of line markers", () => {
@@ -327,13 +346,21 @@ describe("AutocompleteLanguageInfo", () => {
 				expect(Java.topLevelKeywords).toContain("class")
 			})
 
-			it("should have empty array for YAML and Markdown", () => {
+			it("should have empty array for YAML, Markdown and XML", () => {
 				expect(YAML.topLevelKeywords).toEqual([])
 				expect(Markdown.topLevelKeywords).toEqual([])
+				expect(XML.topLevelKeywords).toEqual([])
 			})
 
 			it("should include Python-specific keywords for ipynb files", () => {
 				expect(Python.topLevelKeywords).toContain('"""#')
+			})
+
+			it("should include 1C BSL keywords in both Russian and English", () => {
+				expect(BSL.topLevelKeywords).toContain("Процедура")
+				expect(BSL.topLevelKeywords).toContain("Procedure")
+				expect(BSL.topLevelKeywords).toContain("Функция")
+				expect(BSL.topLevelKeywords).toContain("Function")
 			})
 		})
 	})
@@ -506,6 +533,11 @@ describe("AutocompleteLanguageInfo", () => {
 				"md",
 				"lua",
 				"luau",
+				"bsl",
+				"mdo",
+				"xdto",
+				"form",
+				"mxlx",
 			]
 
 			for (const ext of expectedExtensions) {
@@ -515,7 +547,7 @@ describe("AutocompleteLanguageInfo", () => {
 
 		it("should have correct number of language mappings", () => {
 			const keys = Object.keys(LANGUAGES)
-			expect(keys.length).toBeGreaterThanOrEqual(40)
+			expect(keys.length).toBeGreaterThanOrEqual(45)
 		})
 
 		it("should map multiple extensions to same language where appropriate", () => {
@@ -552,6 +584,12 @@ describe("AutocompleteLanguageInfo", () => {
 
 			// Lua variants
 			expect(LANGUAGES.lua).toBe(LANGUAGES.luau)
+
+			// 1C metadata variants (all XML-based)
+			expect(LANGUAGES.mdo).toBe(LANGUAGES.xdto)
+			expect(LANGUAGES.mdo).toBe(LANGUAGES.form)
+			expect(LANGUAGES.mdo).toBe(LANGUAGES.mxlx)
+			expect(LANGUAGES.mdo).toBe(XML)
 		})
 	})
 })

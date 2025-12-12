@@ -237,6 +237,49 @@ export const Lua = {
 	endOfLine: [],
 }
 
+// 1C:Enterprise (BSL)
+export const BSL = {
+	name: "1C:Enterprise",
+	topLevelKeywords: [
+		"Процедура",
+		"Функция",
+		"КонецПроцедуры",
+		"КонецФункции",
+		"Procedure",
+		"Function",
+		"EndProcedure",
+		"EndFunction",
+		"Если",
+		"Тогда",
+		"Иначе",
+		"КонецЕсли",
+		"If",
+		"Then",
+		"Else",
+		"EndIf",
+		"Для",
+		"Каждого",
+		"Из",
+		"Цикл",
+		"КонецЦикла",
+		"For",
+		"Each",
+		"In",
+		"Do",
+		"EndDo",
+	],
+	singleLineComment: "//",
+	endOfLine: [";"],
+}
+
+// XML
+export const XML = {
+	name: "XML",
+	topLevelKeywords: [],
+	singleLineComment: "<!--",
+	endOfLine: [],
+}
+
 // YAML
 export const YAML: AutocompleteLanguageInfo = {
 	name: "YAML",
@@ -356,6 +399,12 @@ export const LANGUAGES: { [extension: string]: AutocompleteLanguageInfo } = {
 	md: Markdown,
 	lua: Lua,
 	luau: Lua,
+	// 1C:Enterprise files
+	bsl: BSL,
+	mdo: XML,
+	xdto: XML,
+	form: XML,
+	mxlx: XML,
 }
 
 export function languageForFilepath(fileUri: string): AutocompleteLanguageInfo {
