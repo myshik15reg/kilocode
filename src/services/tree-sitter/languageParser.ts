@@ -218,6 +218,17 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 				language = await loadLanguage("elixir", sourceDirectory)
 				query = new Query(language, elixirQuery)
 				break
+			// 1C:Enterprise extensions - these use fallback chunking and don't need a tree-sitter parser
+			case "bsl":
+			case "mdo":
+			case "xdto":
+			case "form":
+			case "mxlx":
+				// Skip these extensions - they will be handled by fallback chunking in parser.ts
+				continue
+			case "vb":
+				// Visual Basic .NET - uses fallback chunking
+				continue
 			default:
 				throw new Error(`Unsupported language: ${ext}`)
 		}
