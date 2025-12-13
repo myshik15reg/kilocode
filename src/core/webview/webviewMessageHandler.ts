@@ -3273,7 +3273,7 @@ export const webviewMessageHandler = async (
 				"codebaseIndexVercelAiGatewayApiKey",
 			))
 			const hasOpenRouterApiKey = !!(await provider.context.secrets.get("codebaseIndexOpenRouterApiKey"))
-
+	
 			provider.postMessageToWebview({
 				type: "codeIndexSecretStatus",
 				values: {
@@ -3286,6 +3286,132 @@ export const webviewMessageHandler = async (
 					hasOpenRouterApiKey,
 				},
 			})
+			break
+		}
+		// Neo4j Settings handlers
+		case "setNeo4jPassword": {
+			try {
+				if (!message.neo4jPassword) {
+					provider.log("Neo4j password is required but not provided")
+					break
+				}
+	
+				// Save password to SecretStorage
+				await provider.contextProxy.storeSecret("codebaseIndexNeo4jPassword", message.neo4jPassword)
+				provider.log("Neo4j password saved successfully to SecretStorage")
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error saving Neo4j password: ${errorMessage}`)
+			}
+			break
+		}
+		case "getNeo4jPasswordStatus": {
+			try {
+				// Check if password is saved in SecretStorage
+				const hasPassword = !!(await provider.context.secrets.get("codebaseIndexNeo4jPassword"))
+	
+				await provider.postMessageToWebview({
+					type: "neo4jPasswordStatus",
+					hasNeo4jPassword: hasPassword,
+				})
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error checking Neo4j password status: ${errorMessage}`)
+				
+				await provider.postMessageToWebview({
+					type: "neo4jPasswordStatus",
+					hasNeo4jPassword: false,
+				})
+			}
+			break
+		}
+		case "neo4jConnectionTest": {
+			try {
+				// Validate required configuration
+				if (!message.neo4jConfig) {
+					throw new Error("Neo4j configuration is required")
+				}
+	
+				const { uri, username, database } = message.neo4jConfig
+	
+				if (!uri || !username) {
+					throw new Error("URI and username are required")
+				}
+	
+				// Get password from message or SecretStorage
+				let password = message.neo4jPassword
+				if (!password) {
+					password = await provider.context.secrets.get("codebaseIndexNeo4jPassword")
+					if (!password) {
+						throw new Error("Password is required. Please set password first.")
+					}
+				}
+	
+				// Import Neo4jConnectionManager
+				const { Neo4jConnectionManager } = await import("../../services/neo4j/connection-manager")
+	
+				// Get singleton instance
+				const connectionManager = Neo4jConnectionManager.getInstance()
+	
+				// Create config object
+				const config = {
+					uri,
+					username,
+					password,
+					database: database || "neo4j",
+					connectionTimeout: 10000, // 10 seconds timeout for connection test
+				}
+	
+				// Test connection
+				await connectionManager.connect(config)
+	
+				// Execute simple test query to verify database access
+				const result = await connectionManager.executeQuery<{ n: number }>("RETURN 1 as n")
+	
+				// Verify result
+				if (!result || result.length === 0 || result[0].n !== 1) {
+					throw new Error("Connection test query returned unexpected result")
+				}
+	
+				// Get Neo4j version if possible
+				let version: string | undefined
+				try {
+					const versionResult = await connectionManager.executeQuery<{ version: string }>(
+						"CALL dbms.components() YIELD versions UNWIND versions as version RETURN version LIMIT 1"
+					)
+					if (versionResult && versionResult.length > 0) {
+						version = versionResult[0].version
+					}
+				} catch {
+					// Version query failed, not critical
+					version = undefined
+				}
+	
+				// Disconnect after test (cleanup)
+				await connectionManager.disconnect()
+	
+				// Send success response
+				await provider.postMessageToWebview({
+					type: "neo4jConnectionResult",
+					neo4jConnectionResult: {
+						success: true,
+						message: "Successfully connected to Neo4j",
+						version,
+					},
+				})
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Neo4j connection test failed: ${errorMessage}`)
+	
+				// Send error response
+				await provider.postMessageToWebview({
+					type: "neo4jConnectionResult",
+					neo4jConnectionResult: {
+						success: false,
+						message: `Connection failed: ${errorMessage}`,
+					},
+				})
+			}
 			break
 		}
 		case "startIndexing": {

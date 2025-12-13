@@ -11,6 +11,8 @@ import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { vscode } from "@/utils/vscode"
+import { Neo4jSettings } from "./neo4j/Neo4jSettings"
+import type { CodebaseIndexConfig } from "@roo-code/types"
 
 type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	autoCondenseContext: boolean
@@ -31,6 +33,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	includeCurrentTime?: boolean
 	includeCurrentCost?: boolean
 	maxGitStatusFiles?: number
+	codebaseIndexConfig?: CodebaseIndexConfig // Neo4j settings
 	setCachedStateField: SetCachedStateField<
 		| "autoCondenseContext"
 		| "autoCondenseContextPercent"
@@ -49,6 +52,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "includeCurrentTime"
 		| "includeCurrentCost"
 		| "maxGitStatusFiles"
+		| "codebaseIndexConfig" // Neo4j settings
 	>
 }
 
@@ -72,6 +76,7 @@ export const ContextManagementSettings = ({
 	includeCurrentTime,
 	includeCurrentCost,
 	maxGitStatusFiles,
+	codebaseIndexConfig, // Neo4j settings
 	className,
 	...props
 }: ContextManagementSettingsProps) => {
@@ -428,7 +433,16 @@ export const ContextManagementSettings = ({
 						{t("settings:contextManagement.includeCurrentCost.description")}
 					</div>
 				</div>
-			</Section>
+		
+				{/* Neo4j Settings */}
+				<Neo4jSettings
+					enabled={codebaseIndexConfig?.codebaseIndexNeo4jEnabled}
+					uri={codebaseIndexConfig?.codebaseIndexNeo4jUri}
+					username={codebaseIndexConfig?.codebaseIndexNeo4jUsername}
+					database={codebaseIndexConfig?.codebaseIndexNeo4jDatabase}
+					setCachedStateField={setCachedStateField}
+				/>
+				</Section>
 			<Section className="pt-2">
 				<VSCodeCheckbox
 					checked={autoCondenseContext}

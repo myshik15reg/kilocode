@@ -277,6 +277,9 @@ export interface WebviewMessage {
 		| "cancelDeviceAuth" // kilocode_change: Cancel device auth flow
 		| "deviceAuthCompleteWithProfile" // kilocode_change: Device auth complete with specific profile
 		| "requestChatCompletion" // kilocode_change: Request FIM completion for chat text area
+		| "setNeo4jPassword" // Neo4j: Save password to SecretStorage
+		| "getNeo4jPasswordStatus" // Neo4j: Check if password is saved
+		| "neo4jConnectionTest" // Neo4j: Test connection to database
 	text?: string
 	completionRequestId?: string // kilocode_change
 	shareId?: string // kilocode_change - for sessionFork
@@ -389,6 +392,13 @@ export interface WebviewMessage {
 		codebaseIndexVercelAiGatewayApiKey?: string
 		codebaseIndexOpenRouterApiKey?: string
 	}
+	// Neo4j specific fields
+	neo4jConfig?: {
+		uri: string
+		username: string
+		database: string
+	}
+	neo4jPassword?: string
 	updatedSettings?: RooCodeSettings
 }
 

@@ -190,6 +190,8 @@ export interface ExtensionMessage {
 		| "deviceAuthFailed" // kilocode_change: Device auth failed
 		| "deviceAuthCancelled" // kilocode_change: Device auth cancelled
 		| "chatCompletionResult" // kilocode_change: FIM completion result for chat text area
+		| "neo4jPasswordStatus" // Neo4j: Password status response
+		| "neo4jConnectionResult" // Neo4j: Connection test result
 	text?: string
 	// kilocode_change start
 	completionRequestId?: string // Correlation ID from request
@@ -349,6 +351,13 @@ export interface ExtensionMessage {
 	deviceAuthUserEmail?: string
 	deviceAuthError?: string
 	// kilocode_change end: Device auth data
+	// Neo4j specific fields
+	hasNeo4jPassword?: boolean
+	neo4jConnectionResult?: {
+		success: boolean
+		message: string
+		version?: string
+	}
 }
 
 export type ExtensionState = Pick<

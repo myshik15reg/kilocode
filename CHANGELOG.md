@@ -1,5 +1,45 @@
 # kilo-code
 
+## [Unreleased]
+
+### Added
+
+- **Neo4j Settings UI** - Visual configuration interface for Neo4j integration
+  - Secure password storage using VSCode SecretStorage
+  - Real-time connection testing with detailed status feedback
+  - Full localization support (English/Russian)
+  - 82 comprehensive unit tests covering all functionality
+
+### Features
+
+- **Neo4j Integration Controls**
+  - Toggle to enable/disable Neo4j integration
+  - URI validation for bolt://, neo4j://, neo4j+s:// protocols
+  - Username and database name configuration
+  - Secure password input with show/hide toggle
+  - Connection status indicator with detailed error messages
+  - Automatic codebase reindexing trigger on configuration changes
+
+### Technical Implementation
+
+- **React Components**
+  - `Neo4jSettings.tsx` - Main settings component with form validation
+  - `PasswordField.tsx` - Secure password input with edit/view modes
+  - `ConnectionStatus.tsx` - Visual connection status indicator
+- **Backend Message Handlers**
+  - `setNeo4jPassword` - Secure password storage via SecretStorage API
+  - `getNeo4jPasswordStatus` - Password existence verification
+  - `neo4jConnectionTest` - Connection validation with 10s timeout
+- **Security Features**
+  - OS-level password encryption via VSCode SecretStorage
+  - No password persistence in component state
+  - Secure message passing between webview and extension
+- **Testing Coverage**
+  - 25+ tests for Neo4jSettings component
+  - 20+ tests for PasswordField component
+  - 25+ tests for ConnectionStatus component
+  - Full coverage of validation, error handling, and user interactions
+
 ## 4.136.0
 
 ### Minor Changes

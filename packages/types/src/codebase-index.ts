@@ -76,6 +76,12 @@ export const codebaseIndexConfigSchema = z.object({
 	codebaseIndexBedrockProfile: z.string().optional(),
 	// OpenRouter specific fields
 	codebaseIndexOpenRouterSpecificProvider: z.string().optional(),
+	// Neo4j specific fields
+	codebaseIndexNeo4jEnabled: z.boolean().optional(),
+	codebaseIndexNeo4jUri: z.string().optional(),
+	codebaseIndexNeo4jUsername: z.string().optional(),
+	codebaseIndexNeo4jDatabase: z.string().optional(),
+	// Neo4j password is NOT stored in config, only in SecretStorage
 })
 
 export type CodebaseIndexConfig = z.infer<typeof codebaseIndexConfigSchema>

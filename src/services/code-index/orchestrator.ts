@@ -8,6 +8,10 @@ import { CacheManager } from "./cache-manager"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { t } from "../../i18n"
+import { RelationshipIndexer } from "../neo4j/relationship-indexer"
+import { CodeParser } from "./processors/parser"
+import { loadRequiredLanguageParsers } from "../tree-sitter/languageParser"
+import { stat } from "fs/promises"
 
 /**
  * Manages the code indexing workflow, coordinating between different services and managers.
@@ -16,6 +20,8 @@ export class CodeIndexOrchestrator {
 	private _fileWatcherSubscriptions: vscode.Disposable[] = []
 	private _isProcessing: boolean = false
 	private _cancelRequested: boolean = false // kilocode_change
+	private relationshipIndexer: RelationshipIndexer | null = null
+	private codeParser: CodeParser
 
 	constructor(
 		private readonly configManager: CodeIndexConfigManager,
@@ -25,7 +31,13 @@ export class CodeIndexOrchestrator {
 		private readonly vectorStore: IVectorStore,
 		private readonly scanner: DirectoryScanner,
 		private readonly fileWatcher: IFileWatcher,
-	) {}
+	) {
+		this.codeParser = new CodeParser()
+		// Initialize Neo4j indexer if enabled
+		if (this.configManager.isNeo4jEnabled) {
+			this.relationshipIndexer = new RelationshipIndexer()
+		}
+	}
 
 	// kilocode_change start
 	/**
@@ -225,6 +237,16 @@ export class CodeIndexOrchestrator {
 					console.log("[CodeIndexOrchestrator] No new or changed files found")
 				}
 
+				// Neo4j indexing after successful Qdrant incremental scan
+				if (this.configManager.isNeo4jEnabled && this.relationshipIndexer) {
+					try {
+						await this.indexRelationshipsForChangedFiles(allowedPaths)
+					} catch (neo4jError) {
+						console.error("[CodeIndexOrchestrator] Neo4j indexing failed during incremental scan:", neo4jError)
+						// Don't fail the entire indexing if Neo4j fails
+					}
+				}
+
 				await this._startWatcher()
 
 				// Mark indexing as complete after successful incremental scan
@@ -304,6 +326,16 @@ export class CodeIndexOrchestrator {
 				// this is still a failure
 				if (cumulativeBlocksFoundSoFar > 0 && cumulativeBlocksIndexed === 0) {
 					throw new Error(t("embeddings:orchestrator.indexingFailedCritical"))
+				}
+
+				// Neo4j indexing after successful Qdrant full scan
+				if (this.configManager.isNeo4jEnabled && this.relationshipIndexer) {
+					try {
+						await this.indexRelationshipsForChangedFiles(supportedPaths)
+					} catch (neo4jError) {
+						console.error("[CodeIndexOrchestrator] Neo4j indexing failed during full scan:", neo4jError)
+						// Don't fail the entire indexing if Neo4j fails
+					}
 				}
 
 				await this._startWatcher()
@@ -441,5 +473,99 @@ export class CodeIndexOrchestrator {
 	 */
 	public get state(): IndexingState {
 		return this.stateManager.state
+	}
+
+	/**
+	 * Index code relationships into Neo4j for the given files
+	 * @param filePaths Array of file paths to index
+	 */
+	private async indexRelationshipsForChangedFiles(filePaths: string[]): Promise<void> {
+		if (!this.relationshipIndexer || !this.configManager.isNeo4jEnabled) {
+			return
+		}
+
+		if (this._cancelRequested) {
+			return
+		}
+
+		this.stateManager.setSystemState("Indexing", "Indexing code relationships into Neo4j...")
+
+		try {
+			// Initialize Neo4j connection
+			const isReady = await this.relationshipIndexer.isReady()
+			if (!isReady) {
+				console.warn("[CodeIndexOrchestrator] Neo4j indexer not ready, skipping relationship indexing")
+				return
+			}
+
+			// Load language parsers
+			await loadRequiredLanguageParsers(filePaths)
+
+			let processedCount = 0
+			const totalFiles = filePaths.length
+
+			// Process files in batches
+			for (const filePath of filePaths) {
+				if (this._cancelRequested) {
+					break
+				}
+
+				try {
+					// Check file size
+					const stats = await stat(filePath)
+					const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+					if (stats.size > MAX_FILE_SIZE) {
+						continue
+					}
+
+					// Read file content
+					const content = await vscode.workspace.fs
+						.readFile(vscode.Uri.file(filePath))
+						.then((buffer) => Buffer.from(buffer).toString("utf-8"))
+
+					// Parse file to get AST
+					const ext = path.extname(filePath).slice(1).toLowerCase()
+					const parsedData = await this.codeParser.parseFile(filePath, { content })
+
+					if (parsedData && parsedData.length > 0) {
+						// For Neo4j we need the full AST, not just blocks
+						// Parse again with tree-sitter to get AST
+						const languageParser = await loadRequiredLanguageParsers([filePath])
+						if (languageParser && languageParser[ext]) {
+							const tree = languageParser[ext].parser.parse(content)
+							if (tree) {
+								await this.relationshipIndexer.indexFile(
+									filePath,
+									content,
+									tree.rootNode,
+									ext
+								)
+							}
+						}
+					}
+
+					processedCount++
+					if (processedCount % 10 === 0) {
+						this.stateManager.setSystemState(
+							"Indexing",
+							`Indexing relationships: ${processedCount}/${totalFiles} files...`
+						)
+					}
+				} catch (fileError) {
+					console.error(`[CodeIndexOrchestrator] Error indexing Neo4j relationships for ${filePath}:`, fileError)
+					// Continue with other files
+				}
+			}
+
+			console.log(`[CodeIndexOrchestrator] Neo4j relationship indexing completed: ${processedCount}/${totalFiles} files`)
+		} catch (error) {
+			console.error("[CodeIndexOrchestrator] Error during Neo4j relationship indexing:", error)
+			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+				location: "indexRelationshipsForChangedFiles",
+			})
+			throw error
+		}
 	}
 }
