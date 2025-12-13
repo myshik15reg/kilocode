@@ -34,6 +34,11 @@ export class CodeIndexConfigManager {
 	private embeddingBatchSize?: number
 	private scannerMaxBatchRetries?: number
 	// kilocode_change end
+	private neo4jEnabled: boolean = false
+	private neo4jUri?: string
+	private neo4jUsername?: string
+	private neo4jPassword?: string
+	private neo4jDatabase?: string = "neo4j"
 
 	// kilocode_change start: Kilo org indexing props
 	private _kiloOrgProps: {
@@ -137,6 +142,15 @@ export class CodeIndexConfigManager {
 		const bedrockProfile = codebaseIndexConfig.codebaseIndexBedrockProfile ?? ""
 		const openRouterApiKey = this.contextProxy?.getSecret("codebaseIndexOpenRouterApiKey") ?? ""
 		const openRouterSpecificProvider = codebaseIndexConfig.codebaseIndexOpenRouterSpecificProvider ?? ""
+
+		// Neo4j configuration
+		this.neo4jEnabled = codebaseIndexConfig.codebaseIndexNeo4jEnabled ?? false
+		this.neo4jUri = codebaseIndexConfig.codebaseIndexNeo4jUri
+		this.neo4jUsername = codebaseIndexConfig.codebaseIndexNeo4jUsername
+		this.neo4jDatabase = codebaseIndexConfig.codebaseIndexNeo4jDatabase ?? "neo4j"
+		// Load Neo4j password from SecretStorage
+		const neo4jPassword = this.contextProxy?.getSecret("codebaseIndexNeo4jPassword")
+		this.neo4jPassword = neo4jPassword ?? ""
 
 		// Update instance variables with configuration
 		this.codebaseIndexEnabled = codebaseIndexEnabled ?? false
@@ -660,4 +674,28 @@ export class CodeIndexConfigManager {
 		return this.scannerMaxBatchRetries
 	}
 	// kilocode_change end
+
+	/**
+	 * Gets whether Neo4j graph indexing is enabled
+	 */
+	public get isNeo4jEnabled(): boolean {
+		return this.neo4jEnabled && this.codebaseIndexEnabled
+	}
+
+	/**
+	 * Gets the Neo4j configuration
+	 */
+	public get neo4jConfig(): {
+		uri?: string
+		username?: string
+		password?: string
+		database?: string
+	} {
+		return {
+			uri: this.neo4jUri,
+			username: this.neo4jUsername,
+			password: this.neo4jPassword,
+			database: this.neo4jDatabase,
+		}
+	}
 }

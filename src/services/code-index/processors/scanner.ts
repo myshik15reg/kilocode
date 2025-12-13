@@ -99,7 +99,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 		onError?: (error: Error) => void,
 		onBlocksIndexed?: (indexedCount: number) => void,
 		onFileParsed?: (fileBlockCount: number) => void,
-	): Promise<{ stats: { processed: number; skipped: number }; totalBlockCount: number }> {
+	): Promise<{ stats: { processed: number; skipped: number }; totalBlockCount: number; supportedPaths: string[] }> {
 		// kilocode_change start
 		// reset cooperative cancel flag on new full scan
 		this._cancelled = false
@@ -371,6 +371,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 					skipped: skippedCount,
 				},
 				totalBlockCount,
+				supportedPaths,
 			}
 		} else {
 			await Promise.all(activeBatchPromises)
@@ -429,6 +430,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 				skipped: skippedCount,
 			},
 			totalBlockCount,
+			supportedPaths,
 		}
 	}
 
