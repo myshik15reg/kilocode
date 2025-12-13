@@ -179,11 +179,14 @@
 			"openRouterApiKeyRequired": "OpenRouter API key is required",
 			"ollamaBaseUrlRequired": "Ollama base URL is required",
 			"baseUrlRequired": "Base URL is required",
-			"modelDimensionMinValue": "Model dimension must be greater than 0"
+			"modelDimensionMinValue": "Model dimension must be greater than 0",
+			"vectorStoreNameRequired": "Vector store name is required"
 		},
 		"cancelling": "Cancelling...",
 		"cancelIndexingButton": "Cancel Indexing",
-		"optional": "optional"
+		"optional": "optional",
+		"vectorStoreName": "Vector Store Name",
+		"vectorStoreNamePlaceholder": "Enter vector store name"
 	},
 	"autoApprove": {
 		"description": "Run these actions without asking for permission. Only enable for actions you fully trust and if you understand the security risks.",

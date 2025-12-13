@@ -166,7 +166,8 @@
 			"ollamaBaseUrlRequired": "Требуется базовый URL Ollama",
 			"baseUrlRequired": "Требуется базовый URL",
 			"modelDimensionMinValue": "Размерность модели должна быть больше 0",
-			"openRouterApiKeyRequired": "Требуется ключ API OpenRouter"
+			"openRouterApiKeyRequired": "Требуется ключ API OpenRouter",
+			"vectorStoreNameRequired": "Требуется имя векторного хранилища"
 		},
 		"optional": "необязательно",
 		"advancedConfigLabel": "Расширенная конфигурация",
@@ -177,7 +178,9 @@
 		"searchMaxResultsDescription": "Максимальное количество результатов поиска, возвращаемых при запросе индекса кодовой базы. Более высокие значения предоставляют больше контекста, но могут включать менее релевантные результаты.",
 		"resetToDefault": "Сбросить к значению по умолчанию",
 		"cancelling": "Отмена...",
-		"cancelIndexingButton": "Отменить индексацию"
+		"cancelIndexingButton": "Отменить индексацию",
+		"vectorStoreName": "Имя Vector Store",
+		"vectorStoreNamePlaceholder": "Введите имя векторного хранилища"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Вы можете настроить глобальное сочетание клавиш для этого параметра <SettingsLink>в настройках вашей IDE</SettingsLink>.",

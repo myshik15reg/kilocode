@@ -77,6 +77,7 @@ interface LocalCodeIndexSettings {
 	// kilocode_change - start
 	codebaseIndexVectorStoreProvider: "lancedb" | "qdrant"
 	codebaseIndexLancedbVectorStoreDirectory?: string
+	codebaseIndexVectorStoreName?: string
 	// kilocode_change - end
 	codebaseIndexEmbedderBaseUrl?: string
 	codebaseIndexEmbedderModelId: string
@@ -111,6 +112,7 @@ const createValidationSchema = (provider: EmbedderProvider, t: any) => {
 			.min(1, t("settings:codeIndex.validation.qdrantUrlRequired"))
 			.url(t("settings:codeIndex.validation.invalidQdrantUrl")),
 		codeIndexQdrantApiKey: z.string().optional(),
+		codebaseIndexVectorStoreName: z.string().min(1, t("settings:codeIndex.validation.vectorStoreNameRequired")).optional(),
 	})
 
 	switch (provider) {
@@ -256,6 +258,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexScannerMaxBatchRetries: CODEBASE_INDEX_DEFAULTS.DEFAULT_SCANNER_MAX_BATCH_RETRIES,
 		codebaseIndexBedrockRegion: "",
 		codebaseIndexBedrockProfile: "",
+		codebaseIndexVectorStoreName: "",
 		codeIndexOpenAiKey: "",
 		codeIndexQdrantApiKey: "",
 		codebaseIndexOpenAiCompatibleBaseUrl: "",
@@ -265,7 +268,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexVercelAiGatewayApiKey: "",
 		codebaseIndexOpenRouterApiKey: "",
 		codebaseIndexOpenRouterSpecificProvider: "",
-	})
+		})
 
 	// Initial settings state - stores the settings when popover opens
 	const [initialSettings, setInitialSettings] = useState<LocalCodeIndexSettings>(getDefaultSettings())
@@ -313,6 +316,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					CODEBASE_INDEX_DEFAULTS.DEFAULT_SCANNER_MAX_BATCH_RETRIES,
 				codebaseIndexBedrockRegion: codebaseIndexConfig.codebaseIndexBedrockRegion || "",
 				codebaseIndexBedrockProfile: codebaseIndexConfig.codebaseIndexBedrockProfile || "",
+				codebaseIndexVectorStoreName: codebaseIndexConfig.codebaseIndexVectorStoreName || "",
 				codeIndexOpenAiKey: "",
 				codeIndexQdrantApiKey: "",
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl || "",
@@ -1301,6 +1305,28 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 											</SelectContent>
 										</Select>
 									</div>
+					
+									{/* Vector Store Name Field */}
+									<div className="space-y-2">
+										<label className="text-sm font-medium">
+											{t("settings:codeIndex.vectorStoreName")}
+										</label>
+										<VSCodeTextField
+											value={currentSettings.codebaseIndexVectorStoreName || ""}
+											onInput={(e: any) =>
+												updateSetting("codebaseIndexVectorStoreName", e.target.value)
+											}
+											placeholder={t("settings:codeIndex.vectorStoreNamePlaceholder")}
+											className={cn("w-full", {
+												"border-vscode-errorForeground": formErrors.codebaseIndexVectorStoreName,
+											})}
+										/>
+										{formErrors.codebaseIndexVectorStoreName && (
+											<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+												{formErrors.codebaseIndexVectorStoreName}
+											</p>
+										)}
+									</div>
 									{/* kilocode_change end */}
 
 									{currentSettings.codebaseIndexEmbedderProvider === "vercel-ai-gateway" && (
@@ -1775,7 +1801,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 										value={currentSettings.codebaseIndexEmbeddingBatchSize}
 										onChange={(value) => updateSetting("codebaseIndexEmbeddingBatchSize", value)}
 									/>
-
+					
 									<MaxBatchRetriesSlider
 										value={currentSettings.codebaseIndexScannerMaxBatchRetries}
 										onChange={(value) =>
@@ -1803,12 +1829,12 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 								{currentSettings.codebaseIndexEnabled &&
 									(indexingStatus.systemStatus === "Error" ||
 										indexingStatus.systemStatus === "Standby") && (
-										<Button
-											onClick={() => vscode.postMessage({ type: "startIndexing" })}
-											disabled={saveStatus === "saving" || hasUnsavedChanges}>
-											{t("settings:codeIndex.startIndexingButton")}
-										</Button>
-									)}
+									<Button
+										onClick={() => vscode.postMessage({ type: "startIndexing" })}
+										disabled={saveStatus === "saving" || hasUnsavedChanges || !currentSettings.codebaseIndexVectorStoreName?.trim()}>
+										{t("settings:codeIndex.startIndexingButton")}
+									</Button>
+								)}
 
 								{currentSettings.codebaseIndexEnabled &&
 									(indexingStatus.systemStatus === "Indexed" ||
