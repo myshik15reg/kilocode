@@ -390,6 +390,374 @@ function test2() {}
 		})
 	})
 
+	describe("Call Graph Extraction", () => {
+		it("should extract simple function call", async () => {
+			const content = `
+function caller() {
+	callee()
+}
+function callee() {}
+			`.trim()
+
+			const filePath = "test.ts"
+
+			const mockAST = {
+				type: "program",
+				text: content,
+				startPosition: { row: 0, column: 0 },
+				endPosition: { row: 4, column: 1 },
+				children: [
+					{
+						type: "function_declaration",
+						text: "function caller() {\n\tcallee()\n}",
+						startPosition: { row: 0, column: 0 },
+						endPosition: { row: 2, column: 1 },
+						childForFieldName: (name: string) => {
+							if (name === "name") {
+								return { text: "caller" }
+							}
+							return null
+						},
+						children: [
+							{
+								type: "statement_block",
+								children: [
+									{
+										type: "expression_statement",
+										children: [
+											{
+												type: "call_expression",
+												startPosition: { row: 1, column: 1 },
+												childForFieldName: (name: string) => {
+													if (name === "function") {
+														return { text: "callee" }
+													}
+													return null
+												},
+												children: [],
+											},
+										],
+									},
+								],
+							},
+						],
+					},
+					{
+						type: "function_declaration",
+						text: "function callee() {}",
+						startPosition: { row: 3, column: 0 },
+						endPosition: { row: 3, column: 20 },
+						childForFieldName: (name: string) => {
+							if (name === "name") {
+								return { text: "callee" }
+							}
+							return null
+						},
+						children: [],
+					},
+				],
+			} as any
+
+			const result = await extractor.extractFromFile(filePath, content, mockAST, "typescript")
+
+			const callsRel = result.relationships.find((r) => r.type === "calls")
+			expect(callsRel).toBeDefined()
+			expect(callsRel?.fromId).toContain("caller")
+			expect(callsRel?.toId).toContain("callee")
+		})
+
+		it("should extract method call", async () => {
+			const content = `
+class MyClass {
+	methodA() {
+		this.methodB()
+	}
+	methodB() {}
+}
+			`.trim()
+
+			const filePath = "test.ts"
+
+			const mockAST = {
+				type: "program",
+				text: content,
+				startPosition: { row: 0, column: 0 },
+				endPosition: { row: 6, column: 1 },
+				children: [
+					{
+						type: "class_declaration",
+						text: content,
+						startPosition: { row: 0, column: 0 },
+						endPosition: { row: 6, column: 1 },
+						childForFieldName: (name: string) => {
+							if (name === "name") {
+								return { text: "MyClass" }
+							}
+							return null
+						},
+						children: [
+							{
+								type: "class_body",
+								children: [
+									{
+										type: "method_definition",
+										childForFieldName: (name: string) => {
+											if (name === "name") {
+												return { text: "methodA" }
+											}
+											return null
+										},
+										children: [
+											{
+												type: "statement_block",
+												children: [
+													{
+														type: "expression_statement",
+														children: [
+															{
+																type: "call_expression",
+																startPosition: { row: 2, column: 2 },
+																childForFieldName: (name: string) => {
+																	if (name === "function") {
+																		return {
+																			type: "member_expression",
+																			text: "this.methodB",
+																		}
+																	}
+																	return null
+																},
+																children: [],
+															},
+														],
+													},
+												],
+											},
+										],
+									},
+									{
+										type: "method_definition",
+										childForFieldName: (name: string) => {
+											if (name === "name") {
+												return { text: "methodB" }
+											}
+											return null
+										},
+										children: [],
+									},
+								],
+							},
+						],
+					},
+				],
+			} as any
+
+			const result = await extractor.extractFromFile(filePath, content, mockAST, "typescript")
+
+			const callsRel = result.relationships.find((r) => r.type === "calls")
+			expect(callsRel).toBeDefined()
+			expect(callsRel?.fromId).toContain("methodA")
+		})
+
+		it("should extract constructor call", async () => {
+			const content = `
+function createInstance() {
+	return new MyClass()
+}
+			`.trim()
+
+			const filePath = "test.ts"
+
+			const mockAST = {
+				type: "program",
+				text: content,
+				startPosition: { row: 0, column: 0 },
+				endPosition: { row: 2, column: 1 },
+				children: [
+					{
+						type: "function_declaration",
+						text: content,
+						startPosition: { row: 0, column: 0 },
+						endPosition: { row: 2, column: 1 },
+						childForFieldName: (name: string) => {
+							if (name === "name") {
+								return { text: "createInstance" }
+							}
+							return null
+						},
+						children: [
+							{
+								type: "statement_block",
+								children: [
+									{
+										type: "return_statement",
+										children: [
+											{
+												type: "new_expression",
+												startPosition: { row: 1, column: 8 },
+												childForFieldName: (name: string) => {
+													if (name === "constructor") {
+														return { text: "MyClass" }
+													}
+													return null
+												},
+												children: [],
+											},
+										],
+									},
+								],
+							},
+						],
+					},
+				],
+			} as any
+
+			const result = await extractor.extractFromFile(filePath, content, mockAST, "typescript")
+
+			const callsRel = result.relationships.find((r) => r.type === "calls")
+			expect(callsRel).toBeDefined()
+			expect(callsRel?.fromId).toContain("createInstance")
+			expect(callsRel?.toId).toContain("MyClass")
+		})
+
+		it("should handle nested calls", async () => {
+			const content = `
+function outer() {
+	if (condition) {
+		inner()
+	}
+}
+function inner() {}
+			`.trim()
+
+			const filePath = "test.ts"
+
+			const mockAST = {
+				type: "program",
+				text: content,
+				startPosition: { row: 0, column: 0 },
+				endPosition: { row: 6, column: 1 },
+				children: [
+					{
+						type: "function_declaration",
+						text: "function outer() {\n\tif (condition) {\n\t\tinner()\n\t}\n}",
+						startPosition: { row: 0, column: 0 },
+						endPosition: { row: 4, column: 1 },
+						childForFieldName: (name: string) => {
+							if (name === "name") {
+								return { text: "outer" }
+							}
+							return null
+						},
+						children: [
+							{
+								type: "statement_block",
+								children: [
+									{
+										type: "if_statement",
+										children: [
+											{
+												type: "statement_block",
+												children: [
+													{
+														type: "expression_statement",
+														children: [
+															{
+																type: "call_expression",
+																startPosition: { row: 2, column: 2 },
+																childForFieldName: (name: string) => {
+																	if (name === "function") {
+																		return { text: "inner" }
+																	}
+																	return null
+																},
+																children: [],
+															},
+														],
+													},
+												],
+											},
+										],
+									},
+								],
+							},
+						],
+					},
+					{
+						type: "function_declaration",
+						text: "function inner() {}",
+						startPosition: { row: 5, column: 0 },
+						endPosition: { row: 5, column: 19 },
+						childForFieldName: (name: string) => {
+							if (name === "name") {
+								return { text: "inner" }
+							}
+							return null
+						},
+						children: [],
+					},
+				],
+			} as any
+
+			const result = await extractor.extractFromFile(filePath, content, mockAST, "typescript")
+
+			const callsRel = result.relationships.find((r) => r.type === "calls")
+			expect(callsRel).toBeDefined()
+			expect(callsRel?.fromId).toContain("outer")
+			expect(callsRel?.toId).toContain("inner")
+		})
+
+		it("should not extract calls outside of functions", async () => {
+			const content = `
+const result = globalFunction()
+			`.trim()
+
+			const filePath = "test.ts"
+
+			const mockAST = {
+				type: "program",
+				text: content,
+				startPosition: { row: 0, column: 0 },
+				endPosition: { row: 0, column: 32 },
+				children: [
+					{
+						type: "lexical_declaration",
+						children: [
+							{
+								type: "variable_declarator",
+								childForFieldName: (name: string) => {
+									if (name === "name") {
+										return { text: "result" }
+									}
+									if (name === "value") {
+										return {
+											type: "call_expression",
+											startPosition: { row: 0, column: 15 },
+											childForFieldName: (fieldName: string) => {
+												if (fieldName === "function") {
+													return { text: "globalFunction" }
+												}
+												return null
+											},
+											children: [],
+										}
+									}
+									return null
+								},
+								children: [],
+							},
+						],
+					},
+				],
+			} as any
+
+			const result = await extractor.extractFromFile(filePath, content, mockAST, "typescript")
+
+			// Should not create 'calls' relationship for top-level calls
+			const callsRel = result.relationships.find((r) => r.type === "calls")
+			expect(callsRel).toBeUndefined()
+		})
+	})
+
 	describe("Error handling", () => {
 		it("should handle empty AST gracefully", async () => {
 			const content = ""

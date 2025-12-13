@@ -14,6 +14,9 @@ interface ExtractionResult {
 }
 
 export class RelationshipExtractor {
+	/** Current function context for call graph extraction */
+	private currentFunction: string | null = null
+
 	/**
 	 * Extract entities and relationships from a file
 	 * @param filePath File path (relative to workspace)
@@ -80,8 +83,8 @@ export class RelationshipExtractor {
 	): void {
 		const fileId = `file:${filePath}`
 
-		// Visit all nodes
-		this.visitNode(node, (n) => {
+		// Visit all nodes with context tracking
+		this.visitNodeWithContext(node, (n) => {
 			const nodeType = n.type
 
 			// Import statements
@@ -117,6 +120,11 @@ export class RelationshipExtractor {
 			// Export statements
 			else if (nodeType === "export_statement") {
 				this.extractExport(n, filePath, entities, relationships, fileId)
+			}
+
+			// Call expressions (function/method calls)
+			else if (this.isCallExpression(n)) {
+				this.extractFunctionCall(n, filePath, relationships)
 			}
 		})
 	}
@@ -558,6 +566,110 @@ export class RelationshipExtractor {
 
 		for (const child of node.children) {
 			this.visitNode(child, visitor)
+		}
+	}
+
+	/**
+	 * Visit all nodes with context tracking for call graph extraction
+	 */
+	private visitNodeWithContext(node: SyntaxNode, visitor: (node: SyntaxNode) => void): void {
+		const previousFunction = this.currentFunction
+
+		// Update context when entering a function
+		if (this.isFunctionDeclaration(node)) {
+			const nameNode = node.childForFieldName("name")
+			if (nameNode) {
+				this.currentFunction = nameNode.text
+			}
+		}
+
+		// Visit current node
+		visitor(node)
+
+		// Visit children
+		for (const child of node.children) {
+			this.visitNodeWithContext(child, visitor)
+		}
+
+		// Restore context when leaving a function
+		if (this.isFunctionDeclaration(node)) {
+			this.currentFunction = previousFunction
+		}
+	}
+
+	/**
+	 * Check if node is a call expression
+	 */
+	private isCallExpression(node: SyntaxNode): boolean {
+		return [
+			"call_expression",
+			"member_call_expression",
+			"method_invocation",
+			"new_expression",
+		].includes(node.type)
+	}
+
+	/**
+	 * Check if node is a function declaration
+	 */
+	private isFunctionDeclaration(node: SyntaxNode): boolean {
+		return [
+			"function_declaration",
+			"function",
+			"method_definition",
+			"method_declaration",
+			"arrow_function",
+		].includes(node.type)
+	}
+
+	/**
+	 * Extract function/method call relationships from AST node
+	 * Creates 'calls' relationships between caller and callee
+	 */
+	private extractFunctionCall(
+		node: SyntaxNode,
+		filePath: string,
+		relationships: CodeRelationship[]
+	): void {
+		// Only extract calls if we're inside a function
+		if (!this.currentFunction) {
+			return
+		}
+
+		let calleeName: string | null = null
+
+		// Extract callee name based on call type
+		if (node.type === "call_expression") {
+			// Simple function call: foo()
+			const functionNode = node.childForFieldName("function")
+			if (functionNode) {
+				calleeName = functionNode.text
+			}
+		} else if (node.type === "member_call_expression" || node.type === "method_invocation") {
+			// Method call: obj.method() or this.method()
+			const propertyNode = node.childForFieldName("property") || node.childForFieldName("name")
+			if (propertyNode) {
+				calleeName = propertyNode.text
+			}
+		} else if (node.type === "new_expression") {
+			// Constructor call: new Class()
+			const constructorNode = node.childForFieldName("constructor")
+			if (constructorNode) {
+				calleeName = constructorNode.text
+			}
+		}
+
+		// Create relationship if callee was found
+		if (calleeName) {
+			const callerId = `file:${filePath}:${this.currentFunction}`
+			const calleeId = `file:${filePath}:${calleeName}`
+
+			relationships.push({
+				fromId: callerId,
+				toId: calleeId,
+				type: "calls",
+				properties: { line: node.startPosition.row + 1 },
+			})
 		}
 	}
 
