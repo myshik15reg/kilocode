@@ -1,4 +1,4 @@
-import Parser from 'web-tree-sitter'
+import { Parser, Language } from 'web-tree-sitter'
 
 /**
  * Централизованный менеджер для загрузки и кэширования Tree-sitter парсеров
@@ -7,7 +7,7 @@ import Parser from 'web-tree-sitter'
 export class TreeSitterParserManager {
 	private static instance: TreeSitterParserManager
 	private parsers: Map<string, Parser> = new Map()
-	private languages: Map<string, Parser.Language> = new Map()
+	private languages: Map<string, Language> = new Map()
 	private initialized: boolean = false
 
 	private constructor() {}
@@ -55,7 +55,7 @@ export class TreeSitterParserManager {
 	/**
 	 * Получить язык для парсера
 	 */
-	async getLanguage(languageId: string, wasmPath?: string): Promise<Parser.Language> {
+	async getLanguage(languageId: string, wasmPath?: string): Promise<Language> {
 		await this.initialize()
 
 		// Возвращаем из кэша если есть
@@ -69,7 +69,7 @@ export class TreeSitterParserManager {
 			wasmPath = `tree-sitter-${languageId}.wasm`
 		}
 
-		const language = await Parser.Language.load(wasmPath)
+		const language = await Language.load(wasmPath)
 		this.languages.set(languageId, language)
 		return language
 	}

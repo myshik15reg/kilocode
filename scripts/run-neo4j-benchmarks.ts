@@ -288,6 +288,10 @@ async function exportResults(exportPath: string) {
 		
 		// Get the latest result file
 		const latestFile = benchmarkFiles.sort().reverse()[0]
+		if (!latestFile) {
+			console.log(`${colors.yellow}No benchmark results found${colors.reset}`)
+			return
+		}
 		const latestFilePath = path.join(resultsDir, latestFile)
 		
 		const resultData = await fs.readFile(latestFilePath, 'utf-8')

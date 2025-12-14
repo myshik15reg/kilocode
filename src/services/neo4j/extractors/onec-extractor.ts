@@ -9,7 +9,7 @@
  * Обеспечивает согласованность с семантическим поиском через общие queries.
  */
 
-import type Parser from 'web-tree-sitter'
+import type { SyntaxNode, QueryCapture } from 'web-tree-sitter'
 import { BaseExtractor } from '../../tree-sitter/base-extractor'
 import { onecQueries } from '../../tree-sitter/queries/onec'
 import type { CodeEntity, CodeRelationship, ExtractionResult, ILanguageExtractor } from '../interfaces'
@@ -68,15 +68,15 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Обработка query captures в entities и relationships
 	 */
 	private processCaptures(
-		captures: Parser.QueryCapture[],
+		captures: QueryCapture[],
 		entities: CodeEntity[],
 		relationships: CodeRelationship[],
 		filePath: string,
 		code: string
 	): void {
 		// Группируем captures по функциям/процедурам для обработки параметров
-		const functionCaptures = new Map<string, Parser.QueryCapture[]>()
-		const procedureCaptures = new Map<string, Parser.QueryCapture[]>()
+		const functionCaptures = new Map<string, QueryCapture[]>()
+		const procedureCaptures = new Map<string, QueryCapture[]>()
 
 		// Первый проход: собираем все captures по типам
 		for (const capture of captures) {
@@ -121,7 +121,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Обработка объявлений функций
 	 */
 	private processFunctions(
-		captures: Parser.QueryCapture[],
+		captures: QueryCapture[],
 		entities: CodeEntity[],
 		relationships: CodeRelationship[],
 		filePath: string,
@@ -160,8 +160,8 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 			// Создаём relationship 'defines'
 			relationships.push({
 				id: `rel:${filePath}:defines:${name}`,
-				source: `file:${filePath}`,
-				target: functionId,
+				fromId: `file:${filePath}`,
+				toId: functionId,
 				type: 'defines',
 				properties: {
 					line: capture.node.startPosition.row + 1,
@@ -178,7 +178,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Обработка объявлений процедур
 	 */
 	private processProcedures(
-		captures: Parser.QueryCapture[],
+		captures: QueryCapture[],
 		entities: CodeEntity[],
 		relationships: CodeRelationship[],
 		filePath: string,
@@ -217,8 +217,8 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 			// Создаём relationship 'defines'
 			relationships.push({
 				id: `rel:${filePath}:defines:${name}`,
-				source: `file:${filePath}`,
-				target: procedureId,
+				fromId: `file:${filePath}`,
+				toId: procedureId,
 				type: 'defines',
 				properties: {
 					line: capture.node.startPosition.row + 1,
@@ -235,7 +235,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Извлечение параметров функции/процедуры
 	 */
 	private extractParameters(
-		node: Parser.SyntaxNode,
+		node: SyntaxNode,
 		entities: CodeEntity[],
 		relationships: CodeRelationship[],
 		filePath: string,
@@ -277,8 +277,8 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 			// Создаём relationship от функции к параметру
 			relationships.push({
 				id: `rel:${filePath}:${functionName}:contains:${paramName}`,
-				source: `file:${filePath}:${functionName}`,
-				target: paramId,
+				fromId: `file:${filePath}:${functionName}`,
+				toId: paramId,
 				type: 'contains',
 				properties: {
 					line: param.startPosition.row + 1,
@@ -292,7 +292,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Обработка вызовов функций
 	 */
 	private processFunctionCalls(
-		captures: Parser.QueryCapture[],
+		captures: QueryCapture[],
 		relationships: CodeRelationship[],
 		filePath: string
 	): void {
@@ -311,8 +311,8 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 			// Создаём relationship 'calls'
 			relationships.push({
 				id: `rel:${filePath}:${currentFunction}:calls:${calledFunction}:${capture.node.startPosition.row}`,
-				source: `file:${filePath}:${currentFunction}`,
-				target: `function:${calledFunction}`, // Generic reference
+				fromId: `file:${filePath}:${currentFunction}`,
+				toId: `function:${calledFunction}`, // Generic reference
 				type: 'calls',
 				properties: {
 					line: capture.node.startPosition.row + 1,
@@ -324,8 +324,8 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	/**
 	 * Найти функцию/процедуру, содержащую данный узел
 	 */
-	private findContainingFunction(node: Parser.SyntaxNode): string | null {
-		let current: Parser.SyntaxNode | null = node
+	private findContainingFunction(node: SyntaxNode): string | null {
+		let current: SyntaxNode | null = node
 
 		while (current) {
 			if (current.type === 'function_declaration' || current.type === 'procedure_declaration') {

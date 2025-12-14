@@ -86,6 +86,11 @@ export interface VectorStoreSearchResult {
 	id: string | number
 	score: number
 	payload?: Payload | null
+	// Direct fields for easier access (duplicates payload data)
+	filePath: string
+	codeChunk: string
+	startLine: number
+	endLine: number
 }
 
 export interface Payload {
