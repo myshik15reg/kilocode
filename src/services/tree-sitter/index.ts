@@ -431,3 +431,8 @@ async function parseFile(
 		return null
 	}
 }
+
+// Экспорт новой инфраструктуры унификации
+export { TreeSitterParserManager, getParserManager } from './parser-manager'
+export { BaseExtractor } from './base-extractor'
+export { onecQueries } from './queries/onec'

@@ -34,6 +34,15 @@
 - **MCP Server Marketplace**: Kilo can easily find, and use MCP servers to extend the agent capabilities.
 - **Multi Mode**: Plan with Architect, Code with Coder, and Debug with Debugger, and make your own custom modes.
 
+## Supported Languages
+
+Kilo supports code analysis and manipulation for multiple programming languages:
+
+- **TypeScript** - Full support for modern TypeScript
+- **JavaScript** - ES6+ and Node.js
+- **Python** - Python 2 and 3
+- **1C:Enterprise (BSL)** - Procedures, Functions, Variables
+
 ## How to get started with Kilo
 
 1. Install the Kilo Code extension from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=kilocode.Kilo-Code).
