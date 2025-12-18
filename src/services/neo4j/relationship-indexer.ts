@@ -9,7 +9,9 @@
 import { RelationshipExtractor } from "./relationship-extractor"
 import { Neo4jGraphService } from "./graph-service"
 import type { CodeEntity, CodeRelationship } from "./interfaces"
-import type { SyntaxNode } from "web-tree-sitter"
+import Parser from "web-tree-sitter"
+
+type SyntaxNode = ReturnType<ReturnType<Parser['parse']>['rootNode']['descendantForIndex']>
 
 export interface IndexingProgress {
 	filesProcessed: number

@@ -23,7 +23,6 @@ const createMockVectorStore = (): IVectorStore => ({
 	initialize: vi.fn().mockResolvedValue(true),
 	hasIndexedData: vi.fn().mockResolvedValue(true),
 	collectionExists: vi.fn().mockResolvedValue(true),
-	collectionExists: vi.fn().mockResolvedValue(true),
 	search: vi.fn().mockResolvedValue([
 		{
 			id: "1",

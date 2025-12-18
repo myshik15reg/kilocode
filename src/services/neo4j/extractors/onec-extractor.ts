@@ -9,7 +9,11 @@
  * Обеспечивает согласованность с семантическим поиском через общие queries.
  */
 
-import type { SyntaxNode, Query } from 'web-tree-sitter'
+import Parser from 'web-tree-sitter'
+
+type SyntaxNode = ReturnType<ReturnType<Parser['parse']>['rootNode']['descendantForIndex']>
+type Query = ReturnType<Parser['getLanguage']['query']>
+type QueryCapture = ReturnType<Query['captures']>[number]
 import { BaseExtractor } from '../../tree-sitter/base-extractor'
 import { onecQueries } from '../../tree-sitter/queries/onec'
 import type { CodeEntity, CodeRelationship, ExtractionResult, ILanguageExtractor } from '../interfaces'
@@ -68,15 +72,15 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Обработка query captures в entities и relationships
 	 */
 	private processCaptures(
-		captures: Query.QueryCapture[],
+		captures: QueryCapture[],
 		entities: CodeEntity[],
 		relationships: CodeRelationship[],
 		filePath: string,
 		code: string
 	): void {
 		// Группируем captures по функциям/процедурам для обработки параметров
-		const functionCaptures = new Map<string, Query.QueryCapture[]>()
-		const procedureCaptures = new Map<string, Query.QueryCapture[]>()
+		const functionCaptures = new Map<string, QueryCapture[]>()
+		const procedureCaptures = new Map<string, QueryCapture[]>()
 
 		// Первый проход: собираем все captures по типам
 		for (const capture of captures) {
@@ -84,7 +88,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 
 			if (captureName === 'function.declaration' || captureName === 'function.name') {
 				const nameCapture = captures.find(
-					(c: Query.QueryCapture) => c.name === 'function.name' && c.node.parent?.id === capture.node.id
+					(c: QueryCapture) => c.name === 'function.name' && c.node.parent?.id === capture.node.id
 				)
 				if (nameCapture) {
 					const funcName = nameCapture.node.text
@@ -95,7 +99,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 				}
 			} else if (captureName === 'procedure.declaration' || captureName === 'procedure.name') {
 				const nameCapture = captures.find(
-					(c: Query.QueryCapture) => c.name === 'procedure.name' && c.node.parent?.id === capture.node.id
+					(c: QueryCapture) => c.name === 'procedure.name' && c.node.parent?.id === capture.node.id
 				)
 				if (nameCapture) {
 					const procName = nameCapture.node.text
@@ -121,7 +125,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Обработка объявлений функций
 	 */
 	private processFunctions(
-		captures: Query.QueryCapture[],
+		captures: QueryCapture[],
 		entities: CodeEntity[],
 		relationships: CodeRelationship[],
 		filePath: string,
@@ -178,7 +182,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Обработка объявлений процедур
 	 */
 	private processProcedures(
-		captures: Query.QueryCapture[],
+		captures: QueryCapture[],
 		entities: CodeEntity[],
 		relationships: CodeRelationship[],
 		filePath: string,
@@ -292,7 +296,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Обработка вызовов функций
 	 */
 	private processFunctionCalls(
-		captures: Query.QueryCapture[],
+		captures: QueryCapture[],
 		relationships: CodeRelationship[],
 		filePath: string
 	): void {

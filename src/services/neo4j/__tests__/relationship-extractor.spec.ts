@@ -178,7 +178,7 @@ class Calculator {
 			expect(importEntity).toBeDefined()
 			
 			const importsRelation = result.relationships.find(
-				(r: CodeRelationship) => r.relationType === "imports",
+				(r: CodeRelationship) => r.type === "imports",
 			)
 			expect(importsRelation).toBeDefined()
 		})
@@ -368,7 +368,7 @@ function test2() {}
 			)
 
 			const definesRelation = result.relationships.find(
-				(r: CodeRelationship) => r.relationType === "defines",
+				(r: CodeRelationship) => r.type === "defines",
 			)
 			expect(definesRelation).toBeDefined()
 			expect(definesRelation?.fromId).toContain("file:")
