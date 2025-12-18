@@ -849,6 +849,11 @@ export class ManagedIndexer implements vscode.Disposable {
 					startLine: result.startLine,
 					endLine: result.endLine,
 				},
+				// Direct fields for easier access (duplicates payload data)
+				filePath: result.filePath,
+				codeChunk: "", // Managed indexing doesn't return code chunks
+				startLine: result.startLine,
+				endLine: result.endLine,
 			}))
 			.sort((a, b) => b.score - a.score)
 	}

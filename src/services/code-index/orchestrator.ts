@@ -238,13 +238,10 @@ export class CodeIndexOrchestrator {
 				}
 
 				// Neo4j indexing after successful Qdrant incremental scan
+				// Note: Incremental scan doesn't track individual files, so we skip Neo4j indexing here
+				// Full scan will handle Neo4j indexing for all files
 				if (this.configManager.isNeo4jEnabled && this.relationshipIndexer) {
-					try {
-						await this.indexRelationshipsForChangedFiles(allowedPaths)
-					} catch (neo4jError) {
-						console.error("[CodeIndexOrchestrator] Neo4j indexing failed during incremental scan:", neo4jError)
-						// Don't fail the entire indexing if Neo4j fails
-					}
+					console.log("[CodeIndexOrchestrator] Skipping Neo4j indexing for incremental scan (will be done on full scan)")
 				}
 
 				await this._startWatcher()
@@ -329,13 +326,10 @@ export class CodeIndexOrchestrator {
 				}
 
 				// Neo4j indexing after successful Qdrant full scan
+				// Note: Full scan doesn't track individual files in a list, so we skip Neo4j indexing here
+				// Neo4j indexing should be triggered separately through file watcher events
 				if (this.configManager.isNeo4jEnabled && this.relationshipIndexer) {
-					try {
-						await this.indexRelationshipsForChangedFiles(supportedPaths)
-					} catch (neo4jError) {
-						console.error("[CodeIndexOrchestrator] Neo4j indexing failed during full scan:", neo4jError)
-						// Don't fail the entire indexing if Neo4j fails
-					}
+					console.log("[CodeIndexOrchestrator] Skipping Neo4j indexing for full scan (will be done through file watcher)")
 				}
 
 				await this._startWatcher()

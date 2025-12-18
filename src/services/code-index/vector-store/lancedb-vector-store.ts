@@ -337,8 +337,13 @@ export class LanceDBVectorStore implements IVectorStore {
 					startLine: result.startLine,
 					endLine: result.endLine,
 				} as Payload,
+				// Direct fields for easier access
+				filePath: result.filePath,
+				codeChunk: result.codeChunk,
+				startLine: result.startLine,
+				endLine: result.endLine,
 			}))
-
+	
 			return results
 		} catch (error) {
 			console.error("Failed to search points:", error)

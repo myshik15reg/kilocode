@@ -9,7 +9,7 @@
  * Обеспечивает согласованность с семантическим поиском через общие queries.
  */
 
-import type { SyntaxNode, QueryCapture } from 'web-tree-sitter'
+import type { SyntaxNode, Query } from 'web-tree-sitter'
 import { BaseExtractor } from '../../tree-sitter/base-extractor'
 import { onecQueries } from '../../tree-sitter/queries/onec'
 import type { CodeEntity, CodeRelationship, ExtractionResult, ILanguageExtractor } from '../interfaces'
@@ -27,7 +27,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Инициализация с использованием централизованного ParserManager
 	 * @param wasmPath - путь к WASM файлу tree-sitter-1c
 	 */
-	async initialize(wasmPath?: string): Promise<void> {
+	override async initialize(wasmPath?: string): Promise<void> {
 		// Используем инициализацию из BaseExtractor
 		await super.initialize(wasmPath)
 	}
@@ -68,15 +68,15 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Обработка query captures в entities и relationships
 	 */
 	private processCaptures(
-		captures: QueryCapture[],
+		captures: Query.QueryCapture[],
 		entities: CodeEntity[],
 		relationships: CodeRelationship[],
 		filePath: string,
 		code: string
 	): void {
 		// Группируем captures по функциям/процедурам для обработки параметров
-		const functionCaptures = new Map<string, QueryCapture[]>()
-		const procedureCaptures = new Map<string, QueryCapture[]>()
+		const functionCaptures = new Map<string, Query.QueryCapture[]>()
+		const procedureCaptures = new Map<string, Query.QueryCapture[]>()
 
 		// Первый проход: собираем все captures по типам
 		for (const capture of captures) {
@@ -84,7 +84,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 
 			if (captureName === 'function.declaration' || captureName === 'function.name') {
 				const nameCapture = captures.find(
-					(c) => c.name === 'function.name' && c.node.parent?.id === capture.node.id
+					(c: Query.QueryCapture) => c.name === 'function.name' && c.node.parent?.id === capture.node.id
 				)
 				if (nameCapture) {
 					const funcName = nameCapture.node.text
@@ -95,7 +95,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 				}
 			} else if (captureName === 'procedure.declaration' || captureName === 'procedure.name') {
 				const nameCapture = captures.find(
-					(c) => c.name === 'procedure.name' && c.node.parent?.id === capture.node.id
+					(c: Query.QueryCapture) => c.name === 'procedure.name' && c.node.parent?.id === capture.node.id
 				)
 				if (nameCapture) {
 					const procName = nameCapture.node.text
@@ -121,7 +121,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Обработка объявлений функций
 	 */
 	private processFunctions(
-		captures: QueryCapture[],
+		captures: Query.QueryCapture[],
 		entities: CodeEntity[],
 		relationships: CodeRelationship[],
 		filePath: string,
@@ -178,7 +178,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Обработка объявлений процедур
 	 */
 	private processProcedures(
-		captures: QueryCapture[],
+		captures: Query.QueryCapture[],
 		entities: CodeEntity[],
 		relationships: CodeRelationship[],
 		filePath: string,
@@ -244,9 +244,9 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 		const paramsNode = node.childForFieldName('parameters')
 		if (!paramsNode) return
 
-		const parameters = paramsNode.children.filter((c) => c.type === 'parameter')
+		const parameters = paramsNode.children.filter((c: SyntaxNode) => c.type === 'parameter')
 
-		parameters.forEach((param, index) => {
+		parameters.forEach((param: SyntaxNode, index: number) => {
 			const paramNameNode = param.childForFieldName('name')
 			if (!paramNameNode) return
 
@@ -292,7 +292,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 	 * Обработка вызовов функций
 	 */
 	private processFunctionCalls(
-		captures: QueryCapture[],
+		captures: Query.QueryCapture[],
 		relationships: CodeRelationship[],
 		filePath: string
 	): void {

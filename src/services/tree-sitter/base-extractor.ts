@@ -1,4 +1,5 @@
-import { Parser, Language, Query } from 'web-tree-sitter'
+import Parser from 'web-tree-sitter'
+import type { Language, Query } from 'web-tree-sitter'
 import { getParserManager } from './parser-manager'
 
 /**
@@ -27,7 +28,7 @@ export abstract class BaseExtractor {
 	/**
 	 * Парсить код в AST
 	 */
-	protected async parseCode(code: string): Promise<Parser.Tree> {
+	protected async parseCode(code: string): Promise<ReturnType<Parser['parse']>> {
 		if (!this.parser) {
 			throw new Error(`Extractor not initialized. Call initialize() first.`)
 		}
@@ -37,7 +38,7 @@ export abstract class BaseExtractor {
 	/**
 	 * Выполнить query на дереве
 	 */
-	protected executeQuery(tree: Parser.Tree, queryString: string): Query.QueryCapture[] {
+	protected executeQuery(tree: ReturnType<Parser['parse']>, queryString: string): ReturnType<Query['captures']> {
 		if (!this.language) {
 			throw new Error(`Extractor not initialized. Call initialize() first.`)
 		}

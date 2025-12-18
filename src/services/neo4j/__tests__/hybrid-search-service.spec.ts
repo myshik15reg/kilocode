@@ -15,13 +15,18 @@ const createMockEmbedder = (): IEmbedder => ({
 	createEmbeddings: vi.fn().mockResolvedValue({
 		embeddings: [[0.1, 0.2, 0.3, 0.4, 0.5]],
 	}),
+	validateConfiguration: vi.fn().mockResolvedValue({ valid: true }),
+	embedderInfo: { name: "openai" as const },
 })
 
 const createMockVectorStore = (): IVectorStore => ({
 	initialize: vi.fn().mockResolvedValue(true),
 	hasIndexedData: vi.fn().mockResolvedValue(true),
+	collectionExists: vi.fn().mockResolvedValue(true),
+	collectionExists: vi.fn().mockResolvedValue(true),
 	search: vi.fn().mockResolvedValue([
 		{
+			id: "1",
 			filePath: "src/calculator.ts",
 			codeChunk: "function add(a: number, b: number) { return a + b }",
 			startLine: 1,
@@ -29,6 +34,7 @@ const createMockVectorStore = (): IVectorStore => ({
 			score: 0.9,
 		},
 		{
+			id: "2",
 			filePath: "src/math.ts",
 			codeChunk: "export const multiply = (x, y) => x * y",
 			startLine: 5,

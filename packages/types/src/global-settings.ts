@@ -284,6 +284,7 @@ export const SECRET_STATE_KEYS = [
 	"codebaseIndexMistralApiKey",
 	"codebaseIndexVercelAiGatewayApiKey",
 	"codebaseIndexOpenRouterApiKey",
+	"codebaseIndexNeo4jPassword",
 	"huggingFaceApiKey",
 	"sambaNovaApiKey",
 	"zaiApiKey",

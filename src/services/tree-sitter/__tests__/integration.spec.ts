@@ -45,12 +45,17 @@ describe('Tree-sitter Unification - Integration Tests', () => {
 			// Парсим через languageParser
 			const parsers = await loadRequiredLanguageParsers(['test.bsl'], WASM_DIR)
 			const searchTree = parsers.bsl.parser.parse(code)
-
+	
 			// Парсим через OneCExtractor
 			const extractor = new OneCExtractor()
 			await extractor.initialize(path.join(WASM_DIR, 'tree-sitter-1c.wasm'))
 			const extractResult = await extractor.extract(code, 'test.bsl')
-
+	
+			// Проверяем что дерево не null
+			if (!searchTree) {
+				throw new Error('Failed to parse code')
+			}
+	
 			// Должны найти одинаковое количество базовых определений
 			const searchFunctions = searchTree.rootNode.descendantsOfType('function_declaration')
 			const searchProcedures = searchTree.rootNode.descendantsOfType('procedure_declaration')

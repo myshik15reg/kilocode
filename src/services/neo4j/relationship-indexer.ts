@@ -45,10 +45,9 @@ export class RelationshipIndexer {
 			await this.graphService.deleteEntitiesByFilePath(filePath)
 
 			// Extract entities and relationships
-			const { entities, relationships } = await this.extractor.extractFromFile(
-				filePath,
+			const { entities, relationships } = await this.extractor.extract(
 				content,
-				ast,
+				filePath,
 				language
 			)
 
@@ -124,10 +123,9 @@ export class RelationshipIndexer {
 				await this.graphService.deleteEntitiesByFilePath(file.filePath)
 
 				// Extract
-				const { entities, relationships } = await this.extractor.extractFromFile(
-					file.filePath,
+				const { entities, relationships } = await this.extractor.extract(
 					file.content,
-					file.ast,
+					file.filePath,
 					file.language
 				)
 

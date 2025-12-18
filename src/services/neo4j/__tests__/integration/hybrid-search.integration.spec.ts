@@ -56,7 +56,7 @@ describe('Neo4j + Qdrant Integration Tests', () => {
   let graphService: Neo4jGraphService
   let indexer: RelationshipIndexer
   let extractor: RelationshipExtractor
-  let parser: Parser
+  let parser: Parser | null = null
 
   // Performance метрики
   const performanceMetrics = {
@@ -96,11 +96,12 @@ describe('Neo4j + Qdrant Integration Tests', () => {
 
     // Инициализация Tree-sitter парсера
     await Parser.init()
-    parser = new Parser()
+    const parserInstance = new Parser()
     const tsLanguage = await Parser.Language.load(
       join(__dirname, '../../../../node_modules/tree-sitter-wasms/out/tree-sitter-typescript.wasm')
     )
-    parser.setLanguage(tsLanguage)
+    parserInstance.setLanguage(tsLanguage)
+    parser = parserInstance
     
     performanceMetrics.initializationTime = Date.now() - initStart
     console.log(`✓ Инициализация: ${performanceMetrics.initializationTime}ms`)
@@ -253,9 +254,10 @@ describe('Neo4j + Qdrant Integration Tests', () => {
       const fixtureContent = readFileSync(
         join(__dirname, '../fixtures/simple-function.ts'),
         'utf-8'
-      )
-
-      const tree = parser.parse(fixtureContent)
+       )
+     
+       if (!parser) throw new Error('Parser not initialized')
+       const tree = parser.parse(fixtureContent)
       const startTime = Date.now()
 
       const result = await indexer.indexFile(
@@ -284,8 +286,9 @@ describe('Neo4j + Qdrant Integration Tests', () => {
       const simpleFunctionContent = readFileSync(
         join(__dirname, '../fixtures/simple-function.ts'),
         'utf-8'
-      )
-      const simpleTree = parser.parse(simpleFunctionContent)
+       )
+       if (!parser) throw new Error('Parser not initialized')
+       const simpleTree = parser.parse(simpleFunctionContent)
       await indexer.indexFile(
         'fixtures/simple-function.ts',
         simpleFunctionContent,
@@ -297,8 +300,9 @@ describe('Neo4j + Qdrant Integration Tests', () => {
       const withImportsContent = readFileSync(
         join(__dirname, '../fixtures/with-imports.ts'),
         'utf-8'
-      )
-      const importsTree = parser.parse(withImportsContent)
+       )
+       if (!parser) throw new Error('Parser not initialized')
+       const importsTree = parser.parse(withImportsContent)
       
       const result = await indexer.indexFile(
         'fixtures/with-imports.ts',
@@ -322,8 +326,9 @@ describe('Neo4j + Qdrant Integration Tests', () => {
       const withClassContent = readFileSync(
         join(__dirname, '../fixtures/with-class.ts'),
         'utf-8'
-      )
-      const classTree = parser.parse(withClassContent)
+       )
+       if (!parser) throw new Error('Parser not initialized')
+       const classTree = parser.parse(withClassContent)
 
       const result = await indexer.indexFile(
         'fixtures/with-class.ts',
@@ -364,11 +369,14 @@ describe('Neo4j + Qdrant Integration Tests', () => {
         },
       ]
 
-      const parsedFiles = files.map(f => ({
-        ...f,
-        ast: parser.parse(f.content).rootNode,
-        language: 'typescript',
-      }))
+      const parsedFiles = files.map((f) => {
+      	if (!parser) throw new Error('Parser not initialized')
+      	return {
+      		...f,
+      		ast: parser.parse(f.content).rootNode,
+      		language: 'typescript',
+      	}
+      })
 
       const startTime = Date.now()
       let totalEntities = 0
@@ -618,8 +626,9 @@ describe('Neo4j + Qdrant Integration Tests', () => {
       const content = readFileSync(
         join(__dirname, '../fixtures/with-class.ts'),
         'utf-8'
-      )
-      const tree = parser.parse(content)
+       )
+       if (!parser) throw new Error('Parser not initialized')
+       const tree = parser.parse(content)
 
       const iterations = 5
       const times: number[] = []
@@ -661,11 +670,14 @@ describe('Neo4j + Qdrant Integration Tests', () => {
         },
       ]
 
-      const parsedFiles = files.map(f => ({
-        ...f,
-        ast: parser.parse(f.content).rootNode,
-        language: 'typescript',
-      }))
+      const parsedFiles = files.map((f) => {
+      	if (!parser) throw new Error('Parser not initialized')
+      	return {
+      		...f,
+      		ast: parser.parse(f.content).rootNode,
+      		language: 'typescript',
+      	}
+      })
 
       const progress = await indexer.indexFiles(parsedFiles)
       const stats = await graphService.getStatistics()

@@ -64,6 +64,7 @@ export class CodeIndexSearchService {
 					})
 					// Convert hybrid results to vector store results for backward compatibility
 					return hybridResults.map((result) => ({
+						id: result.id ?? `${result.filePath}:${result.startLine}`,
 						filePath: result.filePath,
 						codeChunk: result.codeChunk,
 						startLine: result.startLine,

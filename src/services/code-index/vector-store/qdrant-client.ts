@@ -458,9 +458,20 @@ export class QdrantVectorStore implements IVectorStore {
 			}
 
 			const operationResult = await this.client.query(this.collectionName, searchRequest)
-			const filteredPoints = operationResult.points.filter((p) => this.isPayloadValid(p.payload))
-
-			return filteredPoints as VectorStoreSearchResult[]
+			const filteredPoints = operationResult.points
+				.filter((p) => this.isPayloadValid(p.payload))
+				.map((point) => ({
+					id: point.id,
+					score: point.score ?? 0,
+					payload: point.payload as Payload,
+					// Direct fields for easier access
+					filePath: (point.payload as Payload).filePath,
+					codeChunk: (point.payload as Payload).codeChunk,
+					startLine: (point.payload as Payload).startLine,
+					endLine: (point.payload as Payload).endLine,
+				}))
+	
+			return filteredPoints
 		} catch (error) {
 			console.error("Failed to search points:", error)
 			throw error

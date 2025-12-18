@@ -77,7 +77,7 @@ export class TreeSitterParserManager {
 	/**
 	 * Парсить код с использованием кэшированного парсера
 	 */
-	async parse(languageId: string, code: string, wasmPath?: string): Promise<Parser.Tree> {
+	async parse(languageId: string, code: string, wasmPath?: string): Promise<ReturnType<Parser['parse']>> {
 		const parser = await this.getParser(languageId, wasmPath)
 		return parser.parse(code)
 	}

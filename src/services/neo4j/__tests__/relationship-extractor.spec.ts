@@ -58,20 +58,18 @@ function calculateSum(a: number, b: number): number {
 				],
 			} as any
 
-			const result = await extractor.extractFromFile(
-				filePath,
+			const result = await extractor.extract(
 				content,
-				mockAST,
-				"typescript",
+				filePath,
 			)
 
 			expect(result.entities).toHaveLength(2) // File + function
 			
-			const fileEntity = result.entities.find(e => e.type === "file")
+			const fileEntity = result.entities.find((e: CodeEntity) => e.type === "file")
 			expect(fileEntity).toBeDefined()
 			expect(fileEntity?.name).toBe("test.ts")
 
-			const funcEntity = result.entities.find(e => e.type === "function")
+			const funcEntity = result.entities.find((e: CodeEntity) => e.type === "function")
 			expect(funcEntity).toBeDefined()
 			expect(funcEntity?.name).toBe("calculateSum")
 		})
@@ -114,14 +112,12 @@ class Calculator {
 				],
 			} as any
 
-			const result = await extractor.extractFromFile(
-				filePath,
+			const result = await extractor.extract(
 				content,
-				mockAST,
-				"typescript",
+				filePath,
 			)
 
-			const classEntity = result.entities.find(e => e.type === "class")
+			const classEntity = result.entities.find((e: CodeEntity) => e.type === "class")
 			expect(classEntity).toBeDefined()
 			expect(classEntity?.name).toBe("Calculator")
 		})
@@ -173,18 +169,16 @@ class Calculator {
 				],
 			} as any
 
-			const result = await extractor.extractFromFile(
-				filePath,
+			const result = await extractor.extract(
 				content,
-				mockAST,
-				"typescript",
+				filePath,
 			)
 
-			const importEntity = result.entities.find(e => e.type === "import")
+			const importEntity = result.entities.find((e: CodeEntity) => e.type === "import")
 			expect(importEntity).toBeDefined()
 			
 			const importsRelation = result.relationships.find(
-				r => r.relationType === "imports",
+				(r: CodeRelationship) => r.relationType === "imports",
 			)
 			expect(importsRelation).toBeDefined()
 		})
@@ -226,14 +220,12 @@ def calculate_sum(a, b):
 				],
 			} as any
 
-			const result = await extractor.extractFromFile(
-				filePath,
+			const result = await extractor.extract(
 				content,
-				mockAST,
-				"python",
+				filePath,
 			)
 
-			const funcEntity = result.entities.find(e => e.type === "function")
+			const funcEntity = result.entities.find((e: CodeEntity) => e.type === "function")
 			expect(funcEntity).toBeDefined()
 			expect(funcEntity?.name).toBe("calculate_sum")
 		})
@@ -274,14 +266,12 @@ class Calculator:
 				],
 			} as any
 
-			const result = await extractor.extractFromFile(
-				filePath,
+			const result = await extractor.extract(
 				content,
-				mockAST,
-				"python",
+				filePath,
 			)
 
-			const classEntity = result.entities.find(e => e.type === "class")
+			const classEntity = result.entities.find((e: CodeEntity) => e.type === "class")
 			expect(classEntity).toBeDefined()
 			expect(classEntity?.name).toBe("Calculator")
 		})
@@ -331,17 +321,15 @@ function test2() {}
 				],
 			} as any
 
-			const result = await extractor.extractFromFile(
-				filePath,
+			const result = await extractor.extract(
 				content,
-				mockAST,
-				"typescript",
+				filePath,
 			)
 
-			const entities = result.entities.filter(e => e.type === "function")
+			const entities = result.entities.filter((e: CodeEntity) => e.type === "function")
 			expect(entities).toHaveLength(2)
 			
-			const ids = entities.map(e => e.id)
+			const ids = entities.map((e: CodeEntity) => e.id)
 			expect(new Set(ids).size).toBe(2) // All IDs should be unique
 		})
 	})
@@ -374,15 +362,13 @@ function test2() {}
 				],
 			} as any
 
-			const result = await extractor.extractFromFile(
-				filePath,
+			const result = await extractor.extract(
 				content,
-				mockAST,
-				"typescript",
+				filePath,
 			)
 
 			const definesRelation = result.relationships.find(
-				r => r.relationType === "defines",
+				(r: CodeRelationship) => r.relationType === "defines",
 			)
 			expect(definesRelation).toBeDefined()
 			expect(definesRelation?.fromId).toContain("file:")
@@ -458,9 +444,9 @@ function callee() {}
 				],
 			} as any
 
-			const result = await extractor.extractFromFile(filePath, content, mockAST, "typescript")
-
-			const callsRel = result.relationships.find((r) => r.type === "calls")
+			const result = await extractor.extract(content, filePath)
+	
+			const callsRel = result.relationships.find((r: CodeRelationship) => r.type === "calls")
 			expect(callsRel).toBeDefined()
 			expect(callsRel?.fromId).toContain("caller")
 			expect(callsRel?.toId).toContain("callee")
@@ -551,9 +537,9 @@ class MyClass {
 				],
 			} as any
 
-			const result = await extractor.extractFromFile(filePath, content, mockAST, "typescript")
-
-			const callsRel = result.relationships.find((r) => r.type === "calls")
+			const result = await extractor.extract(content, filePath)
+	
+			const callsRel = result.relationships.find((r: CodeRelationship) => r.type === "calls")
 			expect(callsRel).toBeDefined()
 			expect(callsRel?.fromId).toContain("methodA")
 		})
@@ -611,9 +597,9 @@ function createInstance() {
 				],
 			} as any
 
-			const result = await extractor.extractFromFile(filePath, content, mockAST, "typescript")
-
-			const callsRel = result.relationships.find((r) => r.type === "calls")
+			const result = await extractor.extract(content, filePath)
+	
+			const callsRel = result.relationships.find((r: CodeRelationship) => r.type === "calls")
 			expect(callsRel).toBeDefined()
 			expect(callsRel?.fromId).toContain("createInstance")
 			expect(callsRel?.toId).toContain("MyClass")
@@ -698,9 +684,9 @@ function inner() {}
 				],
 			} as any
 
-			const result = await extractor.extractFromFile(filePath, content, mockAST, "typescript")
-
-			const callsRel = result.relationships.find((r) => r.type === "calls")
+			const result = await extractor.extract(content, filePath)
+	
+			const callsRel = result.relationships.find((r: CodeRelationship) => r.type === "calls")
 			expect(callsRel).toBeDefined()
 			expect(callsRel?.fromId).toContain("outer")
 			expect(callsRel?.toId).toContain("inner")
@@ -750,10 +736,10 @@ const result = globalFunction()
 				],
 			} as any
 
-			const result = await extractor.extractFromFile(filePath, content, mockAST, "typescript")
-
+			const result = await extractor.extract(content, filePath)
+	
 			// Should not create 'calls' relationship for top-level calls
-			const callsRel = result.relationships.find((r) => r.type === "calls")
+			const callsRel = result.relationships.find((r: CodeRelationship) => r.type === "calls")
 			expect(callsRel).toBeUndefined()
 		})
 	})
@@ -771,11 +757,9 @@ const result = globalFunction()
 				children: [],
 			} as any
 
-			const result = await extractor.extractFromFile(
-				filePath,
+			const result = await extractor.extract(
 				content,
-				mockAST,
-				"typescript",
+				filePath,
 			)
 
 			// Should at least have file entity
@@ -793,11 +777,9 @@ const result = globalFunction()
 				children: [],
 			} as any
 
-			const result = await extractor.extractFromFile(
-				filePath,
+			const result = await extractor.extract(
 				content,
-				mockAST,
-				"unknown",
+				filePath,
 			)
 
 			// Should still create file entity and use generic extraction
