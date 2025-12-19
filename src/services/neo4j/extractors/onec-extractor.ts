@@ -244,7 +244,7 @@ export class OneCExtractor extends BaseExtractor implements ILanguageExtractor {
 		const paramsNode = node.childForFieldName('parameters')
 		if (!paramsNode) return
 
-		const parameters = paramsNode.children.filter((c: SyntaxNode) => c.type === 'parameter')
+		const parameters = paramsNode.children.filter((c: SyntaxNode | null): c is SyntaxNode => c !== null && c.type === 'parameter')
 
 		parameters.forEach((param: SyntaxNode, index: number) => {
 			const paramNameNode = param.childForFieldName('name')

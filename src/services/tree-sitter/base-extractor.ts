@@ -31,7 +31,11 @@ export abstract class BaseExtractor {
 		if (!this.parser) {
 			throw new Error(`Extractor not initialized. Call initialize() first.`)
 		}
-		return this.parser.parse(code)
+		const tree = this.parser.parse(code)
+		if (!tree) {
+			throw new Error(`Failed to parse code`)
+		}
+		return tree
 	}
 
 	/**
