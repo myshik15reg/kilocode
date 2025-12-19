@@ -18,11 +18,11 @@ import { RelationshipIndexer } from '../../relationship-indexer'
 import { HybridSearchService } from '../../hybrid-search-service'
 import { RelationshipExtractor } from '../../relationship-extractor'
 import type { CodeEntity, CodeRelationship, Neo4jConfig } from '../../interfaces'
-import Parser from 'web-tree-sitter'
+import ParserModule from 'web-tree-sitter'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
-type ParserInstance = InstanceType<typeof Parser>
+type Parser = ParserModule
 
 // Конфигурация Neo4j из окружения или значения по умолчанию
 const NEO4J_CONFIG: Neo4jConfig = {
@@ -58,7 +58,7 @@ describe('Neo4j + Qdrant Integration Tests', () => {
   let graphService: Neo4jGraphService
   let indexer: RelationshipIndexer
   let extractor: RelationshipExtractor
-  let parser: ParserInstance | null = null
+  let parser: Parser | null = null
 
   // Performance метрики
   const performanceMetrics = {
@@ -97,9 +97,9 @@ describe('Neo4j + Qdrant Integration Tests', () => {
     extractor = new RelationshipExtractor()
   
     // Инициализация Tree-sitter парсера
-    await Parser.init()
-    const parserInstance = new Parser()
-    const tsLanguage = await Parser.Language.load(
+    await ParserModule.init()
+    const parserInstance = new ParserModule()
+    const tsLanguage = await ParserModule.Language.load(
     	join(__dirname, '../../../../node_modules/tree-sitter-wasms/out/tree-sitter-typescript.wasm')
     )
     parserInstance.setLanguage(tsLanguage)

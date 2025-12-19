@@ -13,10 +13,9 @@ import { Neo4jGraphService } from '../../graph-service'
 import { RelationshipIndexer } from '../../relationship-indexer'
 import { HybridSearchService } from '../../hybrid-search-service'
 import type { CodeEntity, CodeRelationship } from '../../interfaces'
-import Parser from 'web-tree-sitter'
+import type Parser from 'web-tree-sitter'
 
-type ParserInstance = InstanceType<typeof Parser>
-type SyntaxNode = ReturnType<ReturnType<ParserInstance['parse']>['rootNode']['descendantForIndex']>
+type SyntaxNode = ReturnType<ReturnType<Parser['parse']>['rootNode']['descendantForIndex']>
 import * as fs from 'fs/promises'
 import * as path from 'path'
 

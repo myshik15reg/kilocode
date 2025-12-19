@@ -2,7 +2,8 @@ import Parser from 'web-tree-sitter'
 import type { Language, Query } from 'web-tree-sitter'
 import { getParserManager } from './parser-manager'
 
-type ParserInstance = InstanceType<typeof Parser>
+// Parser is actually a class instance after new Parser()
+type ParserInstance = Parser
 type QueryType = Query
 
 /**
