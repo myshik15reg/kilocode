@@ -258,12 +258,13 @@ describe('Neo4j + Qdrant Integration Tests', () => {
      
        if (!parser) throw new Error('Parser not initialized')
        const tree = parser.parse(fixtureContent)
-      const startTime = Date.now()
-
-      const result = await indexer.indexFile(
-        'fixtures/simple-function.ts',
-        fixtureContent,
-        tree.rootNode,
+       if (!tree) throw new Error('Failed to parse file')
+       const startTime = Date.now()
+     
+       const result = await indexer.indexFile(
+       	'fixtures/simple-function.ts',
+       	fixtureContent,
+       	tree.rootNode,
         'typescript'
       )
 
@@ -289,10 +290,11 @@ describe('Neo4j + Qdrant Integration Tests', () => {
        )
        if (!parser) throw new Error('Parser not initialized')
        const simpleTree = parser.parse(simpleFunctionContent)
-      await indexer.indexFile(
-        'fixtures/simple-function.ts',
-        simpleFunctionContent,
-        simpleTree.rootNode,
+       if (!simpleTree) throw new Error('Failed to parse file')
+       await indexer.indexFile(
+       	'fixtures/simple-function.ts',
+       	simpleFunctionContent,
+       	simpleTree.rootNode,
         'typescript'
       )
 
@@ -303,11 +305,12 @@ describe('Neo4j + Qdrant Integration Tests', () => {
        )
        if (!parser) throw new Error('Parser not initialized')
        const importsTree = parser.parse(withImportsContent)
-      
-      const result = await indexer.indexFile(
-        'fixtures/with-imports.ts',
-        withImportsContent,
-        importsTree.rootNode,
+       if (!importsTree) throw new Error('Failed to parse file')
+     
+       const result = await indexer.indexFile(
+       	'fixtures/with-imports.ts',
+       	withImportsContent,
+       	importsTree.rootNode,
         'typescript'
       )
 
@@ -329,11 +332,12 @@ describe('Neo4j + Qdrant Integration Tests', () => {
        )
        if (!parser) throw new Error('Parser not initialized')
        const classTree = parser.parse(withClassContent)
-
-      const result = await indexer.indexFile(
-        'fixtures/with-class.ts',
-        withClassContent,
-        classTree.rootNode,
+       if (!classTree) throw new Error('Failed to parse file')
+     
+       const result = await indexer.indexFile(
+       	'fixtures/with-class.ts',
+       	withClassContent,
+       	classTree.rootNode,
         'typescript'
       )
 
@@ -371,9 +375,11 @@ describe('Neo4j + Qdrant Integration Tests', () => {
 
       const parsedFiles = files.map((f) => {
       	if (!parser) throw new Error('Parser not initialized')
+      	const tree = parser.parse(f.content)
+      	if (!tree) throw new Error('Failed to parse file')
       	return {
       		...f,
-      		ast: parser.parse(f.content).rootNode,
+      		ast: tree.rootNode,
       		language: 'typescript',
       	}
       })
@@ -629,18 +635,19 @@ describe('Neo4j + Qdrant Integration Tests', () => {
        )
        if (!parser) throw new Error('Parser not initialized')
        const tree = parser.parse(content)
-
-      const iterations = 5
-      const times: number[] = []
-
-      for (let i = 0; i < iterations; i++) {
-        await graphService.clearAll()
-        
-        const start = Date.now()
-        await indexer.indexFile(
-          `fixtures/test-${i}.ts`,
-          content,
-          tree.rootNode,
+       if (!tree) throw new Error('Failed to parse file')
+     
+       const iterations = 5
+       const times: number[] = []
+     
+       for (let i = 0; i < iterations; i++) {
+       	await graphService.clearAll()
+     
+       	const start = Date.now()
+       	await indexer.indexFile(
+       		`fixtures/test-${i}.ts`,
+       		content,
+       		tree.rootNode,
           'typescript'
         )
         times.push(Date.now() - start)
@@ -672,9 +679,11 @@ describe('Neo4j + Qdrant Integration Tests', () => {
 
       const parsedFiles = files.map((f) => {
       	if (!parser) throw new Error('Parser not initialized')
+      	const tree = parser.parse(f.content)
+      	if (!tree) throw new Error('Failed to parse file')
       	return {
       		...f,
-      		ast: parser.parse(f.content).rootNode,
+      		ast: tree.rootNode,
       		language: 'typescript',
       	}
       })
