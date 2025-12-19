@@ -2,7 +2,7 @@ import Parser from 'web-tree-sitter'
 import type { Language, Query } from 'web-tree-sitter'
 import { getParserManager } from './parser-manager'
 
-type ParserInstance = Parser
+type ParserInstance = InstanceType<typeof Parser>
 type QueryType = Query
 
 /**

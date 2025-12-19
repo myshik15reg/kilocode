@@ -11,7 +11,8 @@ import { Neo4jGraphService } from "./graph-service"
 import type { CodeEntity, CodeRelationship } from "./interfaces"
 import Parser from "web-tree-sitter"
 
-type SyntaxNode = ReturnType<ReturnType<Parser['parse']>['rootNode']['descendantForIndex']>
+type ParserInstance = InstanceType<typeof Parser>
+type SyntaxNode = ReturnType<ReturnType<ParserInstance['parse']>['rootNode']['descendantForIndex']>
 
 export interface IndexingProgress {
 	filesProcessed: number

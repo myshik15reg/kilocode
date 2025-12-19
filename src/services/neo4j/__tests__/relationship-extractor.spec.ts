@@ -8,9 +8,11 @@ import { RelationshipExtractor } from "../relationship-extractor"
 import type { CodeEntity, CodeRelationship } from "../interfaces"
 import Parser from "web-tree-sitter"
 
+type ParserInstance = InstanceType<typeof Parser>
+
 describe("RelationshipExtractor", () => {
 	let extractor: RelationshipExtractor
-	let parser: Parser
+	let parser: ParserInstance
 
 	beforeEach(async () => {
 		extractor = new RelationshipExtractor()
