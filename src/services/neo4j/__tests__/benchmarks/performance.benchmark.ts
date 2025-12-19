@@ -14,9 +14,9 @@ import { RelationshipIndexer } from '../../relationship-indexer'
 import { HybridSearchService } from '../../hybrid-search-service'
 import type { CodeEntity, CodeRelationship } from '../../interfaces'
 import type Parser from 'web-tree-sitter'
-
-type SyntaxNode = ReturnType<ReturnType<Parser['parse']>['rootNode']['descendantForIndex']>
 import * as fs from 'fs/promises'
+
+type SyntaxNode = Parser.SyntaxNode
 import * as path from 'path'
 
 // Цвета для вывода

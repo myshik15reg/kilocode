@@ -11,9 +11,9 @@
 
 import type Parser from 'web-tree-sitter'
 
-type SyntaxNode = ReturnType<ReturnType<Parser['parse']>['rootNode']['descendantForIndex']>
-type QueryInstance = ReturnType<Parser['getLanguage']['query']>
-type QueryCapture = ReturnType<QueryInstance['captures']>[number]
+type SyntaxNode = Parser.SyntaxNode
+type QueryInstance = Parser.Query
+type QueryCapture = Parser.QueryCapture
 import { BaseExtractor } from '../../tree-sitter/base-extractor'
 import { onecQueries } from '../../tree-sitter/queries/onec'
 import type { CodeEntity, CodeRelationship, ExtractionResult, ILanguageExtractor } from '../interfaces'
