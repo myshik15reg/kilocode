@@ -11,6 +11,7 @@ vi.mock("../telemetry", () => ({
 	captureAgentManagerSessionCompleted: vi.fn(),
 	captureAgentManagerSessionStopped: vi.fn(),
 	captureAgentManagerSessionError: vi.fn(),
+	captureAgentManagerLoginIssue: vi.fn(),
 }))
 
 let AgentManagerProvider: typeof import("../AgentManagerProvider").AgentManagerProvider
@@ -25,6 +26,10 @@ describe("AgentManagerProvider CLI spawning", () => {
 		vi.resetModules()
 
 		const mockWorkspaceFolder = { uri: { fsPath: "/tmp/workspace" } }
+		const mockProvider = {
+			getState: vi.fn().mockResolvedValue({ apiConfiguration: { apiProvider: "kilocode" } }),
+		}
+
 		mockWindow = {
 			showErrorMessage: vi.fn().mockResolvedValue(undefined),
 			showWarningMessage: vi.fn().mockResolvedValue(undefined),
@@ -66,7 +71,7 @@ describe("AgentManagerProvider CLI spawning", () => {
 
 		const module = await import("../AgentManagerProvider")
 		AgentManagerProvider = module.AgentManagerProvider
-		provider = new AgentManagerProvider(mockContext, mockOutputChannel)
+		provider = new AgentManagerProvider(mockContext, mockOutputChannel, mockProvider as any)
 	})
 
 	afterEach(() => {
@@ -82,6 +87,70 @@ describe("AgentManagerProvider CLI spawning", () => {
 		expect(cmd).toBe(MOCK_CLI_PATH)
 		expect(args[args.length - 1]).toBe('echo "$(whoami)"')
 		expect(options?.shell).not.toBe(true)
+	})
+
+	it("spawns with shell: true on Windows when CLI path ends with .cmd", async () => {
+		// Reset modules to set up Windows-specific mock
+		vi.resetModules()
+
+		const mockWorkspaceFolder = { uri: { fsPath: "/tmp/workspace" } }
+		const mockProvider = {
+			getState: vi.fn().mockResolvedValue({ apiConfiguration: { apiProvider: "kilocode" } }),
+		}
+
+		vi.doMock("vscode", () => ({
+			workspace: { workspaceFolders: [mockWorkspaceFolder] },
+			window: { showErrorMessage: vi.fn(), showWarningMessage: vi.fn(), ViewColumn: { One: 1 } },
+			env: { openExternal: vi.fn() },
+			Uri: { parse: vi.fn(), joinPath: vi.fn() },
+			ViewColumn: { One: 1 },
+			ExtensionMode: { Development: 1, Production: 2, Test: 3 },
+		}))
+
+		vi.doMock("../../../../utils/fs", () => ({
+			fileExistsAtPath: vi.fn().mockResolvedValue(false),
+		}))
+
+		vi.doMock("../../../../services/code-index/managed/git-utils", () => ({
+			getRemoteUrl: vi.fn().mockResolvedValue(undefined),
+		}))
+
+		class TestProc extends EventEmitter {
+			stdout = new EventEmitter()
+			stderr = new EventEmitter()
+			kill = vi.fn()
+			pid = 1234
+		}
+
+		const spawnMock = vi.fn(() => new TestProc())
+		// Return a .cmd path to simulate Windows local CLI installation
+		const execSyncMock = vi.fn(() => "C:\\Users\\test\\.kilocode\\cli\\pkg\\node_modules\\.bin\\kilocode.cmd")
+
+		vi.doMock("node:child_process", () => ({
+			spawn: spawnMock,
+			execSync: execSyncMock,
+		}))
+
+		// Mock process.platform to be win32
+		const originalPlatform = process.platform
+		Object.defineProperty(process, "platform", { value: "win32", writable: true })
+
+		try {
+			const module = await import("../AgentManagerProvider")
+			const windowsProvider = new module.AgentManagerProvider(mockContext, mockOutputChannel, mockProvider as any)
+
+			await (windowsProvider as any).startAgentSession("test windows cmd")
+
+			expect(spawnMock).toHaveBeenCalledTimes(1)
+			const [cmd, , options] = spawnMock.mock.calls[0] as unknown as [string, string[], Record<string, unknown>]
+			expect(cmd.toLowerCase()).toContain(".cmd")
+			expect(options?.shell).toBe(true)
+
+			windowsProvider.dispose()
+		} finally {
+			// Restore original platform
+			Object.defineProperty(process, "platform", { value: originalPlatform, writable: true })
+		}
 	})
 
 	it("creates pending session and waits for session_created event", async () => {
@@ -294,6 +363,25 @@ describe("AgentManagerProvider CLI spawning", () => {
 		expect(warningSpy.mock.calls[0][0]).toContain(message)
 	})
 
+	it("shows auth popup again on a new start attempt", async () => {
+		const vscode = await import("vscode")
+		const warningSpy = vscode.window.showWarningMessage as unknown as Mock
+
+		// Avoid the full CLI spawn flow; we only want to exercise per-attempt dedupe reset.
+		;(provider as any).startAgentSession = vi.fn().mockResolvedValue(undefined)
+
+		const message = "Authentication failed: Provider error: 401 No cookie auth credentials found"
+
+		;(provider as any).handleStartSessionApiFailure({ message, authError: true })
+		;(provider as any).handleStartSessionApiFailure({ message, authError: true })
+		expect(warningSpy).toHaveBeenCalledTimes(1)
+
+		// New attempt should reset dedupe state
+		await (provider as any).handleStartSession({ prompt: "hi", parallelMode: false })
+		;(provider as any).handleStartSessionApiFailure({ message, authError: true })
+		expect(warningSpy).toHaveBeenCalledTimes(2)
+	})
+
 	it("builds payment required message with parsed title and link", async () => {
 		const vscode = await import("vscode")
 		const warningSpy = vscode.window.showWarningMessage as unknown as Mock
@@ -456,6 +544,9 @@ describe("AgentManagerProvider gitUrl filtering", () => {
 
 		const mockWorkspaceFolder = { uri: { fsPath: "/tmp/workspace" } }
 		const mockWindow = { showErrorMessage: () => undefined, ViewColumn: { One: 1 } }
+		const mockProvider = {
+			getState: vi.fn().mockResolvedValue({ apiConfiguration: { apiProvider: "kilocode" } }),
+		}
 
 		vi.doMock("vscode", () => ({
 			workspace: { workspaceFolders: [mockWorkspaceFolder] },
@@ -492,7 +583,7 @@ describe("AgentManagerProvider gitUrl filtering", () => {
 
 		const module = await import("../AgentManagerProvider")
 		AgentManagerProvider = module.AgentManagerProvider
-		provider = new AgentManagerProvider(mockContext, mockOutputChannel)
+		provider = new AgentManagerProvider(mockContext, mockOutputChannel, mockProvider as any)
 	})
 
 	afterEach(() => {
@@ -520,10 +611,23 @@ describe("AgentManagerProvider gitUrl filtering", () => {
 	})
 
 	it("handles git URL retrieval errors gracefully", async () => {
+		// Need to recreate provider with the mock rejection set up BEFORE construction
+		// because pre-warming happens in the constructor
+		provider.dispose()
 		mockGetRemoteUrl.mockRejectedValue(new Error("No remote configured"))
-		const spawnProcessSpy = vi.spyOn((provider as any).processHandler, "spawnProcess")
 
-		await (provider as any).startAgentSession("test prompt")
+		const mockContext = { extensionUri: {}, extensionPath: "", extensionMode: 1 } as any
+		const mockOutputChannel = { appendLine: vi.fn() } as any
+		const mockClineProvider = {
+			getState: vi.fn().mockResolvedValue({ apiConfiguration: { apiProvider: "kilocode" } }),
+		}
+
+		const module = await import("../AgentManagerProvider")
+		const newProvider = new module.AgentManagerProvider(mockContext, mockOutputChannel, mockClineProvider as any)
+
+		const spawnProcessSpy = vi.spyOn((newProvider as any).processHandler, "spawnProcess")
+
+		await (newProvider as any).startAgentSession("test prompt")
 
 		// Should still spawn process without gitUrl
 		expect(spawnProcessSpy).toHaveBeenCalledWith(
@@ -533,6 +637,8 @@ describe("AgentManagerProvider gitUrl filtering", () => {
 			expect.objectContaining({ gitUrl: undefined }),
 			expect.any(Function),
 		)
+
+		newProvider.dispose()
 	})
 
 	it("stores gitUrl on created session", async () => {
@@ -675,6 +781,9 @@ describe("AgentManagerProvider telemetry", () => {
 
 		const mockWorkspaceFolder = { uri: { fsPath: "/tmp/workspace" } }
 		const mockWindow = { showErrorMessage: () => undefined, ViewColumn: { One: 1 } }
+		const mockProvider = {
+			getState: vi.fn().mockResolvedValue({ apiConfiguration: { apiProvider: "kilocode" } }),
+		}
 
 		vi.doMock("vscode", () => ({
 			workspace: { workspaceFolders: [mockWorkspaceFolder] },
@@ -710,7 +819,7 @@ describe("AgentManagerProvider telemetry", () => {
 
 		const module = await import("../AgentManagerProvider")
 		AgentManagerProvider = module.AgentManagerProvider
-		provider = new AgentManagerProvider(mockContext, mockOutputChannel)
+		provider = new AgentManagerProvider(mockContext, mockOutputChannel, mockProvider as any)
 	})
 
 	afterEach(() => {
@@ -833,5 +942,40 @@ describe("AgentManagerProvider telemetry", () => {
 			sessionId,
 			true, // useWorktree = true (parallel mode)
 		)
+	})
+
+	describe("Regression Tests - finishWorktreeSession validation (P0)", () => {
+		it("should not attempt to terminate non-running worktree sessions", async () => {
+			const registry = (provider as any).registry
+			const sessionId = "session-done-1"
+			registry.createSession(sessionId, "test done session", undefined, { parallelMode: true })
+			registry.updateSessionStatus(sessionId, "done")
+
+			const processHandler = (provider as any).processHandler
+			vi.spyOn(processHandler, "terminateProcess")
+
+			// Call finishWorktreeSession on a done session
+			;(provider as any).finishWorktreeSession(sessionId)
+
+			// Should NOT call terminateProcess
+			expect(processHandler.terminateProcess).not.toHaveBeenCalled()
+		})
+
+		it("should only allow finishing running worktree sessions", async () => {
+			const registry = (provider as any).registry
+			const sessionId = "session-running-1"
+			registry.createSession(sessionId, "test running session", undefined, { parallelMode: true })
+			registry.updateSessionStatus(sessionId, "running")
+			;(provider as any).sessionMessages.set(sessionId, [])
+
+			const processHandler = (provider as any).processHandler
+			vi.spyOn(processHandler, "terminateProcess")
+
+			// Call finishWorktreeSession on a running session
+			;(provider as any).finishWorktreeSession(sessionId)
+
+			// Should call terminateProcess
+			expect(processHandler.terminateProcess).toHaveBeenCalledWith(sessionId, "SIGTERM")
+		})
 	})
 })

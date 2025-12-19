@@ -33,6 +33,7 @@ import {
 import { ClineRulesToggles } from "./cline-rules"
 import { KiloCodeWrapperProperties } from "./kilocode/wrapper"
 import { DeploymentRecord } from "../api/providers/fetchers/sap-ai-core"
+import { STTSegment } from "./sttContract" // kilocode_change: STT segment type
 // kilocode_change end
 
 // Command interface for frontend/backend communication
@@ -133,6 +134,10 @@ export interface ExtensionMessage {
 		| "openInBrowser" // kilocode_change
 		| "acceptInput"
 		| "focusChatInput" // kilocode_change
+		| "stt:started" // kilocode_change: STT session started
+		| "stt:transcript" // kilocode_change: STT transcript update
+		| "stt:volume" // kilocode_change: STT volume level
+		| "stt:stopped" // kilocode_change: STT session stopped
 		| "setHistoryPreviewCollapsed"
 		| "commandExecutionStatus"
 		| "mcpExecutionStatus"
@@ -142,6 +147,7 @@ export interface ExtensionMessage {
 		| "updateProfileData" // kilocode_change
 		| "profileConfigurationForEditing" // kilocode_change: Response with profile config for editing
 		| "authenticatedUser"
+		| "condenseTaskContextStarted"
 		| "condenseTaskContextResponse"
 		| "singleRouterModelFetchResponse"
 		| "rooCreditBalance"
@@ -266,6 +272,11 @@ export interface ExtensionMessage {
 	slug?: string
 	success?: boolean
 	values?: Record<string, any>
+	sessionId?: string // kilocode_change: STT session ID
+	segments?: STTSegment[] // kilocode_change: STT transcript segments (complete state)
+	isFinal?: boolean // kilocode_change: STT transcript is final
+	level?: number // kilocode_change: STT volume level (0-1)
+	reason?: "completed" | "cancelled" | "error" // kilocode_change: STT stop reason
 	requestId?: string
 	promptText?: string
 	results?: { path: string; type: "file" | "folder"; label?: string }[]
@@ -452,6 +463,7 @@ export type ExtensionState = Pick<
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
 	| "reasoningBlockCollapsed"
+	| "enterBehavior"
 	| "includeCurrentTime"
 	| "includeCurrentCost"
 	| "maxGitStatusFiles"
@@ -537,6 +549,7 @@ export type ExtensionState = Pick<
 	virtualQuotaActiveModel?: { id: string; info: ModelInfo } // kilocode_change: Add virtual quota active model for UI display
 	showTimestamps?: boolean // kilocode_change: Show timestamps in chat messages
 	debug?: boolean
+	speechToTextStatus?: { available: boolean; reason?: "openaiKeyMissing" | "ffmpegNotInstalled" } // kilocode_change: Speech-to-text availability status with failure reason
 }
 
 export interface ClineSayTool {
@@ -549,7 +562,6 @@ export interface ClineSayTool {
 		| "fetchInstructions"
 		| "listFilesTopLevel"
 		| "listFilesRecursive"
-		| "listCodeDefinitionNames"
 		| "searchFiles"
 		| "switchMode"
 		| "newTask"
@@ -628,6 +640,7 @@ export const browserActions = [
 	"scroll_up",
 	"resize",
 	"close",
+	"screenshot",
 ] as const
 
 export type BrowserAction = (typeof browserActions)[number]

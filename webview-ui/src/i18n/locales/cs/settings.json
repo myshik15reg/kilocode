@@ -70,6 +70,10 @@
 		"collapseThinking": {
 			"label": "Sbalit zprávy Přemýšlení ve výchozím nastavení",
 			"description": "Když je povoleno, bloky přemýšlení budou ve výchozím nastavení sbalené, dokud s nimi neinteragujete"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Vyžadovat {{primaryMod}}+Enter pro odeslání zpráv",
+			"description": "Když je povoleno, musíš stisknout {{primaryMod}}+Enter pro odeslání zpráv místo pouhého Enter"
 		}
 	},
 	"prompts": {
@@ -601,7 +605,8 @@
 			"minimal": "Minimální (nejrychlejší)",
 			"low": "Nízké",
 			"medium": "Střední",
-			"high": "Vysoké"
+			"high": "Vysoké",
+			"xhigh": "Extra vysoké"
 		},
 		"verbosity": {
 			"label": "Podrobnost výstupu",
@@ -1060,6 +1065,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Paralelní volání nástrojů",
 			"description": "Pokud je povoleno, nativní protokol může provádět více nástrojů v jednom obratu zprávy asistenta."
+		},
+		"SPEECH_TO_TEXT": {
+			"name": "Převod řeči na text (STT)",
+			"description": "Když je povoleno, Kilo Code může přepsat váš hlas do textu pomocí modelu Whisper od OpenAI. Klikněte na tlačítko mikrofonu v chatu pro zahájení nahrávání. Vyžaduje nainstalovaný FFmpeg a nakonfigurovaného poskytovatele OpenAI API."
 		}
 	},
 	"promptCaching": {

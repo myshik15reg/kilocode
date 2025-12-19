@@ -303,9 +303,9 @@
 		"getOpenRouterApiKey": "取得 OpenRouter API 金鑰",
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API 金鑰",
 		"getVercelAiGatewayApiKey": "取得 Vercel AI Gateway API 金鑰",
-		"apiKeyStorageNotice": "API 金鑰安全儲存於 VSCode 金鑰儲存中",
 		"glamaApiKey": "Glama API 金鑰",
 		"getGlamaApiKey": "取得 Glama API 金鑰",
+		"apiKeyStorageNotice": "API 金鑰安全儲存於 VSCode 金鑰儲存中",
 		"useCustomBaseUrl": "使用自訂基礎 URL",
 		"useReasoning": "啟用推理",
 		"useHostHeader": "使用自訂 Host 標頭",
@@ -548,8 +548,10 @@
 			"none": "無",
 			"minimal": "最小 (最快)",
 			"high": "高",
+			"xhigh": "超高",
 			"medium": "中",
-			"low": "低"
+			"low": "低",
+			"xhigh": "超高"
 		},
 		"verbosity": {
 			"label": "輸出詳細程度",
@@ -982,6 +984,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "並行工具呼叫",
 			"description": "啟用後，原生協定可在單個助理訊息輪次中執行多個工具。"
+		},
+		"SPEECH_TO_TEXT": {
+			"name": "语音转文本 (STT)",
+			"description": "启用后，Kilo Code 可以使用 OpenAI 的 Whisper 模型将您的语音转录为文本。点击聊天中的麦克风按钮开始录音。需要安装 FFmpeg 并配置 OpenAI API 提供商。"
 		}
 	},
 	"promptCaching": {
@@ -1147,8 +1153,12 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "預設折疊“思考”訊息",
-			"description": "啟用後，“思考”塊將預設折疊，直到您與其互動"
+			"label": "預設折疊「思考」訊息",
+			"description": "啟用後，「思考」塊將預設折疊，直到您與其互動"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "需要 {{primaryMod}}+Enter 傳送訊息",
+			"description": "啟用後，必須按 {{primaryMod}}+Enter 傳送訊息，而不只是 Enter"
 		}
 	}
 }

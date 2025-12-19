@@ -95,6 +95,7 @@ export interface WebviewMessage {
 		| "openFile"
 		| "openMention"
 		| "cancelTask"
+		| "cancelAutoApproval"
 		| "updateVSCodeSetting"
 		| "getVSCodeSetting"
 		| "vsCodeSetting"
@@ -114,9 +115,12 @@ export interface WebviewMessage {
 		| "toggleToolEnabledForPrompt"
 		| "toggleMcpServer"
 		| "updateMcpTimeout"
+		| "fuzzyMatchThreshold" // kilocode_change
 		| "morphApiKey" // kilocode_change: Morph fast apply - global setting
 		| "fastApplyModel" // kilocode_change: Fast Apply model selection
 		| "fastApplyApiProvider" // kilocode_change: Fast Apply model api base url
+		| "writeDelayMs" // kilocode_change
+		| "diagnosticsEnabled" // kilocode_change
 		| "enhancePrompt"
 		| "enhancedPrompt"
 		| "draggedImages"
@@ -138,6 +142,11 @@ export interface WebviewMessage {
 		| "commitMessageApiConfigId" // kilocode_change
 		| "terminalCommandApiConfigId" // kilocode_change
 		| "ghostServiceSettings" // kilocode_change
+		| "stt:start" // kilocode_change: Start STT recording
+		| "stt:stop" // kilocode_change: Stop STT recording
+		| "stt:cancel" // kilocode_change: Cancel STT recording
+		| "includeTaskHistoryInEnhance" // kilocode_change
+		| "snoozeAutocomplete" // kilocode_change
 		| "autoApprovalEnabled"
 		| "yoloMode" // kilocode_change
 		| "updateCustomMode"
@@ -220,6 +229,7 @@ export interface WebviewMessage {
 		| "marketplaceInstallResult"
 		| "fetchMarketplaceData"
 		| "switchTab"
+		| "profileThresholds" // kilocode_change
 		| "editMessage" // kilocode_change
 		| "systemNotificationsEnabled" // kilocode_change
 		| "dismissNotificationId" // kilocode_change
@@ -232,7 +242,7 @@ export interface WebviewMessage {
 		| "autoPurgeCompletedTaskRetentionDays" // kilocode_change
 		| "autoPurgeIncompleteTaskRetentionDays" // kilocode_change
 		| "manualPurge" // kilocode_change
-		| "shareTaskSuccess"
+		| "shareTaskSuccess" // kilocode_change
 		| "exportMode"
 		| "exportModeResult"
 		| "importMode"
@@ -280,7 +290,9 @@ export interface WebviewMessage {
 		| "setNeo4jPassword" // Neo4j: Save password to SecretStorage
 		| "getNeo4jPasswordStatus" // Neo4j: Check if password is saved
 		| "neo4jConnectionTest" // Neo4j: Test connection to database
+		| "chatCompletionAccepted" // kilocode_change: User accepted a chat completion suggestion
 	text?: string
+	suggestionLength?: number // kilocode_change: Length of accepted suggestion for telemetry
 	completionRequestId?: string // kilocode_change
 	shareId?: string // kilocode_change - for sessionFork
 	sessionId?: string // kilocode_change - for sessionSelect
@@ -329,6 +341,7 @@ export interface WebviewMessage {
 	query?: string
 	setting?: string
 	slug?: string
+	language?: string // User's language for speech transcription (STT)
 	modeConfig?: ModeConfig
 	timeout?: number
 	payload?: WebViewMessagePayload
