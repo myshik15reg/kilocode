@@ -316,7 +316,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					CODEBASE_INDEX_DEFAULTS.DEFAULT_SCANNER_MAX_BATCH_RETRIES,
 				codebaseIndexBedrockRegion: codebaseIndexConfig.codebaseIndexBedrockRegion || "",
 				codebaseIndexBedrockProfile: codebaseIndexConfig.codebaseIndexBedrockProfile || "",
-				codebaseIndexVectorStoreName: codebaseIndexConfig.codebaseIndexVectorStoreName || "",
+				codebaseIndexVectorStoreName: "",
 				codeIndexOpenAiKey: "",
 				codeIndexQdrantApiKey: "",
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl || "",

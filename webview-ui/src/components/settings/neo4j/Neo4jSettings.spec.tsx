@@ -536,11 +536,14 @@ describe("Neo4jSettings", () => {
 
 	describe("Локализация", () => {
 		it("должен использовать русские переводы при language = 'ru'", () => {
-			vi.mocked(vi.importMock("@/i18n/TranslationContext")).useAppTranslation = () => ({
-				i18n: {
-					language: "ru",
-				},
-			})
+			// Переопределяем мок для русского языка
+			vi.doMock("@/i18n/TranslationContext", () => ({
+				useAppTranslation: () => ({
+					i18n: {
+						language: "ru",
+					},
+				}),
+			}))
 
 			render(<Neo4jSettings enabled={true} setCachedStateField={mockSetCachedStateField} />)
 

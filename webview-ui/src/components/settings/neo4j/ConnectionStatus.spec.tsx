@@ -255,14 +255,17 @@ describe("ConnectionStatus", () => {
 		})
 
 		it("должен использовать русские переводы при language = 'ru'", () => {
-			vi.mocked(vi.importMock("@/i18n/TranslationContext")).useAppTranslation = () => ({
-				i18n: {
-					language: "ru",
-				},
-			})
-
+			// Переопределяем мок для русского языка
+			vi.doMock("@/i18n/TranslationContext", () => ({
+				useAppTranslation: () => ({
+					i18n: {
+						language: "ru",
+					},
+				}),
+			}))
+	
 			render(<ConnectionStatus status="disconnected" onTest={mockOnTest} />)
-
+	
 			expect(screen.getByText("Статус подключения")).toBeInTheDocument()
 			expect(screen.getByText("Не подключено")).toBeInTheDocument()
 			expect(screen.getByText("Проверить подключение")).toBeInTheDocument()
