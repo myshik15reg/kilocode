@@ -13,7 +13,7 @@ import { Neo4jGraphService } from '../../graph-service'
 import { RelationshipIndexer } from '../../relationship-indexer'
 import { HybridSearchService } from '../../hybrid-search-service'
 import type { CodeEntity, CodeRelationship } from '../../interfaces'
-import type { SyntaxNode } from 'web-tree-sitter'
+import type { Node as SyntaxNode } from 'web-tree-sitter'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 

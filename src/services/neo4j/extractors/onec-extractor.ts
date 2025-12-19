@@ -9,7 +9,7 @@
  * Обеспечивает согласованность с семантическим поиском через общие queries.
  */
 
-import type { SyntaxNode, Query, QueryCapture } from 'web-tree-sitter'
+import type { Node as SyntaxNode, Query, QueryCapture } from 'web-tree-sitter'
 import { BaseExtractor } from '../../tree-sitter/base-extractor'
 import { onecQueries } from '../../tree-sitter/queries/onec'
 import type { CodeEntity, CodeRelationship, ExtractionResult, ILanguageExtractor } from '../interfaces'

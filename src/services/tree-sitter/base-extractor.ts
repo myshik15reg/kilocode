@@ -1,5 +1,4 @@
-import Parser from 'web-tree-sitter'
-import type { Language, Query, Tree, QueryCapture } from 'web-tree-sitter'
+import { Parser, Language, Query, Tree, QueryCapture } from 'web-tree-sitter'
 import { getParserManager } from './parser-manager'
 
 /**
@@ -8,7 +7,7 @@ import { getParserManager } from './parser-manager'
  */
 export abstract class BaseExtractor {
 	protected languageId: string
-	protected parser: InstanceType<typeof Parser> | null = null
+	protected parser: Parser | null = null
 	protected language: Language | null = null
 
 	constructor(languageId: string) {

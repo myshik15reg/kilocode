@@ -9,7 +9,7 @@
 import { RelationshipExtractor } from "./relationship-extractor"
 import { Neo4jGraphService } from "./graph-service"
 import type { CodeEntity, CodeRelationship } from "./interfaces"
-import type { SyntaxNode } from "web-tree-sitter"
+import type { Node as SyntaxNode } from "web-tree-sitter"
 
 export interface IndexingProgress {
 	filesProcessed: number

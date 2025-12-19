@@ -6,11 +6,11 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { RelationshipExtractor } from "../relationship-extractor"
 import type { CodeEntity, CodeRelationship } from "../interfaces"
-import Parser from "web-tree-sitter"
+import { Parser } from "web-tree-sitter"
 
 describe("RelationshipExtractor", () => {
 	let extractor: RelationshipExtractor
-	let parser: InstanceType<typeof Parser>
+	let parser: Parser
 
 	beforeEach(async () => {
 		extractor = new RelationshipExtractor()
