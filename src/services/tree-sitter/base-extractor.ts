@@ -1,8 +1,6 @@
 import Parser from 'web-tree-sitter'
-import type { Language, Query } from 'web-tree-sitter'
+import type { Language, Query, Tree, QueryCapture } from 'web-tree-sitter'
 import { getParserManager } from './parser-manager'
-
-type QueryType = Query
 
 /**
  * Базовый класс для всех языковых экстракторов
@@ -10,7 +8,7 @@ type QueryType = Query
  */
 export abstract class BaseExtractor {
 	protected languageId: string
-	protected parser: Parser | null = null
+	protected parser: InstanceType<typeof Parser> | null = null
 	protected language: Language | null = null
 
 	constructor(languageId: string) {
@@ -30,7 +28,7 @@ export abstract class BaseExtractor {
 	/**
 	 * Парсить код в AST
 	 */
-	protected async parseCode(code: string): Promise<Parser.Tree> {
+	protected async parseCode(code: string): Promise<Tree> {
 		if (!this.parser) {
 			throw new Error(`Extractor not initialized. Call initialize() first.`)
 		}
@@ -40,7 +38,7 @@ export abstract class BaseExtractor {
 	/**
 	 * Выполнить query на дереве
 	 */
-	protected executeQuery(tree: Parser.Tree, queryString: string): Parser.QueryCapture[] {
+	protected executeQuery(tree: Tree, queryString: string): QueryCapture[] {
 		if (!this.language) {
 			throw new Error(`Extractor not initialized. Call initialize() first.`)
 		}

@@ -10,7 +10,7 @@ import Parser from "web-tree-sitter"
 
 describe("RelationshipExtractor", () => {
 	let extractor: RelationshipExtractor
-	let parser: Parser
+	let parser: InstanceType<typeof Parser>
 
 	beforeEach(async () => {
 		extractor = new RelationshipExtractor()

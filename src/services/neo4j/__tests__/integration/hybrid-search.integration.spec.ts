@@ -56,7 +56,7 @@ describe('Neo4j + Qdrant Integration Tests', () => {
   let graphService: Neo4jGraphService
   let indexer: RelationshipIndexer
   let extractor: RelationshipExtractor
-  let parser: Parser | null = null
+  let parser: InstanceType<typeof Parser> | null = null
 
   // Performance метрики
   const performanceMetrics = {
