@@ -12,7 +12,8 @@ import {
 import * as ProgressPrimitive from "@radix-ui/react-progress"
 import { AlertTriangle } from "lucide-react"
 
-import { CODEBASE_INDEX_DEFAULTS } from "@roo-code/types"
+import { CODEBASE_INDEX_DEFAULTS, createCodeIndexValidationSchema } from "@roo-code/types"
+import type { ValidationMessages } from "@roo-code/types"
 
 import type { EmbedderProvider } from "@roo/embeddingModels"
 import type { IndexingStatus } from "@roo/ExtensionMessage"
@@ -103,104 +104,26 @@ interface LocalCodeIndexSettings {
 	codebaseIndexOpenRouterSpecificProvider?: string
 }
 
-// Validation schema for codebase index settings
-const createValidationSchema = (provider: EmbedderProvider, t: any) => {
-	const baseSchema = z.object({
-		codebaseIndexEnabled: z.boolean(),
-		codebaseIndexQdrantUrl: z
-			.string()
-			.min(1, t("settings:codeIndex.validation.qdrantUrlRequired"))
-			.url(t("settings:codeIndex.validation.invalidQdrantUrl")),
-		codeIndexQdrantApiKey: z.string().optional(),
-		codebaseIndexVectorStoreName: z.string().min(1, t("settings:codeIndex.validation.vectorStoreNameRequired")),
-	})
-
-	switch (provider) {
-		case "openai":
-			return baseSchema.extend({
-				codeIndexOpenAiKey: z.string().min(1, t("settings:codeIndex.validation.openaiApiKeyRequired")),
-				codebaseIndexEmbedderModelId: z
-					.string()
-					.min(1, t("settings:codeIndex.validation.modelSelectionRequired")),
-			})
-
-		case "ollama":
-			return baseSchema.extend({
-				codebaseIndexEmbedderBaseUrl: z
-					.string()
-					.min(1, t("settings:codeIndex.validation.ollamaBaseUrlRequired"))
-					.url(t("settings:codeIndex.validation.invalidOllamaUrl")),
-				codebaseIndexEmbedderModelId: z.string().min(1, t("settings:codeIndex.validation.modelIdRequired")),
-				codebaseIndexEmbedderModelDimension: z
-					.number()
-					.min(1, t("settings:codeIndex.validation.modelDimensionRequired"))
-					.optional(),
-			})
-
-		case "openai-compatible":
-			return baseSchema.extend({
-				codebaseIndexOpenAiCompatibleBaseUrl: z
-					.string()
-					.min(1, t("settings:codeIndex.validation.baseUrlRequired"))
-					.url(t("settings:codeIndex.validation.invalidBaseUrl")),
-				codebaseIndexOpenAiCompatibleApiKey: z
-					.string()
-					.min(1, t("settings:codeIndex.validation.apiKeyRequired")),
-				codebaseIndexEmbedderModelId: z.string().min(1, t("settings:codeIndex.validation.modelIdRequired")),
-				codebaseIndexEmbedderModelDimension: z
-					.number()
-					.min(1, t("settings:codeIndex.validation.modelDimensionRequired")),
-			})
-
-		case "gemini":
-			return baseSchema.extend({
-				codebaseIndexGeminiApiKey: z.string().min(1, t("settings:codeIndex.validation.geminiApiKeyRequired")),
-				codebaseIndexEmbedderModelId: z
-					.string()
-					.min(1, t("settings:codeIndex.validation.modelSelectionRequired")),
-			})
-
-		case "mistral":
-			return baseSchema.extend({
-				codebaseIndexMistralApiKey: z.string().min(1, t("settings:codeIndex.validation.mistralApiKeyRequired")),
-				codebaseIndexEmbedderModelId: z
-					.string()
-					.min(1, t("settings:codeIndex.validation.modelSelectionRequired")),
-			})
-
-		case "vercel-ai-gateway":
-			return baseSchema.extend({
-				codebaseIndexVercelAiGatewayApiKey: z
-					.string()
-					.min(1, t("settings:codeIndex.validation.vercelAiGatewayApiKeyRequired")),
-				codebaseIndexEmbedderModelId: z
-					.string()
-					.min(1, t("settings:codeIndex.validation.modelSelectionRequired")),
-			})
-
-		case "bedrock":
-			return baseSchema.extend({
-				codebaseIndexBedrockRegion: z.string().min(1, t("settings:codeIndex.validation.bedrockRegionRequired")),
-				codebaseIndexBedrockProfile: z.string().optional(),
-				codebaseIndexEmbedderModelId: z
-					.string()
-					.min(1, t("settings:codeIndex.validation.modelSelectionRequired")),
-			})
-
-		case "openrouter":
-			return baseSchema.extend({
-				codebaseIndexOpenRouterApiKey: z
-					.string()
-					.min(1, t("settings:codeIndex.validation.openRouterApiKeyRequired")),
-				codebaseIndexEmbedderModelId: z
-					.string()
-					.min(1, t("settings:codeIndex.validation.modelSelectionRequired")),
-			})
-
-		default:
-			return baseSchema
-	}
-}
+// Helper function to get validation messages from i18n
+const getValidationMessages = (t: any): ValidationMessages => ({
+	qdrantUrlRequired: t("settings:codeIndex.validation.qdrantUrlRequired"),
+	invalidQdrantUrl: t("settings:codeIndex.validation.invalidQdrantUrl"),
+	vectorStoreNameRequired: t("settings:codeIndex.validation.vectorStoreNameRequired"),
+	openaiApiKeyRequired: t("settings:codeIndex.validation.openaiApiKeyRequired"),
+	modelSelectionRequired: t("settings:codeIndex.validation.modelSelectionRequired"),
+	ollamaBaseUrlRequired: t("settings:codeIndex.validation.ollamaBaseUrlRequired"),
+	invalidOllamaUrl: t("settings:codeIndex.validation.invalidOllamaUrl"),
+	modelIdRequired: t("settings:codeIndex.validation.modelIdRequired"),
+	modelDimensionRequired: t("settings:codeIndex.validation.modelDimensionRequired"),
+	baseUrlRequired: t("settings:codeIndex.validation.baseUrlRequired"),
+	invalidBaseUrl: t("settings:codeIndex.validation.invalidBaseUrl"),
+	apiKeyRequired: t("settings:codeIndex.validation.apiKeyRequired"),
+	geminiApiKeyRequired: t("settings:codeIndex.validation.geminiApiKeyRequired"),
+	mistralApiKeyRequired: t("settings:codeIndex.validation.mistralApiKeyRequired"),
+	vercelAiGatewayApiKeyRequired: t("settings:codeIndex.validation.vercelAiGatewayApiKeyRequired"),
+	bedrockRegionRequired: t("settings:codeIndex.validation.bedrockRegionRequired"),
+	openRouterApiKeyRequired: t("settings:codeIndex.validation.openRouterApiKeyRequired"),
+})
 
 // kilcode_change start - Allow rendering just the content of CodeIndexPopover
 const NoOpWrapper: React.FC<Record<string, any> & { children?: React.ReactNode }> = ({ children }) => <>{children}</>
@@ -520,7 +443,10 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		}
 		// kilocode_change end
 
-		const schema = createValidationSchema(currentSettings.codebaseIndexEmbedderProvider, t)
+		const schema = createCodeIndexValidationSchema(
+			currentSettings.codebaseIndexEmbedderProvider,
+			getValidationMessages(t)
+		)
 
 		// Prepare data for validation
 		const dataToValidate: any = {}
