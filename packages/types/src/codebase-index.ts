@@ -46,7 +46,7 @@ export const codebaseIndexConfigSchema = z.object({
 	// kilocode_change start
 	codebaseIndexVectorStoreProvider: z.enum(["lancedb", "qdrant"]).optional(),
 	codebaseIndexLancedbVectorStoreDirectory: z.string().optional(),
-	codebaseIndexVectorStoreName: z.string(),
+	codebaseIndexVectorStoreName: z.string().optional(),
 	// kilocode_change end
 	codebaseIndexEmbedderBaseUrl: z.string().optional(),
 	codebaseIndexEmbedderModelId: z.string().optional(),
