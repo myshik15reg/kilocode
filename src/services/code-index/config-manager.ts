@@ -292,6 +292,24 @@ export class CodeIndexConfigManager {
 		// Load vectorStoreName from workspaceState (async operation)
 		this.vectorStoreName = (await this.contextProxy.getWorkspaceState("codebaseIndexVectorStoreName")) as string | undefined
 
+		// Migration logic: Generate default vectorStoreName if missing
+		if (!this.vectorStoreName || this.vectorStoreName.trim() === "") {
+			// Try to get workspace name from context
+			const workspaceName = this.contextProxy.workspaceFolderName
+			
+			// Generate default value: workspace-name-vectors or codebase-index-vectors
+			const defaultVectorStoreName = workspaceName
+				? `${workspaceName}-vectors`
+				: "codebase-index-vectors"
+			
+			this.vectorStoreName = defaultVectorStoreName
+			
+			// Save the generated default value to workspaceState for future use
+			await this.contextProxy.setWorkspaceState("codebaseIndexVectorStoreName", defaultVectorStoreName)
+			
+			console.log(`[CodeIndexConfigManager] Migration: Generated default vectorStoreName: ${defaultVectorStoreName}`)
+		}
+
 		// Load new configuration from storage and update instance variables
 		this._loadAndSetConfiguration()
 

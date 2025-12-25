@@ -3075,10 +3075,20 @@ export const webviewMessageHandler = async (
 				const embedderProviderChanged =
 					currentConfig.codebaseIndexEmbedderProvider !== settings.codebaseIndexEmbedderProvider
 
-				// kilocode_change start: Validate vectorStoreName is not empty
-				const vectorStoreName = settings.codebaseIndexVectorStoreName
+				// kilocode_change start: Migration logic - provide fallback for vectorStoreName
+				let vectorStoreName = settings.codebaseIndexVectorStoreName
+				
+				// If vectorStoreName is missing or empty, generate a default value
 				if (!vectorStoreName || vectorStoreName.trim() === "") {
-					throw new Error("Vector Store Name cannot be empty")
+					// Try to get workspace name
+					const workspaceFolderName = provider.contextProxy?.workspaceFolderName
+					
+					// Generate default: workspace-name-vectors or codebase-index-vectors
+					vectorStoreName = workspaceFolderName
+						? `${workspaceFolderName}-vectors`
+						: "codebase-index-vectors"
+					
+					provider.log(`[Migration] Generated default vectorStoreName: ${vectorStoreName}`)
 				}
 				// kilocode_change end
 
