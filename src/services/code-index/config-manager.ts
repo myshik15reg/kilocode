@@ -267,7 +267,7 @@ export class CodeIndexConfigManager {
 			// kilocode_change - start
 			vectorStoreProvider: this.vectorStoreProvider,
 			lancedbVectorStoreDirectory: this.lancedbVectorStoreDirectory,
-			vectorStoreName: this.vectorStoreName,
+			vectorStoreName: this.vectorStoreName ?? "",
 			// kilocode_change - end
 			modelId: this.modelId,
 			modelDimension: this.modelDimension,
@@ -294,8 +294,9 @@ export class CodeIndexConfigManager {
 
 		// Migration logic: Generate default vectorStoreName if missing
 		if (!this.vectorStoreName || this.vectorStoreName.trim() === "") {
-			// Try to get workspace name from context
-			const workspaceName = this.contextProxy.workspaceFolderName
+			// Try to get workspace folder name from vscode API
+			const workspaceFolders = require("vscode").workspace.workspaceFolders
+			const workspaceName = workspaceFolders?.[0]?.name
 			
 			// Generate default value: workspace-name-vectors or codebase-index-vectors
 			const defaultVectorStoreName = workspaceName
@@ -305,7 +306,7 @@ export class CodeIndexConfigManager {
 			this.vectorStoreName = defaultVectorStoreName
 			
 			// Save the generated default value to workspaceState for future use
-			await this.contextProxy.setWorkspaceState("codebaseIndexVectorStoreName", defaultVectorStoreName)
+			await this.contextProxy.updateWorkspaceState("codebaseIndexVectorStoreName", defaultVectorStoreName)
 			
 			console.log(`[CodeIndexConfigManager] Migration: Generated default vectorStoreName: ${defaultVectorStoreName}`)
 		}
@@ -583,7 +584,7 @@ export class CodeIndexConfigManager {
 			// kilocode_change - start
 			vectorStoreProvider: this.vectorStoreProvider ?? "qdrant",
 			lancedbVectorStoreDirectoryPlaceholder: this.lancedbVectorStoreDirectory,
-			vectorStoreName: this.vectorStoreName,
+			vectorStoreName: this.vectorStoreName ?? "codebase-index-vectors",
 			// kilocode_change - end
 			modelId: this.modelId,
 			modelDimension: this.modelDimension,

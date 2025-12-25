@@ -3074,14 +3074,15 @@ export const webviewMessageHandler = async (
 				const currentConfig = getGlobalState("codebaseIndexConfig") || {}
 				const embedderProviderChanged =
 					currentConfig.codebaseIndexEmbedderProvider !== settings.codebaseIndexEmbedderProvider
-
+	
 				// kilocode_change start: Migration logic - provide fallback for vectorStoreName
 				let vectorStoreName = settings.codebaseIndexVectorStoreName
 				
 				// If vectorStoreName is missing or empty, generate a default value
 				if (!vectorStoreName || vectorStoreName.trim() === "") {
-					// Try to get workspace name
-					const workspaceFolderName = provider.contextProxy?.workspaceFolderName
+					// Try to get workspace folder name from vscode API
+					const workspaceFolders = vscode.workspace.workspaceFolders
+					const workspaceFolderName = workspaceFolders?.[0]?.name
 					
 					// Generate default: workspace-name-vectors or codebase-index-vectors
 					vectorStoreName = workspaceFolderName
@@ -3092,7 +3093,7 @@ export const webviewMessageHandler = async (
 				}
 				// kilocode_change end
 
-				// Save global state settings atomically (excluding vectorStoreName)
+				// Save global state settings atomically (including vectorStoreName for backward compatibility)
 				const globalStateConfig = {
 					...currentConfig,
 					codebaseIndexEnabled: settings.codebaseIndexEnabled,
@@ -3101,7 +3102,7 @@ export const webviewMessageHandler = async (
 					// kilocode_change start
 					codebaseIndexVectorStoreProvider: settings.codebaseIndexVectorStoreProvider,
 					codebaseIndexLancedbVectorStoreDirectory: settings.codebaseIndexLancedbVectorStoreDirectory,
-					// vectorStoreName is saved to workspaceState, not globalState
+					codebaseIndexVectorStoreName: vectorStoreName, // Keep in globalState for backward compatibility
 					// kilocode_change end
 					codebaseIndexEmbedderBaseUrl: settings.codebaseIndexEmbedderBaseUrl,
 					codebaseIndexEmbedderModelId: settings.codebaseIndexEmbedderModelId,
