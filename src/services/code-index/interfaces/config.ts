@@ -10,6 +10,7 @@ export interface CodeIndexConfig {
 	// kilocode_change start
 	vectorStoreProvider?: "lancedb" | "qdrant"
 	lancedbVectorStoreDirectoryPlaceholder?: string
+	vectorStoreName?: string
 	// kilocode_change end
 	modelId?: string
 	modelDimension?: number // Generic dimension property for all providers
@@ -41,6 +42,7 @@ export type PreviousConfigSnapshot = {
 	// kilocode_change start
 	vectorStoreProvider?: "lancedb" | "qdrant"
 	lancedbVectorStoreDirectory?: string
+	vectorStoreName?: string
 	// kilocode_change end
 	modelId?: string
 	modelDimension?: number // Generic dimension property

@@ -28,9 +28,11 @@ describe("CodeIndexConfigManager", () => {
 		// Setup mock ContextProxy
 		mockContextProxy = {
 			getGlobalState: vi.fn(),
+			getWorkspaceState: vi.fn(),
 			getSecret: vi.fn().mockReturnValue(undefined),
 			refreshSecrets: vi.fn().mockResolvedValue(undefined),
 			updateGlobalState: vi.fn(),
+			updateWorkspaceState: vi.fn(),
 		}
 
 		configManager = new CodeIndexConfigManager(mockContextProxy)
@@ -139,6 +141,35 @@ describe("CodeIndexConfigManager", () => {
 				qdrantUrl: "http://qdrant.local",
 				qdrantApiKey: "test-qdrant-key",
 				searchMinScore: 0.4,
+			})
+		})
+
+		it("should load vector store configuration correctly", async () => {
+			const mockGlobalState = {
+				codebaseIndexEnabled: true,
+				codebaseIndexQdrantUrl: "http://qdrant.local",
+				codebaseIndexEmbedderProvider: "openai",
+				codebaseIndexVectorStoreProvider: "lancedb",
+				codebaseIndexLancedbVectorStoreDirectory: "/path/to/lancedb",
+			}
+			mockContextProxy.getGlobalState.mockReturnValue(mockGlobalState)
+			// vectorStoreName is now loaded from workspaceState
+			mockContextProxy.getWorkspaceState.mockImplementation((key: string) => {
+				if (key === "codebaseIndexVectorStoreName") return "custom-index-name"
+				return undefined
+			})
+			setupSecretMocks({
+				codeIndexOpenAiKey: "test-openai-key",
+			})
+
+			await configManager.loadConfiguration()
+
+			// Verify getConfig returns these values
+			const config = configManager.getConfig()
+			expect(config).toMatchObject({
+				vectorStoreProvider: "lancedb",
+				lancedbVectorStoreDirectoryPlaceholder: "/path/to/lancedb",
+				vectorStoreName: "custom-index-name",
 			})
 		})
 
@@ -1926,7 +1957,46 @@ describe("CodeIndexConfigManager", () => {
 					// Should require restart since dimensions changed
 					expect(result.requiresRestart).toBe(true)
 				})
+		
+			describe("workspace-scoped vectorStoreName", () => {
+				it("should load vectorStoreName from workspaceState", async () => {
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexQdrantUrl: "http://qdrant.local",
+						codebaseIndexEmbedderProvider: "openai",
+					})
+					mockContextProxy.getWorkspaceState.mockImplementation((key: string) => {
+						if (key === "codebaseIndexVectorStoreName") return "workspace-specific-name"
+						return undefined
+					})
+					setupSecretMocks({
+						codeIndexOpenAiKey: "test-openai-key",
+					})
+		
+					await configManager.loadConfiguration()
+		
+					const config = configManager.getConfig()
+					expect(config.vectorStoreName).toBe("workspace-specific-name")
+				})
+		
+				it("should return undefined when vectorStoreName is not in workspaceState", async () => {
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexQdrantUrl: "http://qdrant.local",
+						codebaseIndexEmbedderProvider: "openai",
+					})
+					mockContextProxy.getWorkspaceState.mockReturnValue(undefined)
+					setupSecretMocks({
+						codeIndexOpenAiKey: "test-openai-key",
+					})
+		
+					await configManager.loadConfiguration()
+		
+					const config = configManager.getConfig()
+					expect(config.vectorStoreName).toBeUndefined()
+				})
 			})
+		})
 		})
 	})
 })

@@ -3075,7 +3075,14 @@ export const webviewMessageHandler = async (
 				const embedderProviderChanged =
 					currentConfig.codebaseIndexEmbedderProvider !== settings.codebaseIndexEmbedderProvider
 
-				// Save global state settings atomically
+				// kilocode_change start: Validate vectorStoreName is not empty
+				const vectorStoreName = settings.codebaseIndexVectorStoreName
+				if (!vectorStoreName || vectorStoreName.trim() === "") {
+					throw new Error("Vector Store Name cannot be empty")
+				}
+				// kilocode_change end
+
+				// Save global state settings atomically (excluding vectorStoreName)
 				const globalStateConfig = {
 					...currentConfig,
 					codebaseIndexEnabled: settings.codebaseIndexEnabled,
@@ -3084,6 +3091,7 @@ export const webviewMessageHandler = async (
 					// kilocode_change start
 					codebaseIndexVectorStoreProvider: settings.codebaseIndexVectorStoreProvider,
 					codebaseIndexLancedbVectorStoreDirectory: settings.codebaseIndexLancedbVectorStoreDirectory,
+					// vectorStoreName is saved to workspaceState, not globalState
 					// kilocode_change end
 					codebaseIndexEmbedderBaseUrl: settings.codebaseIndexEmbedderBaseUrl,
 					codebaseIndexEmbedderModelId: settings.codebaseIndexEmbedderModelId,
@@ -3102,6 +3110,10 @@ export const webviewMessageHandler = async (
 
 				// Save global state first
 				await updateGlobalState("codebaseIndexConfig", globalStateConfig)
+
+				// kilocode_change start: Save vectorStoreName to workspaceState
+				await provider.context.workspaceState.update("codebaseIndexVectorStoreName", vectorStoreName)
+				// kilocode_change end
 
 				// kilocode_change start: Update the batch size in the running scanner and file watcher
 				if (settings.codebaseIndexEmbeddingBatchSize !== undefined) {

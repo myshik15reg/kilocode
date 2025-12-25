@@ -15,6 +15,7 @@ export class CodeIndexConfigManager {
 	// kilocode_change - start
 	private vectorStoreProvider: "lancedb" | "qdrant" = "qdrant"
 	private lancedbVectorStoreDirectory?: string
+	private vectorStoreName?: string
 	// kilocode_change - end
 	private modelId?: string
 	private modelDimension?: number
@@ -100,6 +101,7 @@ export class CodeIndexConfigManager {
 			// kilocode_change - start
 			codebaseIndexVectorStoreProvider: "qdrant",
 			codebaseIndexLancedbVectorStoreDirectory: undefined,
+			// vectorStoreName is loaded from workspaceState, not globalState
 			// kilocode_change - end
 			codebaseIndexEmbedderBaseUrl: "",
 			codebaseIndexEmbedderModelId: "",
@@ -120,6 +122,7 @@ export class CodeIndexConfigManager {
 			codebaseIndexEmbedderBaseUrl,
 			codebaseIndexEmbedderModelId,
 			codebaseIndexLancedbVectorStoreDirectory, // kilocode_change
+			codebaseIndexVectorStoreName, // kilocode_change
 			codebaseIndexSearchMinScore,
 			codebaseIndexSearchMaxResults,
 			// kilocode_change start
@@ -157,6 +160,8 @@ export class CodeIndexConfigManager {
 		// kilocode_change - start
 		this.vectorStoreProvider = codebaseIndexVectorStoreProvider ?? "qdrant"
 		this.lancedbVectorStoreDirectory = codebaseIndexLancedbVectorStoreDirectory
+		// Note: vectorStoreName is loaded asynchronously in loadConfiguration()
+		this.vectorStoreName = undefined
 		// kilocode_change - end
 		this.qdrantUrl = codebaseIndexQdrantUrl
 		this.qdrantApiKey = qdrantApiKey ?? ""
@@ -262,6 +267,7 @@ export class CodeIndexConfigManager {
 			// kilocode_change - start
 			vectorStoreProvider: this.vectorStoreProvider,
 			lancedbVectorStoreDirectory: this.lancedbVectorStoreDirectory,
+			vectorStoreName: this.vectorStoreName,
 			// kilocode_change - end
 			modelId: this.modelId,
 			modelDimension: this.modelDimension,
@@ -282,6 +288,9 @@ export class CodeIndexConfigManager {
 
 		// Refresh secrets from VSCode storage to ensure we have the latest values
 		await this.contextProxy.refreshSecrets()
+
+		// Load vectorStoreName from workspaceState (async operation)
+		this.vectorStoreName = (await this.contextProxy.getWorkspaceState("codebaseIndexVectorStoreName")) as string | undefined
 
 		// Load new configuration from storage and update instance variables
 		this._loadAndSetConfiguration()
@@ -556,6 +565,7 @@ export class CodeIndexConfigManager {
 			// kilocode_change - start
 			vectorStoreProvider: this.vectorStoreProvider ?? "qdrant",
 			lancedbVectorStoreDirectoryPlaceholder: this.lancedbVectorStoreDirectory,
+			vectorStoreName: this.vectorStoreName,
 			// kilocode_change - end
 			modelId: this.modelId,
 			modelDimension: this.modelDimension,

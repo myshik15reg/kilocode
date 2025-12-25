@@ -2687,6 +2687,7 @@ ${prompt}
 					stateValues.codebaseIndexConfig?.codebaseIndexVectorStoreProvider ?? "qdrant",
 				codebaseIndexLancedbVectorStoreDirectory:
 					stateValues.codebaseIndexConfig?.codebaseIndexLancedbVectorStoreDirectory,
+				codebaseIndexVectorStoreName: stateValues.codebaseIndexConfig?.codebaseIndexVectorStoreName ?? undefined,
 				// kilocode_change end
 				codebaseIndexEmbedderBaseUrl: stateValues.codebaseIndexConfig?.codebaseIndexEmbedderBaseUrl ?? "",
 				codebaseIndexEmbedderModelId: stateValues.codebaseIndexConfig?.codebaseIndexEmbedderModelId ?? "",

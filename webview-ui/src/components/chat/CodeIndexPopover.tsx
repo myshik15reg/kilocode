@@ -112,7 +112,7 @@ const createValidationSchema = (provider: EmbedderProvider, t: any) => {
 			.min(1, t("settings:codeIndex.validation.qdrantUrlRequired"))
 			.url(t("settings:codeIndex.validation.invalidQdrantUrl")),
 		codeIndexQdrantApiKey: z.string().optional(),
-		codebaseIndexVectorStoreName: z.string().min(1, t("settings:codeIndex.validation.vectorStoreNameRequired")).optional(),
+		codebaseIndexVectorStoreName: z.string().min(1, t("settings:codeIndex.validation.vectorStoreNameRequired")),
 	})
 
 	switch (provider) {
@@ -316,7 +316,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					CODEBASE_INDEX_DEFAULTS.DEFAULT_SCANNER_MAX_BATCH_RETRIES,
 				codebaseIndexBedrockRegion: codebaseIndexConfig.codebaseIndexBedrockRegion || "",
 				codebaseIndexBedrockProfile: codebaseIndexConfig.codebaseIndexBedrockProfile || "",
-				codebaseIndexVectorStoreName: "",
+				codebaseIndexVectorStoreName: codebaseIndexConfig.codebaseIndexVectorStoreName || "",
 				codeIndexOpenAiKey: "",
 				codeIndexQdrantApiKey: "",
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl || "",

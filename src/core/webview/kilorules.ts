@@ -31,7 +31,7 @@ export async function getEnabledRules(
 		),
 		localRules: await getEnabledRulesFromDirectory(
 			path.join(workspacePath, GlobalFileNames.kiloRules),
-			((await contextProxy.getWorkspaceState(context, "localRulesToggles")) as ClineRulesToggles) || {},
+			((await contextProxy.getWorkspaceState("localRulesToggles")) as ClineRulesToggles) || {},
 		),
 		globalWorkflows: await getEnabledRulesFromDirectory(
 			path.join(os.homedir(), GlobalFileNames.workflows),
@@ -39,7 +39,7 @@ export async function getEnabledRules(
 		),
 		localWorkflows: await getEnabledRulesFromDirectory(
 			path.join(workspacePath, GlobalFileNames.workflows),
-			((await contextProxy.getWorkspaceState(context, "localWorkflowToggles")) as ClineRulesToggles) || {},
+			((await contextProxy.getWorkspaceState("localWorkflowToggles")) as ClineRulesToggles) || {},
 		),
 	}
 }
@@ -79,9 +79,9 @@ export async function toggleWorkflow(
 		await contextProxy.updateGlobalState("globalWorkflowToggles", toggles)
 	} else {
 		const toggles =
-			((await contextProxy.getWorkspaceState(context, "localWorkflowToggles")) as ClineRulesToggles) || {}
+			((await contextProxy.getWorkspaceState("localWorkflowToggles")) as ClineRulesToggles) || {}
 		toggles[workflowPath] = enabled
-		await contextProxy.updateWorkspaceState(context, "localWorkflowToggles", toggles)
+		await contextProxy.updateWorkspaceState("localWorkflowToggles", toggles)
 	}
 }
 
@@ -98,9 +98,9 @@ export async function toggleRule(
 		await contextProxy.updateGlobalState("globalRulesToggles", toggles)
 	} else {
 		const toggles =
-			((await contextProxy.getWorkspaceState(context, "localRulesToggles")) as ClineRulesToggles) || {}
+			((await contextProxy.getWorkspaceState("localRulesToggles")) as ClineRulesToggles) || {}
 		toggles[rulePath] = enabled
-		await contextProxy.updateWorkspaceState(context, "localRulesToggles", toggles)
+		await contextProxy.updateWorkspaceState("localRulesToggles", toggles)
 	}
 }
 

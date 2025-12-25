@@ -286,12 +286,12 @@ export class ContextProxy {
 	/**
 	 * WorkspaceState
 	 */
-	async updateWorkspaceState(context: vscode.ExtensionContext, key: string, value: any) {
-		await context.workspaceState.update(key, value)
+	async updateWorkspaceState(key: string, value: any) {
+		return this.originalContext.workspaceState.update(key, value)
 	}
 
-	async getWorkspaceState(context: vscode.ExtensionContext, key: string) {
-		return await context.workspaceState.get(key)
+	async getWorkspaceState(key: string) {
+		return await this.originalContext.workspaceState.get(key)
 	}
 	// kilocode_change end
 

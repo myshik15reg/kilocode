@@ -381,8 +381,9 @@ export interface WebviewMessage {
 			| "bedrock"
 			| "openrouter"
 		codebaseIndexVectorStoreProvider?: "lancedb" | "qdrant" // kilocode_change
-		codebaseIndexLancedbVectorStoreDirectory?: string // kilocode_change
-		codebaseIndexEmbedderBaseUrl?: string
+			codebaseIndexLancedbVectorStoreDirectory?: string // kilocode_change
+			codebaseIndexVectorStoreName?: string // kilocode_change
+			codebaseIndexEmbedderBaseUrl?: string
 		codebaseIndexEmbedderModelId: string
 		codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
 		codebaseIndexOpenAiCompatibleBaseUrl?: string
