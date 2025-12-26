@@ -578,6 +578,7 @@ describe("ClineProvider", () => {
 				codebaseIndexEmbedderProvider: "openai",
 				codebaseIndexEmbedderBaseUrl: "",
 				codebaseIndexEmbedderModelId: "",
+				codebaseIndexVectorStoreName: "test-vectors",
 			},
 			alwaysAllowWriteOutsideWorkspace: false,
 			alwaysAllowExecute: false,
