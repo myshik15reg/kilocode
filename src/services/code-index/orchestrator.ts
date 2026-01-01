@@ -14,7 +14,7 @@ import { loadRequiredLanguageParsers } from "../tree-sitter/languageParser"
 import { stat } from "fs/promises"
 
 /**
- * Manages the code indexing workflow, coordinating between different services and managers.
+ * Manages code indexing workflow, coordinating between different services and managers.
  */
 export class CodeIndexOrchestrator {
 	private _fileWatcherSubscriptions: vscode.Disposable[] = []
@@ -41,7 +41,7 @@ export class CodeIndexOrchestrator {
 
 	// kilocode_change start
 	/**
-	 * Updates the batch segment threshold for both scanner and file watcher
+	 * Updates batch segment threshold for both scanner and file watcher
 	 * @param newThreshold New batch segment threshold value
 	 */
 	public updateBatchSegmentThreshold(newThreshold: number): void {
@@ -51,7 +51,7 @@ export class CodeIndexOrchestrator {
 	// kilocode_change end
 
 	/**
-	 * Starts the file watcher if not already running.
+	 * Starts file watcher if not already running.
 	 */
 	private async _startWatcher(): Promise<void> {
 		if (!this.configManager.isFeatureConfigured) {
@@ -112,11 +112,11 @@ export class CodeIndexOrchestrator {
 	}
 
 	/**
-	 * Updates the status of a file in the state manager.
+	 * Updates status of a file in state manager.
 	 */
 
 	/**
-	 * Initiates the indexing process (initial scan and starts watcher).
+	 * Initiates indexing process (initial scan and starts watcher).
 	 */
 	public async startIndexing(): Promise<void> {
 		// Check if workspace is available first
@@ -162,8 +162,8 @@ export class CodeIndexOrchestrator {
 				await this.cacheManager.clearCacheFile()
 			}
 
-			// Check if the collection already has indexed data
-			// If it does, we can skip the full scan and just start the watcher
+			// Check if collection already has indexed data
+			// If it does, we can skip full scan and just start watcher
 			const hasExistingData = await this.vectorStore.hasIndexedData()
 
 			if (hasExistingData && !collectionCreated) {
@@ -183,7 +183,7 @@ export class CodeIndexOrchestrator {
 
 				this.stateManager.setSystemState("Indexing", "Checking for new or modified files...")
 
-				// Mark as incomplete at the start of incremental scan
+				// Mark as incomplete at start of incremental scan
 				await this.vectorStore.markIndexingIncomplete()
 
 				let cumulativeBlocksIndexed = 0
@@ -228,7 +228,7 @@ export class CodeIndexOrchestrator {
 				}
 				// kilocode_change end
 
-				// If new files were found and indexed, log the results
+				// If new files were found and indexed, log results
 				if (cumulativeBlocksFoundSoFar > 0) {
 					console.log(
 						`[CodeIndexOrchestrator] Incremental scan completed: ${cumulativeBlocksIndexed} blocks indexed from new/changed files`,
@@ -254,7 +254,7 @@ export class CodeIndexOrchestrator {
 				// No existing data or collection was just created - do a full scan
 				this.stateManager.setSystemState("Indexing", "Services ready. Starting workspace scan...")
 
-				// Mark as incomplete at the start of full scan
+				// Mark as incomplete at start of full scan
 				await this.vectorStore.markIndexingIncomplete()
 
 				let cumulativeBlocksIndexed = 0
@@ -294,7 +294,7 @@ export class CodeIndexOrchestrator {
 				// If no blocks were indexed but blocks were found, it means all batches failed
 				if (cumulativeBlocksIndexed === 0 && cumulativeBlocksFoundSoFar > 0) {
 					if (batchErrors.length > 0) {
-						// Use the first batch error as it's likely representative of the main issue
+						// Use first batch error as it's likely representative of main issue
 						const firstError = batchErrors[0]
 						throw new Error(`Indexing failed: ${firstError.message}`)
 					} else {
@@ -313,7 +313,7 @@ export class CodeIndexOrchestrator {
 				}
 
 				// CRITICAL: If there were ANY batch errors and NO blocks were successfully indexed,
-				// this is a complete failure regardless of the failure rate calculation
+				// this is a complete failure regardless of failure rate calculation
 				if (batchErrors.length > 0 && cumulativeBlocksIndexed === 0) {
 					const firstError = batchErrors[0]
 					throw new Error(`Indexing failed completely: ${firstError.message}`)
@@ -387,7 +387,7 @@ export class CodeIndexOrchestrator {
 	}
 
 	/**
-	 * Stops the file watcher and cleans up resources.
+	 * Stops file watcher and cleans up resources.
 	 */
 	public stopWatcher(): void {
 		this.fileWatcher.dispose()
@@ -403,8 +403,8 @@ export class CodeIndexOrchestrator {
 	// kilocode_change start
 	/**
 	 * Gracefully cancels any ongoing indexing work.
-	 * - Stops the watcher if active
-	 * - Signals the scanner to cancel pending/ongoing work
+	 * - Stops watcher if active
+	 * - Signals scanner to cancel pending/ongoing work
 	 * - Updates UI state to reflect cancellation
 	 */
 	public cancelIndexing(): void {
@@ -415,10 +415,10 @@ export class CodeIndexOrchestrator {
 		// (DirectoryScanner will no-op quickly on next checks)
 		this.scanner.cancel()
 
-		// Ensure the watcher is stopped if it had started
+		// Ensure watcher is stopped if it had started
 		this.stopWatcher()
 
-		// Reflect cancellation to the UI
+		// Reflect cancellation to UI
 		this.stateManager.setSystemState("Standby", t("embeddings:orchestrator.indexingCancelled"))
 
 		// Clear processing flag
@@ -427,8 +427,8 @@ export class CodeIndexOrchestrator {
 	// kilocode_change end
 
 	/**
-	 * Clears all index data by stopping the watcher, clearing the vector store,
-	 * and resetting the cache file.
+	 * Clears all index data by stopping watcher, clearing vector store,
+	 * and resetting cache file.
 	 */
 	public async clearIndexData(): Promise<void> {
 		this._isProcessing = true
@@ -463,14 +463,14 @@ export class CodeIndexOrchestrator {
 	}
 
 	/**
-	 * Gets the current state of the indexing system.
+	 * Gets current state of indexing system.
 	 */
 	public get state(): IndexingState {
 		return this.stateManager.state
 	}
 
 	/**
-	 * Index code relationships into Neo4j for the given files
+	 * Index code relationships into Neo4j for given files
 	 * @param filePaths Array of file paths to index
 	 */
 	private async indexRelationshipsForChangedFiles(filePaths: string[]): Promise<void> {
@@ -516,28 +516,49 @@ export class CodeIndexOrchestrator {
 					const content = await vscode.workspace.fs
 						.readFile(vscode.Uri.file(filePath))
 						.then((buffer) => Buffer.from(buffer).toString("utf-8"))
-
-					// Parse file to get AST
-					const ext = path.extname(filePath).slice(1).toLowerCase()
-					const parsedData = await this.codeParser.parseFile(filePath, { content })
-
-					if (parsedData && parsedData.length > 0) {
-						// For Neo4j we need the full AST, not just blocks
-						// Parse again with tree-sitter to get AST
+		
+					// Get file extension
+					const ext = path.extname(filePath).toLowerCase()
+					
+					// For 1C files (.bsl), use RelationshipExtractor directly
+					// These files use fallback chunking in CodeParser, so we need special handling
+					if (ext === '.bsl') {
+						// Load language parser for 1C
 						const languageParser = await loadRequiredLanguageParsers([filePath])
-						if (languageParser && languageParser[ext]) {
-							const tree = languageParser[ext].parser.parse(content)
+						if (languageParser && languageParser['bsl']) {
+							const tree = languageParser['bsl'].parser.parse(content)
 							if (tree) {
 								await this.relationshipIndexer.indexFile(
 									filePath,
 									content,
 									tree.rootNode,
-									ext
+									'bsl'
 								)
 							}
 						}
+					} else {
+						// For other languages, use standard approach
+						const extNoDot = ext.slice(1)
+						const parsedData = await this.codeParser.parseFile(filePath, { content })
+	
+						if (parsedData && parsedData.length > 0) {
+							// For Neo4j we need full AST, not just blocks
+							// Parse again with tree-sitter to get AST
+							const languageParser = await loadRequiredLanguageParsers([filePath])
+							if (languageParser && languageParser[extNoDot]) {
+								const tree = languageParser[extNoDot].parser.parse(content)
+								if (tree) {
+									await this.relationshipIndexer.indexFile(
+										filePath,
+										content,
+										tree.rootNode,
+										extNoDot
+									)
+								}
+							}
+						}
 					}
-
+	
 					processedCount++
 					if (processedCount % 10 === 0) {
 						this.stateManager.setSystemState(

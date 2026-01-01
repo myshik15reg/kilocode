@@ -157,4 +157,248 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 		const lastCall = stateManager.setSystemState.mock.calls[stateManager.setSystemState.mock.calls.length - 1]
 		expect(lastCall[0]).toBe("Error")
 	})
+
+	describe("1C (.bsl) file indexing for Neo4j", () => {
+		let relationshipIndexer: any
+		let codeParser: any
+		let languageParser: any
+
+		beforeEach(() => {
+			vi.clearAllMocks()
+
+			// Mock RelationshipIndexer
+			relationshipIndexer = {
+				indexFile: vi.fn().mockResolvedValue(undefined),
+			}
+
+			// Mock CodeParser
+			codeParser = {
+				parseFile: vi.fn().mockResolvedValue({
+					symbols: [],
+					chunks: [],
+				}),
+			}
+
+			// Mock loadRequiredLanguageParsers
+			languageParser = {
+				bsl: {
+					parser: {
+						parse: vi.fn().mockReturnValue({
+							rootNode: {
+								type: "module",
+								childCount: 0,
+							},
+						}),
+					},
+				},
+			}
+
+			// Mock the loadRequiredLanguageParsers function
+			vi.doMock("../processors/languageParser", () => ({
+				loadRequiredLanguageParsers: vi.fn().mockResolvedValue(languageParser),
+			}))
+		})
+
+		it("should use tree-sitter parser directly for .bsl files", async () => {
+			// Arrange
+			const { loadRequiredLanguageParsers } = await import("../processors/languageParser")
+			const testContent = `
+Процедура ТестоваяПроцедура()
+	Сообщить("Привет, мир!");
+КонецПроцедуры
+			`.trim()
+			const testFilePath = "/test/workspace/module.bsl"
+
+			const orchestrator = new CodeIndexOrchestrator(
+				configManager,
+				stateManager,
+				workspacePath,
+				cacheManager,
+				vectorStore,
+				scanner,
+				fileWatcher,
+				relationshipIndexer,
+				codeParser,
+			)
+
+			// Act - simulate indexing a .bsl file
+			// This would normally be called internally, but we can test the logic
+			// by calling the method that handles .bsl files
+			await orchestrator.indexRelationshipsForChangedFiles([
+				{ path: testFilePath, content: testContent },
+			])
+
+			// Assert
+			expect(loadRequiredLanguageParsers).toHaveBeenCalledWith([testFilePath])
+			expect(languageParser.bsl.parser.parse).toHaveBeenCalledWith(testContent)
+			expect(relationshipIndexer.indexFile).toHaveBeenCalledWith(
+				testFilePath,
+				testContent,
+				expect.any(Object), // rootNode
+				"bsl"
+			)
+		})
+
+		it("should use tree-sitter parser directly for .os files", async () => {
+			// Arrange
+			const { loadRequiredLanguageParsers } = await import("../processors/languageParser")
+			const testContent = `
+Функция Сложить(А, Б)
+	Возврат А + Б;
+КонецФункции
+			`.trim()
+			const testFilePath = "/test/workspace/module.os"
+
+			const orchestrator = new CodeIndexOrchestrator(
+				configManager,
+				stateManager,
+				workspacePath,
+				cacheManager,
+				vectorStore,
+				scanner,
+				fileWatcher,
+				relationshipIndexer,
+				codeParser,
+			)
+
+			// Act
+			await orchestrator.indexRelationshipsForChangedFiles([
+				{ path: testFilePath, content: testContent },
+			])
+
+			// Assert
+			expect(loadRequiredLanguageParsers).toHaveBeenCalledWith([testFilePath])
+			expect(languageParser.bsl.parser.parse).toHaveBeenCalledWith(testContent)
+			expect(relationshipIndexer.indexFile).toHaveBeenCalledWith(
+				testFilePath,
+				testContent,
+				expect.any(Object),
+				"bsl"
+			)
+		})
+
+		it("should use standard CodeParser for non-1C files", async () => {
+			// Arrange
+			const testContent = `
+function testFunction() {
+	return "hello";
+}
+			`.trim()
+			const testFilePath = "/test/workspace/test.js"
+
+			const orchestrator = new CodeIndexOrchestrator(
+				configManager,
+				stateManager,
+				workspacePath,
+				cacheManager,
+				vectorStore,
+				scanner,
+				fileWatcher,
+				relationshipIndexer,
+				codeParser,
+			)
+
+			// Act
+			await orchestrator.indexRelationshipsForChangedFiles([
+				{ path: testFilePath, content: testContent },
+			])
+
+			// Assert
+			expect(codeParser.parseFile).toHaveBeenCalledWith(testFilePath, {
+				content: testContent,
+			})
+			// Should NOT call relationshipIndexer if CodeParser returns empty symbols
+			// (this is the existing behavior for non-1C files)
+		})
+
+		it("should handle uppercase .BSL extension", async () => {
+			// Arrange
+			const { loadRequiredLanguageParsers } = await import("../processors/languageParser")
+			const testContent = `Процедура Тест() КонецПроцедуры`
+			const testFilePath = "/test/workspace/MODULE.BSL"
+
+			const orchestrator = new CodeIndexOrchestrator(
+				configManager,
+				stateManager,
+				workspacePath,
+				cacheManager,
+				vectorStore,
+				scanner,
+				fileWatcher,
+				relationshipIndexer,
+				codeParser,
+			)
+
+			// Act
+			await orchestrator.indexRelationshipsForChangedFiles([
+				{ path: testFilePath, content: testContent },
+			])
+
+			// Assert
+			expect(loadRequiredLanguageParsers).toHaveBeenCalledWith([testFilePath])
+			expect(relationshipIndexer.indexFile).toHaveBeenCalledWith(
+				testFilePath,
+				testContent,
+				expect.any(Object),
+				"bsl"
+			)
+		})
+
+		it("should handle mixed 1C and non-1C files", async () => {
+			// Arrange
+			const { loadRequiredLanguageParsers } = await import("../processors/languageParser")
+			const files = [
+				{
+					path: "/test/workspace/onec.bsl",
+					content: `Процедура Тест() КонецПроцедуры`,
+				},
+				{
+					path: "/test/workspace/javascript.js",
+					content: `function test() { return "hello"; }`,
+				},
+				{
+					path: "/test/workspace/another.bsl",
+					content: `Функция Сложить(А, Б) Возврат А + Б; КонецФункции`,
+				},
+			]
+
+			const orchestrator = new CodeIndexOrchestrator(
+				configManager,
+				stateManager,
+				workspacePath,
+				cacheManager,
+				vectorStore,
+				scanner,
+				fileWatcher,
+				relationshipIndexer,
+				codeParser,
+			)
+
+			// Act
+			await orchestrator.indexRelationshipsForChangedFiles(files)
+
+			// Assert
+			// Should call loadRequiredLanguageParsers for all files
+			expect(loadRequiredLanguageParsers).toHaveBeenCalledWith([
+				"/test/workspace/onec.bsl",
+				"/test/workspace/javascript.js",
+				"/test/workspace/another.bsl",
+			])
+
+			// Should index both .bsl files
+			expect(relationshipIndexer.indexFile).toHaveBeenCalledTimes(2)
+			expect(relationshipIndexer.indexFile).toHaveBeenCalledWith(
+				"/test/workspace/onec.bsl",
+				files[0].content,
+				expect.any(Object),
+				"bsl"
+			)
+			expect(relationshipIndexer.indexFile).toHaveBeenCalledWith(
+				"/test/workspace/another.bsl",
+				files[2].content,
+				expect.any(Object),
+				"bsl"
+			)
+		})
+	})
 })

@@ -339,6 +339,11 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			codebaseIndexEmbedderModelId: "",
 			codebaseIndexSearchMaxResults: undefined,
 			codebaseIndexSearchMinScore: undefined,
+			// Neo4j graph database settings
+			codebaseIndexNeo4jEnabled: false,
+			codebaseIndexNeo4jUri: "bolt://localhost:7687",
+			codebaseIndexNeo4jUsername: "neo4j",
+			codebaseIndexNeo4jDatabase: "neo4j",
 		},
 		codebaseIndexModels: { ollama: {}, openai: {} },
 		alwaysAllowUpdateTodoList: true,

@@ -49,6 +49,7 @@ import { useEscapeKey } from "@src/hooks/useEscapeKey"
 // kilocode_change start
 import { EmbeddingBatchSizeSlider } from "./kilocode/EmbeddingBatchSizeSlider"
 import { MaxBatchRetriesSlider } from "./kilocode/MaxBatchRetriesSlider"
+import { Neo4jSettings } from "./kilocode/Neo4jSettings"
 // kilocode_change end
 import {
 	useOpenRouterModelProviders,
@@ -91,6 +92,12 @@ interface LocalCodeIndexSettings {
 	// Bedrock-specific settings
 	codebaseIndexBedrockRegion?: string
 	codebaseIndexBedrockProfile?: string
+
+	// Neo4j graph database settings
+	codebaseIndexNeo4jEnabled?: boolean
+	codebaseIndexNeo4jUri?: string
+	codebaseIndexNeo4jUsername?: string
+	codebaseIndexNeo4jDatabase?: string
 
 	// Secret settings (start empty, will be loaded separately)
 	codeIndexOpenAiKey?: string
@@ -182,6 +189,11 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexBedrockRegion: "",
 		codebaseIndexBedrockProfile: "",
 		codebaseIndexVectorStoreName: "",
+		// Neo4j graph database settings
+		codebaseIndexNeo4jEnabled: false,
+		codebaseIndexNeo4jUri: "bolt://localhost:7687",
+		codebaseIndexNeo4jUsername: "neo4j",
+		codebaseIndexNeo4jDatabase: "neo4j",
 		codeIndexOpenAiKey: "",
 		codeIndexQdrantApiKey: "",
 		codebaseIndexOpenAiCompatibleBaseUrl: "",
@@ -240,6 +252,11 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				codebaseIndexBedrockRegion: codebaseIndexConfig.codebaseIndexBedrockRegion || "",
 				codebaseIndexBedrockProfile: codebaseIndexConfig.codebaseIndexBedrockProfile || "",
 				codebaseIndexVectorStoreName: codebaseIndexConfig.codebaseIndexVectorStoreName || "",
+				// Neo4j graph database settings
+				codebaseIndexNeo4jEnabled: codebaseIndexConfig.codebaseIndexNeo4jEnabled ?? false,
+				codebaseIndexNeo4jUri: codebaseIndexConfig.codebaseIndexNeo4jUri || "bolt://localhost:7687",
+				codebaseIndexNeo4jUsername: codebaseIndexConfig.codebaseIndexNeo4jUsername || "neo4j",
+				codebaseIndexNeo4jDatabase: codebaseIndexConfig.codebaseIndexNeo4jDatabase || "neo4j",
 				codeIndexOpenAiKey: "",
 				codeIndexQdrantApiKey: "",
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl || "",
@@ -1593,14 +1610,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 										uri={currentSettings.codebaseIndexNeo4jUri ?? ""}
 										username={currentSettings.codebaseIndexNeo4jUsername ?? ""}
 										database={currentSettings.codebaseIndexNeo4jDatabase ?? ""}
-										setCachedStateField={(key, value) => {
-											if (key === "codebaseIndexConfig") {
-												setCachedStateField("codebaseIndexConfig", {
-													...(codebaseIndexConfig || {}),
-													...value,
-												})
-											}
-										}}
+										setCachedStateField={(field, value) => updateSetting(field as keyof LocalCodeIndexSettings, value)}
 									/>
 									
 									{/* kilocode_change start */}
