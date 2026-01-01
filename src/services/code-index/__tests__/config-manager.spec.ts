@@ -153,10 +153,10 @@ describe("CodeIndexConfigManager", () => {
 				codebaseIndexLancedbVectorStoreDirectory: "/path/to/lancedb",
 			}
 			mockContextProxy.getGlobalState.mockReturnValue(mockGlobalState)
-			// vectorStoreName is now loaded from workspaceState
+			// vectorStoreName is now loaded from workspaceState (async)
 			mockContextProxy.getWorkspaceState.mockImplementation((key: string) => {
-				if (key === "codebaseIndexVectorStoreName") return "custom-index-name"
-				return undefined
+				if (key === "codebaseIndexVectorStoreName") return Promise.resolve("custom-index-name")
+				return Promise.resolve(undefined)
 			})
 			setupSecretMocks({
 				codeIndexOpenAiKey: "test-openai-key",
@@ -1152,6 +1152,7 @@ describe("CodeIndexConfigManager", () => {
 					ollamaBaseUrl: undefined,
 					qdrantUrl: "http://qdrant.local",
 					qdrantApiKey: undefined,
+					vectorStoreName: "",
 				}
 
 				const requiresRestart = configManager.doesConfigChangeRequireRestart(mockPrevConfig)
@@ -1470,6 +1471,7 @@ describe("CodeIndexConfigManager", () => {
 				embedderProvider: "openai",
 				openAiKey: "test-key",
 				qdrantUrl: "http://localhost:6333",
+				vectorStoreName: "",
 			}
 
 			// Update to disabled
@@ -1523,6 +1525,7 @@ describe("CodeIndexConfigManager", () => {
 				enabled: false,
 				configured: false,
 				embedderProvider: "openai",
+				vectorStoreName: "",
 			}
 
 			// Same config, still disabled
@@ -1547,6 +1550,7 @@ describe("CodeIndexConfigManager", () => {
 				embedderProvider: "openai",
 				openAiKey: "test-key",
 				qdrantUrl: "http://localhost:6333",
+				vectorStoreName: "",
 			}
 
 			const result = configManager.doesConfigChangeRequireRestart(previousSnapshot)
@@ -1566,6 +1570,7 @@ describe("CodeIndexConfigManager", () => {
 				enabled: false,
 				configured: false,
 				embedderProvider: "openai",
+				vectorStoreName: "",
 			}
 
 			// Provider changed but feature is disabled
@@ -1966,8 +1971,8 @@ describe("CodeIndexConfigManager", () => {
 						codebaseIndexEmbedderProvider: "openai",
 					})
 					mockContextProxy.getWorkspaceState.mockImplementation((key: string) => {
-						if (key === "codebaseIndexVectorStoreName") return "workspace-specific-name"
-						return undefined
+						if (key === "codebaseIndexVectorStoreName") return Promise.resolve("workspace-specific-name")
+						return Promise.resolve(undefined)
 					})
 					setupSecretMocks({
 						codeIndexOpenAiKey: "test-openai-key",
@@ -1985,7 +1990,9 @@ describe("CodeIndexConfigManager", () => {
 						codebaseIndexQdrantUrl: "http://qdrant.local",
 						codebaseIndexEmbedderProvider: "openai",
 					})
-					mockContextProxy.getWorkspaceState.mockReturnValue(undefined)
+					mockContextProxy.getWorkspaceState.mockImplementation((key: string) => {
+						return Promise.resolve(undefined)
+					})
 					setupSecretMocks({
 						codeIndexOpenAiKey: "test-openai-key",
 					})

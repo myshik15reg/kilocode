@@ -16,6 +16,7 @@ export class CodeIndexConfigManager {
 	private vectorStoreProvider: "lancedb" | "qdrant" = "qdrant"
 	private lancedbVectorStoreDirectory?: string
 	private vectorStoreName?: string
+	private vectorStoreNameWasLoaded: boolean = false // Track if vectorStoreName was loaded from workspaceState
 	// kilocode_change - end
 	private modelId?: string
 	private modelDimension?: number
@@ -161,7 +162,10 @@ export class CodeIndexConfigManager {
 		this.vectorStoreProvider = codebaseIndexVectorStoreProvider ?? "qdrant"
 		this.lancedbVectorStoreDirectory = codebaseIndexLancedbVectorStoreDirectory
 		// Note: vectorStoreName is loaded asynchronously in loadConfiguration()
-		this.vectorStoreName = undefined
+		// Only set to undefined if not already loaded (don't overwrite existing value)
+		if (this.vectorStoreName === undefined) {
+			this.vectorStoreName = undefined
+		}
 		// kilocode_change - end
 		this.qdrantUrl = codebaseIndexQdrantUrl
 		this.qdrantApiKey = qdrantApiKey ?? ""
@@ -292,11 +296,22 @@ export class CodeIndexConfigManager {
 		// Load vectorStoreName from workspaceState (async operation)
 		this.vectorStoreName = (await this.contextProxy.getWorkspaceState("codebaseIndexVectorStoreName")) as string | undefined
 
+		// Track if vectorStoreName was loaded from workspaceState
+		this.vectorStoreNameWasLoaded = !!(this.vectorStoreName && this.vectorStoreName.trim() !== "")
+
 		// Migration logic: Generate default vectorStoreName if missing
 		if (!this.vectorStoreName || this.vectorStoreName.trim() === "") {
 			// Try to get workspace folder name from vscode API
-			const workspaceFolders = require("vscode").workspace.workspaceFolders
-			const workspaceName = workspaceFolders?.[0]?.name
+			// Use safe access that doesn't fail in test environment
+			let workspaceName: string | undefined
+			try {
+				const vscode = require("vscode")
+				workspaceName = vscode.workspace.workspaceFolders?.[0]?.name
+			} catch (error) {
+				// In test environment, vscode module may not be available
+				// Use a default value instead of failing
+				workspaceName = undefined
+			}
 			
 			// Generate default value: workspace-name-vectors or codebase-index-vectors
 			const defaultVectorStoreName = workspaceName
@@ -308,7 +323,13 @@ export class CodeIndexConfigManager {
 			// Save the generated default value to workspaceState for future use
 			await this.contextProxy.updateWorkspaceState("codebaseIndexVectorStoreName", defaultVectorStoreName)
 			
+			// Update the flag to indicate that a value was generated (not loaded from existing state)
+			this.vectorStoreNameWasLoaded = false
+			
 			console.log(`[CodeIndexConfigManager] Migration: Generated default vectorStoreName: ${defaultVectorStoreName}`)
+		} else {
+			// vectorStoreName already exists in workspaceState, use it as-is
+			// Don't overwrite with a generated value
 		}
 
 		// Load new configuration from storage and update instance variables
@@ -584,7 +605,7 @@ export class CodeIndexConfigManager {
 			// kilocode_change - start
 			vectorStoreProvider: this.vectorStoreProvider ?? "qdrant",
 			lancedbVectorStoreDirectoryPlaceholder: this.lancedbVectorStoreDirectory,
-			vectorStoreName: this.vectorStoreName ?? "codebase-index-vectors",
+			vectorStoreName: this.vectorStoreNameWasLoaded ? (this.vectorStoreName ?? "") : "",
 			// kilocode_change - end
 			modelId: this.modelId,
 			modelDimension: this.modelDimension,

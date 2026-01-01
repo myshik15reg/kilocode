@@ -191,7 +191,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexVercelAiGatewayApiKey: "",
 		codebaseIndexOpenRouterApiKey: "",
 		codebaseIndexOpenRouterSpecificProvider: "",
-		})
+	})
 
 	// Initial settings state - stores the settings when popover opens
 	const [initialSettings, setInitialSettings] = useState<LocalCodeIndexSettings>(getDefaultSettings())
@@ -233,10 +233,10 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					codebaseIndexConfig.codebaseIndexSearchMinScore ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
 				codebaseIndexEmbeddingBatchSize:
 					codebaseIndexConfig.codebaseIndexEmbeddingBatchSize ??
-					CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDING_BATCH_SIZE,
+						CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDING_BATCH_SIZE,
 				codebaseIndexScannerMaxBatchRetries:
 					codebaseIndexConfig.codebaseIndexScannerMaxBatchRetries ??
-					CODEBASE_INDEX_DEFAULTS.DEFAULT_SCANNER_MAX_BATCH_RETRIES,
+						CODEBASE_INDEX_DEFAULTS.DEFAULT_SCANNER_MAX_BATCH_RETRIES,
 				codebaseIndexBedrockRegion: codebaseIndexConfig.codebaseIndexBedrockRegion || "",
 				codebaseIndexBedrockProfile: codebaseIndexConfig.codebaseIndexBedrockProfile || "",
 				codebaseIndexVectorStoreName: codebaseIndexConfig.codebaseIndexVectorStoreName || "",
@@ -1586,7 +1586,23 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 											</div>
 										</>
 									)}
-
+									
+									{/* Neo4j Settings */}
+									<Neo4jSettings
+										enabled={currentSettings.codebaseIndexNeo4jEnabled ?? false}
+										uri={currentSettings.codebaseIndexNeo4jUri ?? ""}
+										username={currentSettings.codebaseIndexNeo4jUsername ?? ""}
+										database={currentSettings.codebaseIndexNeo4jDatabase ?? ""}
+										setCachedStateField={(key, value) => {
+											if (key === "codebaseIndexConfig") {
+												setCachedStateField("codebaseIndexConfig", {
+													...(codebaseIndexConfig || {}),
+													...value,
+												})
+											}
+										}}
+									/>
+									
 									{/* kilocode_change start */}
 									{/* LanceDB Vector Store Settings */}
 									{currentSettings.codebaseIndexVectorStoreProvider === "lancedb" && (
