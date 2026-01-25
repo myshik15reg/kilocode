@@ -1,303 +1,227 @@
-# WorkFlowAI - Руководство для AI-агентов
+# AGENTS.md
 
-> **⚠️ КРИТИЧЕСКИ ВАЖНО:** Этот файл — **единая точка входа** для всех AI-агентов. Прочти его ПОЛНОСТЬЮ перед началом любой работы.
+Kilo Code is an open source AI coding agent for VS Code that generates code from natural language, automates tasks, and supports 500+ AI models.
 
-## 🎯 Быстрый старт
+## Project Structure
 
-1. **Подтверди прочтение:** Выведи строку `[MB: OK]` после прочтения этого файла
-2. **Читай Memory Bank:** `.kilocode/memory-bank/index.md` для контекста проекта
-3. **Выбери режим:** См. раздел "Режимы работы" ниже
-4. **Создай протокол (для любой задачи; без исключений):** `protocol-new.md`
-5. **Следуй правилам:** Абсолютное качество, TDD, 100% coverage
+This is a pnpm monorepo using Turbo for task orchestration:
 
-## ✅ Тривиальная vs нетривиальная задача
+- **`src/`** - VSCode extension (core logic, API providers, tools)
+- **`webview-ui/`** - React frontend (chat UI, settings)
+- **`cli/`** - Standalone CLI package
+- **`packages/`** - Shared packages (`types`, `ipc`, `telemetry`, `cloud`)
+- **`jetbrains/`** - JetBrains plugin (Kotlin + Node.js host)
+- **`apps/`** - E2E tests, Storybook, docs
 
-**Тривиальная правка** (протокол обязателен; допускается минимальный план) - только если ВСЕ условия:
-- меняется **1 файл**
-- изменение **<= 10 строк**
-- **нет** изменения поведения/логики/публичного API
-- **нет** новых зависимостей, конфигов, CI/скриптов, миграций
+Key source directories:
 
-**Всё остальное = нетривиальная задача.** Протокол обязателен всегда; если сомневаешься — усложняй план, но не отменяй протокол.
+- `src/api/providers/` - AI provider implementations (50+ providers)
+- `src/core/tools/` - Tool implementations (ReadFile, ApplyDiff, ExecuteCommand, etc.)
+- `src/services/` - Services (MCP, browser, checkpoints, code-index)
+- `packages/agent-runtime/` - Standalone agent runtime (runs extension without VS Code)
 
-### Примеры классификации
+## Agent Runtime Architecture
 
-| Задача | Классификация | Почему |
-|--------|---------------|--------|
-| Исправить опечатку в комментарии | Тривиально | 1 файл, 1 строка, нет изменения логики |
-| Исправить опечатку в переменной | **Нетривиально** | Изменение поведения (если используется) |
-| Обновить URL в README | Тривиально | 1 файл, нет логики |
-| Обновить URL в коде | **Нетривиально** | Изменение поведения |
-| Добавить комментарий | Тривиально | Нет изменения логики |
-| Переименовать функцию | **Нетривиально** | Изменение публичного API |
-| Исправить форматирование | Тривиально | Нет изменения логики |
-| Добавить параметр в функцию | **Нетривиально** | Изменение API |
-| Исправить typo в 3 файлах | **Нетривиально** | Больше 1 файла |
-| Обновить версию зависимости | **Нетривиально** | Может изменить поведение |
-| Добавить console.log для debug | **Нетривиально** | Изменение кода (удали перед merge!) |
+The `@kilocode/agent-runtime` package enables running Kilo Code agents as isolated Node.js processes without VS Code.
 
-### Правило большого пальца
-**Если сомневаешься — считай нетривиальным.** Лучше перестараться с протоколом, чем пропустить важное.
+### How It Works
 
-## 🧰 Kilo Code vs Codex CLI (tools)
-
-**Kilo Code (VSCode):**
-- Инструменты: `read_file`, `apply_diff`, `write_to_file`, `execute_command`
-- Делегирование: `new_task` (`switch_mode` запрещён)
-
-**Codex CLI (terminal):**
-- Команды: `functions.shell_command` (всегда с `timeout_ms`, см. `~/.kilocode/rules/ai-execution-rules.md`)
-- Редактирование файлов: `functions.apply_patch`
-- План (опционально): `functions.update_plan`
-- `new_task` недоступен -> используй role-loop внутри одной сессии (architect -> implementer -> tester -> reviewer); это **исключение для Codex CLI**, протокол обязателен всегда
-
-Подробности: `~/.kilocode/rules/tool-usage-guide.md`.
-
-## 80/20: какой режим выбрать
-
-- Планирование/закрытие протокола: `architect`
-- Координация сложной задачи и multi-agent: `orchestrator` (+ `decomposer` при необходимости)
-- Реализация: самый узкий `*-dev` / `*-specialist` (и только если нет — `code`)
-- Тесты: `unit-tester`, `integration-tester`, `e2e-tester`, `security-tester`
-- Code Review/QA: `reviewer`
-- Вопрос/поиск/разъяснение: `ask` (+ `planning/research-*` для read-only исследований)
-
-См. `~/.kilocode/rules/agents-guide.md` и `~/.kilocode/rules/orchestrator-guide.md`.
-
----
-
-## 🔥 Абсолютные правила (Zero Tolerance)
-
-Единые требования качества и процесса (детали в первоисточниках):
-- **100% coverage (lines/branches/functions) и TDD** - см. `~/.kilocode/rules/testing-rules.md`
-- **Lint: 0 errors / 0 warnings, не отключать правила** - см. `~/.kilocode/patterns/code-standards.md`
-- **TODO только с тикетом**: `// TODO(#123): ...` - см. `~/.kilocode/patterns/code-standards.md`
-- **Changesets для монорепозиториев**: `npx changeset add` - см. `~/.kilocode/rules/git-workflow-rules.md`
-- **`kilocode_change` маркер при изменении кода** - см. `~/.kilocode/patterns/code-standards.md`
-
----
-
-## 📋 Core Principles
-
-1. **Memory First:** Всегда начинай с `.kilocode/memory-bank/index.md` -> `[MB: OK]`
-2. **No Protocol, No Code:** Любые изменения без протокола в `.protocols/` — запрещены (без исключений)
-3. **Update Plan:** После каждого шага обновляй `.protocols/.../plan.md`
-4. **Log Decisions:** Нестандартные решения -> `.protocols/.../execution.md`
-5. **Clean Finish:** Все тесты проходят -> обнови Memory Bank
-6. **Context Isolation:** Работай только с файлами из плана
-7. **Cleanup Policy:** Удаляй временные артефакты после завершения
-8. **ONE MODE PER TASK:** В Kilo Code один таск = один режим; смена режима только через `new_task`, `switch_mode` запрещён. Исключение: Codex CLI, где допустима роль-петля в одной сессии
-9. **Baby Steps:** Мелкие итерации. Сломал -> откатись и сделай шаг меньше
-10. **Design Principles:** SOLID, KISS, DRY, YAGNI, TRIZ, Emergent Design
-11. **Absolute Quality:** Качество > скорость. 100% coverage обязателен
-
----
-
-## 🗣️ Язык и кодировка
-
-- Отвечай на языке пользователя (RU/EN).
-- Внутри репозитория допускается RU/EN документация, но не смешивай языки в одном абзаце без необходимости.
-- Все файлы WorkFlowAI — UTF-8 без BOM; в Windows PowerShell читай Markdown явно с UTF-8: `Get-Content -Raw -Encoding utf8 <path>` (см. `~/.kilocode/rules/environment-windows.md`).
-
----
-
-## 🛠️ Режимы работы
-
-### 🏛️ Architect Mode
-**Роль:** Планирование и завершение
-**Читать:**
-- `.kilocode/memory-bank/brief.md`, `product.md`, `architecture.md`, `context.md`
-- `~/.kilocode/rules/project-rules.md`
-
-**Обязанности:**
-- Создание протоколов в `.protocols/YYYY-MM-DD-feature-name/`
-- Написание `brief.md`, `plan.md`
-- Code Review после реализации
-- Merge и обновление Memory Bank
-
-**ЗАПРЕЩЕНО:** Писать код — делегируй через `new_task`
-
----
-
-### 💻 Code Mode
-**Роль:** Реализация
-**Читать:**
-- `.protocols/.../brief.md`, `plan.md`
-- `~/.kilocode/patterns/code-standards.md`
-- `~/.kilocode/rules/testing-rules.md`, `security-rules.md`
-
-**Обязанности:**
-- Писать код по плану
-- Обновлять `plan.md` (отмечать выполненное)
-- Вести `execution.md`
-- Запускать тесты (100% coverage!)
-
-**ЗАПРЕЩЕНО:** Менять архитектуру без обновления `architecture.md`
-
----
-
-### 🔍 Reviewer Mode
-**Роль:** Code Review, QA
-**Читать:**
-- `~/.kilocode/patterns/code-standards.md`
-- `~/.kilocode/rules/security-rules.md`, `testing-rules.md`
-
-**Checklist:**
-- [ ] SOLID принципы соблюдены
-- [ ] Tests: 100% coverage (lines, branches, functions)
-- [ ] Lint: 0 errors, 0 warnings
-- [ ] Security: OWASP Top 10 защита
-- [ ] TODO: все с тикетами
-- [ ] Changesets добавлены (если монорепо)
-- [ ] Документация обновлена
-
----
-
-### ❓ Ask Mode
-**Роль:** Консультант
-**Когда использовать:** Поиск информации, разъяснения
-
----
-
-### 🌍 Translate Mode
-**Роль:** Локализация
-**Специфика:** См. `~/.kilocode/modes/translate.md`
-**Когда использовать:** Работа с i18n файлами, переводы
-
----
-
-### 🏢 1C Modes
-**Точка входа:** `1c-orchestrator`
-**Специфика:** См. `~/.kilocode/rules/1c-workflow.md`
-**Доступные режимы:**
-- `1c-orchestrator` — координация
-- `1c-business-analyst` — бизнес-требования
-- `1c-system-analyst` — техническое проектирование
-- `1c-architect` — архитектура решения
-- `1c-developer` — разработка
-- `1c-tester` — тестирование (Vanessa Automation)
-- Другие специализированные режимы (см. `~/.kilocode/rules/1c-workflow.md`)
-
----
-
-## 📚 Ключевые документы
-
-### Обязательны к прочтению:
-1. `.kilocode/memory-bank/index.md` — точка входа для контекста
-2. `~/.kilocode/rules/project-rules.md` — основные правила AlfaFlow
-3. `~/.kilocode/rules/testing-rules.md` — 100% coverage, TDD
-4. `~/.kilocode/rules/security-rules.md` — OWASP Top 10
-5. `~/.kilocode/patterns/code-standards.md` — SOLID, KISS, DRY, YAGNI
-
-### Специализированные:
-- `~/.kilocode/rules/tool-usage-guide.md` — использование инструментов
-- `~/.kilocode/rules/mcp-usage-guide.md` — MCP серверы (context7, memory, playwright)
-- `~/.kilocode/rules/git-workflow-rules.md` — Conventional Commits, PR process
-- `~/.kilocode/rules/mode-delegation-example.md` — делегирование между режимами
-
----
-
-## ✅ Pre-Commit / Pre-Merge
-
-См. `~/.kilocode/rules/git-workflow-rules.md` и `~/.kilocode/workflows/protocol-review-merge.md`.
-
----
-
-## 🚨 Emergency Protocols
-
-### Hotfix Workflow
-См. `~/.kilocode/workflows/hotfix-emergency.md`
-
-**Процесс:**
-1. Создать ветку `fix/critical-bug`
-2. Минимальный review, но ОБЯЗАТЕЛЬНЫЙ
-3. Deploy немедленно
-4. Post-mortem после инцидента
-
----
-
-## 🔗 Навигация
-
-### Структура проекта:
 ```
-.kilocode/
-├── memory-bank/       # Глобальный контекст проекта
-
-~/.kilocode/
-├── rules/             # Правила для агентов
-├── patterns/          # Паттерны кода (SOLID, Security, Testing)
-├── skills/            # Переиспользуемые навыки (CLI, Git, Tests)
-├── workflows/         # Процессы (Hotfix, New Skill)
-└── modes/             # Специализированные режимы (Translate, 1C)
-
-.protocols/            # Локальные контексты задач
-└── YYYY-MM-DD-name/
-    ├── brief.md       # Требования
-    ├── plan.md        # План задачи
-    └── execution.md   # Лог выполнения
+┌─────────────────────┐     fork()      ┌─────────────────────┐
+│  CLI / Manager      │ ───────────────▶│  Agent Process      │
+│                     │◀───── IPC ─────▶│  (extension host)   │
+└─────────────────────┘                 └─────────────────────┘
 ```
 
-### Быстрые ссылки:
-- **Memory Bank:** `.kilocode/memory-bank/index.md`
-- **Правила:** `~/.kilocode/rules/index.md`
-- **Паттерны:** `~/.kilocode/patterns/`
-- **Skills:** `~/.kilocode/skills/`
+1. **ExtensionHost**: Hosts the Kilo Code extension with a complete VS Code API mock
+2. **MessageBridge**: Bidirectional IPC communication (request/response with timeout)
+3. **ExtensionService**: Orchestrates host and bridge lifecycle
 
----
+### Spawning Agents
 
-## 💡 Принципы делегирования
+Agents are forked processes configured via the `AGENT_CONFIG` environment variable:
 
-**Kilo Code: используй `new_task`, `switch_mode` запрещён. Codex CLI: `new_task` нет — роль-петля в одной сессии.**
-```xml
-<!-- ✅ ПРАВИЛЬНО -->
-<new_task>
-<mode>code</mode>
-<message>ЗАДАЧА: Реализовать функцию X по плану</message>
-</new_task>
+```typescript
+import { fork } from "child_process"
 
-<!-- ❌ НЕПРАВИЛЬНО -->
-<switch_mode>
-<mode_slug>code</mode_slug>
-</switch_mode>
+const agent = fork(require.resolve("@kilocode/agent-runtime/process"), [], {
+  env: {
+    AGENT_CONFIG: JSON.stringify({
+      workspace: "/path/to/project",
+      providerSettings: { apiProvider: "anthropic", apiKey: "..." },
+      mode: "code",
+      autoApprove: false,
+    }),
+  },
+  stdio: ["pipe", "pipe", "pipe", "ipc"],
+})
+
+agent.on("message", (msg) => {
+  if (msg.type === "ready") {
+    agent.send({ type: "sendMessage", payload: { type: "newTask", text: "Fix the bug" } })
+  }
+})
 ```
 
-**Один таск = один режим** — переключение режима -> создай новую подзадачу!
+### Message Protocol
 
+| Direction | Type | Description |
+|-----------|------|-------------|
+| Parent → Agent | `sendMessage` | Send user message to extension |
+| Parent → Agent | `injectConfig` | Update extension configuration |
+| Parent → Agent | `shutdown` | Gracefully terminate agent |
+| Agent → Parent | `ready` | Agent initialized |
+| Agent → Parent | `message` | Extension message |
+| Agent → Parent | `stateChange` | State updated |
+
+### Detecting Agent Context
+
+Code running in agent processes can check for the `AGENT_CONFIG` environment variable. This is set by the agent manager when spawning processes:
+
+```typescript
+if (process.env.AGENT_CONFIG) {
+  // Running as spawned agent - disable worker pools, etc.
+}
+```
+
+### State Management Pattern
+
+The Agent Manager follows a **read-shared, write-isolated** pattern:
+
+- **Read**: Get config (models, API settings) from extension via `provider.getState()`
+- **Write**: Inject state via `AGENT_CONFIG` env var when spawning - each agent gets isolated config
+
+```typescript
+fork(agentRuntimePath, [], {
+  env: { AGENT_CONFIG: JSON.stringify({ workspace, providerSettings, mode, sessionId }) }
+})
+```
+
+This ensures parallel agents have independent state with no race conditions or file I/O conflicts.
+
+## Build Commands
+
+```bash
+pnpm install          # Install all dependencies
+pnpm build            # Build extension (.vsix)
+pnpm lint             # Run ESLint
+pnpm check-types      # TypeScript type checking
+```
+
+## Skills
+
+- **Translation**: `.kilocode/skills/translation/SKILL.md` - Translation and localization guidelines
+
+## Workflows
+
+- **Add Missing Translations**: `.kilocode/workflows/add-missing-translations.md` - Run `/add-missing-translations` to find and fix missing translations
+
+## Changesets
+
+Each PR requires a changeset unless it's documentation-only or internal tooling. Create one with:
+
+```bash
+pnpm changeset
+```
+
+Format (in `.changeset/<random-name>.md`):
+
+```md
+---
+"kilo-code": patch
 ---
 
-## 🤖 Hybrid AI Strategy & Prompt Engineering
+Brief description of the change
+```
 
-### Роли моделей (Model Roles)
+- Use `patch` for fixes, `minor` for features, `major` for breaking changes
+- For CLI changes, use `"@kilocode/cli": patch` instead
 
-**Primary Model (Deep Reasoning)** — модель с высоким уровнем рассуждения (Claude 3.5 Sonnet, o1):
-- **Архитектура**: Проектирование системных решений, дизайн паттернов
-- **Сложная логика**: Реализация бизнес-правил, алгоритмов
-- **Финальное качество**: Code Review, рефакторинг
-- **Критические решения**: Выбор технологий, компромиссы
+Keep changesets concise and feature-oriented as they appear directly in release notes.
 
-**Secondary Model (Rapid)** — модель с быстрым откликом (Gemini 1.5 Pro, Haiku):
-- **Быстрое прототипирование**: UI/Frontend компоненты
-- **Анализ контекста**: Обработка документации, логов
-- **Рутина**: Генерация шаблонов, тестов, форматирование
+- **Only for actual changes**: Documentation-only or internal tooling changes do not need a changeset.
+- **User-focused**: Avoid technical descriptions, code references, or PR numbers. Readers may not know the codebase.
+- **Concise**: Use a one-liner for small fixes. For larger features, a few words or a short sentence is sufficient.
 
-### Prompt Repetition (Bidirectional Attention)
+## Fork Merge Process
 
-Для повышения точности Secondary Models в задачах поиска и анализа используйте технику **Prompt Repetition**:
+Kilo Code is a fork of [Roo Code](https://github.com/RooVetGit/Roo-Code). We periodically merge upstream changes using scripts in `scripts/kilocode/`.
 
-*   **Суть:** Дублирование основного запроса в начале и в конце промпта.
-*   **Формат:** `<QUERY> ... context ... <QUERY>`
-*   **Зачем:** Устраняет "слепоту" модели к инструкциям в начале длинного контекста.
+## kilocode_change Markers
 
----
+To minimize merge conflicts when syncing with upstream, mark Kilo Code-specific changes in shared code with `kilocode_change` comments.
 
-## 🎓 Философия качества
+**Single line:**
 
-> "Качество важнее скорости. 100% покрытие тестами, отсутствие линтер-ворнингов и строгая типизация — это не 'желательно', это 'обязательно'. Мы не идём на компромиссы с качеством."
+```typescript
+const value = 42 // kilocode_change
+```
 
-**TRIZ:** При конфликте принципов приоритет — Идеальному Конечному Результату.
+**Multi-line:**
 
-**Emergent Design:** Дизайн рождается через TDD (Red-Green-Refactor).
+```typescript
+// kilocode_change start
+const foo = 1
+const bar = 2
+// kilocode_change end
+```
 
----
+**New files:**
 
-**Готов начать? Выведи `[MB: OK]` и приступай к работе! 🚀**
+```typescript
+// kilocode_change - new file
+```
+
+### When markers are NOT needed
+
+Code in these directories is Kilo Code-specific and doesn't need markers:
+
+- `cli/` - CLI package
+- `jetbrains/` - JetBrains plugin
+- `agent-manager/` directories
+- Any path containing `kilocode` in filename or directory name
+- `src/services/ghost/` - Ghost service
+
+### When markers ARE needed
+
+All modifications to core extension code (files that exist in upstream Roo Code) require markers:
+
+- `src/` (except Kilo-specific subdirectories listed above)
+- `webview-ui/`
+- `packages/` (shared packages)
+
+Keep changes to core extension code minimal to reduce merge conflicts during upstream syncs.
+
+## Code Quality Rules
+
+1. Test Coverage:
+
+    - Before attempting completion, always make sure that any code changes have test coverage
+    - Ensure all tests pass before submitting changes
+    - The vitest framework is used for testing; the `vi`, `describe`, `test`, `it`, etc functions are defined by default in `tsconfig.json` and therefore don't need to be imported from `vitest`
+    - Tests must be run from the same directory as the `package.json` file that specifies `vitest` in `devDependencies`
+    - Run tests with: `pnpm test <relative-path-from-workspace-root>`
+    - Do NOT run tests from project root - this causes "vitest: command not found" error
+    - Tests must be run from inside the correct workspace:
+        - Backend tests: `cd src && pnpm test path/to/test-file` (don't include `src/` in path)
+        - UI tests: `cd webview-ui && pnpm test src/path/to/test-file`
+    - Example: For `src/tests/user.spec.ts`, run `cd src && pnpm test tests/user.spec.ts` NOT `pnpm test src/tests/user.spec.ts`
+    - **Test File Naming Convention**:
+        - Monorepo default: `.spec.ts` / `.spec.tsx`
+        - CLI package exception: `.test.ts` / `.test.tsx` (match existing CLI convention)
+
+2. Lint Rules:
+
+    - Never disable any lint rules without explicit user approval
+
+3. Error Handling:
+
+    - Never use empty catch blocks - always log or handle the error
+    - Handle expected errors explicitly, or omit try-catch if the error should propagate
+    - Consider user impact when deciding whether to throw or log errors
+
+4. Styling Guidelines:
+
+    - Use Tailwind CSS classes instead of inline style objects for new markup
+    - VSCode CSS variables must be added to webview-ui/src/index.css before using them in Tailwind classes
+    - Example: `<div className="text-md text-vscode-descriptionForeground mb-2" />` instead of style objects
