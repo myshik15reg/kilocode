@@ -1,0 +1,27 @@
+{
+  "name": "tree-sitter-onec",
+  "version": "0.1.0",
+  "description": "Tree-sitter grammar for 1C:Enterprise Script Language",
+  "main": "bindings/node",
+  "keywords": ["parser", "lexer", "tree-sitter", "1c", "bsl"],
+  "author": "Kilocode Team",
+  "license": "MIT",
+  "dependencies": {
+    "nan": "^2.17.0"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.20.8"
+  },
+  "scripts": {
+    "test": "tree-sitter test",
+    "parse": "tree-sitter parse",
+    "generate": "tree-sitter generate"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.bsl",
+      "file-types": ["bsl", "os"],
+      "injection-regex": "^(bsl|onec|1c)$"
+    }
+  ]
+}

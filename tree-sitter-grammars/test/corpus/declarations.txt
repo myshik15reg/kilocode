@@ -1,0 +1,119 @@
+==================
+Simple procedure
+==================
+
+Процедура ПростаяПроцедура()
+КонецПроцедуры
+
+---
+
+(source_file
+  (procedure_declaration
+    name: (identifier)
+    parameters: (parameter_list)))
+
+==================
+Simple function
+==================
+
+Функция ПростаяФункция()
+КонецФункции
+
+---
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    parameters: (parameter_list)))
+
+==================
+Procedure with parameters
+==================
+
+Процедура ПроцедураСПараметрами(Параметр1, Параметр2)
+КонецПроцедуры
+
+---
+
+(source_file
+  (procedure_declaration
+    name: (identifier)
+    parameters: (parameter_list
+      (parameter name: (identifier))
+      (parameter name: (identifier)))))
+
+==================
+Function with parameters and return
+==================
+
+Функция ФункцияСВозвратом(Знач Параметр)
+  Возврат Параметр;
+КонецФункции
+
+---
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    parameters: (parameter_list
+      (parameter name: (identifier)))
+    (procedure_body
+      (return_statement
+        (identifier)))))
+
+==================
+Exported procedure
+==================
+
+Процедура ЭкспортнаяПроцедура() Экспорт
+КонецПроцедуры
+
+---
+
+(source_file
+  (procedure_declaration
+    name: (identifier)
+    parameters: (parameter_list)))
+
+==================
+Procedure with variables and assignment
+==================
+
+Процедура ПроцедураСПеременными()
+  Перем Переменная1;
+  Переменная1 = 10;
+КонецПроцедуры
+
+---
+
+(source_file
+  (procedure_declaration
+    name: (identifier)
+    parameters: (parameter_list)
+    (procedure_body
+      (variable_declaration
+        name: (identifier))
+      (assignment_statement
+        left: (identifier)
+        right: (number_literal)))))
+
+==================
+Function with default parameter
+==================
+
+Функция ФункцияСДефолтом(Параметр = 5)
+  Возврат Параметр;
+КонецФункции
+
+---
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    parameters: (parameter_list
+      (parameter
+        name: (identifier)
+        default: (number_literal)))
+    (procedure_body
+      (return_statement
+        (identifier)))))
