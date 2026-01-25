@@ -1,6 +1,23 @@
 // npx vitest services/tree-sitter/__tests__/languageParser.spec.ts
 
 import * as path from "path"
+import { describe, it, expect, beforeEach, vi } from "vitest"
+
+vi.mock("web-tree-sitter", () => {
+	class MockLanguage {
+		query = vi.fn().mockReturnValue({ captures: vi.fn().mockReturnValue([]) })
+		static load = vi.fn().mockResolvedValue(new MockLanguage())
+	}
+
+	class MockParser {
+		static init = vi.fn().mockResolvedValue(undefined)
+		setLanguage = vi.fn()
+		parse = vi.fn().mockReturnValue({ rootNode: {} })
+	}
+
+	return { Parser: MockParser, Language: MockLanguage }
+})
+
 import { loadRequiredLanguageParsers } from "../languageParser"
 import { getParserManager } from "../parser-manager"
 
@@ -111,7 +128,7 @@ describe("loadRequiredLanguageParsers", () => {
 			const files = ["test.py"]
 			const parsers = await loadRequiredLanguageParsers(files, WASM_DIR)
 			
-			// Загружаем напрямую через ParserManager (как это делает OneCExtractor)
+			// Загружаем напрямую через ParserManager (как это делает TreeSitterGraphExtractor)
 			const directParser = await manager.getParser("python", path.join(WASM_DIR, "tree-sitter-python.wasm"))
 			
 			// Должны получить тот же кэшированный парсер

@@ -9,8 +9,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { t } from "../../i18n"
 import { RelationshipIndexer } from "../neo4j/relationship-indexer"
-import { CodeParser } from "./processors/parser"
-import { loadRequiredLanguageParsers } from "../tree-sitter/languageParser"
+import { loadRequiredLanguageParsers, resolveLanguageConfig } from "../tree-sitter/languageParser"
 import { stat } from "fs/promises"
 
 /**
@@ -21,7 +20,6 @@ export class CodeIndexOrchestrator {
 	private _isProcessing: boolean = false
 	private _cancelRequested: boolean = false // kilocode_change
 	private relationshipIndexer: RelationshipIndexer | null = null
-	private codeParser: CodeParser
 
 	constructor(
 		private readonly configManager: CodeIndexConfigManager,
@@ -32,7 +30,6 @@ export class CodeIndexOrchestrator {
 		private readonly scanner: DirectoryScanner,
 		private readonly fileWatcher: IFileWatcher,
 	) {
-		this.codeParser = new CodeParser()
 		// Initialize Neo4j indexer if enabled
 		if (this.configManager.isNeo4jEnabled) {
 			this.relationshipIndexer = new RelationshipIndexer()
@@ -485,6 +482,7 @@ export class CodeIndexOrchestrator {
 		this.stateManager.setSystemState("Indexing", "Indexing code relationships into Neo4j...")
 
 		try {
+			// kilocode_change: 2026-01-24 - unified Neo4j indexing across languages
 			// Initialize Neo4j connection
 			const isReady = await this.relationshipIndexer.isReady()
 			if (!isReady) {
@@ -492,14 +490,24 @@ export class CodeIndexOrchestrator {
 				return
 			}
 
+			const supportedFiles = filePaths.filter((filePath) => {
+				const ext = path.extname(filePath).toLowerCase().slice(1)
+				const resolution = resolveLanguageConfig(ext)
+				return Boolean(resolution && !("skip" in resolution))
+			})
+
+			if (supportedFiles.length === 0) {
+				return
+			}
+
 			// Load language parsers
-			await loadRequiredLanguageParsers(filePaths)
+			const languageParsers = await loadRequiredLanguageParsers(supportedFiles)
 
 			let processedCount = 0
-			const totalFiles = filePaths.length
+			const totalFiles = supportedFiles.length
 
 			// Process files in batches
-			for (const filePath of filePaths) {
+			for (const filePath of supportedFiles) {
 				if (this._cancelRequested) {
 					break
 				}
@@ -516,47 +524,28 @@ export class CodeIndexOrchestrator {
 					const content = await vscode.workspace.fs
 						.readFile(vscode.Uri.file(filePath))
 						.then((buffer) => Buffer.from(buffer).toString("utf-8"))
-		
+
 					// Get file extension
-					const ext = path.extname(filePath).toLowerCase()
-					
-					// For 1C files (.bsl), use RelationshipExtractor directly
-					// These files use fallback chunking in CodeParser, so we need special handling
-					if (ext === '.bsl') {
-						// Load language parser for 1C
-						const languageParser = await loadRequiredLanguageParsers([filePath])
-						if (languageParser && languageParser['bsl']) {
-							const tree = languageParser['bsl'].parser.parse(content)
-							if (tree) {
-								await this.relationshipIndexer.indexFile(
-									filePath,
-									content,
-									tree.rootNode,
-									'bsl'
-								)
-							}
-						}
-					} else {
-						// For other languages, use standard approach
-						const extNoDot = ext.slice(1)
-						const parsedData = await this.codeParser.parseFile(filePath, { content })
-	
-						if (parsedData && parsedData.length > 0) {
-							// For Neo4j we need full AST, not just blocks
-							// Parse again with tree-sitter to get AST
-							const languageParser = await loadRequiredLanguageParsers([filePath])
-							if (languageParser && languageParser[extNoDot]) {
-								const tree = languageParser[extNoDot].parser.parse(content)
-								if (tree) {
-									await this.relationshipIndexer.indexFile(
-										filePath,
-										content,
-										tree.rootNode,
-										extNoDot
-									)
-								}
-							}
-						}
+					const ext = path.extname(filePath).toLowerCase().slice(1)
+					const resolution = resolveLanguageConfig(ext)
+					if (!resolution || "skip" in resolution) {
+						continue
+					}
+
+					const parserEntry = languageParsers[resolution.parserKey]
+					if (!parserEntry) {
+						continue
+					}
+
+					// Parse with tree-sitter to get AST
+					const tree = parserEntry.parser.parse(content)
+					if (tree) {
+						await this.relationshipIndexer.indexFile(
+							filePath,
+							content,
+							tree.rootNode,
+							resolution.languageId
+						)
 					}
 	
 					processedCount++

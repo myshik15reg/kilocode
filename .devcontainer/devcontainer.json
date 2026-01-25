@@ -1,58 +1,77 @@
 {
-	"name": "Kilo Code Development",
-	"dockerFile": "Dockerfile",
-	"context": "..",
+  "name": "Kilo Code Development",
+  "dockerFile": "Dockerfile",
+  "context": "..",
 
-	"features": {
-		"ghcr.io/devcontainers/features/git:1": {},
-		"ghcr.io/devcontainers/features/github-cli:1": {}
-	},
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true,
+      "dockerDashComposeVersion": "v2.20.2"
+    }
+  },
 
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"dbaeumer.vscode-eslint",
-				"esbenp.prettier-vscode",
-				"csstools.postcss",
-				"bradlc.vscode-tailwindcss",
-				"connor4312.esbuild-problem-matchers",
-				"yoavbls.pretty-ts-errors",
-				"ms-vscode.vscode-typescript-next"
-			],
-			"settings": {
-				"terminal.integrated.defaultProfile.linux": "bash",
-				"typescript.preferences.includePackageJsonAutoImports": "auto",
-				"eslint.workingDirectories": ["src", "webview-ui"],
-				"prettier.requireConfig": true,
-				"editor.formatOnSave": true,
-				"editor.codeActionsOnSave": {
-					"source.fixAll.eslint": "explicit"
-				}
-			}
-		}
-	},
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "csstools.postcss",
+        "bradlc.vscode-tailwindcss",
+        "connor4312.esbuild-problem-matchers",
+        "yoavbls.pretty-ts-errors",
+        "ms-vscode.vscode-typescript-next",
+        "kilocode.kilo-code",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "typescript.preferences.includePackageJsonAutoImports": "auto",
+        "eslint.workingDirectories": ["src", "webview-ui"],
+        "prettier.requireConfig": true,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        }
+      }
+    }
+  },
 
-	"forwardPorts": [3000, 5173, 8080],
-	"portsAttributes": {
-		"3000": {
-			"label": "Dev Server",
-			"onAutoForward": "notify"
-		},
-		"5173": {
-			"label": "Vite Dev Server",
-			"onAutoForward": "notify"
-		},
-		"8080": {
-			"label": "Other Services",
-			"onAutoForward": "silent"
-		}
-	},
+  "forwardPorts": [3000, 5173, 8080],
+  "portsAttributes": {
+    "3000": {
+      "label": "Dev Server",
+      "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "Vite Dev Server",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Other Services",
+      "onAutoForward": "silent"
+    }
+  },
 
-	"postCreateCommand": "bash .devcontainer/setup.sh",
-	"postStartCommand": "echo '🚀 Kilo Code devcontainer is ready!'",
+  "postCreateCommand": "bash .devcontainer/setup.sh && npm install -g @kilocode/cli && if [ -f requirements.txt ]; then pip install -r requirements.txt; else echo 'requirements.txt not found, skipping pip install'; fi && mkdir -p /root/.kilocode /root/.vscode-server/data/User/globalStorage/kilocode.kilo-code/settings /root/.kilocode/cli/global/settings",
+  "postStartCommand": "echo '🚀 Kilo Code devcontainer is ready! 🐳 Docker CLI available for managing external containers'",
+  
+  "remoteUser": "root",
+  "containerUser": "root",
 
-	"remoteUser": "root",
-	"containerUser": "root",
+  "containerEnv": {
+    "KILOCODE_GLOBAL_PATH": "/root/.kilocode",
+    "KILOCODE_MODES_PATH": "/root/.kilocode/modes"
+  },
 
-	"mounts": ["source=${localWorkspaceFolder}/.git,target=/workspace/.git,type=bind,consistency=cached"]
+  "mounts": [
+    "source=${localWorkspaceFolder}/.git,target=/workspace/.git,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder}/.kilocode,target=/workspace/.kilocode,type=bind,consistency=cached",
+    "source=C:/Users/Евгений/AppData/Roaming/Code/User/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml,target=/root/.kilocode/modes,type=bind,consistency=cached,readonly",
+    "source=C:/Users/Евгений/AppData/Roaming/Code/User/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml,target=/root/.vscode-server/data/User/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml,type=bind,consistency=cached,readonly",
+    "source=C:/Users/Евгений/AppData/Roaming/Code/User/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml,target=/root/.kilocode/cli/global/settings/custom_modes.yaml,type=bind,consistency=cached,readonly"
+  ]
 }

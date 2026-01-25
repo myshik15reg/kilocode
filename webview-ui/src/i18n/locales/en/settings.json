@@ -212,7 +212,7 @@
 			"aboutPoint1": "Stores functions, classes, and their relationships",
 			"aboutPoint2": "Enables dependency tracking and impact analysis",
 			"aboutPoint3": "Works with Qdrant for hybrid semantic + graph search"
-		},
+		}
 	},
 	"autoApprove": {
 		"description": "Run these actions without asking for permission. Only enable for actions you fully trust and if you understand the security risks.",
@@ -787,9 +787,18 @@
 			"reset": "Reset to Default",
 			"hint": "Empty = use default prompt"
 		},
-		"autoCondenseContext": {
-			"name": "Automatically trigger intelligent context condensing",
-			"description": "When enabled, Kilo Code will automatically condense the context when the threshold is reached. When disabled, you can still manually trigger context condensing."
+			"autoCondenseContext": {
+				"name": "Automatically trigger intelligent context condensing",
+				"description": "When enabled, Kilo Code will automatically condense the context when the threshold is reached. When disabled, you can still manually trigger context condensing."
+			},
+		"contextRouting": {
+			"name": "Enable context routing (fast/deep)",
+			"description": "When enabled, Kilo Code will switch to fast or deep processing modes based on how full the context window is.",
+			"thresholdsLabel": "Routing thresholds",
+			"fastLabel": "Fast threshold",
+			"fastDescription": "Switch to fast mode when context usage reaches this percentage.",
+			"deepLabel": "Deep threshold",
+			"deepDescription": "Switch to deep mode when context usage reaches this percentage."
 		},
 		"openTabs": {
 			"label": "Open tabs context limit",

@@ -87,6 +87,9 @@ describe("ContextManagementSettings", () => {
 	const defaultProps = {
 		autoCondenseContext: false,
 		autoCondenseContextPercent: 80,
+		contextRoutingEnabled: false,
+		contextRoutingFastThresholdPercent: 50,
+		contextRoutingDeepThresholdPercent: 80,
 		condensingApiConfigId: undefined,
 		customCondensingPrompt: undefined,
 		listApiConfigMeta: [],
@@ -203,6 +206,7 @@ describe("ContextManagementSettings", () => {
 		// Check for checkboxes
 		expect(screen.getByTestId("show-rooignored-files-checkbox")).toBeInTheDocument()
 		expect(screen.getByTestId("auto-condense-context-checkbox")).toBeInTheDocument()
+		expect(screen.getByTestId("context-routing-enabled-checkbox")).toBeInTheDocument()
 	})
 
 	describe("Edge cases for maxDiagnosticMessages", () => {
@@ -436,6 +440,52 @@ describe("ContextManagementSettings", () => {
 		it("displays correct auto condense context percent value", () => {
 			render(<ContextManagementSettings {...autoCondenseProps} />)
 			expect(screen.getByText("75%")).toBeInTheDocument()
+		})
+	})
+
+	describe("Context Routing functionality", () => {
+		const contextRoutingProps = {
+			...defaultProps,
+			contextRoutingEnabled: true,
+			contextRoutingFastThresholdPercent: 55,
+			contextRoutingDeepThresholdPercent: 85,
+		}
+
+		it("shows routing thresholds when enabled", () => {
+			render(<ContextManagementSettings {...contextRoutingProps} />)
+
+			expect(screen.getByTestId("context-routing-fast-threshold-slider")).toBeInTheDocument()
+			expect(screen.getByTestId("context-routing-deep-threshold-slider")).toBeInTheDocument()
+		})
+
+		it("updates fast threshold when slider changes", () => {
+			const mockSetCachedStateField = vi.fn()
+			const props = { ...contextRoutingProps, setCachedStateField: mockSetCachedStateField }
+			render(<ContextManagementSettings {...props} />)
+
+			const slider = screen.getByTestId("context-routing-fast-threshold-slider")
+			fireEvent.change(slider, { target: { value: "60" } })
+
+			expect(mockSetCachedStateField).toHaveBeenCalledWith("contextRoutingFastThresholdPercent", 60)
+		})
+
+		it("updates deep threshold when slider changes", () => {
+			const mockSetCachedStateField = vi.fn()
+			const props = { ...contextRoutingProps, setCachedStateField: mockSetCachedStateField }
+			render(<ContextManagementSettings {...props} />)
+
+			const slider = screen.getByTestId("context-routing-deep-threshold-slider")
+			fireEvent.change(slider, { target: { value: "90" } })
+
+			expect(mockSetCachedStateField).toHaveBeenCalledWith("contextRoutingDeepThresholdPercent", 90)
+		})
+
+		it("does not render routing thresholds when disabled", () => {
+			const props = { ...defaultProps, contextRoutingEnabled: false }
+			render(<ContextManagementSettings {...props} />)
+
+			expect(screen.queryByTestId("context-routing-fast-threshold-slider")).not.toBeInTheDocument()
+			expect(screen.queryByTestId("context-routing-deep-threshold-slider")).not.toBeInTheDocument()
 		})
 	})
 

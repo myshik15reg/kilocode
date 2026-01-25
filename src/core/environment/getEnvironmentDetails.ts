@@ -28,6 +28,7 @@ import { OpenRouterHandler } from "../../api/providers/openrouter"
 import { TelemetryService } from "@roo-code/telemetry"
 import { t } from "../../i18n"
 import { NativeOllamaHandler } from "../../api/providers/native-ollama"
+import { resolveContextRoutingMode } from "../context-management/context-routing"
 
 // Multiplier for fetching extra files when filtering is enabled to ensure enough non-ignored files; only applied when showRooIgnoredFiles is false.
 const FILE_LIST_OVER_FETCH_MULTIPLIER = 3
@@ -218,8 +219,15 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		details += terminalDetails
 	}
 
-	// Get settings for time and cost display
-	const { includeCurrentTime = true, includeCurrentCost = true, maxGitStatusFiles = 0 } = state ?? {}
+	// Get settings for time, cost, and context routing display
+	const {
+		includeCurrentTime = true,
+		includeCurrentCost = true,
+		maxGitStatusFiles = 0,
+		contextRoutingEnabled = false, // kilocode_change: 2026-01-24 Context routing toggle
+		contextRoutingFastThresholdPercent = 50,
+		contextRoutingDeepThresholdPercent = 80,
+	} = state ?? {}
 
 	// Add current time information with timezone (if enabled).
 	if (includeCurrentTime) {
@@ -241,9 +249,11 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		}
 	}
 
+	const apiMetrics = includeCurrentCost || contextRoutingEnabled ? getApiMetrics(cline.clineMessages) : undefined
+
 	// Add context tokens information (if enabled).
 	if (includeCurrentCost) {
-		const { totalCost } = getApiMetrics(cline.clineMessages)
+		const totalCost = apiMetrics?.totalCost ?? 0
 		details += `\n\n# Current Cost\n${totalCost !== null ? `$${totalCost.toFixed(2)}` : "(Not available)"}`
 	}
 
@@ -260,6 +270,26 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 			)
 			return `<environment_details>\n${details.trim()}\n</environment_details>`
 		}
+	}
+	// kilocode_change end
+
+	// kilocode_change start: 2026-01-24 Context routing details
+	if (contextRoutingEnabled) {
+		const modelInfoForRouting = cline.api.getModel().info
+		const contextWindow = cline.api.contextWindow ?? modelInfoForRouting.contextWindow ?? 0
+		const contextTokens = apiMetrics?.contextTokens ?? 0
+		const routingMode = resolveContextRoutingMode({
+			enabled: true,
+			totalTokens: contextTokens,
+			contextWindow,
+			fastThresholdPercent: contextRoutingFastThresholdPercent,
+			deepThresholdPercent: contextRoutingDeepThresholdPercent,
+		})
+
+		details += `\n\n# Context Routing`
+		details += `\nmode: ${routingMode}`
+		details += `\nfast_threshold_percent: ${contextRoutingFastThresholdPercent}`
+		details += `\ndeep_threshold_percent: ${contextRoutingDeepThresholdPercent}`
 	}
 	// kilocode_change end
 

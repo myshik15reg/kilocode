@@ -77,7 +77,8 @@ const createMockGraphService = () => ({
 			line: 1,
 			language: "typescript",
 		},
-		affectedEntities: [],
+		directImpact: [],
+		indirectImpact: [],
 		relationshipPaths: [],
 	}),
 	bulkCreateEntities: vi.fn().mockResolvedValue(undefined),
@@ -113,7 +114,7 @@ describe("HybridSearchService", () => {
 
 	describe("search", () => {
 		it("should combine semantic and graph scores", async () => {
-			const results = await service.search("add function")
+			const results = await service.search("add function", { minScore: 0 })
 
 			expect(results).toHaveLength(2)
 			
@@ -131,7 +132,7 @@ describe("HybridSearchService", () => {
 		})
 
 		it("should include related entities in results", async () => {
-			const results = await service.search("add function")
+			const results = await service.search("add function", { minScore: 0 })
 
 			const firstResult = results[0]
 			expect(firstResult.relatedEntities).toBeDefined()
@@ -143,7 +144,7 @@ describe("HybridSearchService", () => {
 		})
 
 		it("should include graph metadata", async () => {
-			const results = await service.search("add function")
+			const results = await service.search("add function", { minScore: 0 })
 
 			const firstResult = results[0]
 			expect(firstResult.graphMetadata).toBeDefined()
@@ -167,13 +168,14 @@ describe("HybridSearchService", () => {
 		it("should limit number of results", async () => {
 			const results = await service.search("add function", {
 				maxResults: 1,
+				minScore: 0,
 			})
 
 			expect(results).toHaveLength(1)
 		})
 
 		it("should sort results by combined score", async () => {
-			const results = await service.search("add function")
+			const results = await service.search("add function", { minScore: 0 })
 
 			// Verify descending order
 			for (let i = 1; i < results.length; i++) {
@@ -190,6 +192,7 @@ describe("HybridSearchService", () => {
 			const results = await service.search("add function", {
 				semanticWeight: customSemanticWeight,
 				graphWeight: customGraphWeight,
+				minScore: 0,
 			})
 
 			const firstResult = results[0]
@@ -204,7 +207,7 @@ describe("HybridSearchService", () => {
 			// Mock Neo4j as unavailable
 			mockGraphService.isInitialized.mockResolvedValue(false)
 
-			const results = await service.search("add function")
+			const results = await service.search("add function", { minScore: 0 })
 
 			expect(results).toHaveLength(2)
 			
@@ -230,7 +233,7 @@ describe("HybridSearchService", () => {
 				new Error("Neo4j connection failed"),
 			)
 
-			const results = await service.search("add function")
+			const results = await service.search("add function", { minScore: 0 })
 
 			// Should still return results with zero graph scores
 			expect(results).toHaveLength(2)
@@ -298,7 +301,7 @@ describe("HybridSearchService", () => {
 					line: 1,
 					language: "typescript",
 				},
-				affectedEntities: [
+				directImpact: [
 					{
 						id: "function:src/app.ts:main",
 						type: "function",
@@ -308,6 +311,7 @@ describe("HybridSearchService", () => {
 						language: "typescript",
 					},
 				],
+				indirectImpact: [],
 				relationshipPaths: [],
 			})
 

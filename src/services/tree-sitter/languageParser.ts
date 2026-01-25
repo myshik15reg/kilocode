@@ -1,5 +1,5 @@
 import * as path from "path"
-import { Parser, Query, Language } from "web-tree-sitter"
+import { Parser, Query } from "web-tree-sitter"
 import { getParserManager } from "./parser-manager"
 import {
 	javascriptQuery,
@@ -31,12 +31,130 @@ import {
 	elixirQuery,
 	onecQuery,
 } from "./queries"
+import { onecQueries } from "./queries/onec"
 
 export interface LanguageParser {
 	[key: string]: {
 		parser: Parser
 		query: Query
 	}
+}
+
+export type LanguageResolution =
+	| {
+			languageId: string
+			parserKey: string
+			query: string
+	  }
+	| { skip: true }
+
+const EXTENSION_LANGUAGE_MAP: Record<string, LanguageResolution> = {
+	js: { languageId: "javascript", parserKey: "js", query: javascriptQuery },
+	jsx: { languageId: "javascript", parserKey: "jsx", query: javascriptQuery },
+	json: { languageId: "javascript", parserKey: "json", query: javascriptQuery },
+	ts: { languageId: "typescript", parserKey: "ts", query: typescriptQuery },
+	tsx: { languageId: "tsx", parserKey: "tsx", query: tsxQuery },
+	py: { languageId: "python", parserKey: "py", query: pythonQuery },
+	rs: { languageId: "rust", parserKey: "rs", query: rustQuery },
+	go: { languageId: "go", parserKey: "go", query: goQuery },
+	cpp: { languageId: "cpp", parserKey: "cpp", query: cppQuery },
+	hpp: { languageId: "cpp", parserKey: "hpp", query: cppQuery },
+	c: { languageId: "c", parserKey: "c", query: cQuery },
+	h: { languageId: "c", parserKey: "h", query: cQuery },
+	cs: { languageId: "c_sharp", parserKey: "cs", query: csharpQuery },
+	rb: { languageId: "ruby", parserKey: "rb", query: rubyQuery },
+	java: { languageId: "java", parserKey: "java", query: javaQuery },
+	php: { languageId: "php", parserKey: "php", query: phpQuery },
+	swift: { languageId: "swift", parserKey: "swift", query: swiftQuery },
+	kt: { languageId: "kotlin", parserKey: "kt", query: kotlinQuery },
+	kts: { languageId: "kotlin", parserKey: "kts", query: kotlinQuery },
+	css: { languageId: "css", parserKey: "css", query: cssQuery },
+	html: { languageId: "html", parserKey: "html", query: htmlQuery },
+	htm: { languageId: "html", parserKey: "htm", query: htmlQuery },
+	ml: { languageId: "ocaml", parserKey: "ml", query: ocamlQuery },
+	mli: { languageId: "ocaml", parserKey: "mli", query: ocamlQuery },
+	scala: { languageId: "scala", parserKey: "scala", query: luaQuery },
+	sol: { languageId: "solidity", parserKey: "sol", query: solidityQuery },
+	toml: { languageId: "toml", parserKey: "toml", query: tomlQuery },
+	vue: { languageId: "vue", parserKey: "vue", query: vueQuery },
+	lua: { languageId: "lua", parserKey: "lua", query: luaQuery },
+	rdl: { languageId: "systemrdl", parserKey: "rdl", query: systemrdlQuery },
+	tla: { languageId: "tlaplus", parserKey: "tla", query: tlaPlusQuery },
+	zig: { languageId: "zig", parserKey: "zig", query: zigQuery },
+	ejs: { languageId: "embedded_template", parserKey: "embedded_template", query: embeddedTemplateQuery },
+	erb: { languageId: "embedded_template", parserKey: "embedded_template", query: embeddedTemplateQuery },
+	el: { languageId: "elisp", parserKey: "el", query: elispQuery },
+	ex: { languageId: "elixir", parserKey: "ex", query: elixirQuery },
+	exs: { languageId: "elixir", parserKey: "exs", query: elixirQuery },
+	bsl: { languageId: "onec", parserKey: "bsl", query: onecQuery },
+	os: { languageId: "onec", parserKey: "os", query: onecQuery },
+	mdo: { skip: true },
+	xdto: { skip: true },
+	form: { skip: true },
+	mxlx: { skip: true },
+	vb: { skip: true },
+}
+
+const LANGUAGE_QUERY_MAP: Record<string, string> = {
+	javascript: javascriptQuery,
+	typescript: typescriptQuery,
+	tsx: tsxQuery,
+	python: pythonQuery,
+	rust: rustQuery,
+	go: goQuery,
+	cpp: cppQuery,
+	c: cQuery,
+	c_sharp: csharpQuery,
+	ruby: rubyQuery,
+	java: javaQuery,
+	php: phpQuery,
+	swift: swiftQuery,
+	kotlin: kotlinQuery,
+	css: cssQuery,
+	html: htmlQuery,
+	ocaml: ocamlQuery,
+	scala: luaQuery,
+	solidity: solidityQuery,
+	toml: tomlQuery,
+	vue: vueQuery,
+	lua: luaQuery,
+	systemrdl: systemrdlQuery,
+	tlaplus: tlaPlusQuery,
+	zig: zigQuery,
+	embedded_template: embeddedTemplateQuery,
+	elisp: elispQuery,
+	elixir: elixirQuery,
+	onec: onecQuery,
+}
+
+// kilocode_change: 2026-01-24 - shared language resolution for graph + search
+export function resolveLanguageConfig(extension: string): LanguageResolution | null {
+	return EXTENSION_LANGUAGE_MAP[extension.toLowerCase()] ?? null
+}
+
+export function normalizeLanguageId(language: string): string | null {
+	const normalized = language.trim().toLowerCase().replace(/^\./, "")
+	if (normalized === "1c") {
+		return "onec"
+	}
+
+	const resolved = resolveLanguageConfig(normalized)
+	if (resolved && !("skip" in resolved)) {
+		return resolved.languageId
+	}
+
+	return LANGUAGE_QUERY_MAP[normalized] ? normalized : null
+}
+
+export function getDefinitionQueryForLanguage(languageId: string): string | null {
+	return LANGUAGE_QUERY_MAP[languageId] ?? null
+}
+
+export function getGraphQueryForLanguage(languageId: string): string | null {
+	if (languageId === "onec") {
+		return onecQueries.full
+	}
+	return getDefinitionQueryForLanguage(languageId)
 }
 
 /**
@@ -93,176 +211,18 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 	const parsers: LanguageParser = {}
 
 	for (const ext of extensionsToLoad) {
-		let language: Language
-		let query: Query
-		let parserKey = ext // Default to using extension as key
-
-		switch (ext) {
-		case "js":
-		case "jsx":
-		case "json":
-			language = await loadLanguage("javascript", sourceDirectory)
-			query = language.query(javascriptQuery)
-			break
-		case "ts":
-			language = await loadLanguage("typescript", sourceDirectory)
-			query = language.query(typescriptQuery)
-			break
-		case "tsx":
-			language = await loadLanguage("tsx", sourceDirectory)
-			query = language.query(tsxQuery)
-			break
-		case "py":
-			language = await loadLanguage("python", sourceDirectory)
-			query = language.query(pythonQuery)
-			break
-		case "rs":
-			language = await loadLanguage("rust", sourceDirectory)
-			query = language.query(rustQuery)
-			break
-		case "go":
-			language = await loadLanguage("go", sourceDirectory)
-			query = language.query(goQuery)
-			break
-		case "cpp":
-		case "hpp":
-			language = await loadLanguage("cpp", sourceDirectory)
-			query = language.query(cppQuery)
-			break
-		case "c":
-		case "h":
-			language = await loadLanguage("c", sourceDirectory)
-			query = language.query(cQuery)
-			break
-		case "cs":
-			language = await loadLanguage("c_sharp", sourceDirectory)
-			query = language.query(csharpQuery)
-			break
-		case "rb":
-			language = await loadLanguage("ruby", sourceDirectory)
-			query = language.query(rubyQuery)
-			break
-		case "java":
-			language = await loadLanguage("java", sourceDirectory)
-			query = language.query(javaQuery)
-			break
-		case "php":
-			language = await loadLanguage("php", sourceDirectory)
-			query = language.query(phpQuery)
-			break
-		case "swift":
-			language = await loadLanguage("swift", sourceDirectory)
-			query = language.query(swiftQuery)
-			break
-		case "kt":
-		case "kts":
-			language = await loadLanguage("kotlin", sourceDirectory)
-			query = language.query(kotlinQuery)
-			break
-		case "css":
-			language = await loadLanguage("css", sourceDirectory)
-			query = language.query(cssQuery)
-			break
-		case "html":
-			language = await loadLanguage("html", sourceDirectory)
-			query = language.query(htmlQuery)
-			break
-		case "ml":
-		case "mli":
-			language = await loadLanguage("ocaml", sourceDirectory)
-			query = language.query(ocamlQuery)
-			break
-		case "scala":
-			language = await loadLanguage("scala", sourceDirectory)
-			query = language.query(luaQuery) // Temporarily use Lua query until Scala is implemented
-			break
-		case "sol":
-			language = await loadLanguage("solidity", sourceDirectory)
-			query = language.query(solidityQuery)
-			break
-		case "toml":
-			language = await loadLanguage("toml", sourceDirectory)
-			query = language.query(tomlQuery)
-			break
-		case "vue":
-			language = await loadLanguage("vue", sourceDirectory)
-			query = language.query(vueQuery)
-			break
-		case "lua":
-			language = await loadLanguage("lua", sourceDirectory)
-			query = language.query(luaQuery)
-			break
-		case "rdl":
-			language = await loadLanguage("systemrdl", sourceDirectory)
-			query = language.query(systemrdlQuery)
-			break
-		case "tla":
-			language = await loadLanguage("tlaplus", sourceDirectory)
-			query = language.query(tlaPlusQuery)
-			break
-		case "zig":
-			language = await loadLanguage("zig", sourceDirectory)
-			query = language.query(zigQuery)
-			break
-		case "ejs":
-		case "erb":
-			parserKey = "embedded_template" // Use same key for both extensions.
-			language = await loadLanguage("embedded_template", sourceDirectory)
-			query = language.query(embeddedTemplateQuery)
-			break
-		case "el":
-			language = await loadLanguage("elisp", sourceDirectory)
-			query = language.query(elispQuery)
-			break
-		case "ex":
-		case "exs":
-			language = await loadLanguage("elixir", sourceDirectory)
-			query = language.query(elixirQuery)
-			break
-		// 1C:Enterprise BSL files - use tree-sitter parser
-		case "bsl":
-		case "os":
-			language = await loadLanguage("onec", sourceDirectory)
-			query = language.query(onecQuery)
-			break
-			// 1C:Enterprise metadata files - use fallback chunking (not BSL code)
-			case "mdo":
-			case "xdto":
-			case "form":
-			case "mxlx":
-				// Skip these extensions - they will be handled by fallback chunking in parser.ts
-				continue
-			case "vb":
-				// Visual Basic .NET - uses fallback chunking
-				continue
-			default:
-				throw new Error(`Unsupported language: ${ext}`)
+		const resolution = resolveLanguageConfig(ext)
+		if (!resolution) {
+			throw new Error(`Unsupported language: ${ext}`)
+		}
+		if ("skip" in resolution) {
+			continue
 		}
 
-		// Получаем парсер через ParserManager для централизованного кэширования
-		// Определяем languageId на основе расширения
-		let languageId: string
-		switch (ext) {
-			case "js":
-			case "jsx":
-			case "json":
-				languageId = "javascript"
-				break
-			case "ts":
-				languageId = "typescript"
-				break
-			case "bsl":
-			case "os":
-				languageId = "onec"
-				break
-			case "ejs":
-			case "erb":
-				languageId = "embedded_template"
-				break
-			default:
-				// Для остальных расширений используем parserKey
-				languageId = parserKey
-		}
+		const language = await loadLanguage(resolution.languageId, sourceDirectory)
+		const query = language.query(resolution.query)
+		const parserKey = resolution.parserKey
+		const languageId = resolution.languageId
 
 		// Определяем путь к WASM (если указан sourceDirectory)
 		let wasmPath: string | undefined

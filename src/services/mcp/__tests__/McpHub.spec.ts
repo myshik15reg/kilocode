@@ -57,6 +57,18 @@ vi.mock("../kilocode/NotificationService", () => ({
 }))
 
 vi.mock("vscode", () => ({
+	Uri: {
+		file: vi.fn((path: string) => ({
+			scheme: "file",
+			authority: "",
+			path,
+			query: "",
+			fragment: "",
+			fsPath: path,
+			toString: () => path,
+		})),
+	},
+	RelativePattern: vi.fn().mockImplementation((base: string, pattern: string) => ({ base, pattern })),
 	workspace: {
 		createFileSystemWatcher: vi.fn().mockReturnValue({
 			onDidChange: vi.fn(),

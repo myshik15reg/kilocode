@@ -9,6 +9,7 @@ import { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
+import { getModelParams } from "../transform/model-params"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { RouterProvider } from "./router-provider"
@@ -44,6 +45,14 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { id: modelId, info } = await this.fetchModel()
+		// kilocode_change start: propagate reasoning effort when supported
+		const { reasoning } = getModelParams({
+			format: "openai",
+			modelId,
+			model: info,
+			settings: this.options,
+		})
+		// kilocode_change end
 
 		const openAiMessages = convertToOpenAiMessages(messages)
 
@@ -131,6 +140,7 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			stream_options: {
 				include_usage: true,
 			},
+			...(reasoning && reasoning),
 			...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 			...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
 			...(useNativeTools && { parallel_tool_calls: metadata?.parallelToolCalls ?? false }),
@@ -159,6 +169,20 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 				if (delta?.content) {
 					yield { type: "text", text: delta.content }
 				}
+
+				// kilocode_change start: forward reasoning deltas to UI
+				if (delta) {
+					const reasoningText =
+						"reasoning_content" in delta && typeof delta.reasoning_content === "string"
+							? delta.reasoning_content
+							: "reasoning" in delta && typeof delta.reasoning === "string"
+								? delta.reasoning
+								: undefined
+					if (reasoningText) {
+						yield { type: "reasoning", text: reasoningText }
+					}
+				}
+				// kilocode_change end
 
 				// Handle tool calls in stream - emit partial chunks for NativeToolCallParser
 				if (delta?.tool_calls) {
@@ -218,6 +242,14 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 
 	async completePrompt(prompt: string): Promise<string> {
 		const { id: modelId, info } = await this.fetchModel()
+		// kilocode_change start: propagate reasoning effort when supported
+		const { reasoning } = getModelParams({
+			format: "openai",
+			modelId,
+			model: info,
+			settings: this.options,
+		})
+		// kilocode_change end
 
 		// Check if this is a GPT-5 model that requires max_completion_tokens instead of max_tokens
 		const isGPT5Model = this.isGpt5(modelId)
@@ -226,6 +258,7 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
 				messages: [{ role: "user", content: prompt }],
+				...(reasoning && reasoning),
 			}
 
 			if (this.supportsTemperature(modelId)) {

@@ -1,4 +1,4 @@
-# Предложения по улучшениям Kilocode для интеграции с 1С
+﻿# Предложения по улучшениям Kilocode для интеграции с 1С
 
 ## Executive Summary
 
@@ -467,7 +467,7 @@ graph TD
     B --> C[TypeScriptExtractor]
     B --> D[PythonExtractor]
     B --> E[JavaExtractor]
-    B --> F[OneCExtractor]
+    B --> F[TreeSitterGraphExtractor]
     B --> G[GenericExtractor]
     
     C --> H[ILanguageExtractor]
@@ -1099,7 +1099,7 @@ async bulkCreateEntitiesWithApoc(entities: CodeEntity[]): Promise<void> {
 **Структура проекта:**
 
 ```
-tree-sitter-1c/
+tree-sitter-grammars/
 ├── grammar.js          # Грамматика
 ├── src/
 │   ├── parser.c        # Генерируется автоматически
@@ -1414,7 +1414,7 @@ Procedure with parameters
 1. **Неделя 1:** Настройка проекта, базовая грамматика (процедуры, функции)
    ```bash
    npm install -g tree-sitter-cli
-   mkdir tree-sitter-1c && cd tree-sitter-1c
+   mkdir tree-sitter-grammars && cd tree-sitter-grammars
    npm init
    tree-sitter init
    # Редактировать grammar.js
@@ -1429,7 +1429,7 @@ Procedure with parameters
 **Результат Фазы 1:**
 - ✅ Парсинг 80% базовых конструкций
 - ✅ Работающие тесты
-- ✅ npm пакет `tree-sitter-1c`
+- ✅ npm пакет `tree-sitter-onec`
 
 ---
 
@@ -1646,7 +1646,7 @@ externals: $ => [
 
 ### 3.3. Интеграция Tree-sitter 1С в RelationshipExtractor
 
-После создания `tree-sitter-1c` грамматики, интегрируем её в Kilocode.
+После создания `tree-sitter-onec` грамматики, интегрируем её в Kilocode.
 
 #### Шаг 1: Установка зависимости
 
@@ -1654,7 +1654,7 @@ externals: $ => [
 // package.json
 {
   "dependencies": {
-    "tree-sitter-1c": "^1.0.0",
+    "tree-sitter-onec": "^1.0.0",
     "web-tree-sitter": "^0.20.0"
   }
 }
@@ -1680,7 +1680,7 @@ export class TreeSitterLanguageLoader {
     switch (languageName) {
       case '1c':
       case 'bsl':
-        wasmPath = 'tree-sitter-1c.wasm'
+        wasmPath = 'tree-sitter-onec.wasm'
         break
       case 'typescript':
         wasmPath = 'tree-sitter-typescript.wasm'
@@ -1698,731 +1698,42 @@ export class TreeSitterLanguageLoader {
 }
 ```
 
-#### Шаг 3: Создать OneCExtractor
+#### Шаг 3: Использовать TreeSitterGraphExtractor
 
 ```typescript
-// src/services/neo4j/extractors/onec-extractor.ts
-import { BaseLanguageExtractor } from "./language-extractor.interface"
-import type { SyntaxNode } from "web-tree-sitter"
-import type { CodeEntity, CodeRelationship } from "../interfaces"
+import { TreeSitterGraphExtractor } from "../neo4j/extractors/tree-sitter-graph-extractor"
+import { getGraphQueryForLanguage } from "../tree-sitter/languageParser"
 
-export class OneCExtractor extends BaseLanguageExtractor {
-  readonly supportedLanguages = ["1c", "bsl", "onec"]
-  
-  extract(
-    node: SyntaxNode,
-    filePath: string,
-    language: string,
-    entities: CodeEntity[],
-    relationships: CodeRelationship[]
-  ): void {
-    const fileId = `file:${filePath}`
-    
-    this.visitNodeWithContext(node, (n) => {
-      const nodeType = n.type
-      
-      // Процедуры
-      if (nodeType === "procedure_declaration") {
-        this.extractProcedure(n, filePath, language, entities, relationships, fileId)
-      }
-      
-      // Функции
-      else if (nodeType === "function_declaration") {
-        this.extractFunction(n, filePath, language, entities, relationships, fileId)
-      }
-      
-      // Обработчики событий
-      else if (nodeType === "event_handler_declaration") {
-        this.extractEventHandler(n, filePath, language, entities, relationships, fileId)
-      }
-      
-      // Переменные
-      else if (nodeType === "variable_declaration") {
-        this.extractVariable(n, filePath, language, entities, relationships, fileId)
-      }
-      
-      // Вызовы функций
-      else if (nodeType === "call_expression") {
-        this.extractFunctionCall(n, filePath, relationships)
-      }
-      
-      // Доступ к метаданным
-      else if (nodeType === "metadata_access") {
-        this.extractMetadataAccess(n, filePath, language, entities, relationships)
-      }
-      
-      // Запросы
-      else if (nodeType === "query_object") {
-        this.extractQuery(n, filePath, language, entities, relationships)
-      }
-      
-      // Доступ к свойствам
-      else if (nodeType === "member_expression") {
-        this.extractPropertyAccess(n, filePath, relationships)
-      }
-      
-      // Создание объектов
-      else if (nodeType === "new_expression") {
-        this.extractInstantiation(n, filePath, relationships)
-      }
-    })
-  }
-  
-  /**
-   * Извлечь процедуру
-   * Процедура ИмяПроцедуры(Параметр1)
-   */
-  private extractProcedure(
-    node: SyntaxNode,
-    filePath: string,
-    language: string,
-    entities: CodeEntity[],
-    relationships: CodeRelationship[],
-    fileId: string
-  ): void {
-    const nameNode = node.childForFieldName("name")
-    if (!nameNode) return
-    
-    const procedureName = nameNode.text
-    const procedureId = `file:${filePath}:${procedureName}`
-    
-    // Проверить модификатор Экспорт
-    const exportNode = node.childForFieldName("export")
-    const isExport = exportNode !== null
-    
-    entities.push({
-      id: procedureId,
-      type: "function",
-      name: procedureName,
-      filePath,
-      line: node.startPosition.row + 1,
-      column: node.startPosition.column,
-      language,
-      properties: {
-        kind: "procedure",
-        export: isExport
-      }
-    })
-    
-    // File defines procedure
-    relationships.push({
-      fromId: fileId,
-      toId: procedureId,
-      type: "defines",
-      properties: { line: node.startPosition.row + 1 }
-    })
-    
-    // If export, add export relationship
-    if (isExport) {
-      relationships.push({
-        fromId: fileId,
-        toId: procedureId,
-        type: "exports",
-        properties: { line: node.startPosition.row + 1 }
-      })
-    }
-  }
-  
-  /**
-   * Извлечь функцию
-   */
-  private extractFunction(
-    node: SyntaxNode,
-    filePath: string,
-    language: string,
-    entities: CodeEntity[],
-    relationships: CodeRelationship[],
-    fileId: string
-  ): void {
-    // Аналогично extractProcedure
-    const nameNode = node.childForFieldName("name")
-    if (!nameNode) return
-    
-    const functionName = nameNode.text
-    const functionId = `file:${filePath}:${functionName}`
-    
-    const exportNode = node.childForFieldName("export")
-    const isExport = exportNode !== null
-    
-    entities.push({
-      id: functionId,
-      type: "function",
-      name: functionName,
-      filePath,
-      line: node.startPosition.row + 1,
-      column: node.startPosition.column,
-      language,
-      properties: {
-        kind: "function",
-        export: isExport,
-        hasReturnValue: true
-      }
-    })
-    
-    relationships.push({
-      fromId: fileId,
-      toId: functionId,
-      type: "defines",
-      properties: { line: node.startPosition.row + 1 }
-    })
-    
-    if (isExport) {
-      relationships.push({
-        fromId: fileId,
-        toId: functionId,
-        type: "exports",
-        properties: { line: node.startPosition.row + 1 }
-      })
-    }
-  }
-  
-  /**
-   * Извлечь обработчик события
-   * Процедура ПередЗаписью(Отказ)
-   */
-  private extractEventHandler(
-    node: SyntaxNode,
-    filePath: string,
-    language: string,
-    entities: CodeEntity[],
-    relationships: CodeRelationship[],
-    fileId: string
-  ): void {
-    const nameNode = node.childForFieldName("name")
-    if (!nameNode) return
-    
-    const handlerName = nameNode.text
-    const handlerId = `file:${filePath}:${handlerName}`
-    
-    // Определить тип события
-    const eventType = this.detectEventType(handlerName)
-    
-    entities.push({
-      id: handlerId,
-      type: "function",
-      name: handlerName,
-      filePath,
-      line: node.startPosition.row + 1,
-      column: node.startPosition.column,
-      language,
-      properties: {
-        kind: "event_handler",
-        eventType,
-        isSystemHandler: true
-      }
-    })
-    
-    relationships.push({
-      fromId: fileId,
-      toId: handlerId,
-      type: "defines",
-      properties: { line: node.startPosition.row + 1 }
-    })
-    
-    // Create special 'handles' relationship to indicate event handling
-    relationships.push({
-      fromId: handlerId,
-      toId: `event:${eventType}`,
-      type: "handles",
-      properties: { 
-        line: node.startPosition.row + 1,
-        eventType
-      }
-    })
-  }
-  
-  /**
-   * Определить тип события по имени обработчика
-   */
-  private detectEventType(handlerName: string): string {
-    const eventPatterns: Record<string, string> = {
-      'ПередЗаписью': 'BeforeWrite',
-      'ПриЗаписи': 'OnWrite',
-      'ПередУдалением': 'BeforeDelete',
-      'ПриУдалении': 'OnDelete',
-      'ПриКопировании': 'OnCopy',
-      'ПриПроведении': 'OnPost',
-      'ПриОтменеПроведения': 'OnUnpost',
-      'ПриСозданииНаСервере': 'OnCreateAtServer',
-      'ПриОткрытии': 'OnOpen',
-      'ПередЗакрытием': 'BeforeClose',
-    }
-    
-    for (const [pattern, eventType] of Object.entries(eventPatterns)) {
-      if (handlerName.startsWith(pattern)) {
-        return eventType
-      }
-    }
-    
-    // Проверить паттерны с полем
-    if (handlerName.match(/ПриИзменении$/)) {
-      return 'OnChange'
-    }
-    if (handlerName.match(/ПриВыборе$/)) {
-      return 'OnChoice'
-    }
-    if (handlerName.match(/Выполнить$/)) {
-      return 'OnExecute'
-    }
-    
-    return 'Unknown'
-  }
-  
-  /**
-   * Извлечь переменную
-   * Перем ИмяПеременной Экспорт;
-   */
-  private extractVariable(
-    node: SyntaxNode,
-    filePath: string,
-    language: string,
-    entities: CodeEntity[],
-    relationships: CodeRelationship[],
-    fileId: string
-  ): void {
-    const nameNode = node.childForFieldName("name")
-    if (!nameNode) return
-    
-    const variableName = nameNode.text
-    const variableId = `file:${filePath}:${variableName}`
-    
-    const exportNode = node.childForFieldName("export")
-    const isExport = exportNode !== null
-    
-    entities.push({
-      id: variableId,
-      type: "variable",
-      name: variableName,
-      filePath,
-      line: node.startPosition.row + 1,
-      column: node.startPosition.column,
-      language,
-      properties: {
-        export: isExport,
-        moduleLevel: true
-      }
-    })
-    
-    relationships.push({
-      fromId: fileId,
-      toId: variableId,
-      type: "defines",
-      properties: { line: node.startPosition.row + 1 }
-    })
-    
-    if (isExport) {
-      relationships.push({
-        fromId: fileId,
-        toId: variableId,
-        type: "exports",
-        properties: { line: node.startPosition.row + 1 }
-      })
-    }
-  }
-  
-  /**
-   * Извлечь вызов функции
-   */
-  private extractFunctionCall(
-    node: SyntaxNode,
-    filePath: string,
-    relationships: CodeRelationship[]
-  ): void {
-    if (!this.currentFunction) return
-    
-    const functionNode = node.childForFieldName("function")
-    if (!functionNode) return
-    
-    const calleeName = functionNode.text
-    const callerId = `file:${filePath}:${this.currentFunction}`
-    const calleeId = `file:${filePath}:${calleeName}`
-    
-    relationships.push({
-      fromId: callerId,
-      toId: calleeId,
-      type: "calls",
-      properties: { line: node.startPosition.row + 1 }
-    })
-  }
-  
-  /**
-   * Извлечь доступ к метаданным
-   * Справочники.Номенклатура.СоздатьЭлемент()
-   */
-  private extractMetadataAccess(
-    node: SyntaxNode,
-    filePath: string,
-    language: string,
-    entities: CodeEntity[],
-    relationships: CodeRelationship[]
-  ): void {
-    const metadataTypeNode = node.childForFieldName("metadata_type")
-    const metadataObjectNode = node.childForFieldName("metadata_object")
-    
-    if (!metadataTypeNode || !metadataObjectNode) return
-    
-    const metadataType = metadataTypeNode.text
-    const metadataObject = metadataObjectNode.text
-    
-    // Create metadata entity
-    const metadataId = `metadata:${metadataType}.${metadataObject}`
-    
-    entities.push({
-      id: metadataId,
-      type: "module",
-      name: `${metadataType}.${metadataObject}`,
-      filePath: `metadata/${metadataType}/${metadataObject}`,
-      line: node.startPosition.row + 1,
-      language,
-      properties: {
-        metadataType,
-        metadataObject,
-        isMetadata: true
-      }
-    })
-    
-    // Create relationship from current function to metadata
-    if (this.currentFunction) {
-      const callerId = `file:${filePath}:${this.currentFunction}`
-      
-      relationships.push({
-        fromId: callerId,
-        toId: metadataId,
-        type: "references",
-        properties: { 
-          line: node.startPosition.row + 1,
-          metadataType,
-          metadataObject
-        }
-      })
-    }
-  }
-  
-  /**
-   * Извлечь запрос
-   * Запрос = Новый Запрос;
-   */
-  private extractQuery(
-    node: SyntaxNode,
-    filePath: string,
-    language: string,
-    entities: CodeEntity[],
-    relationships: CodeRelationship[]
-  ): void {
-    const variableNode = node.childForFieldName("variable")
-    if (!variableNode) return
-    
-    const queryVariable = variableNode.text
-    const queryId = `file:${filePath}:query:${queryVariable}`
-    
-    entities.push({
-      id: queryId,
-      type: "variable",
-      name: queryVariable,
-      filePath,
-      line: node.startPosition.row + 1,
-      language,
-      properties: {
-        isQuery: true,
-        variableType: "Query"
-      }
-    })
-    
-    // Create relationship from current function to query
-    if (this.currentFunction) {
-      const callerId = `file:${filePath}:${this.currentFunction}`
-      
-      relationships.push({
-        fromId: callerId,
-        toId: queryId,
-        type: "queries",
-        properties: { 
-          line: node.startPosition.row + 1,
-          queryVariable
-        }
-      })
-    }
-  }
-  
-  /**
-   * Извлечь доступ к свойству
-   * Объект.Свойство
-   */
-  private extractPropertyAccess(
-    node: SyntaxNode,
-    filePath: string,
-    relationships: CodeRelationship[]
-  ): void {
-    if (!this.currentFunction) return
-    
-    const objectNode = node.childForFieldName("object")
-    const propertyNode = node.childForFieldName("property")
-    
-    if (!objectNode || !propertyNode) return
-    
-    const callerId = `file:${filePath}:${this.currentFunction}`
-    const propertyId = `property:${objectNode.text}.${propertyNode.text}`
-    
-    relationships.push({
-      fromId: callerId,
-      toId: propertyId,
-      type: "accesses",
-      properties: { 
-        line: node.startPosition.row + 1,
-        objectName: objectNode.text,
-        propertyName: propertyNode.text
-      }
-    })
-  }
-  
-  /**
-   * Извлечь создание объекта
-   * Новый Тип()
-   */
-  private extractInstantiation(
-    node: SyntaxNode,
-    filePath: string,
-    relationships: CodeRelationship[]
-  ): void {
-    if (!this.currentFunction) return
-    
-    const typeNode = node.childForFieldName("type")
-    if (!typeNode) return
-    
-    const callerId = `file:${filePath}:${this.currentFunction}`
-    const classId = `class:${typeNode.text}`
-    
-    relationships.push({
-      fromId: callerId,
-      toId: classId,
-      type: "instantiates",
-      properties: { 
-        line: node.startPosition.row + 1,
-        className: typeNode.text
-      }
-    })
-  }
-  
-  protected isFunctionDeclaration(node: SyntaxNode): boolean {
-    return [
-      "procedure_declaration",
-      "function_declaration",
-      "event_handler_declaration"
-    ].includes(node.type)
-  }
-}
+const languageId = "onec"
+const extractor = new TreeSitterGraphExtractor(
+  languageId,
+  getGraphQueryForLanguage(languageId) ?? "",
+)
+await extractor.initialize("dist/tree-sitter-onec.wasm")
 ```
 
-#### Шаг 4: Регистрация в LanguageExtractorRegistry
+#### Шаг 4: Интеграция через RelationshipExtractor
+
+TreeSitterGraphExtractor создается внутри RelationshipExtractor на основе `getGraphQueryForLanguage`, поэтому ручная регистрация не требуется.
 
 ```typescript
-// src/services/neo4j/extractors/index.ts
-import { LanguageExtractorRegistry } from "./language-extractor-registry"
-import { TypeScriptExtractor } from "./typescript-extractor"
-import { PythonExtractor } from "./python-extractor"
-import { JavaExtractor } from "./java-extractor"
-import { OneCExtractor } from "./onec-extractor"
-import { GenericExtractor } from "./generic-extractor"
+import { RelationshipExtractor } from "../neo4j/relationship-extractor"
 
-export function createDefaultRegistry(): LanguageExtractorRegistry {
-  const registry = new LanguageExtractorRegistry()
-  
-  // Register all extractors
-  registry.registerExtractor(new TypeScriptExtractor())
-  registry.registerExtractor(new PythonExtractor())
-  registry.registerExtractor(new JavaExtractor())
-  registry.registerExtractor(new OneCExtractor()) // <-- NEW
-  
-  return registry
-}
+const extractor = new RelationshipExtractor()
+const result = await extractor.extract(code, "module.bsl", "onec")
 ```
 
 #### Шаг 5: Интеграция тестов
 
-```typescript
-// src/services/neo4j/__tests__/onec-extractor.spec.ts
-import { describe, it, expect, beforeEach } from "vitest"
-import { OneCExtractor } from "../extractors/onec-extractor"
-import Parser from "web-tree-sitter"
-import type { CodeEntity, CodeRelationship } from "../interfaces"
+Актуальные тесты:
+- `src/services/neo4j/extractors/__tests__/tree-sitter-graph-extractor.spec.ts`
+- `src/services/neo4j/__tests__/relationship-extractor.spec.ts`
 
-describe("OneCExtractor", () => {
-  let extractor: OneCExtractor
-  let parser: Parser
-  
-  beforeEach(async () => {
-    extractor = new OneCExtractor()
-    
-    // Initialize parser
-    await Parser.init()
-    parser = new Parser()
-    const language = await Parser.Language.load("tree-sitter-1c.wasm")
-    parser.setLanguage(language)
-  })
-  
-  it("should extract procedure declaration", () => {
-    const code = `
-      Процедура ТестоваяПроцедура()
-        Сообщить("Привет");
-      КонецПроцедуры
-    `
-    
-    const tree = parser.parse(code)
-    const entities: CodeEntity[] = []
-    const relationships: CodeRelationship[] = []
-    
-    extractor.extract(tree.rootNode, "test.bsl", "1c", entities, relationships)
-    
-    // Should extract procedure
-    expect(entities).toContainEqual(
-      expect.objectContaining({
-        type: "function",
-        name: "ТестоваяПроцедура",
-        properties: expect.objectContaining({
-          kind: "procedure"
-        })
-      })
-    )
-    
-    // Should have defines relationship
-    expect(relationships).toContainEqual(
-      expect.objectContaining({
-        type: "defines"
-      })
-    )
-  })
-  
-  it("should extract event handler", () => {
-    const code = `
-      Процедура ПередЗаписью(Отказ)
-        // Event handler logic
-      КонецПроцедуры
-    `
-    
-    const tree = parser.parse(code)
-    const entities: CodeEntity[] = []
-    const relationships: CodeRelationship[] = []
-    
-    extractor.extract(tree.rootNode, "test.bsl", "1c", entities, relationships)
-    
-    // Should extract event handler
-    expect(entities).toContainEqual(
-      expect.objectContaining({
-        type: "function",
-        name: "ПередЗаписью",
-        properties: expect.objectContaining({
-          kind: "event_handler",
-          eventType: "BeforeWrite"
-        })
-      })
-    )
-    
-    // Should have handles relationship
-    expect(relationships).toContainEqual(
-      expect.objectContaining({
-        type: "handles",
-        toId: "event:BeforeWrite"
-      })
-    )
-  })
-  
-  it("should extract metadata access", () => {
-    const code = `
-      Процедура СоздатьЭлемент()
-        НовыйЭлемент = Справочники.Номенклатура.СоздатьЭлемент();
-      КонецПроцедуры
-    `
-    
-    const tree = parser.parse(code)
-    const entities: CodeEntity[] = []
-    const relationships: CodeRelationship[] = []
-    
-    extractor.extract(tree.rootNode, "test.bsl", "1c", entities, relationships)
-    
-    // Should extract metadata entity
-    expect(entities).toContainEqual(
-      expect.objectContaining({
-        type: "module",
-        name: "Справочники.Номенклатура",
-        properties: expect.objectContaining({
-          isMetadata: true
-        })
-      })
-    )
-    
-    // Should have references relationship
-    expect(relationships).toContainEqual(
-      expect.objectContaining({
-        type: "references",
-        toId: "metadata:Справочники.Номенклатура"
-      })
-    )
-  })
-  
-  it("should extract query object", () => {
-    const code = `
-      Функция ПолучитьДанные()
-        Запрос = Новый Запрос;
-        Запрос.Текст = "ВЫБРАТЬ * ИЗ Справочник.Номенклатура";
-        Возврат Запрос.Выполнить();
-      КонецФункции
-    `
-    
-    const tree = parser.parse(code)
-    const entities: CodeEntity[] = []
-    const relationships: CodeRelationship[] = []
-    
-    extractor.extract(tree.rootNode, "test.bsl", "1c", entities, relationships)
-    
-    // Should extract query variable
-    expect(entities).toContainEqual(
-      expect.objectContaining({
-        type: "variable",
-        name: "Запрос",
-        properties: expect.objectContaining({
-          isQuery: true
-        })
-      })
-    )
-    
-    // Should have queries relationship
-    expect(relationships).toContainEqual(
-      expect.objectContaining({
-        type: "queries"
-      })
-    )
-  })
-  
-  it("should extract function calls", () => {
-    const code = `
-      Процедура ГлавнаяПроцедура()
-        ВспомогательнаяФункция(Параметр1);
-      КонецПроцедуры
-    `
-    
-    const tree = parser.parse(code)
-    const entities: CodeEntity[] = []
-    const relationships: CodeRelationship[] = []
-    
-    extractor.extract(tree.rootNode, "test.bsl", "1c", entities, relationships)
-    
-    // Should have calls relationship
-    expect(relationships).toContainEqual(
-      expect.objectContaining({
-        type: "calls",
-        fromId: expect.stringContaining("ГлавнаяПроцедура"),
-        toId: expect.stringContaining("ВспомогательнаяФункция")
-      })
-    )
-  })
-})
-```
+Они используют мок-узлы/captures и проверяют создание `defines`/`calls` без реального tree-sitter.
 
 **Результат интеграции:**
-- ✅ Полная поддержка 1С в RelationshipExtractor
-- ✅ Все типы отношений для 1С
-- ✅ Тесты с покрытием >80%
-- ✅ Готово к использованию в production
+- Базовая графовая экстракция унифицирована через TreeSitterGraphExtractor.
+- Декларации и вызовы строятся из tree-sitter queries для всех поддерживаемых языков.
 
 ---
 
@@ -3341,12 +2652,12 @@ graph TD
 - [ ] Week 5-6: Анализ синтаксиса 1С и дизайн грамматики
 - [ ] Week 7-8: Создание базовой Tree-sitter грамматики (процедуры, функции, переменные)
 - [ ] Week 9-10: Тестирование грамматики на реальных модулях 1С
-- [ ] Week 11: Создание OneCExtractor
+- [ ] Week 11: Создание TreeSitterGraphExtractor
 - [ ] Week 12: Интеграция и тестирование
 
 **Результаты:**
-- ✅ `tree-sitter-1c` пакет с базовой грамматикой
-- ✅ OneCExtractor в Kilocode
+- ✅ `tree-sitter-onec` пакет с базовой грамматикой
+- ✅ TreeSitterGraphExtractor в Kilocode
 - ✅ Парсинг основных конструкций 1С
 
 ---
@@ -3437,3 +2748,6 @@ graph TD
 - Техническая архитектура: [ссылка]
 - Roadmap и приоритеты: [ссылка]
 - Вклад в проект: [ссылка]
+
+
+

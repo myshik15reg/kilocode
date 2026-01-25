@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
+import * as vscode from "vscode"
+import { stat } from "fs/promises"
 import { CodeIndexOrchestrator } from "../orchestrator"
 
 // Mock vscode workspace so startIndexing passes workspace check
@@ -23,10 +25,20 @@ vi.mock("vscode", () => {
 				onDidDelete: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 				dispose: vi.fn(),
 			}),
+			fs: {
+				readFile: vi.fn(),
+			},
 		},
 		RelativePattern: vi.fn().mockImplementation((base: string, pattern: string) => ({ base, pattern })),
+		Uri: {
+			file: (fsPath: string) => ({ fsPath }),
+		},
 	}
 })
+
+vi.mock("fs/promises", () => ({
+	stat: vi.fn(),
+}))
 
 // Mock TelemetryService
 vi.mock("@roo-code/telemetry", () => ({
@@ -44,6 +56,29 @@ vi.mock("../../i18n", () => ({
 			return `Failed during initial scan: ${params.errorMessage}`
 		}
 		return key
+	},
+}))
+
+const { loadRequiredLanguageParsersMock, indexFileMock, isReadyMock } = vi.hoisted(() => ({
+	loadRequiredLanguageParsersMock: vi.fn(),
+	indexFileMock: vi.fn(),
+	isReadyMock: vi.fn(),
+}))
+
+vi.mock("../../tree-sitter/languageParser", async () => {
+	const actual = await vi.importActual<typeof import("../../tree-sitter/languageParser")>(
+		"../../tree-sitter/languageParser",
+	)
+	return {
+		...actual,
+		loadRequiredLanguageParsers: loadRequiredLanguageParsersMock,
+	}
+})
+
+vi.mock("../../neo4j/relationship-indexer", () => ({
+	RelationshipIndexer: class {
+		indexFile = indexFileMock
+		isReady = isReadyMock
 	},
 }))
 
@@ -158,57 +193,35 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 		expect(lastCall[0]).toBe("Error")
 	})
 
-	describe("1C (.bsl) file indexing for Neo4j", () => {
-		let relationshipIndexer: any
-		let codeParser: any
-		let languageParser: any
+	describe("Neo4j relationship indexing", () => {
+		const languageParsers = {
+			bsl: {
+				parser: {
+					parse: vi.fn().mockReturnValue({ rootNode: { type: "module" } }),
+				},
+			},
+			ts: {
+				parser: {
+					parse: vi.fn().mockReturnValue({ rootNode: { type: "program" } }),
+				},
+			},
+		}
 
 		beforeEach(() => {
-			vi.clearAllMocks()
-
-			// Mock RelationshipIndexer
-			relationshipIndexer = {
-				indexFile: vi.fn().mockResolvedValue(undefined),
+			configManager = {
+				isFeatureConfigured: true,
+				isNeo4jEnabled: true,
 			}
-
-			// Mock CodeParser
-			codeParser = {
-				parseFile: vi.fn().mockResolvedValue({
-					symbols: [],
-					chunks: [],
-				}),
-			}
-
-			// Mock loadRequiredLanguageParsers
-			languageParser = {
-				bsl: {
-					parser: {
-						parse: vi.fn().mockReturnValue({
-							rootNode: {
-								type: "module",
-								childCount: 0,
-							},
-						}),
-					},
-				},
-			}
-
-			// Mock the loadRequiredLanguageParsers function
-			vi.doMock("../processors/languageParser", () => ({
-				loadRequiredLanguageParsers: vi.fn().mockResolvedValue(languageParser),
-			}))
+			isReadyMock.mockResolvedValue(true)
+			indexFileMock.mockResolvedValue({ entities: 0, relationships: 0 })
+			loadRequiredLanguageParsersMock.mockResolvedValue(languageParsers)
+			;(stat as unknown as { mockResolvedValue: (value: any) => void }).mockResolvedValue({ size: 1024 })
+			;(vscode.workspace.fs.readFile as unknown as { mockImplementation: (fn: any) => void }).mockImplementation(
+				(uri: { fsPath: string }) => Promise.resolve(Buffer.from(uri.fsPath)),
+			)
 		})
 
-		it("should use tree-sitter parser directly for .bsl files", async () => {
-			// Arrange
-			const { loadRequiredLanguageParsers } = await import("../processors/languageParser")
-			const testContent = `
-Процедура ТестоваяПроцедура()
-	Сообщить("Привет, мир!");
-КонецПроцедуры
-			`.trim()
-			const testFilePath = "/test/workspace/module.bsl"
-
+		it("indexes supported files using resolved language ids", async () => {
 			const orchestrator = new CodeIndexOrchestrator(
 				configManager,
 				stateManager,
@@ -217,75 +230,34 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 				vectorStore,
 				scanner,
 				fileWatcher,
-				relationshipIndexer,
-				codeParser,
 			)
 
-			// Act - simulate indexing a .bsl file
-			// This would normally be called internally, but we can test the logic
-			// by calling the method that handles .bsl files
-			await orchestrator.indexRelationshipsForChangedFiles([
-				{ path: testFilePath, content: testContent },
+			await (orchestrator as any).indexRelationshipsForChangedFiles([
+				"/test/workspace/module.bsl",
+				"/test/workspace/app.ts",
 			])
 
-			// Assert
-			expect(loadRequiredLanguageParsers).toHaveBeenCalledWith([testFilePath])
-			expect(languageParser.bsl.parser.parse).toHaveBeenCalledWith(testContent)
-			expect(relationshipIndexer.indexFile).toHaveBeenCalledWith(
-				testFilePath,
-				testContent,
-				expect.any(Object), // rootNode
-				"bsl"
-			)
-		})
-
-		it("should use tree-sitter parser directly for .os files", async () => {
-			// Arrange
-			const { loadRequiredLanguageParsers } = await import("../processors/languageParser")
-			const testContent = `
-Функция Сложить(А, Б)
-	Возврат А + Б;
-КонецФункции
-			`.trim()
-			const testFilePath = "/test/workspace/module.os"
-
-			const orchestrator = new CodeIndexOrchestrator(
-				configManager,
-				stateManager,
-				workspacePath,
-				cacheManager,
-				vectorStore,
-				scanner,
-				fileWatcher,
-				relationshipIndexer,
-				codeParser,
-			)
-
-			// Act
-			await orchestrator.indexRelationshipsForChangedFiles([
-				{ path: testFilePath, content: testContent },
+			expect(loadRequiredLanguageParsersMock).toHaveBeenCalledWith([
+				"/test/workspace/module.bsl",
+				"/test/workspace/app.ts",
 			])
-
-			// Assert
-			expect(loadRequiredLanguageParsers).toHaveBeenCalledWith([testFilePath])
-			expect(languageParser.bsl.parser.parse).toHaveBeenCalledWith(testContent)
-			expect(relationshipIndexer.indexFile).toHaveBeenCalledWith(
-				testFilePath,
-				testContent,
+			expect(languageParsers.bsl.parser.parse).toHaveBeenCalled()
+			expect(languageParsers.ts.parser.parse).toHaveBeenCalled()
+			expect(indexFileMock).toHaveBeenCalledWith(
+				"/test/workspace/module.bsl",
+				expect.any(String),
 				expect.any(Object),
-				"bsl"
+				"onec",
+			)
+			expect(indexFileMock).toHaveBeenCalledWith(
+				"/test/workspace/app.ts",
+				expect.any(String),
+				expect.any(Object),
+				"typescript",
 			)
 		})
 
-		it("should use standard CodeParser for non-1C files", async () => {
-			// Arrange
-			const testContent = `
-function testFunction() {
-	return "hello";
-}
-			`.trim()
-			const testFilePath = "/test/workspace/test.js"
-
+		it("skips files with unsupported extensions", async () => {
 			const orchestrator = new CodeIndexOrchestrator(
 				configManager,
 				stateManager,
@@ -294,111 +266,17 @@ function testFunction() {
 				vectorStore,
 				scanner,
 				fileWatcher,
-				relationshipIndexer,
-				codeParser,
 			)
 
-			// Act
-			await orchestrator.indexRelationshipsForChangedFiles([
-				{ path: testFilePath, content: testContent },
+			await (orchestrator as any).indexRelationshipsForChangedFiles([
+				"/test/workspace/ignored.vb",
+				"/test/workspace/app.ts",
 			])
 
-			// Assert
-			expect(codeParser.parseFile).toHaveBeenCalledWith(testFilePath, {
-				content: testContent,
-			})
-			// Should NOT call relationshipIndexer if CodeParser returns empty symbols
-			// (this is the existing behavior for non-1C files)
-		})
-
-		it("should handle uppercase .BSL extension", async () => {
-			// Arrange
-			const { loadRequiredLanguageParsers } = await import("../processors/languageParser")
-			const testContent = `Процедура Тест() КонецПроцедуры`
-			const testFilePath = "/test/workspace/MODULE.BSL"
-
-			const orchestrator = new CodeIndexOrchestrator(
-				configManager,
-				stateManager,
-				workspacePath,
-				cacheManager,
-				vectorStore,
-				scanner,
-				fileWatcher,
-				relationshipIndexer,
-				codeParser,
-			)
-
-			// Act
-			await orchestrator.indexRelationshipsForChangedFiles([
-				{ path: testFilePath, content: testContent },
+			expect(loadRequiredLanguageParsersMock).toHaveBeenCalledWith([
+				"/test/workspace/app.ts",
 			])
-
-			// Assert
-			expect(loadRequiredLanguageParsers).toHaveBeenCalledWith([testFilePath])
-			expect(relationshipIndexer.indexFile).toHaveBeenCalledWith(
-				testFilePath,
-				testContent,
-				expect.any(Object),
-				"bsl"
-			)
-		})
-
-		it("should handle mixed 1C and non-1C files", async () => {
-			// Arrange
-			const { loadRequiredLanguageParsers } = await import("../processors/languageParser")
-			const files = [
-				{
-					path: "/test/workspace/onec.bsl",
-					content: `Процедура Тест() КонецПроцедуры`,
-				},
-				{
-					path: "/test/workspace/javascript.js",
-					content: `function test() { return "hello"; }`,
-				},
-				{
-					path: "/test/workspace/another.bsl",
-					content: `Функция Сложить(А, Б) Возврат А + Б; КонецФункции`,
-				},
-			]
-
-			const orchestrator = new CodeIndexOrchestrator(
-				configManager,
-				stateManager,
-				workspacePath,
-				cacheManager,
-				vectorStore,
-				scanner,
-				fileWatcher,
-				relationshipIndexer,
-				codeParser,
-			)
-
-			// Act
-			await orchestrator.indexRelationshipsForChangedFiles(files)
-
-			// Assert
-			// Should call loadRequiredLanguageParsers for all files
-			expect(loadRequiredLanguageParsers).toHaveBeenCalledWith([
-				"/test/workspace/onec.bsl",
-				"/test/workspace/javascript.js",
-				"/test/workspace/another.bsl",
-			])
-
-			// Should index both .bsl files
-			expect(relationshipIndexer.indexFile).toHaveBeenCalledTimes(2)
-			expect(relationshipIndexer.indexFile).toHaveBeenCalledWith(
-				"/test/workspace/onec.bsl",
-				files[0].content,
-				expect.any(Object),
-				"bsl"
-			)
-			expect(relationshipIndexer.indexFile).toHaveBeenCalledWith(
-				"/test/workspace/another.bsl",
-				files[2].content,
-				expect.any(Object),
-				"bsl"
-			)
+			expect(indexFileMock).toHaveBeenCalledTimes(1)
 		})
 	})
 })

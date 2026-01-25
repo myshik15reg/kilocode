@@ -4,7 +4,9 @@ set -e
 echo "🚀 Setting up Kilo Code development environment..."
 
 # Ensure we're in the right directory
-cd /workspace
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+cd "${REPO_ROOT}"
 
 # Ensure pnpm is available and correct version
 echo "📦 Configuring pnpm..."

@@ -1984,7 +1984,7 @@ describe("CodeIndexConfigManager", () => {
 					expect(config.vectorStoreName).toBe("workspace-specific-name")
 				})
 		
-				it("should return undefined when vectorStoreName is not in workspaceState", async () => {
+				it("should return empty string when vectorStoreName is not in workspaceState", async () => {
 					mockContextProxy.getGlobalState.mockReturnValue({
 						codebaseIndexEnabled: true,
 						codebaseIndexQdrantUrl: "http://qdrant.local",
@@ -2000,7 +2000,7 @@ describe("CodeIndexConfigManager", () => {
 					await configManager.loadConfiguration()
 		
 					const config = configManager.getConfig()
-					expect(config.vectorStoreName).toBeUndefined()
+					expect(config.vectorStoreName).toBe("")
 				})
 			})
 		})

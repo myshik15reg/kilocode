@@ -612,6 +612,9 @@ describe("ClineProvider", () => {
 			organizationAllowList: ORGANIZATION_ALLOW_ALL,
 			autoCondenseContext: true,
 			autoCondenseContextPercent: 100,
+			contextRoutingEnabled: false,
+			contextRoutingFastThresholdPercent: 50,
+			contextRoutingDeepThresholdPercent: 80,
 			cloudIsAuthenticated: false,
 			sharingEnabled: false,
 			profileThresholds: {},
@@ -929,6 +932,72 @@ describe("ClineProvider", () => {
 
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("autoCondenseContextPercent", 75)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("autoCondenseContextPercent", 75)
+		expect(mockPostMessage).toHaveBeenCalled()
+	})
+
+	test("contextRoutingEnabled defaults to false", async () => {
+		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
+			key === "contextRoutingEnabled" ? undefined : null,
+		)
+
+		const state = await provider.getState()
+		expect(state.contextRoutingEnabled).toBe(false)
+	})
+
+	test("contextRoutingFastThresholdPercent defaults to 50", async () => {
+		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
+			key === "contextRoutingFastThresholdPercent" ? undefined : null,
+		)
+
+		const state = await provider.getState()
+		expect(state.contextRoutingFastThresholdPercent).toBe(50)
+	})
+
+	test("contextRoutingDeepThresholdPercent defaults to 80", async () => {
+		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
+			key === "contextRoutingDeepThresholdPercent" ? undefined : null,
+		)
+
+		const state = await provider.getState()
+		expect(state.contextRoutingDeepThresholdPercent).toBe(80)
+	})
+
+	test("handles contextRoutingEnabled message", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
+
+		await messageHandler({ type: "updateSettings", updatedSettings: { contextRoutingEnabled: true } })
+
+		expect(updateGlobalStateSpy).toHaveBeenCalledWith("contextRoutingEnabled", true)
+		expect(mockContext.globalState.update).toHaveBeenCalledWith("contextRoutingEnabled", true)
+		expect(mockPostMessage).toHaveBeenCalled()
+	})
+
+	test("handles contextRoutingFastThresholdPercent message", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
+
+		await messageHandler({
+			type: "updateSettings",
+			updatedSettings: { contextRoutingFastThresholdPercent: 65 },
+		})
+
+		expect(updateGlobalStateSpy).toHaveBeenCalledWith("contextRoutingFastThresholdPercent", 65)
+		expect(mockContext.globalState.update).toHaveBeenCalledWith("contextRoutingFastThresholdPercent", 65)
+		expect(mockPostMessage).toHaveBeenCalled()
+	})
+
+	test("handles contextRoutingDeepThresholdPercent message", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
+
+		await messageHandler({
+			type: "updateSettings",
+			updatedSettings: { contextRoutingDeepThresholdPercent: 90 },
+		})
+
+		expect(updateGlobalStateSpy).toHaveBeenCalledWith("contextRoutingDeepThresholdPercent", 90)
+		expect(mockContext.globalState.update).toHaveBeenCalledWith("contextRoutingDeepThresholdPercent", 90)
 		expect(mockPostMessage).toHaveBeenCalled()
 	})
 

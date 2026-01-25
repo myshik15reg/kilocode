@@ -219,6 +219,35 @@ vi.mock("../services/mdm/MdmService", () => ({
 	},
 }))
 
+vi.mock("../services/settings-sync/SettingsSyncService", () => ({
+	SettingsSyncService: {
+		initialize: vi.fn().mockResolvedValue(undefined),
+		updateSyncRegistration: vi.fn().mockResolvedValue(undefined),
+	},
+}))
+
+vi.mock("../shared/kilocode/cli-sessions/extension/session-manager-utils", () => ({
+	kilo_initializeSessionManager: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock("../services/code-index/managed/ManagedIndexer", () => ({
+	ManagedIndexer: vi.fn().mockImplementation(() => ({
+		start: vi.fn().mockResolvedValue(undefined),
+		dispose: vi.fn(),
+	})),
+}))
+
+vi.mock("../utils/autoLaunchingTask", () => ({
+	checkAndRunAutoLaunchingTask: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock("../core/kilocode/wrapper", () => ({
+	getKiloCodeWrapperProperties: vi.fn().mockReturnValue({
+		kiloCodeWrapped: false,
+		kiloCodeWrapperCode: "vscode",
+	}),
+}))
+
 vi.mock("../utils/migrateSettings", () => ({
 	migrateSettings: vi.fn().mockResolvedValue(undefined),
 }))
@@ -320,6 +349,17 @@ describe("extension.ts", () => {
 		| ((data: { state: AuthState; previousState: AuthState }) => void | Promise<void>)
 		| undefined
 
+	const waitForAuthStateChangedHandler = async () => {
+		const timeoutMs = 2000
+		const start = Date.now()
+		while (!authStateChangedHandler) {
+			if (Date.now() - start > timeoutMs) {
+				throw new Error("authStateChangedHandler was not registered")
+			}
+			await new Promise((resolve) => setTimeout(resolve, 10))
+		}
+	}
+
 	beforeEach(() => {
 		vi.clearAllMocks()
 		mockBridgeOrchestratorDisconnect.mockClear()
@@ -354,7 +394,9 @@ describe("extension.ts", () => {
 
 		// Activate the extension.
 		const { activate } = await import("../extension")
-		await activate(mockContext)
+		void activate(mockContext).catch(() => {})
+
+		await waitForAuthStateChangedHandler()
 
 		// Verify handler was registered.
 		expect(authStateChangedHandler).toBeDefined()
@@ -387,7 +429,9 @@ describe("extension.ts", () => {
 
 		// Activate the extension.
 		const { activate } = await import("../extension")
-		await activate(mockContext)
+		void activate(mockContext).catch(() => {})
+
+		await waitForAuthStateChangedHandler()
 
 		// Trigger login.
 		await authStateChangedHandler!({

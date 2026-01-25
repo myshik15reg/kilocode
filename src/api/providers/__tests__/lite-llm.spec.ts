@@ -26,16 +26,17 @@ vi.mock("openai", () => {
 // Mock model fetching
 vi.mock("../fetchers/modelCache", () => ({
 	getModels: vi.fn().mockImplementation(() => {
+		const gpt5Info = { ...litellmDefaultModelInfo, maxTokens: 8192, supportsReasoningEffort: true }
 		return Promise.resolve({
 			[litellmDefaultModelId]: litellmDefaultModelInfo,
-			"gpt-5": { ...litellmDefaultModelInfo, maxTokens: 8192 },
-			gpt5: { ...litellmDefaultModelInfo, maxTokens: 8192 },
-			"GPT-5": { ...litellmDefaultModelInfo, maxTokens: 8192 },
-			"gpt-5-turbo": { ...litellmDefaultModelInfo, maxTokens: 8192 },
-			"gpt5-preview": { ...litellmDefaultModelInfo, maxTokens: 8192 },
-			"gpt-5o": { ...litellmDefaultModelInfo, maxTokens: 8192 },
-			"gpt-5.1": { ...litellmDefaultModelInfo, maxTokens: 8192 },
-			"gpt-5-mini": { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			"gpt-5": gpt5Info,
+			gpt5: gpt5Info,
+			"GPT-5": gpt5Info,
+			"gpt-5-turbo": gpt5Info,
+			"gpt5-preview": gpt5Info,
+			"gpt-5o": gpt5Info,
+			"gpt-5.1": gpt5Info,
+			"gpt-5-mini": gpt5Info,
 			"gpt-4": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"claude-3-opus": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"llama-3": { ...litellmDefaultModelInfo, maxTokens: 8192 },
@@ -386,6 +387,76 @@ describe("LiteLLMHandler", () => {
 			const createCall = mockCreate.mock.calls[0][0]
 			expect(createCall.max_tokens).toBeUndefined()
 			expect(createCall.max_completion_tokens).toBeUndefined()
+		})
+	})
+
+	describe("reasoning support", () => {
+		it("should include reasoning_effort when configured and supported", async () => {
+			const optionsWithReasoning: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "gpt-5",
+				enableReasoningEffort: true,
+				reasoningEffort: "high",
+			}
+			handler = new LiteLLMHandler(optionsWithReasoning)
+
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Ok" } }],
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			for await (const _chunk of handler.createMessage(systemPrompt, messages)) {
+				// consume
+			}
+
+			const createCall = mockCreate.mock.calls[0][0]
+			expect(createCall.reasoning_effort).toBe("high")
+		})
+
+		it("should emit reasoning chunks from stream", async () => {
+			const optionsWithReasoning: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "gpt-5",
+			}
+			handler = new LiteLLMHandler(optionsWithReasoning)
+
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { reasoning_content: "Thinking..." } }],
+					}
+					yield {
+						choices: [{ delta: { content: "Done." } }],
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const results = []
+			for await (const chunk of handler.createMessage(systemPrompt, messages)) {
+				results.push(chunk)
+			}
+
+			expect(results).toEqual([
+				{ type: "reasoning", text: "Thinking..." },
+				{ type: "text", text: "Done." },
+			])
 		})
 	})
 })

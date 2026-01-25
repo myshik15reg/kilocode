@@ -199,7 +199,7 @@
 			"aboutPoint1": "Almacena funciones, clases y sus relaciones",
 			"aboutPoint2": "Permite rastrear dependencias y realizar análisis de impacto de cambios",
 			"aboutPoint3": "Funciona junto con Qdrant para búsqueda híbrida semántica + basada en grafos"
-		},
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "Puedes configurar un atajo global para esta configuración <SettingsLink>en las preferencias de tu IDE</SettingsLink>.",

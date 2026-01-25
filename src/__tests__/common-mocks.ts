@@ -126,8 +126,17 @@ export function setupCommonMocks() {
 		WebviewView: vi.fn(),
 		Uri: {
 			joinPath: vi.fn(),
-			file: vi.fn(),
+			file: vi.fn((path: string) => ({
+				scheme: "file",
+				authority: "",
+				path,
+				query: "",
+				fragment: "",
+				fsPath: path,
+				toString: () => path,
+			})),
 		},
+		RelativePattern: vi.fn().mockImplementation((base: string, pattern: string) => ({ base, pattern })),
 		CodeActionKind: {
 			QuickFix: { value: "quickfix" },
 			RefactorRewrite: { value: "refactor.rewrite" },
@@ -141,6 +150,9 @@ export function setupCommonMocks() {
 			showErrorMessage: vi.fn(),
 			onDidChangeActiveTextEditor: vi.fn(() => ({ dispose: vi.fn() })),
 			createTextEditorDecorationType: vi.fn(() => ({ dispose: vi.fn() })),
+		},
+		Disposable: {
+			from: vi.fn(),
 		},
 		workspace: {
 			getConfiguration: vi.fn().mockReturnValue({

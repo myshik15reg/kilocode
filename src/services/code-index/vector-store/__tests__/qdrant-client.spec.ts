@@ -1294,7 +1294,15 @@ describe("QdrantVectorStore", () => {
 				must_not: [{ key: "type", match: { value: "metadata" } }],
 			})
 
-			expect(results).toEqual(mockQdrantResults.points)
+			const expectedResults = mockQdrantResults.points.map((point) => ({
+				...point,
+				filePath: point.payload.filePath,
+				codeChunk: point.payload.codeChunk,
+				startLine: point.payload.startLine,
+				endLine: point.payload.endLine,
+			}))
+
+			expect(results).toEqual(expectedResults)
 		})
 
 		it("should apply filePathPrefix filter correctly", async () => {
@@ -1336,7 +1344,15 @@ describe("QdrantVectorStore", () => {
 				must_not: [{ key: "type", match: { value: "metadata" } }],
 			})
 
-			expect(results).toEqual(mockQdrantResults.points)
+			const expectedResults = mockQdrantResults.points.map((point) => ({
+				...point,
+				filePath: point.payload.filePath,
+				codeChunk: point.payload.codeChunk,
+				startLine: point.payload.startLine,
+				endLine: point.payload.endLine,
+			}))
+
+			expect(results).toEqual(expectedResults)
 		})
 
 		it("should use custom minScore when provided", async () => {
@@ -1597,7 +1613,15 @@ describe("QdrantVectorStore", () => {
 					must_not: [{ key: "type", match: { value: "metadata" } }],
 				})
 
-				expect(results).toEqual(mockQdrantResults.points)
+				const expectedResults = mockQdrantResults.points.map((point) => ({
+					...point,
+					filePath: point.payload.filePath,
+					codeChunk: point.payload.codeChunk,
+					startLine: point.payload.startLine,
+					endLine: point.payload.endLine,
+				}))
+
+				expect(results).toEqual(expectedResults)
 			})
 
 			it("should not apply filter when directoryPrefix is './'", async () => {

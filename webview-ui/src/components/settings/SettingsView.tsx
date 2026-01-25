@@ -184,6 +184,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 		alwaysApproveResubmit,
 		autoCondenseContext,
 		autoCondenseContextPercent,
+		contextRoutingEnabled, // kilocode_change: 2026-01-24 Context routing toggle
+		contextRoutingFastThresholdPercent,
+		contextRoutingDeepThresholdPercent,
 		browserToolEnabled,
 		browserViewportSize,
 		enableCheckpoints,
@@ -532,6 +535,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 					allowedMaxCost: allowedMaxCost ?? null,
 					autoCondenseContext,
 					autoCondenseContextPercent,
+					contextRoutingEnabled,
+					contextRoutingFastThresholdPercent,
+					contextRoutingDeepThresholdPercent,
 					browserToolEnabled: browserToolEnabled ?? true,
 					soundEnabled: soundEnabled ?? true,
 					soundVolume: soundVolume ?? 0.5,
@@ -1117,6 +1123,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 						<ContextManagementSettings
 							autoCondenseContext={autoCondenseContext}
 							autoCondenseContextPercent={autoCondenseContextPercent}
+							contextRoutingEnabled={contextRoutingEnabled}
+							contextRoutingFastThresholdPercent={contextRoutingFastThresholdPercent}
+							contextRoutingDeepThresholdPercent={contextRoutingDeepThresholdPercent}
 							listApiConfigMeta={listApiConfigMeta ?? []}
 							maxOpenTabsContext={maxOpenTabsContext}
 							maxWorkspaceFiles={maxWorkspaceFiles ?? 200}

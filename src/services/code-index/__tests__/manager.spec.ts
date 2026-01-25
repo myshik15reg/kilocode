@@ -539,6 +539,8 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 				storeSecret: vi.fn(),
 				getSecret: vi.fn(),
 				refreshSecrets: vi.fn().mockResolvedValue(undefined),
+				getWorkspaceState: vi.fn().mockResolvedValue(undefined),
+				updateWorkspaceState: vi.fn().mockResolvedValue(undefined),
 				getGlobalState: vi.fn().mockReturnValue({
 					codebaseIndexEnabled: true,
 					codebaseIndexQdrantUrl: "http://localhost:6333",

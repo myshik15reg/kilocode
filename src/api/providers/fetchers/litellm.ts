@@ -39,6 +39,19 @@ export async function getLiteLLMModels(apiKey: string, baseUrl: string): Promise
 				const litellmModelName = model?.litellm_params?.model as string | undefined
 
 				if (!modelName || !modelInfo || !litellmModelName) continue
+				// kilocode_change start: optional reasoning metadata
+				const supportsReasoningEffort = Array.isArray(modelInfo.supports_reasoning_effort)
+					? modelInfo.supports_reasoning_effort
+					: typeof modelInfo.supports_reasoning_effort === "boolean"
+						? modelInfo.supports_reasoning_effort
+						: undefined
+				const reasoningEffort =
+					typeof modelInfo.reasoning_effort === "string" ? modelInfo.reasoning_effort : undefined
+				const requiredReasoningEffort =
+					typeof modelInfo.required_reasoning_effort === "boolean"
+						? modelInfo.required_reasoning_effort
+						: undefined
+				// kilocode_change end
 
 				models[modelName] = {
 					maxTokens: modelInfo.max_output_tokens || modelInfo.max_tokens || 8192,
@@ -46,6 +59,9 @@ export async function getLiteLLMModels(apiKey: string, baseUrl: string): Promise
 					supportsImages: Boolean(modelInfo.supports_vision),
 					supportsPromptCache: Boolean(modelInfo.supports_prompt_caching),
 					supportsNativeTools: true,
+					...(supportsReasoningEffort !== undefined && { supportsReasoningEffort }),
+					...(reasoningEffort && { reasoningEffort }),
+					...(requiredReasoningEffort !== undefined && { requiredReasoningEffort }),
 					inputPrice: modelInfo.input_cost_per_token ? modelInfo.input_cost_per_token * 1000000 : undefined,
 					outputPrice: modelInfo.output_cost_per_token
 						? modelInfo.output_cost_per_token * 1000000

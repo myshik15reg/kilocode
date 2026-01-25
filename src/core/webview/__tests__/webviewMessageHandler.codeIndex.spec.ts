@@ -27,6 +27,7 @@ describe("webviewMessageHandler - Code Index Settings", () => {
 				},
 			},
 			postMessageToWebview: vi.fn(),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
 			log: vi.fn(),
 			contextProxy: {
 				getValue: vi.fn().mockReturnValue({}), // Return empty config by default
@@ -34,6 +35,7 @@ describe("webviewMessageHandler - Code Index Settings", () => {
 				storeSecret: vi.fn().mockResolvedValue(undefined),
 				globalStorageUri: { fsPath: "/test/path" },
 			},
+			getCurrentWorkspaceCodeIndexManager: vi.fn().mockReturnValue(undefined),
 			codebaseIndexManager: {
 				handleSettingsChange: vi.fn().mockResolvedValue(undefined),
 			},
@@ -61,7 +63,7 @@ describe("webviewMessageHandler - Code Index Settings", () => {
 			)
 		})
 
-		it("should reject empty vectorStoreName", async () => {
+		it("should generate default vectorStoreName when empty", async () => {
 			const message = {
 				type: "saveCodeIndexSettingsAtomic",
 				codeIndexSettings: {
@@ -75,21 +77,13 @@ describe("webviewMessageHandler - Code Index Settings", () => {
 
 			await webviewMessageHandler(mockProvider as ClineProvider, message)
 
-			// Should send error response
-			expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
-				type: "codeIndexSettingsSaved",
-				success: false,
-				error: "Vector Store Name cannot be empty",
-			})
-
-			// Should NOT update workspaceState
-			expect(mockProvider.context?.workspaceState?.update).not.toHaveBeenCalledWith(
+			expect(mockProvider.context?.workspaceState?.update).toHaveBeenCalledWith(
 				"codebaseIndexVectorStoreName",
-				expect.any(String),
+				"codebase-index-vectors",
 			)
 		})
 
-		it("should reject whitespace-only vectorStoreName", async () => {
+		it("should generate default vectorStoreName when whitespace-only", async () => {
 			const message = {
 				type: "saveCodeIndexSettingsAtomic",
 				codeIndexSettings: {
@@ -103,17 +97,9 @@ describe("webviewMessageHandler - Code Index Settings", () => {
 
 			await webviewMessageHandler(mockProvider as ClineProvider, message)
 
-			// Should send error response
-			expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
-				type: "codeIndexSettingsSaved",
-				success: false,
-				error: "Vector Store Name cannot be empty",
-			})
-
-			// Should NOT update workspaceState
-			expect(mockProvider.context?.workspaceState?.update).not.toHaveBeenCalledWith(
+			expect(mockProvider.context?.workspaceState?.update).toHaveBeenCalledWith(
 				"codebaseIndexVectorStoreName",
-				expect.any(String),
+				"codebase-index-vectors",
 			)
 		})
 
@@ -143,7 +129,7 @@ describe("webviewMessageHandler - Code Index Settings", () => {
 			)
 		})
 
-		it("should NOT save vectorStoreName to globalState", async () => {
+		it("should save vectorStoreName to globalState for backward compatibility", async () => {
 			const message = {
 				type: "saveCodeIndexSettingsAtomic",
 				codeIndexSettings: {
@@ -157,13 +143,12 @@ describe("webviewMessageHandler - Code Index Settings", () => {
 
 			await webviewMessageHandler(mockProvider as ClineProvider, message)
 
-			// Check that vectorStoreName is NOT in globalState update
 			const setValueMock = mockProvider.contextProxy?.setValue as ReturnType<typeof vi.fn>
 			const globalStateUpdateCall = setValueMock?.mock?.calls?.[0]
 			expect(globalStateUpdateCall).toBeDefined()
 			const updatedConfig = globalStateUpdateCall?.[1]
 			expect(updatedConfig).toBeDefined()
-			expect(updatedConfig).not.toHaveProperty("codebaseIndexVectorStoreName")
+			expect(updatedConfig).toHaveProperty("codebaseIndexVectorStoreName", "my-vector-store")
 		})
 	})
 })

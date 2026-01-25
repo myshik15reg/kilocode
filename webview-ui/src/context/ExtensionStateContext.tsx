@@ -326,6 +326,9 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		organizationSettingsVersion: -1,
 		autoCondenseContext: true,
 		autoCondenseContextPercent: 100,
+		contextRoutingEnabled: false, // kilocode_change: 2026-01-24 Context routing toggle
+		contextRoutingFastThresholdPercent: 50,
+		contextRoutingDeepThresholdPercent: 80,
 		profileThresholds: {},
 		codebaseIndexConfig: {
 			codebaseIndexEnabled: true,

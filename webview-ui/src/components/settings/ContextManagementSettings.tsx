@@ -2,7 +2,7 @@ import { HTMLAttributes } from "react"
 import React from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { Database, FoldVertical } from "lucide-react"
+import { Database, FoldVertical, Gauge } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Button } from "@/components/ui"
@@ -15,6 +15,9 @@ import { vscode } from "@/utils/vscode"
 type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	autoCondenseContext: boolean
 	autoCondenseContextPercent: number
+	contextRoutingEnabled: boolean
+	contextRoutingFastThresholdPercent: number
+	contextRoutingDeepThresholdPercent: number
 	listApiConfigMeta: any[]
 	maxOpenTabsContext: number
 	maxWorkspaceFiles: number
@@ -34,6 +37,9 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	setCachedStateField: SetCachedStateField<
 		| "autoCondenseContext"
 		| "autoCondenseContextPercent"
+		| "contextRoutingEnabled"
+		| "contextRoutingFastThresholdPercent"
+		| "contextRoutingDeepThresholdPercent"
 		| "maxOpenTabsContext"
 		| "maxWorkspaceFiles"
 		| "showRooIgnoredFiles"
@@ -55,6 +61,9 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 export const ContextManagementSettings = ({
 	autoCondenseContext,
 	autoCondenseContextPercent,
+	contextRoutingEnabled,
+	contextRoutingFastThresholdPercent,
+	contextRoutingDeepThresholdPercent,
 	listApiConfigMeta,
 	maxOpenTabsContext,
 	maxWorkspaceFiles,
@@ -505,6 +514,67 @@ export const ContextManagementSettings = ({
 											threshold: autoCondenseContextPercent,
 										})
 									: t("settings:contextManagement.condensingThreshold.profileDescription")}
+							</div>
+						</div>
+					</div>
+				)}
+			</Section>
+			<Section className="pt-2">
+				<VSCodeCheckbox
+					checked={contextRoutingEnabled}
+					onChange={(e: any) => setCachedStateField("contextRoutingEnabled", e.target.checked)}
+					data-testid="context-routing-enabled-checkbox">
+					<span className="font-medium">{t("settings:contextManagement.contextRouting.name")}</span>
+				</VSCodeCheckbox>
+				<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+					{t("settings:contextManagement.contextRouting.description")}
+				</div>
+				{contextRoutingEnabled && (
+					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
+						<div className="flex items-center gap-4 font-bold">
+							<Gauge size={16} />
+							<div>{t("settings:contextManagement.contextRouting.thresholdsLabel")}</div>
+						</div>
+						<div>
+							<span className="block font-medium mb-1">
+								{t("settings:contextManagement.contextRouting.fastLabel")}
+							</span>
+							<div className="flex items-center gap-2">
+								<Slider
+									min={10}
+									max={100}
+									step={1}
+									value={[contextRoutingFastThresholdPercent]}
+									onValueChange={([value]) =>
+										setCachedStateField("contextRoutingFastThresholdPercent", value)
+									}
+									data-testid="context-routing-fast-threshold-slider"
+								/>
+								<span className="w-20">{contextRoutingFastThresholdPercent}%</span>
+							</div>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								{t("settings:contextManagement.contextRouting.fastDescription")}
+							</div>
+						</div>
+						<div>
+							<span className="block font-medium mb-1">
+								{t("settings:contextManagement.contextRouting.deepLabel")}
+							</span>
+							<div className="flex items-center gap-2">
+								<Slider
+									min={10}
+									max={100}
+									step={1}
+									value={[contextRoutingDeepThresholdPercent]}
+									onValueChange={([value]) =>
+										setCachedStateField("contextRoutingDeepThresholdPercent", value)
+									}
+									data-testid="context-routing-deep-threshold-slider"
+								/>
+								<span className="w-20">{contextRoutingDeepThresholdPercent}%</span>
+							</div>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								{t("settings:contextManagement.contextRouting.deepDescription")}
 							</div>
 						</div>
 					</div>

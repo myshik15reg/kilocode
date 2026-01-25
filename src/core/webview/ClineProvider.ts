@@ -2120,6 +2120,9 @@ ${prompt}
 			allowedMaxCost,
 			autoCondenseContext,
 			autoCondenseContextPercent,
+			contextRoutingEnabled, // kilocode_change: 2026-01-24 Context routing toggle
+			contextRoutingFastThresholdPercent,
+			contextRoutingDeepThresholdPercent,
 			soundEnabled,
 			ttsEnabled,
 			ttsSpeed,
@@ -2294,6 +2297,9 @@ ${prompt}
 			allowedMaxCost,
 			autoCondenseContext: autoCondenseContext ?? true,
 			autoCondenseContextPercent: autoCondenseContextPercent ?? 100,
+			contextRoutingEnabled: contextRoutingEnabled ?? false, // kilocode_change: 2026-01-24 Context routing toggle
+			contextRoutingFastThresholdPercent: contextRoutingFastThresholdPercent ?? 50,
+			contextRoutingDeepThresholdPercent: contextRoutingDeepThresholdPercent ?? 80,
 			uriScheme: vscode.env.uriScheme,
 			uiKind: vscode.UIKind[vscode.env.uiKind], // kilocode_change
 			kiloCodeWrapperProperties, // kilocode_change wrapper information
@@ -2591,9 +2597,12 @@ ${prompt}
 			diagnosticsEnabled: stateValues.diagnosticsEnabled ?? true,
 			allowedMaxRequests: stateValues.allowedMaxRequests,
 			allowedMaxCost: stateValues.allowedMaxCost,
-			autoCondenseContext: stateValues.autoCondenseContext ?? true,
-			autoCondenseContextPercent: stateValues.autoCondenseContextPercent ?? 100,
-			// taskHistory: stateValues.taskHistory ?? [], // kilocode_change
+				autoCondenseContext: stateValues.autoCondenseContext ?? true,
+				autoCondenseContextPercent: stateValues.autoCondenseContextPercent ?? 100,
+				contextRoutingEnabled: stateValues.contextRoutingEnabled ?? false, // kilocode_change: 2026-01-24 Context routing toggle
+				contextRoutingFastThresholdPercent: stateValues.contextRoutingFastThresholdPercent ?? 50,
+				contextRoutingDeepThresholdPercent: stateValues.contextRoutingDeepThresholdPercent ?? 80,
+				// taskHistory: stateValues.taskHistory ?? [], // kilocode_change
 			allowedCommands: stateValues.allowedCommands,
 			deniedCommands: stateValues.deniedCommands,
 			soundEnabled: stateValues.soundEnabled ?? false,

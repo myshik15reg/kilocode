@@ -97,6 +97,10 @@ export const globalSettingsSchema = z.object({
 	allowedMaxCost: z.number().nullish(),
 	autoCondenseContext: z.boolean().optional(),
 	autoCondenseContextPercent: z.number().optional(),
+	// kilocode_change: 2026-01-24 Context routing thresholds
+	contextRoutingEnabled: z.boolean().optional(),
+	contextRoutingFastThresholdPercent: z.number().optional(),
+	contextRoutingDeepThresholdPercent: z.number().optional(),
 	maxConcurrentFileReads: z.number().optional(),
 	allowVeryLargeReads: z.boolean().optional(), // kilocode_change
 

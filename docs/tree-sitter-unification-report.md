@@ -1,275 +1,58 @@
-# Отчет о завершении унификации Tree-sitter архитектуры
+# Отчет об обновлении унификации Tree-sitter
 
-**Дата:** 2025-12-13  
-**Версия:** 1.0.0
+**Дата:** 2026-01-24  
+**Версия:** 2.0.0
 
-## Executive Summary
+## Кратко
 
-Успешно завершена унификация Tree-sitter архитектуры в проекте Kilocode, обеспечивающая согласованность между семантическим поиском (Qdrant) и графом зависимостей (Neo4j).
+Архитектура Tree-sitter и Neo4j-графа унифицирована для всех языков:
+- удалены 1С-специфичные имена и классы в графовом экстракторе
+- введен единый `TreeSitterGraphExtractor`
+- нормализация языков перенесена в общий слой `languageParser`
 
-## Проблема
+## Основные изменения
 
-До унификации:
+### 1. Унифицированный графовый экстрактор
+- Новый класс `TreeSitterGraphExtractor` для всех языков
+- Использует общий ParserManager и общий набор query
+- Создает `file` entities и `defines` relationships для базовых определений
+- `calls` relationships строятся только если query содержит `call` captures
 
-- Дублирование кода инициализации парсеров
-- Разное кэширование в разных компонентах
-- Потенциальная несогласованность результатов
-- Сложность добавления новых языков
+**Файл:** `src/services/neo4j/extractors/tree-sitter-graph-extractor.ts`
 
-## Решение
+### 2. Общая нормализация языков
+- `resolveLanguageConfig` и `normalizeLanguageId` добавлены в `languageParser`
+- единый источник правды для расширений и languageId
 
-Создана унифицированная архитектура с тремя ключевыми компонентами:
+**Файл:** `src/services/tree-sitter/languageParser.ts`
 
-### 1. TreeSitterParserManager
+### 3. RelationshipExtractor без 1С-специфики
+- использует `getGraphQueryForLanguage`
+- кэширует экстракторы по languageId
 
-- Централизованное управление парсерами
-- Singleton с кэшированием
-- Автоматическая инициализация
+**Файл:** `src/services/neo4j/relationship-extractor.ts`
 
-**Файл:** [`src/services/tree-sitter/parser-manager.ts`](../src/services/tree-sitter/parser-manager.ts) (99 строк)
+### 4. Унификация Neo4j индексации
+- `CodeIndexOrchestrator` индексирует все поддерживаемые языки единообразно
+- удалены специальные ветки для `.bsl`
 
-### 2. BaseExtractor
+**Файл:** `src/services/code-index/orchestrator.ts`
 
-- Базовый класс для всех экстракторов
-- Унифицированная инициализация
-- Query-based extraction
+## Переименования
 
-**Файл:** [`src/services/tree-sitter/base-extractor.ts`](../src/services/tree-sitter/base-extractor.ts) (56 строк)
+- `tree-sitter-1c/` → `tree-sitter-grammars/`
+- `onec-extractor.ts` → `tree-sitter-graph-extractor.ts`
+- тесты экстрактора переименованы и обновлены
 
-### 3. Двухуровневые Queries
+## Тесты
 
-- Base queries для поиска
-- Graph queries для relationships
-- Переиспользование между компонентами
+Обновлены или переписаны:
+- `src/services/neo4j/extractors/__tests__/tree-sitter-graph-extractor.spec.ts`
+- `src/services/neo4j/__tests__/relationship-extractor.spec.ts`
+- `src/services/tree-sitter/__tests__/languageParser.spec.ts`
+- `src/services/tree-sitter/__tests__/integration.spec.ts`
+- `src/services/code-index/__tests__/orchestrator.spec.ts`
 
-**Файл:** [`src/services/tree-sitter/queries/onec.ts`](../src/services/tree-sitter/queries/onec.ts) (106 строк)
+## Итог
 
-## Выполненные фазы
-
-### Фаза 1: Подготовка (1 неделя)
-
-- ✅ TreeSitterParserManager (99 строк)
-- ✅ BaseExtractor (56 строк)
-- ✅ Двухуровневые queries для 1С (106 строк)
-- ✅ Unit-тесты и документация
-
-**Изменения:**
-- 3 новых файла инфраструктуры
-- 261 строка кода
-- 0 breaking changes
-
-### Фаза 2: Миграция OneCExtractor (1 неделя)
-
-- ✅ Рефакторинг на BaseExtractor
-- ✅ Query-based extraction
-- ✅ 21 комплексный тест
-- ✅ Сохранена полная функциональность
-
-**Изменения:**
-- Обновлен 1 файл ([`onec-extractor.ts`](../src/services/neo4j/extractors/onec-extractor.ts))
-- Создан файл тестов с 21 тест-кейсом
-- 0 breaking changes
-
-**Результаты тестирования:**
-```bash
-✓ OneCExtractor initialization
-✓ extract functions with parameters
-✓ extract procedures with export keyword
-✓ extract function calls
-✓ extract parameters with default values
-✓ handle complex nested structures
-# ... и 15 других тестов
-```
-
-### Фаза 3: Переключение languageParser (1 неделя)
-
-- ✅ Интеграция с ParserManager
-- ✅ Централизованное кэширование
-- ✅ Нормализация языков
-- ✅ Обратная совместимость
-
-**Изменения:**
-- Обновлен 1 файл ([`languageParser.ts`](../src/services/tree-sitter/languageParser.ts))
-- Расширены тесты (+8 новых тест-кейсов)
-- 0 breaking changes
-
-**Валидация:**
-```typescript
-// Тест подтверждает совместное использование парсеров
-expect(searchParsers.bsl.parser).toBe(directParser) // ✅ PASS
-```
-
-### Фаза 4: Оптимизация и финализация (текущая)
-
-- ✅ Интеграционные тесты
-- ✅ Migration Guide
-- ✅ Финальная документация
-- ✅ Performance validation
-
-**Изменения:**
-- 1 новый файл интеграционных тестов (128 строк)
-- 2 новых документа (~1800 строк документации)
-- 0 breaking changes
-
-## Результаты
-
-### Производительность
-
-- **Кэширование:** 100x улучшение для повторных загрузок
-  - Первая загрузка: ~50-100ms
-  - Кэшированная загрузка: <1ms
-- **Память:** Один Parser вместо N копий
-- **Инициализация:** Автоматическая, не требует явных вызовов
-
-### Качество кода
-
-- **Дублирование:** Уменьшено на ~70%
-  - До: Каждый компонент создавал свой Parser
-  - После: Один ParserManager для всех
-- **Тестирование:** Покрытие 85%
-  - 29+ unit тестов
-  - 5 интеграционных тестов
-- **Согласованность:** 100% для базовых определений
-  - languageParser и OneCExtractor видят одинаковые конструкции
-
-### Поддержка
-
-- **Добавление языка:** 30 минут вместо 4 часов
-  1. Добавить WASM файл
-  2. Создать queries (base + graph)
-  3. Обновить маппинг в languageParser
-  4. (Опционально) Создать экстрактор
-  
-- **Migration:** Простой и понятный процесс
-  - Наследоваться от BaseExtractor
-  - Использовать executeQuery() вместо императивного обхода
-  - Переиспользовать queries
-  
-- **Документация:** Полная и актуальная
-  - [Основная документация](./tree-sitter-unification.md)
-  - [Migration Guide](./tree-sitter-migration-guide.md)
-  - Примеры и best practices
-
-## Архитектурные преимущества
-
-### 1. Единая точка истины
-
-- Все компоненты используют один ParserManager
-- Гарантированная согласованность
-- Централизованное логирование и отладка
-
-### 2. Оптимизированное кэширование
-
-- Parser создается один раз
-- Переиспользуется везде
-- Экономия памяти и времени
-
-### 3. Расширяемость
-
-- Легко добавлять новые языки
-- BaseExtractor обеспечивает единообразие
-- Queries переиспользуются
-
-### 4. Поддерживаемость
-
-- Меньше кода для поддержки (уменьшение на ~70%)
-- Чёткая структура
-- Хорошая документация
-
-## Технический долг
-
-### Устранено
-
-- ✅ Дублирование инициализации парсеров
-- ✅ Разрозненное кэширование
-- ✅ Несогласованность между компонентами
-
-### Осталось (рекомендации)
-
-- 🔄 Миграция других языковых экстракторов (TypeScript, Python)
-- 🔄 Унификация queries для всех 30+ языков
-- 🔄 Оптимизация кэширования AST деревьев
-
-## Метрики изменений
-
-### Добавлено
-
-- 3 новых файла инфраструктуры (~261 строка)
-- 60+ unit и интеграционных тестов
-- 3 документа (~1800 строк документации)
-
-### Изменено
-
-- 2 существующих файла (OneCExtractor, languageParser)
-- Рефакторинг без breaking changes
-- Полная обратная совместимость
-
-### Удалено
-
-- 0 файлов
-- 0 breaking changes
-- Только упрощение кода
-
-## Покрытие тестами
-
-### Unit-тесты
-
-- ✅ [`parser-manager.spec.ts`](../src/services/tree-sitter/__tests__/parser-manager.spec.ts) - 6 тестов
-- ✅ [`onec-extractor.spec.ts`](../src/services/neo4j/extractors/__tests__/onec-extractor.spec.ts) - 21 тест
-- ✅ [`languageParser.spec.ts`](../src/services/tree-sitter/__tests__/languageParser.spec.ts) - расширен
-
-### Интеграционные тесты
-
-- ✅ [`integration.spec.ts`](../src/services/tree-sitter/__tests__/integration.spec.ts) - 5 тестов
-  - Parser Sharing (2 теста)
-  - Language Normalization (1 тест)
-  - Query Consistency (1 тест)
-  - Performance (1 тест)
-
-### Запуск всех тестов
-
-```bash
-# Tree-sitter тесты
-cd src && pnpm test services/tree-sitter/__tests__/
-
-# Neo4j extractor тесты
-cd src && pnpm test services/neo4j/extractors/__tests__/
-```
-
-## Следующие шаги
-
-### Краткосрочные (1-2 недели)
-
-1. Миграция TypeScript/JavaScript экстракторов
-2. Создание унифицированных queries для основных языков
-3. Оптимизация производительности парсинга
-
-### Среднесрочные (1-2 месяца)
-
-1. Миграция всех 30+ языков на унифицированную архитектуру
-2. Кэширование AST деревьев
-3. Профилирование и оптимизация
-
-### Долгосрочные (3+ месяца)
-
-1. Инкрементальный парсинг
-2. Параллельная обработка больших файлов
-3. Расширение graph queries для всех языков
-
-## Заключение
-
-Унификация Tree-sitter архитектуры успешно завершена. Система демонстрирует:
-
-- ✅ Высокую производительность (100x улучшение кэширования)
-- ✅ Согласованность результатов (100% совпадение между компонентами)
-- ✅ Простоту расширения (добавление языка за 30 минут)
-- ✅ Отличную поддерживаемость (уменьшение кода на 70%)
-
-Проект готов к production использованию.
-
----
-
-**Подготовил:** Kilo Code  
-**Режим:** Code Mode  
-**Дата:** 2025-12-13  
-**Статус:** ✅ Завершено
+Графовая кодовая база теперь опирается на единую Tree-sitter инфраструктуру и поддерживает все языки, для которых есть query. 1С остается поддерживаемым языком, но без 1С-специфичных названий и классов в общем API.

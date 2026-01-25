@@ -11,10 +11,10 @@ import {
 	DEFAULT_MODES,
 } from "@roo-code/types"
 
-import { addCustomInstructions } from "../core/prompts/sections/custom-instructions"
-
 import { EXPERIMENT_IDS } from "./experiments"
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } from "./tools"
+
+type AddCustomInstructions = typeof import("../core/prompts/sections/custom-instructions").addCustomInstructions
 
 export type Mode = string
 
@@ -344,8 +344,10 @@ export async function getFullModeDetails(
 	// If we have cwd, load and combine all custom instructions
 	let fullCustomInstructions = baseCustomInstructions
 	if (options?.cwd) {
+		// Lazily load node-only logic to keep webview builds browser-safe.
+		const { addCustomInstructions } = await import("../core/prompts/sections/custom-instructions")
 		// kilocode_change start - only pass language if defined to satisfy exactOptionalPropertyTypes
-		const customInstructionsOptions: Parameters<typeof addCustomInstructions>[4] = {}
+		const customInstructionsOptions: Parameters<AddCustomInstructions>[4] = {}
 		if (options.language !== undefined) {
 			customInstructionsOptions.language = options.language
 		}

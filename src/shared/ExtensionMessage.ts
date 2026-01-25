@@ -456,6 +456,9 @@ export type ExtensionState = Pick<
 	| "codebaseIndexConfig"
 	| "codebaseIndexModels"
 	| "profileThresholds"
+	| "contextRoutingEnabled" // kilocode_change: Context routing toggle
+	| "contextRoutingFastThresholdPercent" // kilocode_change: Context routing fast threshold
+	| "contextRoutingDeepThresholdPercent" // kilocode_change: Context routing deep threshold
 	| "systemNotificationsEnabled" // kilocode_change
 	| "includeDiagnosticMessages"
 	| "maxDiagnosticMessages"
@@ -530,6 +533,9 @@ export type ExtensionState = Pick<
 
 	autoCondenseContext: boolean
 	autoCondenseContextPercent: number
+	contextRoutingEnabled: boolean // kilocode_change: Context routing toggle
+	contextRoutingFastThresholdPercent: number // kilocode_change: Context routing fast threshold
+	contextRoutingDeepThresholdPercent: number // kilocode_change: Context routing deep threshold
 	marketplaceItems?: MarketplaceItem[]
 	marketplaceInstalledMetadata?: { project: Record<string, any>; global: Record<string, any> }
 	profileThresholds: Record<string, number>

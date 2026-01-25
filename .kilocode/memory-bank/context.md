@@ -9,6 +9,8 @@ The project is an active open-source VS Code extension with a significant user b
 ## Recent Changes
 -   Added `.kilocode/memory-bank/` directory structure.
 -   Created `index.md`, `brief.md`, `product.md`, `architecture.md`, `tech.md`.
+-   Added context routing settings (fast/deep thresholds + toggle) across state, UI, and environment details, with updated tests.
+-   Updated test mocks and expectations for MCP watchers, code index settings defaults, hybrid search scoring, and dist asset checks; full `pnpm --filter ./src test` now passes.
 
 ## Known Issues
 -   None explicitly identified in the initial scan, but migration to a structured Memory Bank suggests a need for better context retention across sessions.

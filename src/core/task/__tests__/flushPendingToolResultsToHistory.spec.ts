@@ -52,6 +52,19 @@ vi.mock("vscode", () => {
 
 	return {
 		TabInputTextDiff: vi.fn(),
+		Uri: {
+			file: vi.fn((path: string) => ({
+				scheme: "file",
+				authority: "",
+				path,
+				query: "",
+				fragment: "",
+				fsPath: path,
+				toString: () => path,
+			})),
+			joinPath: vi.fn(),
+		},
+		RelativePattern: vi.fn().mockImplementation((base: string, pattern: string) => ({ base, pattern })),
 		CodeActionKind: {
 			QuickFix: { value: "quickfix" },
 			RefactorRewrite: { value: "refactor.rewrite" },
