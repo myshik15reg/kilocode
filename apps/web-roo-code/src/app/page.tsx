@@ -49,7 +49,7 @@ export default async function Home() {
 									<ArrowRight className="ml-2 size-5" />
 								</a>
 							</Button>
-							<span className="text-xs text-muted-foreground">Free and Open Source</span>
+							<span className="text-xs text-muted-foreground">Free Forever</span>
 						</div>
 
 						<div className="flex flex-col items-center gap-2">

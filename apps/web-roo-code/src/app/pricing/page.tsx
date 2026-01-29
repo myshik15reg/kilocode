@@ -263,7 +263,7 @@ export default function PricingPage() {
 						<div className="rounded-xl border border-border bg-card p-6">
 							<h3 className="font-semibold">Wait, is Roo Code free or not?</h3>
 							<p className="mt-2 text-sm text-muted-foreground">
-								Yes! The Roo Code VS Code extension is open source and free forever. The extension acts
+								Yes! The Roo Code VS Code extension is free forever. The extension acts
 								as a powerful AI coding assistant right in your editor. These are the prices for Roo
 								Code Cloud.
 							</p>

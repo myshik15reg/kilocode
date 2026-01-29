@@ -1,5 +1,5 @@
 /**
- * Atom One Dark theme for Kilo Code CLI
+ * Atom One Dark theme for AlfaCode assistant CLI
  *
  * Based on the Atom One Dark color scheme
  */

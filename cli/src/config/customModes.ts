@@ -39,47 +39,90 @@ export function getSearchedPaths(): SearchedPath[] {
 function getGlobalModesPath(): string {
 	// VS Code global storage path varies by platform
 	const homeDir = homedir()
+	const preferredExtensionStorageId = "kilocode.alfa-code-assistant"
+	const legacyExtensionStorageId = "kilocode.kilo-code"
 
 	// Try to construct the path to VS Code global storage
 	// This matches the path used by the VS Code extension
 	if (process.platform === "darwin") {
 		// macOS
-		return join(
+		const preferred = join(
 			homeDir,
 			"Library",
 			"Application Support",
 			"Code",
 			"User",
 			"globalStorage",
-			"kilocode.kilo-code",
+			preferredExtensionStorageId,
 			"settings",
 			"custom_modes.yaml",
 		)
+		const legacy = join(
+			homeDir,
+			"Library",
+			"Application Support",
+			"Code",
+			"User",
+			"globalStorage",
+			legacyExtensionStorageId,
+			"settings",
+			"custom_modes.yaml",
+		)
+		if (existsSync(preferred)) return preferred
+		if (existsSync(legacy)) return legacy
+		return preferred
 	} else if (process.platform === "win32") {
 		// Windows
-		return join(
+		const preferred = join(
 			homeDir,
 			"AppData",
 			"Roaming",
 			"Code",
 			"User",
 			"globalStorage",
-			"kilocode.kilo-code",
+			preferredExtensionStorageId,
 			"settings",
 			"custom_modes.yaml",
 		)
+		const legacy = join(
+			homeDir,
+			"AppData",
+			"Roaming",
+			"Code",
+			"User",
+			"globalStorage",
+			legacyExtensionStorageId,
+			"settings",
+			"custom_modes.yaml",
+		)
+		if (existsSync(preferred)) return preferred
+		if (existsSync(legacy)) return legacy
+		return preferred
 	} else {
 		// Linux
-		return join(
+		const preferred = join(
 			homeDir,
 			".config",
 			"Code",
 			"User",
 			"globalStorage",
-			"kilocode.kilo-code",
+			preferredExtensionStorageId,
 			"settings",
 			"custom_modes.yaml",
 		)
+		const legacy = join(
+			homeDir,
+			".config",
+			"Code",
+			"User",
+			"globalStorage",
+			legacyExtensionStorageId,
+			"settings",
+			"custom_modes.yaml",
+		)
+		if (existsSync(preferred)) return preferred
+		if (existsSync(legacy)) return legacy
+		return preferred
 	}
 }
 

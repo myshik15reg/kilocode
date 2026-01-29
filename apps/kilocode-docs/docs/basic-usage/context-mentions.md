@@ -1,6 +1,6 @@
 # Context Mentions
 
-Context mentions are a powerful way to provide Kilo Code with specific information about your project, allowing it to perform tasks more accurately and efficiently. You can use mentions to refer to files, folders, problems, and Git commits. Context mentions start with the `@` symbol.
+Context mentions are a powerful way to provide AlfaCode assistant with specific information about your project, allowing it to perform tasks more accurately and efficiently. You can use mentions to refer to files, folders, problems, and Git commits. Context mentions start with the `@` symbol.
 
 <img src="/docs/img/context-mentions/context-mentions.png" alt="Context Mentions Overview - showing the @ symbol dropdown menu in the chat interface" width="600" />
 
@@ -63,7 +63,7 @@ _Problems mentions import diagnostics directly from VS Code's problems panel._
 
 ### Terminal Mention
 
-<img src="/docs/img/context-mentions/context-mentions-4.png" alt="Terminal mention example showing terminal output being included in Kilo Code's context" width="600" />
+<img src="/docs/img/context-mentions/context-mentions-4.png" alt="Terminal mention example showing terminal output being included in AlfaCode assistant's context" width="600" />
 
 _Terminal mentions capture recent command output for debugging and analysis._
 
@@ -77,7 +77,7 @@ _Terminal mentions capture recent command output for debugging and analysis._
 
 ### Git Mentions
 
-<img src="/docs/img/context-mentions/context-mentions-5.png" alt="Git commit mention example showing commit details being analyzed by Kilo Code" width="600" />
+<img src="/docs/img/context-mentions/context-mentions-5.png" alt="Git commit mention example showing commit details being analyzed by AlfaCode assistant" width="600" />
 
 _Git mentions provide commit details and diffs for context-aware version analysis._
 | Type | Format | Provides | Limitations |

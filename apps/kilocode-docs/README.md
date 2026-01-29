@@ -1,4 +1,4 @@
-# Kilo Code Docs
+# AlfaCode assistant Docs
 
 This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator, and lives at https://kilo.ai/docs
 

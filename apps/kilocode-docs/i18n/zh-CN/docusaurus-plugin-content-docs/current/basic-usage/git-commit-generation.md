@@ -1,6 +1,6 @@
 # 生成提交信息
 
-根据您暂存的 git 更改自动生成描述性提交信息。Kilo Code 会分析您暂存的文件并创建遵循最佳实践的约定式提交信息。
+根据您暂存的 git 更改自动生成描述性提交信息。AlfaCode assistant 会分析您暂存的文件并创建遵循最佳实践的约定式提交信息。
 
 :::info
 此功能仅分析**暂存的更改**。在生成提交信息之前，请务必使用 `git add` 或通过 `VS Code` 界面暂存您的文件。
@@ -19,7 +19,7 @@ git 提交信息生成器：
 ### 生成提交信息
 
 1.  使用 `git add` 或 VS Code git 界面暂存您的更改
-2.  在 VS Code 源代码管理面板中，查找提交信息字段旁边的 `Kilo Code` 徽标
+2.  在 VS Code 源代码管理面板中，查找提交信息字段旁边的 `AlfaCode assistant` 徽标
 3.  单击徽标以生成提交信息
 
 生成的信息将出现在提交信息字段中，您可以根据需要进行审查和修改。
@@ -154,4 +154,4 @@ git add .
 ## 相关功能
 
 - [API 配置配置文件](/features/api-configuration-profiles) - 使用不同的模型进行提交信息生成
-- [设置管理](/basic-usage/settings-management) - 管理您的所有 Kilo Code 首选项
+- [设置管理](/basic-usage/settings-management) - 管理您的所有 AlfaCode assistant 首选项

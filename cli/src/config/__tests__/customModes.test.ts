@@ -239,7 +239,7 @@ customModes:
 			const globalPath = paths[0].path
 
 			// Check it includes expected path components
-			expect(globalPath).toContain("kilocode.kilo-code")
+			expect(globalPath).toContain("kilocode.alfa-code-assistant")
 			expect(globalPath).toContain("custom_modes.yaml")
 
 			// Platform-specific checks

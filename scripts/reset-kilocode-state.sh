@@ -21,17 +21,20 @@ else
     VSCODE_DIR="$HOME/Library/Application Support/$VSCODE_DIR"
 fi
 
-echo "Kilocode state is being reset for: $VSCODE_DIR"
+echo "AlfaCode assistant extension state is being reset for: $VSCODE_DIR"
 echo "This probably doesn't work while VS Code is running."
 
 # Reset the secrets:
 sqlite3 "$VSCODE_DIR/User/globalStorage/state.vscdb" \
 "DELETE FROM ItemTable WHERE \
+    key = 'kilocode.alfa-code-assistant' OR \
     key = 'kilocode.kilo-code' OR \
     key LIKE 'workbench.view.extension.kilo-code%' OR \
+    key LIKE 'secret://{\"extensionId\":\"kilocode.alfa-code-assistant\",%' OR \
     key LIKE 'secret://{\"extensionId\":\"kilocode.kilo-code\",%';"
 
 # delete all kilocode state files:
+rm -rf "$VSCODE_DIR/User/globalStorage/kilocode.alfa-code-assistant/"
 rm -rf "$VSCODE_DIR/User/globalStorage/kilocode.kilo-code/"
 
 # clear some of the vscode cache that I've observed contains kilocode related entries:

@@ -81,7 +81,7 @@ export const groqModels = {
 		inputPrice: 0.15,
 		outputPrice: 0.75,
 		description:
-			"GPT-OSS 120B is OpenAI's flagship open source model, built on a Mixture-of-Experts (MoE) architecture with 20 billion parameters and 128 experts.",
+			"GPT-OSS 120B is OpenAI's flagship model, built on a Mixture-of-Experts (MoE) architecture with 20 billion parameters and 128 experts.", // kilocode_change
 	},
 	"openai/gpt-oss-20b": {
 		maxTokens: 32768,
@@ -93,6 +93,6 @@ export const groqModels = {
 		inputPrice: 0.1,
 		outputPrice: 0.5,
 		description:
-			"GPT-OSS 20B is OpenAI's flagship open source model, built on a Mixture-of-Experts (MoE) architecture with 20 billion parameters and 32 experts.",
+			"GPT-OSS 20B is OpenAI's flagship model, built on a Mixture-of-Experts (MoE) architecture with 20 billion parameters and 32 experts.", // kilocode_change
 	},
 } as const satisfies Record<string, ModelInfo>

@@ -56,6 +56,7 @@ export const globalSettingsSchema = z.object({
 
 	lastShownAnnouncementId: z.string().optional(),
 	customInstructions: z.string().optional(),
+	alfaCodeChangeAuthor: z.string().optional(), // kilocode_change
 	taskHistory: z.array(historyItemSchema).optional(),
 	dismissedUpsells: z.array(z.string()).optional(),
 

@@ -1,6 +1,6 @@
 # Managing Disk Space
 
-The Kilo Code CLI stores task history in `~/.kilocode/cli/` (or `%USERPROFILE%\.kilocode\cli\` on Windows). With heavy usage, this directory can grow significantly.
+The AlfaCode assistant CLI stores task history in `~/.kilocode/cli/` (or `%USERPROFILE%\.kilocode\cli\` on Windows). With heavy usage, this directory can grow significantly.
 
 ## Manual Cleanup
 
@@ -28,10 +28,10 @@ rmdir /s /q "%USERPROFILE%\.kilocode\cli"
 
 ## Using the VS Code Extension
 
-If you also use the Kilo Code VS Code extension, you can enable automatic task history cleanup:
+If you also use the AlfaCode assistant VS Code extension, you can enable automatic task history cleanup:
 
 1. Open VS Code Settings (`Cmd+,` / `Ctrl+,`)
-2. Search for "Kilo Code auto purge"
+2. Search for "AlfaCode assistant auto purge"
 3. Enable **Auto Purge** and configure retention periods
 
 The extension's auto-purge feature runs daily and removes old tasks based on configurable retention periods for different task types (favorited, completed, incomplete).

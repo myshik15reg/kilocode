@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"\\(Get-Content ''WorkFlowAI/.kilocodemodes'' -Raw\\) -replace ''Kilo Code'', ''AlfaCode assistant'' | Set-Content -Path ''WorkFlowAI/.kilocodemodes.temp'' -NoNewline\")",
+      "Bash(powershell -Command:*)",
+      "Bash(wc:*)",
+      "Bash(du:*)",
+      "Bash(ls:*)",
+      "Bash(xargs:*)",
+      "Bash(python3 -c:*)"
+    ]
+  }
+}

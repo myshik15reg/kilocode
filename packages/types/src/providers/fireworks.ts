@@ -28,7 +28,7 @@ export const fireworksModels = {
 		inputPrice: 0.6,
 		outputPrice: 2.5,
 		description:
-			"Kimi K2 Thinking is the latest, most capable version of open-source thinking model. Starting with Kimi K2, we built it as a thinking agent that reasons step-by-step while dynamically invoking tools.",
+			"Kimi K2 Thinking is the latest, most capable version of the thinking model. Starting with Kimi K2, we built it as a thinking agent that reasons step-by-step while dynamically invoking tools.",
 	},
 	// kilocode_change end
 	"accounts/fireworks/models/kimi-k2-instruct-0905": {

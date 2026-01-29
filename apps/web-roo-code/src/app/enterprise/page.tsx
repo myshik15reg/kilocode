@@ -475,7 +475,7 @@ export default async function Enterprise() {
 									</li>
 									<li className="flex items-center space-x-3">
 										<CheckCircle className="h-5 w-5 text-green-500" />
-										<span>Open-source transparency for security verification</span>
+										<span>Transparency for security verification</span>
 									</li>
 								</ul>
 							</div>

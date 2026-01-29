@@ -177,15 +177,11 @@ export function PillarsSection() {
 							</div>
 							<div>
 								<h3 className="text-2xl font-bold mb-1">Secure and transparent</h3>
-								<h4 className="font-semibold text-lg">Open source from the get go.</h4>
+								<h4 className="font-semibold text-lg">Transparent from the start.</h4>
 								<div className="text-muted-foreground my-4 space-y-1">
 									<p>
-										The Roo Code Extension is{" "}
-										<Link target="_blank" href="https://github.com/RooCodeInc/Roo-Code">
-											open source
-										</Link>{" "}
-										so you can see for yourself exactly what it&apos;s doing and we don&apos;t use
-										your data for training.
+										We prioritize transparency and data privacy, and we don&apos;t use your data
+										for training.
 									</p>
 									<p>
 										Plus we&apos;re fully SOC2 Type 2 compliant and follow industry-standard

@@ -2611,7 +2611,9 @@ export function createVSCodeAPIMock(
 			all: [],
 			getExtension: (extensionId: string) => {
 				// Mock the extension object with extensionUri for theme loading
-				if (extensionId === "kilocode.kilo-code") {
+				// kilocode_change start
+				if (extensionId === "kilocode.alfa-code-assistant" || extensionId === "kilocode.kilo-code") {
+					// kilocode_change end
 					return {
 						id: extensionId,
 						extensionUri: context.extensionUri,

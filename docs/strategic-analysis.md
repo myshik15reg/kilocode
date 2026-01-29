@@ -763,6 +763,6 @@ graph TD
 
 ---
 
-**Составлено:** Kilo Code Architect Mode  
+**Составлено:** AlfaCode assistant Architect Mode  
 **Версия:** 1.0  
 **Последнее обновление:** 2025-12-13

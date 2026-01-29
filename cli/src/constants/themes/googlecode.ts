@@ -1,5 +1,5 @@
 /**
- * Google Code theme for Kilo Code CLI
+ * Google Code theme for AlfaCode assistant CLI
  *
  * Based on the Google Code color scheme
  */

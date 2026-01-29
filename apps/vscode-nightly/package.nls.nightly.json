@@ -1,7 +1,7 @@
 {
-	"extension.displayName": "Kilo Code Nightly",
-	"views.contextMenu.label": "Kilo Code Nightly",
-	"views.terminalMenu.label": "Kilo Code Nightly",
-	"views.activitybar.title": "Kilo Code Nightly",
-	"configuration.title": "Kilo Code Nightly"
+	"extension.displayName": "AlfaCode assistant Nightly",
+	"views.contextMenu.label": "AlfaCode assistant Nightly",
+	"views.terminalMenu.label": "AlfaCode assistant Nightly",
+	"views.activitybar.title": "AlfaCode assistant Nightly",
+	"configuration.title": "AlfaCode assistant Nightly"
 }

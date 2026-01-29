@@ -31,13 +31,13 @@ Before enabling Code Reviews:
 - **Compute and review time are free during limited beta**
     - Feedback is welcome in the Code Reviews beta Discord channel:
         - [Kilo Discord](https://discord.gg/hZnd57qN)
-- **Kilo Code credits are still used** when the agent performs model reasoning during a review.
+- **AlfaCode assistant credits are still used** when the agent performs model reasoning during a review.
 
 ---
 
 ## How to Use
 
-1. Go to the **Review Agent** section in your Kilo Code [personal](https://app.kilo.ai/profile) or [Organization](https://app.kilo.ai/organizations) dashboard.
+1. Go to the **Review Agent** section in your AlfaCode assistant [personal](https://app.kilo.ai/profile) or [Organization](https://app.kilo.ai/organizations) dashboard.
 2. Toggle **Enable AI Code Review** to automatically review PRs on open/update.
 3. Choose an **AI Model** (e.g., Grok Code Fast 1).
 4. Select a **Review Style**:

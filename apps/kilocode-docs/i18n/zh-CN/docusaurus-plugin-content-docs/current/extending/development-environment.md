@@ -19,7 +19,7 @@
 1. **Fork 并克隆仓库**：
 
     - **Fork 仓库**：
-        - 访问 [Kilo Code GitHub 仓库](https://github.com/Kilo-Org/kilocode)
+        - 访问 [AlfaCode assistant GitHub 仓库](https://github.com/Kilo-Org/kilocode)
         - 点击右上角的 "Fork" 按钮，创建你自己的副本。
     - **克隆你的 Fork**：
         ```bash
@@ -80,7 +80,7 @@ npm run build
 要在开发模式下运行扩展：
 
 1. 在 VSCode 中按 `F5`（或选择 **Run** → **Start Debugging**）
-2. 这将打开一个新的 VSCode 窗口，并加载 Kilo Code
+2. 这将打开一个新的 VSCode 窗口，并加载 AlfaCode assistant
 
 ### 热重载
 
@@ -102,14 +102,14 @@ npm run build
 要安装你构建的扩展：
 
 ```bash
-code --install-extension "$(ls -1v bin/kilo-code-*.vsix | tail -n1)"
+code --install-extension "$(ls -1v bin/alfa-code-assistant-*.vsix | tail -n1)"
 ```
 
 将 `[version]` 替换为当前版本号。
 
 ## 测试
 
-Kilo Code 使用多种测试来确保质量：
+AlfaCode assistant 使用多种测试来确保质量：
 
 ### 单元测试
 
@@ -188,5 +188,5 @@ npm run check-types   # 运行 TypeScript 类型检查
 ### 调试技巧
 
 - 在代码中使用 `console.log()` 语句进行调试
-- 检查 VSCode 中的输出面板（View > Output）并从下拉菜单中选择 "Kilo Code"
+- 检查 VSCode 中的输出面板（View > Output）并从下拉菜单中选择 "AlfaCode assistant"
 - 对于 Webview 问题，请在 Webview 中使用浏览器开发者工具（右键点击 > "Inspect Element"）

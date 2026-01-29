@@ -5,7 +5,7 @@ sidebar_position: 1
 
 # 设置 Mistral 免费自动补全
 
-本指南将引导您在 Kilo Code 中设置 Mistral 的 Codestral 模型以获得免费的自动补全功能。Mistral 提供免费套餐，非常适合开始使用 AI 驱动的代码补全。
+本指南将引导您在 AlfaCode assistant 中设置 Mistral 的 Codestral 模型以获得免费的自动补全功能。Mistral 提供免费套餐，非常适合开始使用 AI 驱动的代码补全。
 
 ## 视频教程
 
@@ -14,11 +14,11 @@ sidebar_position: 1
   您的浏览器不支持视频标签。
 </video>
 
-## 步骤 1：打开 Kilo Code 设置
+## 步骤 1：打开 AlfaCode assistant 设置
 
-在 VS Code 中，打开 Kilo Code 面板，点击右上角的**设置**图标（齿轮）。
+在 VS Code 中，打开 AlfaCode assistant 面板，点击右上角的**设置**图标（齿轮）。
 
-![打开 Kilo Code 设置](./mistral-setup/01-open-kilo-code-settings.png)
+![打开 AlfaCode assistant 设置](./mistral-setup/01-open-kilo-code-settings.png)
 
 ## 步骤 2：添加新的配置文件
 
@@ -41,7 +41,7 @@ sidebar_position: 1
 在 **API 提供商**下拉菜单中，搜索并选择 **Mistral**。
 
 :::note
-创建自动补全配置文件时，您无需选择特定模型——Kilo Code 将自动使用为代码补全优化的适当 Codestral 模型。
+创建自动补全配置文件时，您无需选择特定模型——AlfaCode assistant 将自动使用为代码补全优化的适当 Codestral 模型。
 :::
 
 ![选择 Mistral 提供商](./mistral-setup/04-select-mistral-provider.png)
@@ -70,9 +70,9 @@ sidebar_position: 1
 
 ![复制 API 密钥](./mistral-setup/08-copy-api-key.png)
 
-## 步骤 9：在 Kilo Code 中粘贴 API 密钥
+## 步骤 9：在 AlfaCode assistant 中粘贴 API 密钥
 
-返回 Kilo Code 设置，将您的 API 密钥粘贴到 **Mistral API 密钥**字段中。
+返回 AlfaCode assistant 设置，将您的 API 密钥粘贴到 **Mistral API 密钥**字段中。
 
 ![粘贴 API 密钥](./mistral-setup/09-paste-api-key.png)
 

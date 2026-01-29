@@ -33,7 +33,7 @@ const validModes = DEFAULT_MODES.map((mode) => mode.slug)
 
 program
 	.name("kilocode")
-	.description("Kilo Code Terminal User Interface - AI-powered coding assistant")
+	.description("AlfaCode assistant Terminal User Interface - AI-powered coding assistant")
 	.version(Package.version)
 	.option("-m, --mode <mode>", `Set the mode of operation (${validModes.join(", ")})`)
 	.option("-w, --workspace <path>", "Path to the workspace directory", process.cwd())
@@ -271,7 +271,7 @@ program
 			}
 
 			// Interactive mode - show auth wizard
-			console.info("Welcome to the Kilo Code CLI! 🎉\n")
+			console.info("Welcome to the AlfaCode assistant CLI! 🎉\n")
 			console.info("To get you started, please fill out these following questions.")
 			await authWizard()
 		} else if (!hasConfig && hasEnvConfig) {
@@ -316,7 +316,7 @@ program
 			)
 		}
 
-		logs.debug("Starting Kilo Code CLI", "Index", { options })
+		logs.debug("Starting AlfaCode assistant CLI", "Index", { options })
 
 		const jsonIoMode = options.jsonIo
 
@@ -349,7 +349,7 @@ program
 
 program
 	.command("auth")
-	.description("Manage authentication for the Kilo Code CLI")
+	.description("Manage authentication for the AlfaCode assistant CLI")
 	.action(async () => {
 		await authWizard()
 	})
@@ -370,7 +370,7 @@ program
 // Debug command - checks hardware and OS compatibility
 program
 	.command("debug")
-	.description("Run a system compatibility check for the Kilo Code CLI")
+	.description("Run a system compatibility check for the AlfaCode assistant CLI")
 	.argument("[mode]", `The mode to debug (${DEBUG_MODES.join(", ")})`, "")
 	.action(async (mode: string) => {
 		// If no mode is provided, show available debug modes (helpful UX)

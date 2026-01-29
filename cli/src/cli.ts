@@ -67,7 +67,7 @@ export class CLI {
 		}
 
 		try {
-			logs.info("Initializing Kilo Code CLI...", "CLI")
+			logs.info("Initializing AlfaCode assistant CLI...", "CLI")
 			logs.info(`Version: ${Package.version}`, "CLI")
 
 			// Initialize syntax highlighter early so it's ready when diffs are displayed
@@ -80,7 +80,7 @@ export class CLI {
 			const titleWorkspace = this.options.parallel ? process.cwd() : this.options.workspace || process.cwd()
 			const folderName = `${basename(titleWorkspace)}${(await isGitWorktree(this.options.workspace || "")) ? " ⎇" : ""}`
 			if (supportsTitleSetting()) {
-				process.stdout.write(`\x1b]0;Kilo Code - ${folderName}\x07`)
+				process.stdout.write(`\x1b]0;AlfaCode assistant - ${folderName}\x07`)
 			}
 
 			// Create Jotai store
@@ -327,7 +327,7 @@ export class CLI {
 			}
 
 			this.isInitialized = true
-			logs.info("Kilo Code CLI initialized successfully", "CLI")
+			logs.info("AlfaCode assistant CLI initialized successfully", "CLI")
 		} catch (error) {
 			logs.error("Failed to initialize CLI", "CLI", { error })
 			throw error
@@ -450,7 +450,7 @@ export class CLI {
 		let beforeExit: (() => Promise<void>) | (() => void) = async () => {}
 
 		try {
-			logs.info("Disposing Kilo Code CLI...", "CLI")
+			logs.info("Disposing AlfaCode assistant CLI...", "CLI")
 
 			await this.sessionService?.doSync(true)
 
@@ -525,7 +525,7 @@ export class CLI {
 			this.store = null
 
 			this.isInitialized = false
-			logs.info("Kilo Code CLI disposed", "CLI")
+			logs.info("AlfaCode assistant CLI disposed", "CLI")
 		} catch (error) {
 			logs.error("Error disposing CLI", "CLI", { error })
 

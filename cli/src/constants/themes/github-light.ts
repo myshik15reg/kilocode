@@ -1,5 +1,5 @@
 /**
- * GitHub Light theme for Kilo Code CLI
+ * GitHub Light theme for AlfaCode assistant CLI
  *
  * Based on the GitHub Light color scheme
  */

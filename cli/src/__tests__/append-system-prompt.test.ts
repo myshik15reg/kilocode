@@ -84,7 +84,7 @@ Line 3`
 
 	describe("System prompt integration", () => {
 		it("should append custom text to system prompt when provided", () => {
-			const basePrompt = "You are Kilo Code, an AI assistant."
+			const basePrompt = "You are Alfa Code Assistant, an AI assistant."
 			const appendText = "Always write tests first."
 			const expectedPrompt = `${basePrompt}
 
@@ -95,7 +95,7 @@ ${appendText}`
 		})
 
 		it("should not modify system prompt when appendSystemPrompt is undefined", () => {
-			const basePrompt = "You are Kilo Code, an AI assistant."
+			const basePrompt = "You are Alfa Code Assistant, an AI assistant."
 			const appendText = undefined
 
 			const result = appendText ? `${basePrompt}\n\n${appendText}` : basePrompt
@@ -103,7 +103,7 @@ ${appendText}`
 		})
 
 		it("should not modify system prompt when appendSystemPrompt is empty string", () => {
-			const basePrompt = "You are Kilo Code, an AI assistant."
+			const basePrompt = "You are Alfa Code Assistant, an AI assistant."
 			const appendText = ""
 
 			const result = appendText ? `${basePrompt}\n\n${appendText}` : basePrompt
@@ -111,9 +111,9 @@ ${appendText}`
 		})
 
 		it("should properly format appended text with newlines", () => {
-			const basePrompt = "You are Kilo Code."
+			const basePrompt = "You are Alfa Code Assistant."
 			const appendText = "Rule 1: Test first\nRule 2: Keep it simple"
-			const expectedPrompt = `You are Kilo Code.
+			const expectedPrompt = `You are Alfa Code Assistant.
 
 Rule 1: Test first
 Rule 2: Keep it simple`
@@ -439,14 +439,14 @@ Line 3: Third instruction`
 
 	describe("Integration with system prompt", () => {
 		it("should properly integrate file content into system prompt", () => {
-			const basePrompt = "You are Kilo Code, an AI assistant."
+			const basePrompt = "You are Alfa Code Assistant, an AI assistant."
 			const fileContent = "Always prioritize code quality."
 
 			vi.mocked(existsSync).mockReturnValue(true)
 			vi.mocked(readFileSync).mockReturnValue(fileContent)
 
 			const result = `${basePrompt}\n\n${fileContent}`
-			expect(result).toBe("You are Kilo Code, an AI assistant.\n\nAlways prioritize code quality.")
+			expect(result).toBe("You are Alfa Code Assistant, an AI assistant.\n\nAlways prioritize code quality.")
 		})
 
 		it("should handle file content with special characters", () => {

@@ -1,7 +1,7 @@
 # Архитектурный анализ Kilocode для интеграции Neo4j + Qdrant
 
 **Дата:** 2025-12-13  
-**Автор:** Kilo Code Architect Mode  
+**Автор:** AlfaCode assistant Architect Mode  
 **Версия:** 1.0
 
 ---

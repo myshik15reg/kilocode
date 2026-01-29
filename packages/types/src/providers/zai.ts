@@ -24,7 +24,7 @@ export const internationalZAiModels = {
 		cacheWritesPrice: 0,
 		cacheReadsPrice: 0.11,
 		description:
-			"GLM-4.5 is Zhipu's latest featured model. Its comprehensive capabilities in reasoning, coding, and agent reach the state-of-the-art (SOTA) level among open-source models, with a context length of up to 128k.",
+			"GLM-4.5 is Zhipu's latest featured model. Its comprehensive capabilities in reasoning, coding, and agent tasks reach the state-of-the-art (SOTA) level among leading models, with a context length of up to 128k.", // kilocode_change
 	},
 	"glm-4.5-air": {
 		maxTokens: 16_384,
@@ -185,7 +185,7 @@ export const mainlandZAiModels = {
 		cacheWritesPrice: 0,
 		cacheReadsPrice: 0.057,
 		description:
-			"GLM-4.5 is Zhipu's latest featured model. Its comprehensive capabilities in reasoning, coding, and agent reach the state-of-the-art (SOTA) level among open-source models, with a context length of up to 128k.",
+			"GLM-4.5 is Zhipu's latest featured model. Its comprehensive capabilities in reasoning, coding, and agent tasks reach the state-of-the-art (SOTA) level among leading models, with a context length of up to 128k.", // kilocode_change
 	},
 	"glm-4.5-air": {
 		maxTokens: 16_384,

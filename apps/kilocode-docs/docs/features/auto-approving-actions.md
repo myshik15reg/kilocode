@@ -1,13 +1,13 @@
 # Auto-Approving Actions
 
-> ⚠️ **SECURITY WARNING:** Auto-approve settings bypass confirmation prompts, giving Kilo Code direct access to your system. This can result in **data loss, file corruption, or worse**. Command line access is particularly dangerous, as it can potentially execute harmful operations that could damage your system or compromise security. Only enable auto-approval for actions you fully trust.
+> ⚠️ **SECURITY WARNING:** Auto-approve settings bypass confirmation prompts, giving AlfaCode assistant direct access to your system. This can result in **data loss, file corruption, or worse**. Command line access is particularly dangerous, as it can potentially execute harmful operations that could damage your system or compromise security. Only enable auto-approval for actions you fully trust.
 
 Auto-approve settings speed up your workflow by eliminating repetitive confirmation prompts, but they significantly increase security risks.
 
 ## Quick Start Guide
 
 1. Click the Auto-Approve Toolbar above the chat input
-2. Select which actions Kilo Code can perform without asking permission
+2. Select which actions AlfaCode assistant can perform without asking permission
 3. Use the master toggle (leftmost checkbox) to quickly enable/disable all permissions
 
 [![KiloCode Task Timeline](https://img.youtube.com/vi/NBccFnYDQ-k/maxresdefault.jpg)](https://youtube.com/shorts/NBccFnYDQ-k?feature=shared)
@@ -28,12 +28,12 @@ _Prompt text box and Expanded toolbar with all options_
 
 | Permission                     | What it does                                     | Risk level  |
 | ------------------------------ | ------------------------------------------------ | ----------- |
-| **Read files and directories** | Lets Kilo Code access files without asking       | Medium      |
-| **Edit files**                 | Lets Kilo Code modify files without asking       | **High**    |
+| **Read files and directories** | Lets AlfaCode assistant access files without asking       | Medium      |
+| **Edit files**                 | Lets AlfaCode assistant modify files without asking       | **High**    |
 | **Execute approved commands**  | Runs whitelisted terminal commands automatically | **High**    |
 | **Use the browser**            | Allows headless browser interaction              | Medium      |
-| **Use MCP servers**            | Lets Kilo Code use configured MCP services       | Medium-High |
-| **Switch modes**               | Changes between Kilo Code modes automatically    | Low         |
+| **Use MCP servers**            | Lets AlfaCode assistant use configured MCP services       | Medium-High |
+| **Switch modes**               | Changes between AlfaCode assistant modes automatically    | Low         |
 | **Create & complete subtasks** | Manages subtasks without confirmation            | Low         |
 | **Retry failed requests**      | Automatically retries failed API requests        | Low         |
 | **Answer follow-up questions** | Selects default answer for follow-up questions   | Low         |
@@ -57,7 +57,7 @@ Use the master toggle when:
 
 The settings panel provides detailed control with important security context:
 
-> **Allow Kilo Code to automatically perform operations without requiring approval. Enable these settings only if you fully trust the AI and understand the associated security risks.**
+> **Allow AlfaCode assistant to automatically perform operations without requiring approval. Enable these settings only if you fully trust the AI and understand the associated security risks.**
 
 To access these settings:
 
@@ -75,27 +75,27 @@ _Complete settings panel view_
 
 **Setting:** "Always approve read-only operations"
 
-**Description:** "When enabled, Kilo Code will automatically view directory contents and read files without requiring you to click the Approve button."
+**Description:** "When enabled, AlfaCode assistant will automatically view directory contents and read files without requiring you to click the Approve button."
 
 **Risk level:** Medium
 
-While this setting only allows reading files (not modifying them), it could potentially expose sensitive data. Still recommended as a starting point for most users, but be mindful of what files Kilo Code can access.
+While this setting only allows reading files (not modifying them), it could potentially expose sensitive data. Still recommended as a starting point for most users, but be mindful of what files AlfaCode assistant can access.
 
 #### Read Outside Workspace
 
 **Setting:** "Allow reading files outside the workspace"
 
-**Description:** "When enabled, Kilo Code can read files outside the current workspace directory without asking for approval."
+**Description:** "When enabled, AlfaCode assistant can read files outside the current workspace directory without asking for approval."
 
 **Risk level:** Medium-High
 
 This setting extends read permissions beyond your project folder. Consider the security implications:
 
-- Kilo Code could access sensitive files in your home directory
+- AlfaCode assistant could access sensitive files in your home directory
 - Configuration files, SSH keys, or credentials could be read
 - Only enable if you trust the AI and need it to access external files
 
-**Recommendation:** Keep disabled unless you specifically need Kilo Code to read files outside your project.
+**Recommendation:** Keep disabled unless you specifically need AlfaCode assistant to read files outside your project.
 :::
 
 ### Write Operations
@@ -111,7 +111,7 @@ This setting extends read permissions beyond your project folder. Consider the s
 
 **Risk level:** High
 
-This setting allows Kilo Code to modify your files without confirmation. The delay timer is crucial:
+This setting allows AlfaCode assistant to modify your files without confirmation. The delay timer is crucial:
 
 - Higher values (2000ms+): Recommended for complex projects where diagnostics take longer
 - Default (1000ms): Suitable for most projects
@@ -122,11 +122,11 @@ This setting allows Kilo Code to modify your files without confirmation. The del
 
 **Setting:** "Allow writing files outside the workspace"
 
-**Description:** "When enabled, Kilo Code can create or modify files outside the current workspace directory without asking for approval."
+**Description:** "When enabled, AlfaCode assistant can create or modify files outside the current workspace directory without asking for approval."
 
 **Risk level:** Very High
 
-Use with caution and in controlled environments. It allows Kilo Code to:
+Use with caution and in controlled environments. It allows AlfaCode assistant to:
 
 - Modify your shell configuration files
 - Change system configurations
@@ -138,7 +138,7 @@ Use with caution and in controlled environments. It allows Kilo Code to:
 
 **Setting:** "Allow writing to protected files"
 
-**Description:** "When enabled, Kilo Code can overwrite or modify files that are normally protected by the `.kilocodeignore` file."
+**Description:** "When enabled, AlfaCode assistant can overwrite or modify files that are normally protected by the `.kilocodeignore` file."
 
 **Risk level:** Very High
 
@@ -154,11 +154,11 @@ Protected files are intentionally shielded from modification. Enable only if you
 
 **Risk level:** Very High
 
-This setting allows Kilo Code to permanently remove files without confirmation.
+This setting allows AlfaCode assistant to permanently remove files without confirmation.
 
 **Safeguards:**
 
-- Kilo Code still respects `.kilocodeignore` rules
+- AlfaCode assistant still respects `.kilocodeignore` rules
 - Protected files cannot be deleted
 - The delete tool shows what will be removed before execution
 
@@ -178,7 +178,7 @@ This setting allows Kilo Code to permanently remove files without confirmation.
 
 **Risk level:** Medium
 
-Allows Kilo Code to control a headless browser without confirmation. This can include:
+Allows AlfaCode assistant to control a headless browser without confirmation. This can include:
 
 - Opening websites
 - Navigating pages
@@ -200,7 +200,7 @@ Consider the security implications of allowing automated browser access.
 
 This setting automatically retries API calls when they fail.
 
-The delay controls how long Kilo Code waits before trying again:
+The delay controls how long AlfaCode assistant waits before trying again:
 
 - Longer delays are gentler on API rate limits
 - Shorter delays give faster recovery from transient errors
@@ -231,7 +231,7 @@ This setting works in conjunction with individual tool permissions in the Agent 
 
 **Risk level:** Low
 
-Allows Kilo Code to change between different modes (Code, Architect, etc.) without asking for permission. This primarily affects the AI's behavior rather than system access.
+Allows AlfaCode assistant to change between different modes (Code, Architect, etc.) without asking for permission. This primarily affects the AI's behavior rather than system access.
 :::
 
 ### Subtasks
@@ -245,7 +245,7 @@ Allows Kilo Code to change between different modes (Code, Architect, etc.) witho
 
 **Risk level:** Low
 
-Enables Kilo Code to create and complete subtasks automatically. This relates to workflow organization rather than system access.
+Enables AlfaCode assistant to create and complete subtasks automatically. This relates to workflow organization rather than system access.
 :::
 
 ### Command Execution
@@ -271,7 +271,7 @@ This setting allows terminal command execution with controls. While risky, the a
 
 **Setting:** "Command prefixes that can be auto-executed"
 
-Add command prefixes (e.g., `git`, `npm`, `ls`) that Kilo Code can run without asking. Use `*` to allow all commands (use with caution).
+Add command prefixes (e.g., `git`, `npm`, `ls`) that AlfaCode assistant can run without asking. Use `*` to allow all commands (use with caution).
 
 **Interface elements:**
 
@@ -292,7 +292,7 @@ Commands in this list will never run, even if `*` is in the allowed list. Use th
 
 **Setting:** `Always default answer for follow-up questions`
 
-**Description:** Automatically selects the first AI-suggested answer for a follow-up question after a configurable timeout. This speeds up your workflow by letting Kilo Code proceed without manual intervention.
+**Description:** Automatically selects the first AI-suggested answer for a follow-up question after a configurable timeout. This speeds up your workflow by letting AlfaCode assistant proceed without manual intervention.
 
 **Visual countdown:** When enabled, a countdown timer appears on the first suggestion button in the chat interface, showing the remaining time before auto-selection. The timer displays seconds remaining (e.g., "3s") and counts down in real-time.
 
@@ -309,7 +309,7 @@ Commands in this list will never run, even if `*` is in the allowed list. Use th
 
 **Use cases:**
 
-- Overnight runs where you want Kilo Code to continue working
+- Overnight runs where you want AlfaCode assistant to continue working
 - Repetitive tasks where the default suggestions are usually correct
 - Testing workflows where interaction isn't critical
   :::
@@ -324,7 +324,7 @@ Commands in this list will never run, even if `*` is in the allowed list. Use th
 
 **Risk level:** Low
 
-This setting allows Kilo Code to automatically update task progress and todo lists during work sessions. This includes:
+This setting allows AlfaCode assistant to automatically update task progress and todo lists during work sessions. This includes:
 
 - Marking tasks as completed
 - Adding new discovered tasks
@@ -338,14 +338,14 @@ This setting allows Kilo Code to automatically update task progress and todo lis
 - Complex debugging workflows
 - Feature implementation with many subtasks
 
-This is particularly useful when combined with the Subtasks permission, as it allows Kilo Code to maintain a complete picture of project progress without constant approval requests.
+This is particularly useful when combined with the Subtasks permission, as it allows AlfaCode assistant to maintain a complete picture of project progress without constant approval requests.
 :::
 
 ## YOLO Mode
 
 :::danger YOLO Mode (Risk: Maximum)
 
-**"You Only Live Once"** mode enables _all_ auto-approve permissions at once using the master toggle. This gives Kilo Code complete autonomy to read files, write code, execute commands, and perform any operation without asking for permission.
+**"You Only Live Once"** mode enables _all_ auto-approve permissions at once using the master toggle. This gives AlfaCode assistant complete autonomy to read files, write code, execute commands, and perform any operation without asking for permission.
 
 You can optionally enable an AI Safety Gatekeeper, which reviews every intended change in YOLO mode and intelligently approves or blocks actions before they execute. We suggest using a small, fast model such as OpenAI gpt-oss-safeguard-20b. When enabled, AI Safety Gatekeeper will incur additional costs, as well as additional latency.
 
@@ -361,5 +361,5 @@ You can optionally enable an AI Safety Gatekeeper, which reviews every intended 
 - Working with important data
 - Any situation where mistakes could be costly
 
-This is the fastest way to work with Kilo Code, but also the riskiest. Use it only when you fully trust the AI and are prepared for the consequences.
+This is the fastest way to work with AlfaCode assistant, but also the riskiest. Use it only when you fully trust the AI and are prepared for the consequences.
 :::

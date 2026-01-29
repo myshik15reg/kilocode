@@ -5,17 +5,17 @@ sidebar_position: 1
 
 # Setting Up Mistral for Free Autocomplete
 
-This guide walks you through setting up Mistral's Codestral model for free autocomplete in Kilo Code. Mistral offers a free tier that's perfect for getting started with AI-powered code completions.
+This guide walks you through setting up Mistral's Codestral model for free autocomplete in AlfaCode assistant. Mistral offers a free tier that's perfect for getting started with AI-powered code completions.
 
 ## Video Walkthrough
 
 <iframe width="100%" height="400" src="https://www.youtube.com/embed/0aqBbB8fPho" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-## Step 1: Open Kilo Code Settings
+## Step 1: Open AlfaCode assistant Settings
 
-In VS Code, open the Kilo Code panel and click the **Settings** icon (gear) in the top-right corner.
+In VS Code, open the AlfaCode assistant panel and click the **Settings** icon (gear) in the top-right corner.
 
-![Open Kilo Code Settings](./mistral-setup/01-open-kilo-code-settings.png)
+![Open AlfaCode assistant Settings](./mistral-setup/01-open-kilo-code-settings.png)
 
 ## Step 2: Add a New Configuration Profile
 
@@ -38,7 +38,7 @@ The profile name is just a label for your reference—it doesn't affect function
 In the **API Provider** dropdown, search for and select **Mistral**.
 
 :::note
-When creating an autocomplete profile, you don't need to select a specific model—Kilo Code will automatically use the appropriate Codestral model optimized for code completions.
+When creating an autocomplete profile, you don't need to select a specific model—AlfaCode assistant will automatically use the appropriate Codestral model optimized for code completions.
 :::
 
 ![Select Mistral Provider](./mistral-setup/04-select-mistral-provider.png)
@@ -67,9 +67,9 @@ Once generated, click the **copy** button next to your API key to copy it to you
 
 ![Copy API Key](./mistral-setup/08-copy-api-key.png)
 
-## Step 9: Paste API Key in Kilo Code
+## Step 9: Paste API Key in AlfaCode assistant
 
-Return to Kilo Code settings and paste your API key into the **Mistral API Key** field.
+Return to AlfaCode assistant settings and paste your API key into the **Mistral API Key** field.
 
 ![Paste API Key](./mistral-setup/09-paste-api-key.png)
 

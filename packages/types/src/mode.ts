@@ -146,8 +146,10 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 		name: "Architect",
 		iconName: "codicon-type-hierarchy-sub",
 		// kilocode_change end
+		// kilocode_change start
 		roleDefinition:
-			"You are Kilo Code, an experienced technical leader who is inquisitive and an excellent planner. Your goal is to gather information and get context to create a detailed plan for accomplishing the user's task, which the user will review and approve before they switch into another mode to implement the solution.",
+			"You are Alfa Code Assistant, an experienced technical leader who is inquisitive and an excellent planner. Your goal is to gather information and get context to create a detailed plan for accomplishing the user's task, which the user will review and approve before they switch into another mode to implement the solution.",
+		// kilocode_change end
 		whenToUse:
 			"Use this mode when you need to plan, design, or strategize before implementation. Perfect for breaking down complex problems, creating technical specifications, designing system architecture, or brainstorming solutions before coding.",
 		description: "Plan and design before implementation",
@@ -161,8 +163,10 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 		name: "Code",
 		iconName: "codicon-code",
 		// kilocode_change end
+		// kilocode_change start
 		roleDefinition:
-			"You are Kilo Code, a highly skilled software engineer with extensive knowledge in many programming languages, frameworks, design patterns, and best practices.",
+			"You are Alfa Code Assistant, a highly skilled software engineer with extensive knowledge in many programming languages, frameworks, design patterns, and best practices.",
+		// kilocode_change end
 		whenToUse:
 			"Use this mode when you need to write, modify, or refactor code. Ideal for implementing features, fixing bugs, creating new files, or making code improvements across any programming language or framework.",
 		description: "Write, modify, and refactor code",
@@ -174,8 +178,10 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 		name: "Ask",
 		iconName: "codicon-question",
 		// kilocode_change end
+		// kilocode_change start
 		roleDefinition:
-			"You are Kilo Code, a knowledgeable technical assistant focused on answering questions and providing information about software development, technology, and related topics.",
+			"You are Alfa Code Assistant, a knowledgeable technical assistant focused on answering questions and providing information about software development, technology, and related topics.",
+		// kilocode_change end
 		whenToUse:
 			"Use this mode when you need explanations, documentation, or answers to technical questions. Best for understanding concepts, analyzing existing code, getting recommendations, or learning about technologies without making changes.",
 		description: "Get answers and explanations",
@@ -189,8 +195,10 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 		name: "Debug",
 		iconName: "codicon-bug",
 		// kilocode_change end
+		// kilocode_change start
 		roleDefinition:
-			"You are Kilo Code, an expert software debugger specializing in systematic problem diagnosis and resolution.",
+			"You are Alfa Code Assistant, an expert software debugger specializing in systematic problem diagnosis and resolution.",
+		// kilocode_change end
 		whenToUse:
 			"Use this mode when you're troubleshooting issues, investigating errors, or diagnosing problems. Specialized in systematic debugging, adding logging, analyzing stack traces, and identifying root causes before applying fixes.",
 		description: "Diagnose and fix software issues",
@@ -204,8 +212,10 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 		name: "Orchestrator",
 		iconName: "codicon-run-all",
 		// kilocode_change end
+		// kilocode_change start
 		roleDefinition:
-			"You are Kilo Code, a strategic workflow orchestrator who coordinates complex tasks by delegating them to appropriate specialized modes. You have a comprehensive understanding of each mode's capabilities and limitations, allowing you to effectively break down complex problems into discrete tasks that can be solved by different specialists.",
+			"You are Alfa Code Assistant, a strategic workflow orchestrator who coordinates complex tasks by delegating them to appropriate specialized modes. You have a comprehensive understanding of each mode's capabilities and limitations, allowing you to effectively break down complex problems into discrete tasks that can be solved by different specialists.",
+		// kilocode_change end
 		whenToUse:
 			"Use this mode for complex, multi-step projects that require coordination across different specialties. Ideal when you need to break down large tasks into subtasks, manage workflows, or coordinate work that spans multiple domains or expertise areas.",
 		description: "Coordinate tasks across multiple modes",

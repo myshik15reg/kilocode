@@ -6,7 +6,7 @@ import YouTubeEmbed from '@site/src/components/YouTubeEmbed';
 
 # 编排模式：协调复杂工作流
 
-编排模式（原称为 Boomerang Tasks）允许您将复杂项目分解为更小、更易管理的部分。您可以将其理解为将工作的各个部分委派给专门的助手。每个子任务都在自己的上下文中运行，通常使用为特定工作定制的不同 Kilo Code 模式（如 [`code`](/basic-usage/using-modes#代码模式默认)、[`architect`](/basic-usage/using-modes#架构师模式) 或 [`debug`](/basic-usage/using-modes#调试模式)）。
+编排模式（原称为 Boomerang Tasks）允许您将复杂项目分解为更小、更易管理的部分。您可以将其理解为将工作的各个部分委派给专门的助手。每个子任务都在自己的上下文中运行，通常使用为特定工作定制的不同 AlfaCode assistant 模式（如 [`code`](/basic-usage/using-modes#代码模式默认)、[`architect`](/basic-usage/using-modes#架构师模式) 或 [`debug`](/basic-usage/using-modes#调试模式)）。
 
 <YouTubeEmbed
   url="https://www.youtube.com/watch?v=20MmJNeOODo"
@@ -35,7 +35,7 @@ import YouTubeEmbed from '@site/src/components/YouTubeEmbed';
     - **向上**：在子任务完成时通过最终摘要传递。注意，只有该摘要会返回给父任务。
 - **任务切换**：Kilo 的界面帮助您查看任务的层次结构（哪个任务是父任务，哪些是子任务）。您通常可以在活动和暂停的任务之间切换。
 
-编排模式提供了一种强大的方式来管理复杂的开发工作流，直接在 Kilo Code 中利用专业模式以实现最大效率。
+编排模式提供了一种强大的方式来管理复杂的开发工作流，直接在 AlfaCode assistant 中利用专业模式以实现最大效率。
 
 :::tip 让任务保持专注
 使用子任务来保持清晰度。如果请求显著改变了焦点或需要不同的专业知识（模式），请考虑创建子任务，而不是让当前任务过载。

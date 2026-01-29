@@ -1,8 +1,8 @@
-# Kilo Code CLI
+# AlfaCode assistant CLI
 
 Orchestrate agents from your terminal. Plan, debug, and code fast with keyboard-first navigation on the command line.
 
-The Kilo Code CLI uses the same underlying technology that powers the IDE extensions, so you can expect the same workflow to handle agentic coding tasks from start to finish.
+The AlfaCode assistant CLI uses the same underlying technology that powers the IDE extensions, so you can expect the same workflow to handle agentic coding tasks from start to finish.
 
 ## Install
 
@@ -32,7 +32,7 @@ Upgrade the Kilo CLI package:
 
 `npm update -g @kilocode/cli`
 
-## What you can do with Kilo Code CLI
+## What you can do with AlfaCode assistant CLI
 
 - **Plan and execute code changes without leaving your terminal.** Use your command line to make edits to your project without opening your IDE.
 - **Switch between hundreds of LLMs without constraints.** Other CLI tools only work with one model or curate opinionated lists. With Kilo, you can switch models without booting up another tool.
@@ -279,7 +279,7 @@ Project-specific commands override global commands with the same name, allowing 
 
 ## Checkpoint Management
 
-Kilo Code automatically creates checkpoints as you work, allowing you to revert to previous states in your project's history.
+AlfaCode assistant automatically creates checkpoints as you work, allowing you to revert to previous states in your project's history.
 
 ### Viewing Checkpoints
 
@@ -409,7 +409,7 @@ You can also use the `/config` slash command during an interactive session, whic
 
 ## Parallel mode
 
-Parallel mode allows multiple Kilo Code instances to work in parallel on the same directory, without conflicts. You can spawn as many Kilo Code instances as you need! Once finished, changes will be available on a separate git branch.
+Parallel mode allows multiple AlfaCode assistant instances to work in parallel on the same directory, without conflicts. You can spawn as many AlfaCode assistant instances as you need! Once finished, changes will be available on a separate git branch.
 
 ```bash
 # Prerequisite: must be within a valid git repository
@@ -429,7 +429,7 @@ kilocode --parallel --auto "improve abc"
 
 ## Auto-approval settings
 
-Auto-approval allows the Kilo Code CLI to perform operations without first requiring user confirmation. These settings can either be built up over time in interactive mode, or by editing your config file using `kilocode config` or editing the file directly at `~/.kilocode/config.json`.
+Auto-approval allows the AlfaCode assistant CLI to perform operations without first requiring user confirmation. These settings can either be built up over time in interactive mode, or by editing your config file using `kilocode config` or editing the file directly at `~/.kilocode/config.json`.
 
 ### Default auto-approval settings
 
@@ -524,9 +524,9 @@ The `execute.allowed` and `execute.denied` lists support hierarchical pattern ma
 
 ## Interactive Mode
 
-Interactive mode is the default mode when running Kilo Code without the `--auto` flag, designed to work interactively with a user through the console.
+Interactive mode is the default mode when running AlfaCode assistant without the `--auto` flag, designed to work interactively with a user through the console.
 
-In interactive mode Kilo Code will request approval for operations which have not been auto-approved, allowing the user to review and approve operations before they are executed, and optionally add them to the auto-approval list.
+In interactive mode AlfaCode assistant will request approval for operations which have not been auto-approved, allowing the user to review and approve operations before they are executed, and optionally add them to the auto-approval list.
 
 ### Interactive Command Approval
 
@@ -551,7 +551,7 @@ This allows you to progressively build your auto-approval rules without manually
 
 ## Autonomous mode (Non-Interactive)
 
-Autonomous mode allows Kilo Code to run in automated environments like CI/CD pipelines without requiring user interaction.
+Autonomous mode allows AlfaCode assistant to run in automated environments like CI/CD pipelines without requiring user interaction.
 
 ```bash
 # Run in autonomous mode with a prompt
@@ -578,7 +578,7 @@ When running in Autonomous mode (`--auto` flag):
 
 ### JSON Output Mode
 
-Use the `--json` flag with `--auto` to get structured JSON output instead of the default terminal UI. This is useful for programmatic integration and parsing of Kilo Code responses.
+Use the `--json` flag with `--auto` to get structured JSON output instead of the default terminal UI. This is useful for programmatic integration and parsing of AlfaCode assistant responses.
 
 ```bash
 # Standard autonomous mode with terminal UI
@@ -619,7 +619,7 @@ This instructs the AI to proceed without user input.
 
 ```yaml
 # GitHub Actions example
-- name: Run Kilo Code
+- name: Run AlfaCode assistant
   run: |
       echo "Implement the new feature" | kilocode --auto --timeout 600
 ```

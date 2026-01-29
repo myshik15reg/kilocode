@@ -1,5 +1,5 @@
 /**
- * Ayu Light theme for Kilo Code CLI
+ * Ayu Light theme for AlfaCode assistant CLI
  *
  * Based on the Ayu Light color scheme
  */

@@ -1,8 +1,8 @@
-# OpenAI + LiteLLM Integration Map for Kilo Code Agent
+# OpenAI + LiteLLM Integration Map for AlfaCode assistant Agent
 
 Purpose
 - Provide a precise, code-backed description of how the current agent integrates with OpenAI (openai and openai-native providers).
-- Specify the exact LiteLLM backend contract required to work with the current agent (Kilo Code).
+- Specify the exact LiteLLM backend contract required to work with the current agent (AlfaCode assistant).
 - Include enough field-level detail to feed Codex to implement a compatible LiteLLM backend.
 
 Scope and terminology

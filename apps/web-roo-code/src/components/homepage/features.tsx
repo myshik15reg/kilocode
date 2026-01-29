@@ -60,7 +60,7 @@ export const features: Feature[] = [
 	},
 	{
 		icon: GitPullRequest,
-		title: "Proudly open source",
+		title: "Proudly community-driven",
 		description:
 			"Community-driven and fully auditable: no throttling or surprises about what's happening behind the scenes.",
 	},

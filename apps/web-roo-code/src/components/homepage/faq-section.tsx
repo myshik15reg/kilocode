@@ -16,9 +16,9 @@ const faqs: FAQItem[] = [
 		question: "What exactly is Roo Code?",
 		answer: (
 			<>
-				Roo Code is an open-source, AI-powered coding assistant that runs in VS Code. It goes beyond simple
-				autocompletion by reading and writing across multiple files, executing commands, and adapting to your
-				workflow—like having a whole dev team right inside your editor.
+				Roo Code is an AI-powered coding assistant that runs in VS Code. It goes beyond simple autocompletion by
+				reading and writing across multiple files, executing commands, and adapting to your workflow—like having
+				a whole dev team right inside your editor.
 			</>
 		),
 	},
@@ -26,9 +26,9 @@ const faqs: FAQItem[] = [
 		question: "How does Roo Code differ from Copilot, Cursor, or Windsurf?",
 		answer: (
 			<>
-				Roo Code is <strong>open-source and fully customizable</strong>, letting you integrate any AI model you
-				choose (e.g, OpenAI, Anthropic, local LLMs, etc.). It&apos;s built for <strong>multi-file edits</strong>
-				, so it can read, refactor, and update multiple files at once for holistic code changes. Its{" "}
+				Roo Code is <strong>fully customizable</strong>, letting you integrate any AI model you choose (e.g,
+				OpenAI, Anthropic, local LLMs, etc.). It&apos;s built for <strong>multi-file edits</strong>, so it can
+				read, refactor, and update multiple files at once for holistic code changes. Its{" "}
 				<strong>agentic abilities</strong> go beyond a typical AI autocomplete, enabling it to run tests, open a
 				browser, and handle deeper tasks. And you&apos;re always in control: Roo Code is{" "}
 				<strong>permission-based</strong>, meaning you can control and approve any file changes or command
@@ -40,8 +40,8 @@ const faqs: FAQItem[] = [
 		question: "Is Roo Code really free?",
 		answer: (
 			<>
-				Yes! Roo Code is completely free and open-source. You&apos;ll only pay for the AI model usage if you use
-				a paid API (like OpenAI). If you choose free or self-hosted models, there&apos;s no cost at all.
+				Yes! Roo Code is completely free. You&apos;ll only pay for the AI model usage if you use a paid API
+				(like OpenAI). If you choose free or self-hosted models, there&apos;s no cost at all.
 			</>
 		),
 	},
@@ -120,8 +120,7 @@ const faqs: FAQItem[] = [
 			<>
 				Yes. Roo Code was built for enterprise environments. You can self-host AI models or use your own trusted
 				provider. All file changes and commands go through permission gating, so nothing runs without your
-				approval. And because Roo Code is fully open-source, it&apos;s auditable—you can review exactly how it
-				works before deploying it.{" "}
+				approval. And it&apos;s auditable—you can review exactly how it works before deploying it.{" "}
 				<a
 					href="https://roocode.com/enterprise"
 					target="_blank"
@@ -156,7 +155,7 @@ const faqs: FAQItem[] = [
 		question: "Can I contribute to Roo Code?",
 		answer: (
 			<>
-				Yes, please do! Roo Code is open-source on{" "}
+				Yes, please do! You can contribute on{" "}
 				<a
 					href="https://github.com/RooCodeInc/Roo-Code"
 					target="_blank"

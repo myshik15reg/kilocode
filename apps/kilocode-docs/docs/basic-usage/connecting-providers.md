@@ -4,15 +4,15 @@ sidebar_label: Overview
 
 # API Providers Overview
 
-**Bottom line**: Kilo Code, like any agentic AI coding tool, needs AI model providers to function. You can use our [built-in provider](/providers/kilocode) (easiest) or connect your own API keys from **30+ providers**.
+**Bottom line**: AlfaCode assistant, like any agentic AI coding tool, needs AI model providers to function. You can use our [built-in provider](/providers/kilocode) (easiest) or connect your own API keys from **30+ providers**.
 
-## Kilo Code Extension vs. API Provider
+## AlfaCode assistant Extension vs. API Provider
 
 ### The Extension
 
 - VS Code tool you install from the marketplace
 - Handles UI, file operations, and workflow management
-- [Open source](https://github.com/Kilo-Org/kilocode)
+- [GitHub repository](https://github.com/Kilo-Org/kilocode)
 - Connects to any AI provider
 
 ### Kilo Gateway Provider
@@ -44,7 +44,7 @@ sidebar_label: Overview
 
 1. Choose from 30+ supported providers
 2. Get API key from your provider
-3. Configure in Kilo Code settings
+3. Configure in AlfaCode assistant settings
 
 ## Why Use Multiple Providers?
 

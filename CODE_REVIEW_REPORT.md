@@ -3,7 +3,7 @@
 # Tree-sitter унификация (4 фазы, 98 файлов)
 
 > **Дата проверки:** 2025-12-13
-> **Проверяющий:** Kilo Code Orchestrator
+> **Проверяющий:** AlfaCode assistant Orchestrator
 > **Статус:** ⚠️ ГОТОВ С УСЛОВИЯМИ
 
 ## Executive Summary

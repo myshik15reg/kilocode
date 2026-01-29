@@ -1,6 +1,6 @@
 # Custom Instructions
 
-Custom Instructions allow you to personalize how Kilo Code behaves, providing specific guidance that shapes responses, coding style, and decision-making processes.
+Custom Instructions allow you to personalize how AlfaCode assistant behaves, providing specific guidance that shapes responses, coding style, and decision-making processes.
 
 ## What Are Custom Instructions?
 
@@ -14,8 +14,8 @@ Custom Instructions are IDE-wide and are applied across all workspaces and maint
 
 **How to set them:**
 
-<img src="/docs/img/custom-instructions/custom-instructions.png" alt="Kilo Code Agent Behaviour tab showing global custom instructions interface" width="600" />
-1.  **Open Agent Behaviour Tab:** Click the <Codicon name="gear" /> icon in the Kilo Code top menu bar to open Settings, then select the `Agent Behaviour` tab
+<img src="/docs/img/custom-instructions/custom-instructions.png" alt="AlfaCode assistant Agent Behaviour tab showing global custom instructions interface" width="600" />
+1.  **Open Agent Behaviour Tab:** Click the <Codicon name="gear" /> icon in the AlfaCode assistant top menu bar to open Settings, then select the `Agent Behaviour` tab
 2.  **Select Modes Sub-Tab:** Click on the `Modes` sub-tab
 3.  **Find Section:** Find the "Custom Instructions for All Modes" section
 4.  **Enter Instructions:** Enter your instructions in the text area
@@ -25,8 +25,8 @@ Custom Instructions are IDE-wide and are applied across all workspaces and maint
 
 Mode-specific instructions can be set using the Agent Behaviour tab
 
-    <img src="/docs/img/custom-instructions/custom-instructions-3.png" alt="Kilo Code Agent Behaviour tab showing mode-specific custom instructions interface" width="600" />
-    * **Open Agent Behaviour Tab:** Click the <Codicon name="gear" /> icon in the Kilo Code top menu bar to open Settings, then select the `Agent Behaviour` tab
+    <img src="/docs/img/custom-instructions/custom-instructions-3.png" alt="AlfaCode assistant Agent Behaviour tab showing mode-specific custom instructions interface" width="600" />
+    * **Open Agent Behaviour Tab:** Click the <Codicon name="gear" /> icon in the AlfaCode assistant top menu bar to open Settings, then select the `Agent Behaviour` tab
     * **Select Modes Sub-Tab:** Click on the `Modes` sub-tab
     * **Select Mode:** Under the Modes heading, click the button for the mode you want to customize
     * **Enter Instructions:** Enter your instructions in the text area under "Mode-specific Custom Instructions (optional)"

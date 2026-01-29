@@ -19,8 +19,8 @@ export const GITHUB_ISSUES_MAIN_URL = `${GITHUB_MAIN_REPO_URL}/issues`
 export const GITHUB_FEATURES_URL = `${GITHUB_MAIN_REPO_URL}/discussions/categories/ideas`
 
 // Download links
-export const VSCODE_MARKETPLACE_URL = "https://marketplace.visualstudio.com/items?itemName=kilocode.kilo-code"
-export const OPEN_VSX_URL = "https://open-vsx.org/extension/kilocode/kilo-code"
+export const VSCODE_MARKETPLACE_URL = "https://marketplace.visualstudio.com/items?itemName=kilocode.alfa-code-assistant"
+export const OPEN_VSX_URL = "https://open-vsx.org/extension/kilocode/alfa-code-assistant"
 
 // Company links
 export const CONTACT_EMAIL = "mailto:hi@kilo.ai"

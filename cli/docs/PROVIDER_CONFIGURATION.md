@@ -1,6 +1,6 @@
 # Provider Configuration Guide
 
-This guide provides detailed information on how to configure each provider in Kilo Code CLI. Each provider has specific configuration requirements and optional settings that can be customized to suit your needs.
+This guide provides detailed information on how to configure each provider in AlfaCode assistant CLI. Each provider has specific configuration requirements and optional settings that can be customized to suit your needs.
 
 ## Table of Contents
 
@@ -8,7 +8,7 @@ This guide provides detailed information on how to configure each provider in Ki
 - [Configuration Methods](#configuration-methods)
 - [Common Parameters](#common-parameters)
 - [Provider Details](#provider-details)
-    - [Kilo Code](#kilocode)
+    - [AlfaCode assistant](#kilocode)
     - [Anthropic](#anthropic)
     - [OpenAI Native](#openai-native)
     - [OpenRouter](#openrouter)
@@ -53,7 +53,7 @@ This guide provides detailed information on how to configure each provider in Ki
 
 ## Introduction
 
-Kilo Code CLI supports multiple AI providers, each with their own configuration requirements. This document details the configuration fields for each provider, including required and optional parameters.
+AlfaCode assistant CLI supports multiple AI providers, each with their own configuration requirements. This document details the configuration fields for each provider, including required and optional parameters.
 
 ## Configuration Methods
 
@@ -80,13 +80,13 @@ You can configure providers using:
 
 ### kilocode
 
-The official Kilo Code provider for accessing Kilo Code's managed AI services.
+The official AlfaCode assistant provider for accessing AlfaCode assistant's managed AI services.
 
-**Description**: Access Kilo Code's managed AI infrastructure with support for multiple models and organizations.
+**Description**: Access AlfaCode assistant's managed AI infrastructure with support for multiple models and organizations.
 
 **Required Fields**:
 
-- `kilocodeToken` (password): Your Kilo Code authentication token
+- `kilocodeToken` (password): Your AlfaCode assistant authentication token
 - `kilocodeModel` (text): The model to use (default: `anthropic/claude-sonnet-4.5`)
 
 **Optional Fields**:
@@ -713,7 +713,7 @@ Local Ollama instance for running models locally.
 
 - Requires Ollama to be installed and running locally
 - Download from https://ollama.ai/
-- Supports many open-source models (Llama, Mistral, CodeLlama, etc.)
+- Supports many models (Llama, Mistral, CodeLlama, etc.)
 - No API key required for local usage
 - The `ollamaNumCtx` parameter directly affects memory usage - ensure your system has sufficient RAM for larger context windows
 
@@ -1217,7 +1217,7 @@ DeepInfra's serverless AI inference.
 **Notes**:
 
 - Get your API key from https://deepinfra.com/
-- Supports many open-source models
+- Supports many models
 - The custom base URL is useful when:
     - Using a proxy or gateway for DeepInfra requests
     - Connecting to a self-hosted DeepInfra-compatible endpoint
@@ -1603,7 +1603,7 @@ Fake AI provider for testing and development.
 
 OVHcloud AI Endpoints inference provider.
 
-**Description**: Use OVHcloud leading cloud computing for accessing various open-source models, with GDPR compliance and data sovreignty.
+**Description**: Use OVHcloud leading cloud computing for accessing various models, with GDPR compliance and data sovreignty.
 
 **Required Field**:
 
@@ -1748,7 +1748,7 @@ MiniMax AI platform.
 
 ## Additional Resources
 
-- [Kilo Code Documentation](https://docs.kilocode.com/)
+- [AlfaCode assistant Documentation](https://docs.kilocode.com/)
 - [Configuration Schema](../src/config/schema.json)
 
 ## Support

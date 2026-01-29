@@ -1,5 +1,5 @@
 /**
- * ANSI Light theme for Kilo Code CLI
+ * ANSI Light theme for AlfaCode assistant CLI
  *
  * Based on the ANSI Light color scheme using standard terminal colors
  */

@@ -1,6 +1,6 @@
 # CLI AGENTS.md
 
-This file provides guidance to AI agents when working with the Kilo Code CLI package.
+This file provides guidance to AI agents when working with the AlfaCode assistant CLI package.
 
 ## Architecture Overview
 

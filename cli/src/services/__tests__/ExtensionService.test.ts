@@ -105,7 +105,7 @@ describe("ExtensionService", () => {
 					const mockProvider = {
 						handleCLIMessage: vi.fn(async () => {}),
 					}
-					globalWithHost.__extensionHost.registerWebviewProvider("kilo-code.SidebarProvider", mockProvider)
+					globalWithHost.__extensionHost.registerWebviewProvider("alfa-code-assistant.SidebarProvider", mockProvider)
 				}
 
 				// Return a mock API

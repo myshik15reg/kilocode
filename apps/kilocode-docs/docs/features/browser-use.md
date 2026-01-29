@@ -1,14 +1,14 @@
 # Browser Use
 
-Kilo Code provides sophisticated browser automation capabilities that let you interact with websites directly from VS Code. This feature enables testing web applications, automating browser tasks, and capturing screenshots without leaving your development environment.
+AlfaCode assistant provides sophisticated browser automation capabilities that let you interact with websites directly from VS Code. This feature enables testing web applications, automating browser tasks, and capturing screenshots without leaving your development environment.
 
 :::info Model Support Required
-Browser Use within Kilo Code requires the use and advanced agentic model, and has only been tested with Claude Sonnet 3.5, 3.7, and 4
+Browser Use within AlfaCode assistant requires the use and advanced agentic model, and has only been tested with Claude Sonnet 3.5, 3.7, and 4
 :::
 
 ## How Browser Use Works
 
-By default, Kilo Code uses a built-in browser that:
+By default, AlfaCode assistant uses a built-in browser that:
 
 - Launches automatically when you ask Kilo to visit a website
 - Captures screenshots of web pages
@@ -94,7 +94,7 @@ To change this setting:
 
 ### Viewport Size
 
-**Purpose**: Determines the resolution of the browser session Kilo Code uses.
+**Purpose**: Determines the resolution of the browser session AlfaCode assistant uses.
 
 **Tradeoff**: Higher values provide a larger viewport but increase token usage.
 

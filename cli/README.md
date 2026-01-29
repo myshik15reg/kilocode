@@ -1,6 +1,6 @@
-# Kilo Code CLI
+# AlfaCode assistant CLI
 
-Terminal User Interface for Kilo Code
+Terminal User Interface for AlfaCode assistant
 
 ## Installation
 
@@ -8,13 +8,13 @@ Terminal User Interface for Kilo Code
 npm install -g @kilocode/cli
 ```
 
-Then, make sure you place your Kilo Code API token in the CLI config:
+Then, make sure you place your AlfaCode assistant API token in the CLI config:
 
 ```bash
 kilocode config # this opens up your editor
 ```
 
-You can find your Kilo Code API token on your profile page at [app.kilo.ai](https://app.kilo.ai), and place it in the `kilocodeToken` field in the CLI config.
+You can find your AlfaCode assistant API token on your profile page at [app.kilo.ai](https://app.kilo.ai), and place it in the `kilocodeToken` field in the CLI config.
 
 ## Known Issues
 
@@ -24,7 +24,7 @@ We don't detect the theme of your terminal, and are aware the the current theme 
 
 ### Outdated dependency warnings
 
-When installing Kilo Code CLI you'll be greeted by some scary looking dependency deprecation warnings. We're aware of the issue and will resolve it shortly.
+When installing AlfaCode assistant CLI you'll be greeted by some scary looking dependency deprecation warnings. We're aware of the issue and will resolve it shortly.
 
 ### Windows Support
 
@@ -52,7 +52,7 @@ kilocode --continue
 
 ### Parallel mode
 
-Parallel mode allows multiple Kilo Code instances to work in parallel on the same directory, without conflicts. You can spawn as many Kilo Code instances as you need! Once finished, changes will be available on a separate git branch.
+Parallel mode allows multiple AlfaCode assistant instances to work in parallel on the same directory, without conflicts. You can spawn as many AlfaCode assistant instances as you need! Once finished, changes will be available on a separate git branch.
 
 ```bash
 # Prerequisite: must be within a valid git repository
@@ -88,7 +88,7 @@ kilocode --append-system-prompt "Context: Production deployment" \
 
 ### Autonomous mode (Non-Interactive)
 
-Autonomous mode allows Kilo Code to run in automated environments like CI/CD pipelines without requiring user interaction.
+Autonomous mode allows AlfaCode assistant to run in automated environments like CI/CD pipelines without requiring user interaction.
 
 ```bash
 # Run in autonomous mode with a prompt
@@ -285,7 +285,7 @@ This instructs the AI to proceed without user input.
 
 ```yaml
 # GitHub Actions example
-- name: Run Kilo Code
+- name: Run AlfaCode assistant
   run: |
       echo "Implement the new feature" | kilocode --auto --timeout 600
 ```

@@ -1,10 +1,10 @@
 ---
-sidebar_label: 安装Kilo Code
+sidebar_label: 安装AlfaCode assistant
 ---
 
-# 安装Kilo Code
+# 安装AlfaCode assistant
 
-Kilo Code是一款VS Code扩展，可将AI编程助手直接集成到编辑器中。可通过以下方式安装：
+AlfaCode assistant是一款VS Code扩展，可将AI编程助手直接集成到编辑器中。可通过以下方式安装：
 
 - [**VS Code应用商店（推荐）**](#vs-code应用商店) - VS Code用户最快捷的安装方式
 - [**Cursor应用商店**](#cursor应用商店) - Cursor用户的推荐安装方式
@@ -15,7 +15,7 @@ Kilo Code是一款VS Code扩展，可将AI编程助手直接集成到编辑器�
 
 :::tip
 
-若已安装VS Code：[点击此处直接安装Kilo Code](vscode:extension/kilocode.Kilo-Code)
+若已安装VS Code：[点击此处直接安装AlfaCode assistant](vscode:extension/kilocode.alfa-code-assistant)
 
 :::
 
@@ -23,20 +23,20 @@ Kilo Code是一款VS Code扩展，可将AI编程助手直接集成到编辑器�
 
 1. 打开VS Code
 2. 进入扩展面板：点击侧边栏扩展图标 或按 `Ctrl+Shift+X`（Windows/Linux） / `Cmd+Shift+X`（macOS）
-3. 搜索 "Kilo Code"
-4. 选择Kilo Code发布的扩展并点击**安装**
+3. 搜索 "AlfaCode assistant"
+4. 选择AlfaCode assistant发布的扩展并点击**安装**
 5. 根据提示重新加载VS Code
 
-安装完成后，在侧边栏找到Kilo Code图标（<img src="/docs/img/kilo-v1.svg" width="12" />）即可打开面板。
+安装完成后，在侧边栏找到AlfaCode assistant图标（<img src="/docs/img/kilo-v1.svg" width="12" />）即可打开面板。
 
-<img src="/docs/img/installing/installing.png" alt="VS Code应用商店中的Kilo Code扩展安装界面" width="400" />
-*VS Code应用商店中的Kilo Code扩展安装界面*
+<img src="/docs/img/installing/installing.png" alt="VS Code应用商店中的AlfaCode assistant扩展安装界面" width="400" />
+*VS Code应用商店中的AlfaCode assistant扩展安装界面*
 
 ## Cursor应用商店
 
 :::tip
 
-若已安装Cursor：[点击此处直接安装Kilo Code](cursor:extension/kilocode.Kilo-Code)
+若已安装Cursor：[点击此处直接安装AlfaCode assistant](cursor:extension/kilocode.alfa-code-assistant)
 
 :::
 
@@ -44,22 +44,22 @@ Kilo Code是一款VS Code扩展，可将AI编程助手直接集成到编辑器�
 
 1. 打开Cursor
 2. 进入扩展面板：点击侧边栏扩展图标 或按 `Ctrl+Shift+X`（Windows/Linux） / `Cmd+Shift+X`（macOS）
-3. 搜索 "Kilo Code"
-4. 选择Kilo Code发布的扩展并点击**安装**
+3. 搜索 "AlfaCode assistant"
+4. 选择AlfaCode assistant发布的扩展并点击**安装**
 5. 根据提示重新加载Cursor
 
-安装完成后，在侧边栏找到Kilo Code图标（<img src="/docs/img/kilo-v1.svg" width="12" />）即可打开面板。
+安装完成后，在侧边栏找到AlfaCode assistant图标（<img src="/docs/img/kilo-v1.svg" width="12" />）即可打开面板。
 
 ## Open VSX注册表
 
 [Open VSX注册表](https://open-vsx.org/)是VS Code应用商店的开源替代方案，适用于因许可证限制无法访问官方商店的编辑器。
 
-在VSCodium、Gitpod、Eclipse Theia、Windsurf等兼容编辑器中，可通过[Open VSX上的Kilo Code页面](https://open-vsx.org/extension/kilocode/Kilo-Code)直接安装。
+在VSCodium、Gitpod、Eclipse Theia、Windsurf等兼容编辑器中，可通过[Open VSX上的AlfaCode assistant页面](https://open-vsx.org/extension/kilocode/alfa-code-assistant)直接安装。
 
 1. 打开编辑器
 2. 进入扩展视图（侧边栏图标或快捷键 `Ctrl+Shift-X` / `Cmd+Shift-X`）
 3. 编辑器应已预配置Open VSX注册表
-4. 搜索 "Kilo Code"
+4. 搜索 "AlfaCode assistant"
 5. 选择扩展并点击**安装**
 6. 根据提示重新加载编辑器
 
@@ -73,7 +73,7 @@ Kilo Code是一款VS Code扩展，可将AI编程助手直接集成到编辑器�
 
 1. **下载VSIX文件：**
 
-    - 在[Kilo Code GitHub Releases页面](https://github.com/Kilo-Org/kilocode/releases)查找正式版本
+    - 在[AlfaCode assistant GitHub Releases页面](https://github.com/Kilo-Org/kilocode/releases)查找正式版本
     - 从[最新版本](https://github.com/Kilo-Org/kilocode/releases/latest)下载`.vsix`文件
 
 2. **在VS Code中安装：**
@@ -91,9 +91,9 @@ Kilo Code是一款VS Code扩展，可将AI编程助手直接集成到编辑器�
 **扩展不可见**
 
 - 重启VS Code
-- 检查扩展列表确认Kilo Code已启用
+- 检查扩展列表确认AlfaCode assistant已启用
 - 尝试禁用后重新启用扩展
-- 在输出面板查看错误日志（查看 → 输出，选择"Kilo Code"）
+- 在输出面板查看错误日志（查看 → 输出，选择"AlfaCode assistant"）
 
 **安装问题**
 
@@ -107,4 +107,4 @@ Kilo Code是一款VS Code扩展，可将AI编程助手直接集成到编辑器�
 
 - 加入[Discord社区](https://kilo.ai/discord)获取实时支持
 - 在[GitHub](https://github.com/Kilo-Org/kilocode/issues)提交问题报告
-- 访问[Reddit社区](https://www.reddit.com/r/KiloCode)
+- 访问[Reddit社区](https://www.reddit.com/r/AlfaCodeAssistant)

@@ -20,8 +20,8 @@ import {
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-	title: "Kilo Code Docs",
-	tagline: "Kilo Code Documentation",
+	title: "AlfaCode assistant Docs",
+	tagline: "AlfaCode assistant Documentation",
 	favicon: "img/favicon.ico",
 
 	// Set the production url of your site here
@@ -264,8 +264,8 @@ const config: Config = {
 			"docusaurus-plugin-llms",
 			{
 				id: "llms-txt",
-				name: "Kilo Code Documentation",
-				description: "Comprehensive documentation for Kilo Code, an AI-powered coding assistant for VS Code, Jetbrains, CLI & Cloud",
+				name: "AlfaCode assistant Documentation",
+				description: "Comprehensive documentation for AlfaCode assistant, an AI-powered coding assistant for VS Code, Jetbrains, CLI & Cloud",
 				url: "https://kilo.ai/docs",
 				email: "hi@kilocode.ai",
 			},
@@ -275,9 +275,9 @@ const config: Config = {
 	themeConfig: {
 		image: "img/kilo-v1.svg",
 		navbar: {
-			title: "Kilo Code",
+			title: "AlfaCode assistant",
 			logo: {
-				alt: "Kilo Code Logo",
+				alt: "AlfaCode assistant Logo",
 				src: "img/kilo-v1.svg",
 				srcDark: "img/kilo-v1-white.svg",
 				href: "/",

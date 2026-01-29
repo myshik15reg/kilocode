@@ -5,7 +5,7 @@ sidebar_label: Using MCP in CLI
 
 # Using MCP in the CLI
 
-The Kilo Code CLI supports MCP servers, but uses a **different configuration path** than the VS Code extension.
+The AlfaCode assistant CLI supports MCP servers, but uses a **different configuration path** than the VS Code extension.
 
 ## Configuration Location
 

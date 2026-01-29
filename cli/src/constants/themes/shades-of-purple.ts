@@ -1,5 +1,5 @@
 /**
- * Shades of Purple theme for Kilo Code CLI
+ * Shades of Purple theme for AlfaCode assistant CLI
  *
  * Based on the Shades of Purple color scheme
  */

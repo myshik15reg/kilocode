@@ -7,7 +7,7 @@
 - 你的屏幕被锁定（取决于操作系统设置）
 - 您离开电脑时
 
-Kilo Code 使用系统通知向您告知以下信息：
+AlfaCode assistant 使用系统通知向您告知以下信息：
 
 - 任务完成状态
 - 重要错误或警告信息
@@ -16,7 +16,7 @@ Kilo Code 使用系统通知向您告知以下信息：
 
 ## 支持的操作系统
 
-Kilo Code 的系统通知可在所有主要操作系统上运行，但底层技术不同：
+AlfaCode assistant 的系统通知可在所有主要操作系统上运行，但底层技术不同：
 
 | 操作系统    | 技术                            | 要求                    |
 | ----------- | ------------------------------- | ----------------------- |
@@ -32,7 +32,7 @@ macOS 有最佳的系统通知内置支持，提供以下两种可用方法：
 
 #### 方法 1：内置 AppleScript（备用）
 
-无需额外设置。Kilo Code 使用 macOS 的内置命令来显示通知。
+无需额外设置。AlfaCode assistant 使用 macOS 的内置命令来显示通知。
 
 #### 方法 2：使用 terminal-notifier 增强（推荐）
 
@@ -46,7 +46,7 @@ brew install terminal-notifier
 npm install -g terminal-notifier
 ```
 
-**工作原理：** Kilo Code 会首先尝试使用 `terminal-notifier`，如果未安装则自动回退到 AppleScript。
+**工作原理：** AlfaCode assistant 会首先尝试使用 `terminal-notifier`，如果未安装则自动回退到 AppleScript。
 
 ### Windows 设置
 

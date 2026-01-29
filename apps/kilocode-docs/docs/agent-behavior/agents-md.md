@@ -4,7 +4,7 @@ AGENTS.md files provide a standardized way to configure AI agent behavior across
 
 ## What is AGENTS.md?
 
-AGENTS.md is an open standard for configuring AI agent behavior in software projects. It's a simple Markdown file placed at the root of your project that contains instructions for AI coding assistants. The standard is supported by multiple AI coding tools, including Kilo Code, Cursor, and Windsurf.
+AGENTS.md is an open standard for configuring AI agent behavior in software projects. It's a simple Markdown file placed at the root of your project that contains instructions for AI coding assistants. The standard is supported by multiple AI coding tools, including AlfaCode assistant, Cursor, and Windsurf.
 
 Think of AGENTS.md as a "README for AI agents" - it tells the AI how to work with your specific project, what conventions to follow, and what constraints to respect.
 
@@ -53,11 +53,11 @@ my-project/
     └── AGENTS.md                # Documentation-specific instructions
 ```
 
-When working in a subdirectory, Kilo Code will load both the root AGENTS.md and any subdirectory AGENTS.md files, with subdirectory files taking precedence for conflicting instructions.
+When working in a subdirectory, AlfaCode assistant will load both the root AGENTS.md and any subdirectory AGENTS.md files, with subdirectory files taking precedence for conflicting instructions.
 
 ## File Protection
 
-Both `AGENTS.md` and `AGENT.md` are **write-protected files** in Kilo Code. This means:
+Both `AGENTS.md` and `AGENT.md` are **write-protected files** in AlfaCode assistant. This means:
 
 - The AI agent cannot modify these files without explicit user approval
 - You'll be prompted to confirm any changes to these files
@@ -107,32 +107,32 @@ Brief description of the project and its purpose.
 - **Keep it concise** - Use bullet points and direct language; avoid long paragraphs
 - **Update regularly** - Review and revise as your project's conventions evolve
 
-## How AGENTS.md Works in Kilo Code
+## How AGENTS.md Works in AlfaCode assistant
 
 ### Loading Behavior
 
-When you start a task in Kilo Code:
+When you start a task in AlfaCode assistant:
 
-1. Kilo Code checks for `AGENTS.md` or `AGENT.md` at the project root
+1. AlfaCode assistant checks for `AGENTS.md` or `AGENT.md` at the project root
 2. If found, the content is loaded and included in the AI's context
 3. The AI follows these instructions throughout the conversation
 4. Changes to AGENTS.md take effect in new tasks (reload may be required)
 
 ### Interaction with Other Rules
 
-AGENTS.md works alongside Kilo Code's other configuration systems:
+AGENTS.md works alongside AlfaCode assistant's other configuration systems:
 
 | Feature                                                        | Scope   | Location                  | Purpose                                    | Priority    |
 | -------------------------------------------------------------- | ------- | ------------------------- | ------------------------------------------ | ----------- |
 | **[Mode-specific Custom Rules](/agent-behavior/custom-rules)** | Project | `.kilocode/rules-{mode}/` | Mode-specific rules and constraints        | 1 (Highest) |
-| **[Custom Rules](/agent-behavior/custom-rules)**               | Project | `.kilocode/rules/`        | Kilo Code-specific rules and constraints   | 2           |
+| **[Custom Rules](/agent-behavior/custom-rules)**               | Project | `.kilocode/rules/`        | AlfaCode assistant-specific rules and constraints   | 2           |
 | **AGENTS.md**                                                  | Project | Project root or subfolder | Cross-tool standard for project guidelines | 3           |
-| **[Global Custom Rules](/agent-behavior/custom-rules)**        | Global  | `~/.kilocode/rules/`      | Global Kilo Code rules                     | 4           |
+| **[Global Custom Rules](/agent-behavior/custom-rules)**        | Global  | `~/.kilocode/rules/`      | Global AlfaCode assistant rules                     | 4           |
 | **[Custom Instructions](/agent-behavior/custom-instructions)** | Global  | IDE settings              | Personal preferences across all projects   | 5 (Lowest)  |
 
 ### Enabling/Disabling AGENTS.md
 
-AGENTS.md support is **enabled by default** in Kilo Code. To disable it, edit `settings.json`:
+AGENTS.md support is **enabled by default** in AlfaCode assistant. To disable it, edit `settings.json`:
 
 ```json
 {
@@ -142,7 +142,7 @@ AGENTS.md support is **enabled by default** in Kilo Code. To disable it, edit `s
 
 ## Related Features
 
-- **[Custom Rules](/agent-behavior/custom-rules)** - Kilo Code-specific rules with more control
+- **[Custom Rules](/agent-behavior/custom-rules)** - AlfaCode assistant-specific rules with more control
 - **[Custom Modes](/agent-behavior/custom-modes)** - Specialized workflows with specific permissions
 - **[Custom Instructions](/agent-behavior/custom-instructions)** - Personal preferences across all projects
 - **[Migrating from Cursor or Windsurf](/advanced-usage/migrating-from-cursor-windsurf)** - Migration guide for other tools

@@ -4,25 +4,25 @@ sidebar_label: 附加功能
 
 # 附加功能
 
-Kilo Code 的附加功能可简化日常任务并提升使用便利性。
+AlfaCode assistant 的附加功能可简化日常任务并提升使用便利性。
 
 ## 建议回复
 
-Kilo Code 提供建议回复，让您减少打字时间。
+AlfaCode assistant 提供建议回复，让您减少打字时间。
 
 - 提问后，聊天框下方会出现按钮。
 - 单击按钮可将其作为您的下一个提示词。
 
 ## 文本转语音
 
-文本转语音（TTS）功能让 Kilo Code 可以朗读回复。
+文本转语音（TTS）功能让 AlfaCode assistant 可以朗读回复。
 
 1.  在设置中启用 TTS。
 2.  单击任何回复旁边的扬声器图标即可开始收听。
 
 ## 全球语言支持
 
-Kilo Code 支持 14 种语言：
+AlfaCode assistant 支持 14 种语言：
 
 - 简体中文
 - 繁体中文

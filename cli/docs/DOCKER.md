@@ -1,6 +1,6 @@
-# Kilo Code CLI - Docker
+# AlfaCode assistant CLI - Docker
 
-A containerized version of the Kilo Code CLI with full browser automation support.
+A containerized version of the AlfaCode assistant CLI with full browser automation support.
 
 ## Quick Start Examples
 
@@ -65,7 +65,7 @@ docker run --rm -v $(pwd):/workspace kiloai/cli --auto "Run tests and fix any is
 
 ### 4. With Local Configuration
 
-Mount your existing Kilo Code configuration to avoid setup prompts:
+Mount your existing AlfaCode assistant configuration to avoid setup prompts:
 
 ```bash
 docker run -it --rm \

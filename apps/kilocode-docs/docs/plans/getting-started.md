@@ -49,7 +49,7 @@ seats for Kilo in the Teams or Enterprise subscription brings transparent AI cod
 Team members receive invitation emails with these steps:
 
 1. Accept the team invitation
-2. Install Kilo Code from [VS Code Marketplace](vscode:extension/kilocode.kilo-code)
+2. Install AlfaCode assistant from [VS Code Marketplace](vscode:extension/kilocode.alfa-code-assistant)
 3. Sign in with their invited email
 4. Start coding with AI assistance
 

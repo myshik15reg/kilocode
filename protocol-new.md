@@ -1,5 +1,5 @@
 ﻿# Протокол задачи
 
-Задача: фиксация текущих изменений в git.
-Протокол: .protocols/2026-01-25-commit-current-changes/
+Задача: merge `origin/main` в текущую ветку.
+Протокол: .protocols/2026-01-25-merge-main-into-alfaleasing/
 Дата: 2026-01-25

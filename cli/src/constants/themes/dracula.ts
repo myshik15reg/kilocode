@@ -1,5 +1,5 @@
 /**
- * Dracula theme for Kilo Code CLI
+ * Dracula theme for AlfaCode assistant CLI
  *
  * Based on the popular Dracula color scheme
  */

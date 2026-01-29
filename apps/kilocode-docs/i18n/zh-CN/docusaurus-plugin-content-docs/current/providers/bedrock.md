@@ -2,9 +2,9 @@
 sidebar_label: AWS Bedrock
 ---
 
-# 在Kilo Code中使用AWS Bedrock
+# 在AlfaCode assistant中使用AWS Bedrock
 
-Kilo Code支持通过Amazon Bedrock访问模型，这是一个完全托管的服务，通过单一API提供来自领先AI公司的高性能基础模型(FMs)。
+AlfaCode assistant支持通过Amazon Bedrock访问模型，这是一个完全托管的服务，通过单一API提供来自领先AI公司的高性能基础模型(FMs)。
 
 **官网:** [https://aws.amazon.com/bedrock/](https://aws.amazon.com/bedrock/)
 
@@ -31,7 +31,7 @@ Kilo Code支持通过Amazon Bedrock访问模型，这是一个完全托管的服
 
 ## 支持的模型
 
-根据源代码，Kilo Code支持通过Bedrock访问以下模型：
+根据源代码，AlfaCode assistant支持通过Bedrock访问以下模型：
 
 - **Amazon:**
     - `amazon.nova-pro-v1:0`
@@ -68,11 +68,11 @@ Kilo Code支持通过Amazon Bedrock访问模型，这是一个完全托管的服
     - `meta.llama3-70b-instruct-v1:0`
     - `meta.llama3-8b-instruct-v1:0`
 
-请参考[Amazon Bedrock文档](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html)获取最新可用模型及其ID列表。配置Kilo Code时请使用*模型ID*而非模型名称。
+请参考[Amazon Bedrock文档](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html)获取最新可用模型及其ID列表。配置AlfaCode assistant时请使用*模型ID*而非模型名称。
 
-## 在Kilo Code中配置
+## 在AlfaCode assistant中配置
 
-1.  **打开Kilo Code设置:** 点击Kilo Code面板中的齿轮图标(<Codicon name="gear" />)
+1.  **打开AlfaCode assistant设置:** 点击AlfaCode assistant面板中的齿轮图标(<Codicon name="gear" />)
 2.  **选择提供商:** 在"API Provider"下拉菜单中选择"Bedrock"
 3.  **选择认证方式:**
     - **AWS凭证:**

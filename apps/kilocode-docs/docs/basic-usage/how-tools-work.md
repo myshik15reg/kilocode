@@ -1,10 +1,10 @@
 # How Tools Work
 
-Kilo Code uses tools to interact with your code and environment. These specialized helpers perform specific actions like reading files, making edits, running commands, or searching your codebase. Tools provide automation for common development tasks without requiring manual execution.
+AlfaCode assistant uses tools to interact with your code and environment. These specialized helpers perform specific actions like reading files, making edits, running commands, or searching your codebase. Tools provide automation for common development tasks without requiring manual execution.
 
 ## Tool Workflow
 
-Describe what you want to accomplish in natural language, and Kilo Code will:
+Describe what you want to accomplish in natural language, and AlfaCode assistant will:
 
 1. Select the appropriate tool based on your request
 2. Present the tool with its parameters for your review
@@ -31,7 +31,7 @@ _The tool approval interface shows Save/Reject buttons and Auto-approve options.
 
 **User:** Create a file named `greeting.js` that logs a greeting message
 
-**Kilo Code:** (Proposes the `write_to_file` tool as shown in the image above)
+**AlfaCode assistant:** (Proposes the `write_to_file` tool as shown in the image above)
 
 ```xml
 <write_to_file>
@@ -49,7 +49,7 @@ greet('World');
 
 **User:** (Clicks "Save" in the interface)
 
-**Kilo Code:** (Confirms file creation)
+**AlfaCode assistant:** (Confirms file creation)
 
 ## Tool Safety and Approval
 

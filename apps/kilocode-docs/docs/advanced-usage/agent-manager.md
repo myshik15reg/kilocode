@@ -1,6 +1,6 @@
 # Agent Manager
 
-The Agent Manager is a dedicated control panel for running and supervising Kilo Code agents as interactive CLI processes. It supports:
+The Agent Manager is a dedicated control panel for running and supervising AlfaCode assistant agents as interactive CLI processes. It supports:
 
 - Local sessions
 - Resuming existing sessions
@@ -11,14 +11,14 @@ This page reflects the actual implementation in the extension.
 
 ## Prerequisites
 
-- Install/update the Kilo Code CLI (latest) — see [CLI setup](/cli)
+- Install/update the AlfaCode assistant CLI (latest) — see [CLI setup](/cli)
 - Open a project in VS Code (workspace required)
 - Authentication: You must be logged in via the extension settings OR use CLI with kilocode as provider (see [Authentication Requirements](#authentication-requirements))
 
 ## Opening the Agent Manager
 
-- Command Palette: “Kilo Code: Open Agent Manager”
-- Or use the title/menu entry if available in your Kilo Code UI
+- Command Palette: “AlfaCode assistant: Open Agent Manager”
+- Or use the title/menu entry if available in your AlfaCode assistant UI
 
 The panel opens as a webview and stays active across focus changes.
 
@@ -89,13 +89,13 @@ The Agent Manager requires proper authentication for full functionality, includi
 
 ### Supported Authentication Methods
 
-1. **Kilo Code Extension (Recommended)**
+1. **AlfaCode assistant Extension (Recommended)**
 
     - Sign in through the extension settings
     - Provides seamless authentication for the Agent Manager
     - Enables session syncing and cloud features
 
-2. **CLI with Kilo Code Provider**
+2. **CLI with AlfaCode assistant Provider**
     - Use the CLI configured with `kilocode` as the provider
     - Run `kilocode config` to set up authentication
     - See [CLI setup](/cli) for details
@@ -110,7 +110,7 @@ If you're using BYOK with providers like Anthropic, OpenAI, or OpenRouter:
 - Session syncing features will be unavailable
 - You must use one of the supported authentication methods above for full functionality
 
-To use the Agent Manager with all features enabled, switch to the Kilo Code provider or sign in through the extension.
+To use the Agent Manager with all features enabled, switch to the AlfaCode assistant provider or sign in through the extension.
 
 ## Remote sessions (Cloud)
 
@@ -135,7 +135,7 @@ Message transcripts are fetched from a signed blob and exclude internal checkpoi
     - Open the main repository (where .git is a directory), not a worktree checkout
 - Remote sessions not visible
     - Ensure you're signed in and the repo's remote URL matches the sessions you expect to see
-    - If using BYOK, session syncing is not available — switch to Kilo Code provider or sign in through the extension
+    - If using BYOK, session syncing is not available — switch to AlfaCode assistant provider or sign in through the extension
 - Authentication errors
     - Verify you're logged in via extension settings or using CLI with kilocode provider
     - BYOK configurations do not support Agent Manager authentication

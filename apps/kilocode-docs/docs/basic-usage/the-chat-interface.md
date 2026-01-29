@@ -1,10 +1,10 @@
 import Image from '@site/src/components/Image';
 
-# Chatting with Kilo Code
+# Chatting with AlfaCode assistant
 
 :::tip
 
-**Bottom line:** Kilo Code is an AI coding assistant that lives in VS Code. You chat with it in plain English, and it writes, edits, and explains code for you.
+**Bottom line:** AlfaCode assistant is an AI coding assistant that lives in VS Code. You chat with it in plain English, and it writes, edits, and explains code for you.
 
 :::
 
@@ -16,15 +16,15 @@ If you're typing code in the editor and want AI to finish your line or block, ch
 
 ## Quick Setup
 
-Find the Kilo Code icon (<img src="/docs/img/kilo-v1.svg" width="12" />) in VS Code's Primary Side Bar. Click it to open the chat panel.
+Find the AlfaCode assistant icon (<img src="/docs/img/kilo-v1.svg" width="12" />) in VS Code's Primary Side Bar. Click it to open the chat panel.
 
-**Lost the panel?** Go to View > Open View... and search for "Kilo Code"
+**Lost the panel?** Go to View > Open View... and search for "AlfaCode assistant"
 
-## How to Talk to Kilo Code
+## How to Talk to AlfaCode assistant
 
 **The key insight:** Just type what you want in normal English. No special commands needed.
 
-<Image src="/docs/img/typing-your-requests/typing-your-requests.png" alt="Example of typing a request in Kilo Code" width="600" />
+<Image src="/docs/img/typing-your-requests/typing-your-requests.png" alt="Example of typing a request in AlfaCode assistant" width="600" />
 
 **Good requests:**
 
@@ -96,6 +96,6 @@ find all instances of the variable oldValue in @/src/App.js and replace them wit
 | Technical jargon overload         | Clear, straightforward language works best                           |
 | Using chat for tiny code changes. | Use [autocomplete](/basic-usage/autocomplete) for inline completions |
 
-**Why it matters:** Kilo Code works best when you communicate like you're talking to a smart teammate who needs clear direction.
+**Why it matters:** AlfaCode assistant works best when you communicate like you're talking to a smart teammate who needs clear direction.
 
 Ready to start coding? Open the chat panel and describe what you want to build!

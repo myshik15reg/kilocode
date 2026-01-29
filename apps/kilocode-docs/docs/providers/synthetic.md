@@ -2,9 +2,9 @@
 sidebar_label: Synthetic
 ---
 
-# Using Synthetic With Kilo Code
+# Using Synthetic With AlfaCode assistant
 
-Synthetic provides access to several open-source AI models running on secure infrastructure within the US and EU. They offer both subscription-based and usage-based pricing options, with strong privacy guarantees - they never train on your data and auto-delete API data within 14 days.
+Synthetic provides access to several AI models running on secure infrastructure within the US and EU. They offer both subscription-based and usage-based pricing options, with strong privacy guarantees - they never train on your data and auto-delete API data within 14 days.
 
 **Website:** [https://synthetic.new](https://synthetic.new)
 
@@ -16,13 +16,13 @@ Synthetic provides access to several open-source AI models running on secure inf
 
 ## Supported Models
 
-Kilo Code supports all "always on" Synthetic AI models. The available models include various open-source options optimized for different use cases.
+AlfaCode assistant supports all "always on" Synthetic AI models. The available models include various options optimized for different use cases.
 
 **Note:** Model availability may change. Refer to the [Synthetic documentation](https://synthetic.new) for the most up-to-date list of supported models and their capabilities.
 
-## Configuration in Kilo Code
+## Configuration in AlfaCode assistant
 
-1. **Open Kilo Code Settings:** Click the gear icon (<Codicon name="gear" />) in the Kilo Code panel.
+1. **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
 2. **Select Provider:** Choose "Synthetic" from the "API Provider" dropdown.
 3. **Enter API Key:** Paste your Synthetic API key into the "Synthetic API Key" field.
 4. **Select Model:** Choose your desired model from the "Model" dropdown.

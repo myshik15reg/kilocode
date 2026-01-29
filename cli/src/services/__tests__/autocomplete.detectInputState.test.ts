@@ -68,7 +68,7 @@ describe("detectInputState", () => {
 							condition: (context) => context.getArgument("subcommand") === "select",
 							provider: async () => [
 								{ value: "personal", description: "Personal account", matchScore: 1, highlightedValue: "personal" },
-								{ value: "kilo-code", description: "Kilo Code team", matchScore: 1, highlightedValue: "kilo-code" },
+								{ value: "kilo-code", description: "AlfaCode assistant team", matchScore: 1, highlightedValue: "kilo-code" },
 							],
 						},
 					],

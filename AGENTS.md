@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Kilo Code is an open source AI coding agent for VS Code that generates code from natural language, automates tasks, and supports 500+ AI models.
+AlfaCode assistant is an AI coding agent for VS Code that generates code from natural language, automates tasks, and supports 500+ AI models.
 
 ## Project Structure
 
@@ -22,7 +22,7 @@ Key source directories:
 
 ## Agent Runtime Architecture
 
-The `@kilocode/agent-runtime` package enables running Kilo Code agents as isolated Node.js processes without VS Code.
+The `@kilocode/agent-runtime` package enables running AlfaCode assistant agents as isolated Node.js processes without VS Code.
 
 ### How It Works
 
@@ -33,7 +33,7 @@ The `@kilocode/agent-runtime` package enables running Kilo Code agents as isolat
 └─────────────────────┘                 └─────────────────────┘
 ```
 
-1. **ExtensionHost**: Hosts the Kilo Code extension with a complete VS Code API mock
+1. **ExtensionHost**: Hosts the AlfaCode assistant extension with a complete VS Code API mock
 2. **MessageBridge**: Bidirectional IPC communication (request/response with timeout)
 3. **ExtensionService**: Orchestrates host and bridge lifecycle
 
@@ -110,11 +110,13 @@ pnpm check-types      # TypeScript type checking
 
 ## Skills
 
-- **Translation**: `.kilocode/skills/translation/SKILL.md` - Translation and localization guidelines
+- **Translation**: `.kilocode/skills-translate/translation/SKILL.md` - Translation and localization guidelines
 
 ## Workflows
 
 - **Add Missing Translations**: `.kilocode/workflows/add-missing-translations.md` - Run `/add-missing-translations` to find and fix missing translations
+- **Init Protocol**: `.kilocode/workflows/init-protocol.md` - Run `/init-protocol` to scaffold a new `.protocols/YYYY-MM-DD-.../` folder
+- **Close Protocol**: `.kilocode/workflows/close-protocol.md` - Run `/close-protocol` to wrap up and delete an existing protocol folder
 
 ## Changesets
 
@@ -145,11 +147,11 @@ Keep changesets concise and feature-oriented as they appear directly in release 
 
 ## Fork Merge Process
 
-Kilo Code is a fork of [Roo Code](https://github.com/RooVetGit/Roo-Code). We periodically merge upstream changes using scripts in `scripts/kilocode/`.
+AlfaCode assistant is a fork of [Roo Code](https://github.com/RooVetGit/Roo-Code). We periodically merge upstream changes using scripts in `scripts/kilocode/`.
 
 ## kilocode_change Markers
 
-To minimize merge conflicts when syncing with upstream, mark Kilo Code-specific changes in shared code with `kilocode_change` comments.
+To minimize merge conflicts when syncing with upstream, mark AlfaCode assistant-specific changes in shared code with `kilocode_change` comments.
 
 **Single line:**
 
@@ -174,7 +176,7 @@ const bar = 2
 
 ### When markers are NOT needed
 
-Code in these directories is Kilo Code-specific and doesn't need markers:
+Code in these directories is AlfaCode assistant-specific and doesn't need markers:
 
 - `cli/` - CLI package
 - `jetbrains/` - JetBrains plugin

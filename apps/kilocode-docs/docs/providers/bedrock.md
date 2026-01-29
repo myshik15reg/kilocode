@@ -2,9 +2,9 @@
 sidebar_label: AWS Bedrock
 ---
 
-# Using AWS Bedrock With Kilo Code
+# Using AWS Bedrock With AlfaCode assistant
 
-Kilo Code supports accessing models through Amazon Bedrock, a fully managed service that makes a selection of high-performing foundation models (FMs) from leading AI companies available via a single API. This provider connects directly to AWS Bedrock and authenticates with the provided credentials.
+AlfaCode assistant supports accessing models through Amazon Bedrock, a fully managed service that makes a selection of high-performing foundation models (FMs) from leading AI companies available via a single API. This provider connects directly to AWS Bedrock and authenticates with the provided credentials.
 
 **Website:** [https://aws.amazon.com/bedrock/](https://aws.amazon.com/bedrock/)
 
@@ -34,7 +34,7 @@ You have three options for configuring AWS credentials:
 
 ## Supported Models
 
-Kilo Code supports the following models through Bedrock (based on source code):
+AlfaCode assistant supports the following models through Bedrock (based on source code):
 
 - **Amazon:**
     - `amazon.nova-pro-v1:0`
@@ -71,11 +71,11 @@ Kilo Code supports the following models through Bedrock (based on source code):
     - `meta.llama3-70b-instruct-v1:0`
     - `meta.llama3-8b-instruct-v1:0`
 
-Refer to the [Amazon Bedrock documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html) for the most up-to-date list of available models and their IDs. Make sure to use the _model ID_ when configuring Kilo Code, not the model name.
+Refer to the [Amazon Bedrock documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html) for the most up-to-date list of available models and their IDs. Make sure to use the _model ID_ when configuring AlfaCode assistant, not the model name.
 
-## Configuration in Kilo Code
+## Configuration in AlfaCode assistant
 
-1.  **Open Kilo Code Settings:** Click the gear icon (<Codicon name="gear" />) in the Kilo Code panel.
+1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "Bedrock" from the "API Provider" dropdown.
 3.  **Select Authentication Method:**
     - **Bedrock API Key:**

@@ -32,7 +32,7 @@ export default async function ExtensionPage() {
 						<div className="flex flex-col justify-center space-y-4 sm:space-y-8">
 							<div>
 								<h1 className="text-4xl font-bold tracking-tight mt-8 text-center md:text-left md:text-4xl lg:text-5xl lg:mt-0">
-									The Open Source AI Coding Assistant for serious work.
+									The AI Coding Assistant for serious work.
 								</h1>
 								<p className="mt-4 max-w-lg text-lg text-muted-foreground text-center md:text-left sm:mt-6">
 									Specialized modes stay on task and ship great code.
