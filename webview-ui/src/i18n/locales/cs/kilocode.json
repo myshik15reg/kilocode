@@ -1,7 +1,7 @@
 {
 	"welcome": {
-		"greeting": "Vítej v Kilo Code!",
-		"introText1": "Kilo Code je bezplatný open source AI coding agent.",
+		"greeting": "Vítej v AlfaCode assistant!",
+		"introText1": "AlfaCode assistant je bezplatný AI coding agent.",
 		"introText2": "Funguje s nejnovějšími AI modely jako Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5 a více než 450 dalšími.",
 		"introText3": "Vytvoř si bezplatný účet a získej $20 bonusových kreditů při prvním dobití.",
 		"ctaButton": "Začít",
@@ -11,7 +11,7 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "Přidat kredit",
-		"lowBalance": "Tvůj Kilo Code zůstatek je nízký",
+		"lowBalance": "Tvůj AlfaCode assistant zůstatek je nízký",
 		"newOrganization": "Používáš Kilo pro práci?"
 	},
 	"pagination": {
@@ -43,16 +43,16 @@
 			"skills": "Dovednosti"
 		},
 		"provider": {
-			"account": "Účet Kilo Code",
-			"apiKey": "Kilo Code API Key",
-			"login": "Přihlásit se do Kilo Code",
-			"logout": "Odhlásit se z Kilo Code",
-			"automaticFetch": "Nejnovější modely jsou v Kilo Code automaticky dostupné. Pokud si nejste jisti, který model zvolit, Kilo Code funguje nejlépe s doporučenými modely uvedenými nahoře <strong>tučně</strong>.",
+			"account": "Účet AlfaCode assistant",
+			"apiKey": "AlfaCode assistant API Key",
+			"login": "Přihlásit se do AlfaCode assistant",
+			"logout": "Odhlásit se z AlfaCode assistant",
+			"automaticFetch": "Nejnovější modely jsou v AlfaCode assistant automaticky dostupné. Pokud si nejste jisti, který model zvolit, AlfaCode assistant funguje nejlépe s doporučenými modely uvedenými nahoře <strong>tučně</strong>.",
 			"providerRouting": {
 				"title": "Směrování poskytovatelů",
 				"managedByOrganization": "Spravovat směrování poskytovatelů na úrovni organizace",
 				"createOrganization": "Vytvořit organizaci pro správu směrování poskytovatelů",
-				"description": "Kilo Code směruje požadavky na nejlepší dostupné poskytovatele pro váš model. Ve výchozím nastavení jsou požadavky rozloženy mezi nejlepší poskytovatele, aby se maximalizovala doba provozu. Můžete si však vybrat konkrétního poskytovatele, kterého chcete pro tento model použít.",
+				"description": "AlfaCode assistant směruje požadavky na nejlepší dostupné poskytovatele pro váš model. Ve výchozím nastavení jsou požadavky rozloženy mezi nejlepší poskytovatele, aby se maximalizovala doba provozu. Můžete si však vybrat konkrétního poskytovatele, kterého chcete pro tento model použít.",
 				"sorting": {
 					"default": "Výchozí řazení poskytovatelů",
 					"price": "Upřednostnit poskytovatele s nižší cenou",
@@ -71,7 +71,7 @@
 		"modelInfo": {
 			"contextWindow": "Kontextové okno",
 			"providerBreakdown": "Rozpis cen a schopností poskytovatelů",
-			"averageKiloCodeCost": "Toto jsou průměrné skutečné náklady za použití tohoto modelu v Kilo Code za poslední týden. Může být nižší než uvedená cena díky využití cache pro prompty.",
+			"averageKiloCodeCost": "Toto jsou průměrné skutečné náklady za použití tohoto modelu v AlfaCode assistant za poslední týden. Může být nižší než uvedená cena díky využití cache pro prompty.",
 			"table": {
 				"provider": "Poskytovatel",
 				"context": "Endpoint může zpracovat tento počet tokenů (vstup + výstup).",
@@ -84,15 +84,15 @@
 		"contextManagement": {
 			"allowVeryLargeReads": {
 				"label": "Povolit čtení velmi velkých souborů",
-				"description": "Když je povoleno, Kilo Code provede čtení velmi velkých souborů nebo výstupů MCP i když existuje vysoká pravděpodobnost přetečení kontextového okna (velikost obsahu >80% kontextového okna)."
+				"description": "Když je povoleno, AlfaCode assistant provede čtení velmi velkých souborů nebo výstupů MCP i když existuje vysoká pravděpodobnost přetečení kontextového okna (velikost obsahu >80% kontextového okna)."
 			}
 		},
 		"systemNotifications": {
 			"label": "Povolit systémová oznámení",
-			"description": "Když je povoleno, Kilo Code bude odesílat systémová oznámení pro důležité události jako dokončení úkolu nebo chyby.",
+			"description": "Když je povoleno, AlfaCode assistant bude odesílat systémová oznámení pro důležité události jako dokončení úkolu nebo chyby.",
 			"testButton": "Otestovat oznámení",
-			"testTitle": "Kilo Code",
-			"testMessage": "Toto je testovací oznámení z Kilo Code."
+			"testTitle": "AlfaCode assistant",
+			"testMessage": "Toto je testovací oznámení z AlfaCode assistant."
 		},
 		"terminal": {
 			"commandGenerator": {
@@ -113,7 +113,7 @@
 	},
 	"chat": {
 		"condense": {
-			"wantsToCondense": "Kilo Code chce zkrátit tvou konverzaci",
+			"wantsToCondense": "AlfaCode assistant chce zkrátit tvou konverzaci",
 			"condenseConversation": "Zkrátit konverzaci"
 		},
 		"seeNewChanges": "Zobrazit nové změny",
@@ -152,14 +152,14 @@
 			"modes": "Režimy",
 			"skills": "Dovednosti"
 		},
-		"ariaLabel": "Kilo Code Rules",
+		"ariaLabel": "AlfaCode assistant Rules",
 		"tabs": {
 			"rules": "Pravidla",
 			"workflows": "Pracovní postupy"
 		},
 		"description": {
-			"rules": "Pravidla ti umožňují poskytnout Kilo Code pokyny, které by měl dodržovat ve všech režimech a pro všechny prompty. Je to trvalý způsob, jak zahrnout kontext a preference pro všechny konverzace ve tvém pracovním prostoru nebo globálně.",
-			"workflows": "Pracovní postupy jsou připravená šablona pro konverzaci. Pracovní postupy ti mohou umožnit definovat prompty, které často používáš, a mohou zahrnovat řadu kroků k vedení Kilo Code přes opakující se úkoly, jako je nasazení služby nebo odeslání PR. Pro vyvolání pracovního postupu napiš",
+			"rules": "Pravidla ti umožňují poskytnout AlfaCode assistant pokyny, které by měl dodržovat ve všech režimech a pro všechny prompty. Je to trvalý způsob, jak zahrnout kontext a preference pro všechny konverzace ve tvém pracovním prostoru nebo globálně.",
+			"workflows": "Pracovní postupy jsou připravená šablona pro konverzaci. Pracovní postupy ti mohou umožnit definovat prompty, které často používáš, a mohou zahrnovat řadu kroků k vedení AlfaCode assistant přes opakující se úkoly, jako je nasazení služby nebo odeslání PR. Pro vyvolání pracovního postupu napiš",
 			"workflowsInChat": "v chatu."
 		},
 		"sections": {
@@ -273,7 +273,7 @@
 			},
 			"noCredits": {
 				"title": "Na vašem účtu nejsou žádné kredity",
-				"description": "Váš účet Kilo Code nemá žádné kredity. Pro použití automatického dokončování prosím přidejte kredity na svůj účet.",
+				"description": "Váš účet AlfaCode assistant nemá žádné kredity. Pro použití automatického dokončování prosím přidejte kredity na svůj účet.",
 				"buyCredits": "Koupit kredity →"
 			},
 			"codeEditorSuggestions": "Návrhy v editoru kódu",
@@ -325,7 +325,7 @@
 		"shareModesNewBanner": "Novinka: Sdílejte režimy vytvořením organizace"
 	},
 	"deviceAuth": {
-		"title": "Přihlásit se do Kilo Code",
+		"title": "Přihlásit se do AlfaCode assistant",
 		"step1": "Otevři následující URL ve svém prohlížeči",
 		"step2": "Ověř kód a autorizuj toto zařízení ve svém prohlížeči",
 		"scanQr": "Nebo naskenuj tento QR kód svým telefonem",

@@ -26,6 +26,25 @@ describe("parseKiloSlashCommands", () => {
 	})
 
 	describe("built-in commands", () => {
+		describe("/init-memory-bank command", () => {
+			it("should process /init-memory-bank command", async () => {
+				const text = "<task>/init-memory-bank</task>"
+				const result = await parseKiloSlashCommands(text, emptyToggles, emptyToggles)
+
+				expect(result.processedText).toContain('<explicit_instructions type="init_memory_bank">')
+				expect(result.processedText).not.toContain("/init-memory-bank")
+				expect(result.needsRulesFileCheck).toBe(false)
+			})
+
+			it("should preserve additional content after /init-memory-bank", async () => {
+				const text = "<task>/init-memory-bank Please use Automatic</task>"
+				const result = await parseKiloSlashCommands(text, emptyToggles, emptyToggles)
+
+				expect(result.processedText).toContain('<explicit_instructions type="init_memory_bank">')
+				expect(result.processedText).toContain("Please use Automatic")
+			})
+		})
+
 		describe("/newtask command", () => {
 			it("should process /newtask in <task> tags", async () => {
 				const text = "<task>/newtask</task>"

@@ -30,7 +30,7 @@ vi.mock("../CliPathResolver", () => ({
 let AgentManagerProvider: typeof import("../AgentManagerProvider").AgentManagerProvider
 
 describe("AgentManagerProvider CLI spawning", () => {
-	let provider: InstanceType<typeof AgentManagerProvider>
+	let provider!: InstanceType<typeof AgentManagerProvider>
 	const mockContext = {
 		extensionUri: { fsPath: "/mock/extension/path" },
 		extensionPath: "",
@@ -45,7 +45,8 @@ describe("AgentManagerProvider CLI spawning", () => {
 		createTerminal: Mock
 	}
 
-	beforeEach(async () => {
+	beforeEach(
+		async () => {
 		vi.resetModules()
 
 		const mockWorkspaceFolder = { uri: { fsPath: "/tmp/workspace" } }
@@ -136,10 +137,12 @@ describe("AgentManagerProvider CLI spawning", () => {
 		const module = await import("../AgentManagerProvider")
 		AgentManagerProvider = module.AgentManagerProvider
 		provider = new AgentManagerProvider(mockContext, mockOutputChannel, mockProvider as any)
-	})
+		},
+		60_000,
+	)
 
 	afterEach(() => {
-		provider.dispose()
+		provider?.dispose()
 	})
 
 	it("forks agent-runtime process for session", async () => {

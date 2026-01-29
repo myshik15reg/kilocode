@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "description": "Preset for Python repos (poetry). Runner expands common home placeholders (%USERPROFILE%, $HOME, ${HOME}, ~).",
+  "steps": [
+    { "name": "Install", "command": "poetry", "args": ["install", "--no-interaction"] },
+    { "name": "Guardrails", "command": "pwsh", "args": ["-File", "%USERPROFILE%/.kilocode/workflowai/scripts/workflowai-guardrails.ps1", "-ProjectPath", ".", "-CheckKiloCodeChangeMarkers"] },
+    { "name": "Lint", "command": "poetry", "args": ["run", "ruff", "check", "."] },
+    { "name": "Tests+Coverage", "command": "poetry", "args": ["run", "pytest", "--cov", ".", "--cov-fail-under=100"] }
+  ]
+}

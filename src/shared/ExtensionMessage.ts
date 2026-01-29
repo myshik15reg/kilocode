@@ -393,6 +393,7 @@ export type ExtensionState = Pick<
 	| "listApiConfigMeta"
 	| "pinnedApiConfigs"
 	| "customInstructions"
+	| "alfaCodeChangeAuthor" // kilocode_change
 	| "dismissedUpsells"
 	| "autoApprovalEnabled"
 	| "yoloMode" // kilocode_change

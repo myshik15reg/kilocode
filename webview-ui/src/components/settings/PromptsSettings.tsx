@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from "react"
-import { VSCodeTextArea, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextArea, VSCodeCheckbox, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { MessageSquare } from "lucide-react"
 
 import { supportPrompt, SupportPromptType } from "@roo/support-prompt"
@@ -26,6 +26,8 @@ interface PromptsSettingsProps {
 	setCustomSupportPrompts: (prompts: Record<string, string | undefined>) => void
 	includeTaskHistoryInEnhance?: boolean
 	setIncludeTaskHistoryInEnhance?: (value: boolean) => void
+	alfaCodeChangeAuthor?: string // kilocode_change
+	setAlfaCodeChangeAuthor?: (value: string) => void // kilocode_change
 }
 
 const PromptsSettings = ({
@@ -33,6 +35,8 @@ const PromptsSettings = ({
 	setCustomSupportPrompts,
 	includeTaskHistoryInEnhance: propsIncludeTaskHistoryInEnhance,
 	setIncludeTaskHistoryInEnhance: propsSetIncludeTaskHistoryInEnhance,
+	alfaCodeChangeAuthor, // kilocode_change
+	setAlfaCodeChangeAuthor, // kilocode_change
 }: PromptsSettingsProps) => {
 	const { t } = useAppTranslation()
 	const {
@@ -315,6 +319,30 @@ const PromptsSettings = ({
 					{activeSupportOption === "COMMIT_MESSAGE" && <CommitMessagePromptSettings />}
 					{/* kilocode_change end */}
 				</div>
+
+				{/* kilocode_change start */}
+				<div className="mt-6 pt-4 border-t border-vscode-panel-border">
+					<div className="font-medium">{t("settings:prompts.oneC.title")}</div>
+					<div className="mt-2">
+						<VSCodeTextField
+							value={alfaCodeChangeAuthor ?? ""}
+							placeholder={t("settings:prompts.oneC.authorPlaceholder")}
+							onInput={(e) => {
+								const value =
+									(e as unknown as CustomEvent)?.detail?.target?.value ??
+									((e as any).target as HTMLInputElement).value
+								setAlfaCodeChangeAuthor?.(value)
+							}}
+							data-testid="alfa-code-change-author-input"
+							className="w-full">
+							{t("settings:prompts.oneC.authorLabel")}
+						</VSCodeTextField>
+						<div className="text-sm text-vscode-descriptionForeground mt-1">
+							{t("settings:prompts.oneC.authorDescription")}
+						</div>
+					</div>
+				</div>
+				{/* kilocode_change end */}
 			</Section>
 		</div>
 	)

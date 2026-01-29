@@ -2,6 +2,7 @@
 import * as vscode from "vscode"
 import { t } from "../../i18n"
 import { getKeybindingForCommand } from "../../utils/keybindings"
+import { Package } from "../../shared/package"
 
 /**
  * Service that displays welcome messages in newly opened terminals
@@ -39,7 +40,7 @@ export class TerminalWelcomeService {
 	}
 
 	private async showWelcomeMessage(terminal: vscode.Terminal): Promise<void> {
-		const shortcut = await getKeybindingForCommand("kilo-code.generateTerminalCommand")
+		const shortcut = await getKeybindingForCommand(`${Package.name}.generateTerminalCommand`)
 		const message = t("kilocode:terminalCommandGenerator.tipMessage", { shortcut })
 		vscode.window.showInformationMessage(message)
 	}

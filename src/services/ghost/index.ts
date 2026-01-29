@@ -3,6 +3,7 @@ import * as vscode from "vscode"
 import { GhostServiceManager } from "./GhostServiceManager"
 import { ClineProvider } from "../../core/webview/ClineProvider"
 import { registerGhostJetbrainsBridge } from "./GhostJetbrainsBridge"
+import { Package } from "../../shared/package"
 
 export const registerGhostProvider = (context: vscode.ExtensionContext, cline: ClineProvider) => {
 	const ghost = new GhostServiceManager(context, cline)
@@ -13,27 +14,27 @@ export const registerGhostProvider = (context: vscode.ExtensionContext, cline: C
 
 	// Register GhostServiceManager Commands
 	context.subscriptions.push(
-		vscode.commands.registerCommand("kilo-code.ghost.reload", async () => {
+		vscode.commands.registerCommand(`${Package.name}.ghost.reload`, async () => {
 			await ghost.load()
 		}),
 	)
 	context.subscriptions.push(
-		vscode.commands.registerCommand("kilo-code.ghost.codeActionQuickFix", async () => {
+		vscode.commands.registerCommand(`${Package.name}.ghost.codeActionQuickFix`, async () => {
 			return
 		}),
 	)
 	context.subscriptions.push(
-		vscode.commands.registerCommand("kilo-code.ghost.generateSuggestions", async () => {
+		vscode.commands.registerCommand(`${Package.name}.ghost.generateSuggestions`, async () => {
 			ghost.codeSuggestion()
 		}),
 	)
 	context.subscriptions.push(
-		vscode.commands.registerCommand("kilo-code.ghost.showIncompatibilityExtensionPopup", async () => {
+		vscode.commands.registerCommand(`${Package.name}.ghost.showIncompatibilityExtensionPopup`, async () => {
 			await ghost.showIncompatibilityExtensionPopup()
 		}),
 	)
 	context.subscriptions.push(
-		vscode.commands.registerCommand("kilo-code.ghost.disable", async () => {
+		vscode.commands.registerCommand(`${Package.name}.ghost.disable`, async () => {
 			await ghost.disable()
 		}),
 	)

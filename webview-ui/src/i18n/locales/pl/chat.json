@@ -1,5 +1,5 @@
 {
-	"greeting": "Co Kilo Code może dla Ciebie zrobić?",
+	"greeting": "Co AlfaCode assistant może dla Ciebie zrobić?",
 	"task": {
 		"title": "Zadanie",
 		"expand": "Rozwiń zadanie",
@@ -22,7 +22,7 @@
 		"sharePublicly": "Udostępnij publicznie",
 		"sharePubliclyDescription": "Każdy z linkiem może uzyskać dostęp",
 		"connectToCloud": "Połącz z chmurą",
-		"connectToCloudDescription": "Zaloguj się do Kilo Code Cloud, aby udostępniać zadania",
+		"connectToCloudDescription": "Zaloguj się do AlfaCode assistant Cloud, aby udostępniać zadania",
 		"sharingDisabledByOrganization": "Udostępnianie wyłączone przez organizację",
 		"shareSuccessOrganization": "Link organizacji skopiowany do schowka",
 		"shareSuccessPublic": "Link publiczny skopiowany do schowka",
@@ -96,7 +96,7 @@
 	"scrollToBottom": "Przewiń do dołu czatu",
 	"about": "Generuj, refaktoryzuj i debuguj kod z pomocą sztucznej inteligencji. Sprawdź naszą <DocsLink>dokumentację</DocsLink>, żeby dowiedzieć się więcej.",
 	"docs": "Sprawdź naszą <DocsLink>dokumentację</DocsLink>, aby dowiedzieć się więcej.",
-	"onboarding": "<strong>Twoja lista zadań w tym obszarze roboczym jest pusta.</strong> Zacznij od wpisania zadania poniżej. Nie wiesz, jak zacząć? Przeczytaj więcej o tym, co Kilo Code może dla Ciebie zrobić w <DocsLink>dokumentacji</DocsLink>.",
+	"onboarding": "<strong>Twoja lista zadań w tym obszarze roboczym jest pusta.</strong> Zacznij od wpisania zadania poniżej. Nie wiesz, jak zacząć? Przeczytaj więcej o tym, co AlfaCode assistant może dla Ciebie zrobić w <DocsLink>dokumentacji</DocsLink>.",
 	"rooTips": {
 		"customizableModes": {
 			"title": "Konfigurowalne tryby",
@@ -125,7 +125,7 @@
 		"title": "Tryby",
 		"marketplace": "Marketplace Trybów",
 		"settings": "Ustawienia Trybów",
-		"description": "Wyspecjalizowane persony, które dostosowują zachowanie Kilo Code.",
+		"description": "Wyspecjalizowane persony, które dostosowują zachowanie AlfaCode assistant.",
 		"searchPlaceholder": "Szukaj trybów...",
 		"noResults": "Nie znaleziono wyników",
 		"organizationModes": "Tryby organizacji"
@@ -140,7 +140,7 @@
 	"diffError": {
 		"title": "Edycja nieudana"
 	},
-	"troubleMessage": "Kilo Code ma problemy...",
+	"troubleMessage": "AlfaCode assistant ma problemy...",
 	"apiRequest": {
 		"title": "Zapytanie API",
 		"failed": "Zapytanie API nie powiodło się",
@@ -183,48 +183,48 @@
 		"current": "Bieżący"
 	},
 	"instructions": {
-		"wantsToFetch": "Kilo Code chce pobrać szczegółowe instrukcje, aby pomóc w bieżącym zadaniu"
+		"wantsToFetch": "AlfaCode assistant chce pobrać szczegółowe instrukcje, aby pomóc w bieżącym zadaniu"
 	},
 	"fileOperations": {
-		"wantsToRead": "Kilo Code chce przeczytać ten plik",
-		"wantsToReadOutsideWorkspace": "Kilo Code chce przeczytać ten plik poza obszarem roboczym",
-		"didRead": "Kilo Code przeczytał ten plik",
-		"wantsToEdit": "Kilo Code chce edytować ten plik",
-		"wantsToEditOutsideWorkspace": "Kilo Code chce edytować ten plik poza obszarem roboczym",
-		"wantsToEditProtected": "Kilo Code chce edytować chroniony plik konfiguracyjny",
-		"wantsToCreate": "Kilo Code chce utworzyć nowy plik",
-		"wantsToDelete": "Kilo Code chce usunąć ten plik",
-		"wantsToDeleteDirectory": "Kilo Code chce usunąć ten katalog",
-		"wantsToSearchReplace": "Kilo Code chce wykonać wyszukiwanie i zamianę w tym pliku",
-		"didSearchReplace": "Kilo Code wykonał wyszukiwanie i zamianę w tym pliku",
-		"wantsToInsert": "Kilo Code chce wstawić zawartość do tego pliku",
-		"wantsToInsertWithLineNumber": "Kilo Code chce wstawić zawartość do tego pliku w linii {{lineNumber}}",
-		"wantsToInsertAtEnd": "Kilo Code chce dodać zawartość na końcu tego pliku",
-		"wantsToReadAndXMore": "Kilo Code chce przeczytać ten plik i {{count}} więcej",
-		"wantsToReadMultiple": "Kilo Code chce odczytać wiele plików",
-		"wantsToApplyBatchChanges": "Kilo Code chce zastosować zmiany do wielu plików",
-		"wantsToGenerateImage": "Kilo Code chce wygenerować obraz",
-		"wantsToGenerateImageOutsideWorkspace": "Kilo Code chce wygenerować obraz poza obszarem roboczym",
-		"wantsToGenerateImageProtected": "Kilo Code chce wygenerować obraz w chronionym miejscu",
-		"didGenerateImage": "Kilo Code wygenerował obraz"
+		"wantsToRead": "AlfaCode assistant chce przeczytać ten plik",
+		"wantsToReadOutsideWorkspace": "AlfaCode assistant chce przeczytać ten plik poza obszarem roboczym",
+		"didRead": "AlfaCode assistant przeczytał ten plik",
+		"wantsToEdit": "AlfaCode assistant chce edytować ten plik",
+		"wantsToEditOutsideWorkspace": "AlfaCode assistant chce edytować ten plik poza obszarem roboczym",
+		"wantsToEditProtected": "AlfaCode assistant chce edytować chroniony plik konfiguracyjny",
+		"wantsToCreate": "AlfaCode assistant chce utworzyć nowy plik",
+		"wantsToDelete": "AlfaCode assistant chce usunąć ten plik",
+		"wantsToDeleteDirectory": "AlfaCode assistant chce usunąć ten katalog",
+		"wantsToSearchReplace": "AlfaCode assistant chce wykonać wyszukiwanie i zamianę w tym pliku",
+		"didSearchReplace": "AlfaCode assistant wykonał wyszukiwanie i zamianę w tym pliku",
+		"wantsToInsert": "AlfaCode assistant chce wstawić zawartość do tego pliku",
+		"wantsToInsertWithLineNumber": "AlfaCode assistant chce wstawić zawartość do tego pliku w linii {{lineNumber}}",
+		"wantsToInsertAtEnd": "AlfaCode assistant chce dodać zawartość na końcu tego pliku",
+		"wantsToReadAndXMore": "AlfaCode assistant chce przeczytać ten plik i {{count}} więcej",
+		"wantsToReadMultiple": "AlfaCode assistant chce odczytać wiele plików",
+		"wantsToApplyBatchChanges": "AlfaCode assistant chce zastosować zmiany do wielu plików",
+		"wantsToGenerateImage": "AlfaCode assistant chce wygenerować obraz",
+		"wantsToGenerateImageOutsideWorkspace": "AlfaCode assistant chce wygenerować obraz poza obszarem roboczym",
+		"wantsToGenerateImageProtected": "AlfaCode assistant chce wygenerować obraz w chronionym miejscu",
+		"didGenerateImage": "AlfaCode assistant wygenerował obraz"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Kilo Code chce zobaczyć pliki najwyższego poziomu w tym katalogu",
-		"didViewTopLevel": "Kilo Code zobaczył pliki najwyższego poziomu w tym katalogu",
-		"wantsToViewRecursive": "Kilo Code chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu",
-		"didViewRecursive": "Kilo Code rekurencyjnie zobaczył wszystkie pliki w tym katalogu",
-		"wantsToViewDefinitions": "Kilo Code chce zobaczyć nazwy definicji kodu źródłowego używane w tym katalogu",
-		"didViewDefinitions": "Kilo Code zobaczył nazwy definicji kodu źródłowego używane w tym katalogu",
-		"wantsToSearch": "Kilo Code chce przeszukać ten katalog w poszukiwaniu <code>{{regex}}</code>",
-		"didSearch": "Kilo Code przeszukał ten katalog w poszukiwaniu <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Kilo Code chce przeszukać ten katalog (poza obszarem roboczym) w poszukiwaniu <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Kilo Code przeszukał ten katalog (poza obszarem roboczym) w poszukiwaniu <code>{{regex}}</code>",
-		"wantsToViewTopLevelOutsideWorkspace": "Kilo Code chce zobaczyć pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym)",
-		"didViewTopLevelOutsideWorkspace": "Kilo Code zobaczył pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym)",
-		"wantsToViewRecursiveOutsideWorkspace": "Kilo Code chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu (poza obszarem roboczym)",
-		"didViewRecursiveOutsideWorkspace": "Kilo Code rekurencyjnie zobaczył wszystkie pliki w tym katalogu (poza obszarem roboczym)",
-		"wantsToViewDefinitionsOutsideWorkspace": "Kilo Code chce zobaczyć nazwy definicji kodu źródłowego używane w tym katalogu (poza obszarem roboczym)",
-		"didViewDefinitionsOutsideWorkspace": "Kilo Code zobaczył nazwy definicji kodu źródłowego używane w tym katalogu (poza obszarem roboczym)"
+		"wantsToViewTopLevel": "AlfaCode assistant chce zobaczyć pliki najwyższego poziomu w tym katalogu",
+		"didViewTopLevel": "AlfaCode assistant zobaczył pliki najwyższego poziomu w tym katalogu",
+		"wantsToViewRecursive": "AlfaCode assistant chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu",
+		"didViewRecursive": "AlfaCode assistant rekurencyjnie zobaczył wszystkie pliki w tym katalogu",
+		"wantsToViewDefinitions": "AlfaCode assistant chce zobaczyć nazwy definicji kodu źródłowego używane w tym katalogu",
+		"didViewDefinitions": "AlfaCode assistant zobaczył nazwy definicji kodu źródłowego używane w tym katalogu",
+		"wantsToSearch": "AlfaCode assistant chce przeszukać ten katalog w poszukiwaniu <code>{{regex}}</code>",
+		"didSearch": "AlfaCode assistant przeszukał ten katalog w poszukiwaniu <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "AlfaCode assistant chce przeszukać ten katalog (poza obszarem roboczym) w poszukiwaniu <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "AlfaCode assistant przeszukał ten katalog (poza obszarem roboczym) w poszukiwaniu <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "AlfaCode assistant chce zobaczyć pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym)",
+		"didViewTopLevelOutsideWorkspace": "AlfaCode assistant zobaczył pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym)",
+		"wantsToViewRecursiveOutsideWorkspace": "AlfaCode assistant chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu (poza obszarem roboczym)",
+		"didViewRecursiveOutsideWorkspace": "AlfaCode assistant rekurencyjnie zobaczył wszystkie pliki w tym katalogu (poza obszarem roboczym)",
+		"wantsToViewDefinitionsOutsideWorkspace": "AlfaCode assistant chce zobaczyć nazwy definicji kodu źródłowego używane w tym katalogu (poza obszarem roboczym)",
+		"didViewDefinitionsOutsideWorkspace": "AlfaCode assistant zobaczył nazwy definicji kodu źródłowego używane w tym katalogu (poza obszarem roboczym)"
 	},
 	"commandOutput": "Wyjście polecenia",
 	"commandExecution": {
@@ -252,18 +252,18 @@
 		"youSaid": "Powiedziałeś"
 	},
 	"mcp": {
-		"wantsToUseTool": "Kilo Code chce użyć narzędzia na serwerze MCP {{serverName}}",
-		"wantsToAccessResource": "Kilo Code chce uzyskać dostęp do zasobu na serwerze MCP {{serverName}}"
+		"wantsToUseTool": "AlfaCode assistant chce użyć narzędzia na serwerze MCP {{serverName}}",
+		"wantsToAccessResource": "AlfaCode assistant chce uzyskać dostęp do zasobu na serwerze MCP {{serverName}}"
 	},
 	"modes": {
-		"wantsToSwitch": "Kilo Code chce przełączyć się na tryb <code>{{mode}}</code>",
-		"wantsToSwitchWithReason": "Kilo Code chce przełączyć się na tryb <code>{{mode}}</code> ponieważ: {{reason}}",
-		"didSwitch": "Kilo Code przełączył się na tryb <code>{{mode}}</code>",
-		"didSwitchWithReason": "Kilo Code przełączył się na tryb <code>{{mode}}</code> ponieważ: {{reason}}"
+		"wantsToSwitch": "AlfaCode assistant chce przełączyć się na tryb <code>{{mode}}</code>",
+		"wantsToSwitchWithReason": "AlfaCode assistant chce przełączyć się na tryb <code>{{mode}}</code> ponieważ: {{reason}}",
+		"didSwitch": "AlfaCode assistant przełączył się na tryb <code>{{mode}}</code>",
+		"didSwitchWithReason": "AlfaCode assistant przełączył się na tryb <code>{{mode}}</code> ponieważ: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Kilo Code chce utworzyć nowe podzadanie w trybie <code>{{mode}}</code>",
-		"wantsToFinish": "Kilo Code chce zakończyć to podzadanie",
+		"wantsToCreate": "AlfaCode assistant chce utworzyć nowe podzadanie w trybie <code>{{mode}}</code>",
+		"wantsToFinish": "AlfaCode assistant chce zakończyć to podzadanie",
 		"newTaskContent": "Instrukcje podzadania",
 		"completionContent": "Podzadanie zakończone",
 		"resultContent": "Wyniki podzadania",
@@ -271,7 +271,7 @@
 		"completionInstructions": "Podzadanie zakończone! Możesz przejrzeć wyniki i zasugerować poprawki lub następne kroki. Jeśli wszystko wygląda dobrze, potwierdź, aby zwrócić wynik do zadania nadrzędnego."
 	},
 	"questions": {
-		"hasQuestion": "Kilo Code ma pytanie"
+		"hasQuestion": "AlfaCode assistant ma pytanie"
 	},
 	"taskCompleted": "Zadanie zakończone",
 	"modelResponseIncomplete": "Odpowiedź modelu niekompletna",
@@ -354,11 +354,11 @@
 			"tryButton": "Wypróbuj agentów chmurowych"
 		},
 		"careers": "Dodatkowo, <careersLink>zatrudniamy!</careersLink>",
-		"socialLinks": "Dołącz do nas na <xLink>X</xLink>, <discordLink>Discord</discordLink>, lub <redditLink>r/KiloCode</redditLink> 🚀"
+		"socialLinks": "Dołącz do nas na <xLink>X</xLink>, <discordLink>Discord</discordLink>, lub <redditLink>r/AlfaCodeAssistant</redditLink> 🚀"
 	},
 	"browser": {
 		"session": "Sesja przeglądarki",
-		"rooWantsToUse": "Kilo Code chce użyć przeglądarki",
+		"rooWantsToUse": "AlfaCode assistant chce użyć przeglądarki",
 		"consoleLogs": "Logi konsoli",
 		"noNewLogs": "(Brak nowych logów)",
 		"screenshot": "Zrzut ekranu przeglądarki",
@@ -406,24 +406,24 @@
 	"profileViolationWarning": "Bieżący profil nie jest kompatybilny z ustawieniami Twojej organizacji",
 	"shellIntegration": {
 		"title": "Ostrzeżenie wykonania polecenia",
-		"description": "Twoje polecenie jest wykonywane bez integracji powłoki terminala VSCode. Aby ukryć to ostrzeżenie, możesz wyłączyć integrację powłoki w sekcji <strong>Terminal</strong> w <settingsLink>ustawieniach Kilo Code</settingsLink> lub rozwiązać problemy z integracją terminala VSCode korzystając z poniższego linku.",
+		"description": "Twoje polecenie jest wykonywane bez integracji powłoki terminala VSCode. Aby ukryć to ostrzeżenie, możesz wyłączyć integrację powłoki w sekcji <strong>Terminal</strong> w <settingsLink>ustawieniach AlfaCode assistant</settingsLink> lub rozwiązać problemy z integracją terminala VSCode korzystając z poniższego linku.",
 		"troubleshooting": "Kliknij tutaj, aby zobaczyć dokumentację integracji powłoki."
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Osiągnięto limit automatycznie zatwierdzonych żądań",
-			"description": "Kilo Code osiągnął automatycznie zatwierdzony limit {{count}} żądania/żądań API. Czy chcesz zresetować licznik i kontynuować zadanie?",
+			"description": "AlfaCode assistant osiągnął automatycznie zatwierdzony limit {{count}} żądania/żądań API. Czy chcesz zresetować licznik i kontynuować zadanie?",
 			"button": "Zresetuj i kontynuuj"
 		},
 		"autoApprovedCostLimitReached": {
 			"button": "Zresetuj i Kontynuuj",
 			"title": "Osiągnięto limit kosztów z automatycznym zatwierdzaniem",
-			"description": "Kilo Code osiągnął automatycznie zatwierdzony limit kosztów wynoszący ${{count}}. Czy chcesz zresetować koszt i kontynuować zadanie?"
+			"description": "AlfaCode assistant osiągnął automatycznie zatwierdzony limit kosztów wynoszący ${{count}}. Czy chcesz zresetować koszt i kontynuować zadanie?"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Kilo Code chce przeszukać bazę kodu w poszukiwaniu <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Kilo Code chce przeszukać bazę kodu w poszukiwaniu <code>{{query}}</code> w <code>{{path}}</code>",
+		"wantsToSearch": "AlfaCode assistant chce przeszukać bazę kodu w poszukiwaniu <code>{{query}}</code>",
+		"wantsToSearchWithPath": "AlfaCode assistant chce przeszukać bazę kodu w poszukiwaniu <code>{{query}}</code> w <code>{{path}}</code>",
 		"didSearch_one": "Znaleziono 1 wynik",
 		"didSearch_other": "Znaleziono {{count}} wyników",
 		"resultTooltip": "Wynik podobieństwa: {{score}} (kliknij, aby otworzyć plik)"
@@ -488,8 +488,8 @@
 		"clickToEdit": "Kliknij, aby edytować wiadomość"
 	},
 	"slashCommand": {
-		"wantsToRun": "Kilo Code chce uruchomić komendę slash",
-		"didRun": "Kilo Code uruchomił komendę slash"
+		"wantsToRun": "AlfaCode assistant chce uruchomić komendę slash",
+		"didRun": "AlfaCode assistant uruchomił komendę slash"
 	},
 	"todo": {
 		"partial": "Ukończono {{completed}} z {{total}} zadań do wykonania",

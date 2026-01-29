@@ -585,97 +585,149 @@ export const webviewMessageHandler = async (
 
 		case "updateSettings":
 			if (message.updatedSettings) {
+				// kilocode_change start: Don't let a single setting failure prevent other settings from saving
+				const updateErrors: Array<{ key: string; error: unknown }> = []
+				// kilocode_change end
 				for (const [key, value] of Object.entries(message.updatedSettings)) {
 					let newValue = value
+					let shouldSkipPersist = false // kilocode_change
 
-					if (key === "language") {
-						newValue = value ?? "en"
-						changeLanguage(newValue as Language)
-					} else if (key === "allowedCommands") {
-						const commands = value ?? []
+					try {
+						if (key === "language") {
+							newValue = value ?? "en"
+							changeLanguage(newValue as Language)
+						} else if (key === "allowedCommands") {
+							const commands = value ?? []
 
-						newValue = Array.isArray(commands)
-							? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
-							: []
+							newValue = Array.isArray(commands)
+								? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
+								: []
 
-						await vscode.workspace
-							.getConfiguration(Package.name)
-							.update("allowedCommands", newValue, vscode.ConfigurationTarget.Global)
-					} else if (key === "deniedCommands") {
-						const commands = value ?? []
+							try {
+								await vscode.workspace
+									.getConfiguration(Package.name)
+									.update("allowedCommands", newValue, vscode.ConfigurationTarget.Global)
+							} catch (error) {
+								// kilocode_change start
+								updateErrors.push({ key, error })
+								provider.log(
+									`[updateSettings] Failed to update VS Code setting "${key}": ${
+										error instanceof Error ? error.message : String(error)
+									}`,
+								)
+								// kilocode_change end
+							}
+						} else if (key === "deniedCommands") {
+							const commands = value ?? []
 
-						newValue = Array.isArray(commands)
-							? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
-							: []
+							newValue = Array.isArray(commands)
+								? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
+								: []
 
-						await vscode.workspace
-							.getConfiguration(Package.name)
-							.update("deniedCommands", newValue, vscode.ConfigurationTarget.Global)
-					} else if (key === "ttsEnabled") {
-						newValue = value ?? true
-						setTtsEnabled(newValue as boolean)
-					} else if (key === "ttsSpeed") {
-						newValue = value ?? 1.0
-						setTtsSpeed(newValue as number)
-					} else if (key === "terminalShellIntegrationTimeout") {
-						if (value !== undefined) {
-							Terminal.setShellIntegrationTimeout(value as number)
-						}
-					} else if (key === "terminalShellIntegrationDisabled") {
-						if (value !== undefined) {
-							Terminal.setShellIntegrationDisabled(value as boolean)
-						}
-					} else if (key === "terminalCommandDelay") {
-						if (value !== undefined) {
-							Terminal.setCommandDelay(value as number)
-						}
-					} else if (key === "terminalPowershellCounter") {
-						if (value !== undefined) {
-							Terminal.setPowershellCounter(value as boolean)
-						}
-					} else if (key === "terminalZshClearEolMark") {
-						if (value !== undefined) {
-							Terminal.setTerminalZshClearEolMark(value as boolean)
-						}
-					} else if (key === "terminalZshOhMy") {
-						if (value !== undefined) {
-							Terminal.setTerminalZshOhMy(value as boolean)
-						}
-					} else if (key === "terminalZshP10k") {
-						if (value !== undefined) {
-							Terminal.setTerminalZshP10k(value as boolean)
-						}
-					} else if (key === "terminalZdotdir") {
-						if (value !== undefined) {
-							Terminal.setTerminalZdotdir(value as boolean)
-						}
-					} else if (key === "terminalCompressProgressBar") {
-						if (value !== undefined) {
-							Terminal.setCompressProgressBar(value as boolean)
-						}
-					} else if (key === "mcpEnabled") {
-						newValue = value ?? true
-						const mcpHub = provider.getMcpHub()
+							try {
+								await vscode.workspace
+									.getConfiguration(Package.name)
+									.update("deniedCommands", newValue, vscode.ConfigurationTarget.Global)
+							} catch (error) {
+								// kilocode_change start
+								updateErrors.push({ key, error })
+								provider.log(
+									`[updateSettings] Failed to update VS Code setting "${key}": ${
+										error instanceof Error ? error.message : String(error)
+									}`,
+								)
+								// kilocode_change end
+							}
+						} else if (key === "ttsEnabled") {
+							newValue = value ?? true
+							setTtsEnabled(newValue as boolean)
+						} else if (key === "ttsSpeed") {
+							newValue = value ?? 1.0
+							setTtsSpeed(newValue as number)
+						} else if (key === "terminalShellIntegrationTimeout") {
+							if (value !== undefined) {
+								Terminal.setShellIntegrationTimeout(value as number)
+							}
+						} else if (key === "terminalShellIntegrationDisabled") {
+							if (value !== undefined) {
+								Terminal.setShellIntegrationDisabled(value as boolean)
+							}
+						} else if (key === "terminalCommandDelay") {
+							if (value !== undefined) {
+								Terminal.setCommandDelay(value as number)
+							}
+						} else if (key === "terminalPowershellCounter") {
+							if (value !== undefined) {
+								Terminal.setPowershellCounter(value as boolean)
+							}
+						} else if (key === "terminalZshClearEolMark") {
+							if (value !== undefined) {
+								Terminal.setTerminalZshClearEolMark(value as boolean)
+							}
+						} else if (key === "terminalZshOhMy") {
+							if (value !== undefined) {
+								Terminal.setTerminalZshOhMy(value as boolean)
+							}
+						} else if (key === "terminalZshP10k") {
+							if (value !== undefined) {
+								Terminal.setTerminalZshP10k(value as boolean)
+							}
+						} else if (key === "terminalZdotdir") {
+							if (value !== undefined) {
+								Terminal.setTerminalZdotdir(value as boolean)
+							}
+						} else if (key === "terminalCompressProgressBar") {
+							if (value !== undefined) {
+								Terminal.setCompressProgressBar(value as boolean)
+							}
+						} else if (key === "mcpEnabled") {
+							newValue = value ?? true
+							const mcpHub = provider.getMcpHub()
 
-						if (mcpHub) {
-							await mcpHub.handleMcpEnabledChange(newValue as boolean)
+							if (mcpHub) {
+								await mcpHub.handleMcpEnabledChange(newValue as boolean)
+							}
+						} else if (key === "experiments") {
+							if (!value) {
+								shouldSkipPersist = true
+							} else {
+								newValue = {
+									...(getGlobalState("experiments") ?? experimentDefault),
+									...(value as Record<ExperimentId, boolean>),
+								}
+							}
+						} else if (key === "customSupportPrompts") {
+							if (!value) {
+								shouldSkipPersist = true
+							}
 						}
-					} else if (key === "experiments") {
-						if (!value) {
-							continue
-						}
-
-						newValue = {
-							...(getGlobalState("experiments") ?? experimentDefault),
-							...(value as Record<ExperimentId, boolean>),
-						}
-					} else if (key === "customSupportPrompts") {
-						if (!value) {
-							continue
-						}
+					} catch (error) {
+						// kilocode_change start
+						updateErrors.push({ key, error })
+						provider.log(
+							`[updateSettings] Failed to apply setting "${key}": ${
+								error instanceof Error ? error.message : String(error)
+							}`,
+						)
+						// kilocode_change end
 					}
 
-					await provider.contextProxy.setValue(key as keyof RooCodeSettings, newValue)
+					if (shouldSkipPersist) {
+						continue
+					}
+
+					try {
+						await provider.contextProxy.setValue(key as keyof RooCodeSettings, newValue)
+					} catch (error) {
+						// kilocode_change start
+						updateErrors.push({ key, error })
+						provider.log(
+							`[updateSettings] Failed to save setting "${key}": ${
+								error instanceof Error ? error.message : String(error)
+							}`,
+						)
+						// kilocode_change end
+					}
 				}
 
 				await provider.postStateToWebview()
@@ -1611,7 +1663,7 @@ export const webviewMessageHandler = async (
 			break
 		// kilocode_change begin
 		case "openGlobalKeybindings":
-			vscode.commands.executeCommand("workbench.action.openGlobalKeybindings", message.text ?? "kilo-code.")
+			vscode.commands.executeCommand("workbench.action.openGlobalKeybindings", message.text ?? `${Package.name}.`)
 			break
 		case "showSystemNotification":
 			const isSystemNotificationsEnabled = getGlobalState("systemNotificationsEnabled") ?? true
@@ -1940,7 +1992,7 @@ export const webviewMessageHandler = async (
 			const ghostServiceSettings = ghostServiceSettingsSchema.parse(message.values)
 			await updateGlobalState("ghostServiceSettings", ghostServiceSettings)
 			await provider.postStateToWebview()
-			vscode.commands.executeCommand("kilo-code.ghost.reload")
+			vscode.commands.executeCommand(`${Package.name}.ghost.reload`)
 			break
 		case "snoozeAutocomplete":
 			if (typeof message.value === "number" && message.value > 0) {
@@ -2163,7 +2215,7 @@ export const webviewMessageHandler = async (
 					await provider.providerSettingsManager.saveConfig(message.text, message.apiConfiguration)
 					const listApiConfig = await provider.providerSettingsManager.listConfig()
 					await updateGlobalState("listApiConfigMeta", listApiConfig)
-					vscode.commands.executeCommand("kilo-code.ghost.reload") // kilocode_change: Reload ghost model when API provider settings change
+					vscode.commands.executeCommand(`${Package.name}.ghost.reload`) // kilocode_change: Reload ghost model when API provider settings change
 				} catch (error) {
 					provider.log(
 						`Error save api configuration: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
@@ -2226,7 +2278,7 @@ export const webviewMessageHandler = async (
 				const currentApiConfigName = getGlobalState("currentApiConfigName")
 				const isActiveProfile = message.text === currentApiConfigName
 				await provider.upsertProviderProfile(message.text, configToSave, isActiveProfile) // Activate if it's the current active profile
-				vscode.commands.executeCommand("kilo-code.ghost.reload")
+				vscode.commands.executeCommand(`${Package.name}.ghost.reload`)
 				// kilocode_change end
 
 				// Ensure state is posted to webview after profile update to reflect organization mode changes
@@ -2235,7 +2287,7 @@ export const webviewMessageHandler = async (
 				}
 
 				// kilocode_change: Reload ghost model when API provider settings change
-				vscode.commands.executeCommand("kilo-code.ghost.reload")
+				vscode.commands.executeCommand(`${Package.name}.ghost.reload`)
 			}
 			// kilocode_change end: check for kilocodeToken change to remove organizationId and fetch organization modes
 			break
@@ -2262,7 +2314,7 @@ export const webviewMessageHandler = async (
 					await provider.activateProviderProfile({ name: newName })
 
 					// kilocode_change: Reload ghost model when API provider settings change
-					vscode.commands.executeCommand("kilo-code.ghost.reload")
+					vscode.commands.executeCommand(`${Package.name}.ghost.reload`)
 				} catch (error) {
 					provider.log(
 						`Error rename api configuration: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
@@ -2339,7 +2391,7 @@ export const webviewMessageHandler = async (
 					await provider.activateProviderProfile({ name: newName })
 
 					// kilocode_change: Reload ghost model when API provider settings change
-					vscode.commands.executeCommand("kilo-code.ghost.reload")
+					vscode.commands.executeCommand(`${Package.name}.ghost.reload`)
 				} catch (error) {
 					provider.log(
 						`Error delete api configuration: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
@@ -3283,6 +3335,15 @@ export const webviewMessageHandler = async (
 					codebaseIndexScannerMaxBatchRetries: settings.codebaseIndexScannerMaxBatchRetries,
 					// kilocode_change end
 					codebaseIndexOpenRouterSpecificProvider: settings.codebaseIndexOpenRouterSpecificProvider,
+					// kilocode_change start: Persist Neo4j graph database settings
+					codebaseIndexNeo4jEnabled:
+						settings.codebaseIndexNeo4jEnabled ?? currentConfig.codebaseIndexNeo4jEnabled ?? false,
+					codebaseIndexNeo4jUri: settings.codebaseIndexNeo4jUri ?? currentConfig.codebaseIndexNeo4jUri,
+					codebaseIndexNeo4jUsername:
+						settings.codebaseIndexNeo4jUsername ?? currentConfig.codebaseIndexNeo4jUsername,
+					codebaseIndexNeo4jDatabase:
+						settings.codebaseIndexNeo4jDatabase ?? currentConfig.codebaseIndexNeo4jDatabase ?? "neo4j",
+					// kilocode_change end: Persist Neo4j graph database settings
 				}
 
 				// Save global state first

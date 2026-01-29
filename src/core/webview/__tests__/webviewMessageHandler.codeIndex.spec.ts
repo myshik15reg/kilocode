@@ -150,5 +150,36 @@ describe("webviewMessageHandler - Code Index Settings", () => {
 			expect(updatedConfig).toBeDefined()
 			expect(updatedConfig).toHaveProperty("codebaseIndexVectorStoreName", "my-vector-store")
 		})
+
+		// kilocode_change start: Neo4j settings persistence
+		it("should save Neo4j settings to globalState", async () => {
+			const message = {
+				type: "saveCodeIndexSettingsAtomic",
+				codeIndexSettings: {
+					codebaseIndexVectorStoreName: "my-vector-store",
+					codebaseIndexEnabled: true,
+					codebaseIndexQdrantUrl: "http://localhost:6333",
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexEmbedderModelId: "text-embedding-3-small",
+					codebaseIndexNeo4jEnabled: true,
+					codebaseIndexNeo4jUri: "bolt://localhost:7687",
+					codebaseIndexNeo4jUsername: "neo4j",
+					codebaseIndexNeo4jDatabase: "neo4j",
+				},
+			} as const
+
+			await webviewMessageHandler(mockProvider as ClineProvider, message)
+
+			expect(mockProvider.contextProxy?.setValue).toHaveBeenCalledWith(
+				"codebaseIndexConfig",
+				expect.objectContaining({
+					codebaseIndexNeo4jEnabled: true,
+					codebaseIndexNeo4jUri: "bolt://localhost:7687",
+					codebaseIndexNeo4jUsername: "neo4j",
+					codebaseIndexNeo4jDatabase: "neo4j",
+				}),
+			)
+		})
+		// kilocode_change end: Neo4j settings persistence
 	})
 })

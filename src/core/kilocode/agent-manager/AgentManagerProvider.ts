@@ -28,6 +28,7 @@ import { getRemoteUrl } from "../../../services/code-index/managed/git-utils"
 import { normalizeGitUrl } from "./normalizeGitUrl"
 import type { ClineMessage } from "@roo-code/types"
 import { getModelId, type ModeConfig, type ProviderSettings } from "@roo-code/types"
+import { Package } from "../../../shared/package"
 import { DEFAULT_MODE_SLUG, DEFAULT_MODES } from "@roo-code/types"
 import {
 	captureAgentManagerOpened,
@@ -66,7 +67,7 @@ interface StdinAskResponseMessage {
  * Each agent runs as a CLI process using `kilocode --auto --json`.
  */
 export class AgentManagerProvider implements vscode.Disposable {
-	public static readonly viewType = "kilo-code.AgentManagerPanel"
+	public static readonly viewType = `${Package.name}.AgentManagerPanel`
 
 	private panel: vscode.WebviewPanel | undefined
 	private disposables: vscode.Disposable[] = []
@@ -280,8 +281,8 @@ export class AgentManagerProvider implements vscode.Disposable {
 		)
 
 		this.panel.iconPath = {
-			light: vscode.Uri.joinPath(this.context.extensionUri, "assets", "icons", "kilo-light.svg"),
-			dark: vscode.Uri.joinPath(this.context.extensionUri, "assets", "icons", "kilo-dark.svg"),
+			light: vscode.Uri.joinPath(this.context.extensionUri, "assets", "icons", "kilo.png"),
+			dark: vscode.Uri.joinPath(this.context.extensionUri, "assets", "icons", "kilo-dark.png"),
 		}
 
 		this.panel.webview.html =

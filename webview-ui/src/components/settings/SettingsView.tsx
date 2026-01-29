@@ -237,6 +237,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 		customCondensingPrompt,
 		yoloGatekeeperApiConfigId, // kilocode_change: AI gatekeeper for YOLO mode
 		customSupportPrompts,
+		alfaCodeChangeAuthor, // kilocode_change
 		profileThresholds,
 		systemNotificationsEnabled, // kilocode_change
 		alwaysAllowFollowupQuestions,
@@ -300,6 +301,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 
 	// kilocode_change start
 	const isLoadingProfileForEditing = useRef(false)
+	const previousExtensionStateRef = useRef(extensionState)
 
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
@@ -338,6 +340,13 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 	}, [kilocodeToken, openRouterApiKey, glamaApiKey, requestyApiKey])
 
 	useEffect(() => {
+		const extensionStateChanged = previousExtensionStateRef.current !== extensionState
+		previousExtensionStateRef.current = extensionState
+
+		if (!extensionStateChanged) {
+			return
+		}
+
 		// Only update if we're not already detecting changes
 		// This prevents overwriting user changes that haven't been saved yet
 		// Also skip if we're loading a profile for editing
@@ -512,85 +521,87 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 
 	const handleSubmit = () => {
 		if (isSettingValid) {
+			const updatedSettings = {
+				language,
+				alwaysAllowReadOnly: alwaysAllowReadOnly ?? undefined,
+				alwaysAllowReadOnlyOutsideWorkspace: alwaysAllowReadOnlyOutsideWorkspace ?? undefined,
+				alwaysAllowWrite: alwaysAllowWrite ?? undefined,
+				alwaysAllowWriteOutsideWorkspace: alwaysAllowWriteOutsideWorkspace ?? undefined,
+				alwaysAllowWriteProtected: alwaysAllowWriteProtected ?? undefined,
+				alwaysAllowExecute: alwaysAllowExecute ?? undefined,
+				alwaysAllowBrowser: alwaysAllowBrowser ?? undefined,
+				alwaysAllowMcp,
+				alwaysAllowModeSwitch,
+				allowedCommands: allowedCommands ?? [],
+				deniedCommands: deniedCommands ?? [],
+				// Note that we use `null` instead of `undefined` since `JSON.stringify`
+				// will omit `undefined` when serializing the object and passing it to the
+				// extension host. We may need to do the same for other nullable fields.
+				allowedMaxRequests: allowedMaxRequests ?? null,
+				allowedMaxCost: allowedMaxCost ?? null,
+				autoCondenseContext,
+				autoCondenseContextPercent,
+				contextRoutingEnabled,
+				contextRoutingFastThresholdPercent,
+				contextRoutingDeepThresholdPercent,
+				browserToolEnabled: browserToolEnabled ?? true,
+				soundEnabled: soundEnabled ?? true,
+				soundVolume: soundVolume ?? 0.5,
+				ttsEnabled,
+				ttsSpeed,
+				diffEnabled: diffEnabled ?? true,
+				enableCheckpoints: enableCheckpoints ?? false,
+				checkpointTimeout: checkpointTimeout ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+				browserViewportSize: browserViewportSize ?? "900x600",
+				remoteBrowserHost: remoteBrowserEnabled ? remoteBrowserHost : undefined,
+				remoteBrowserEnabled: remoteBrowserEnabled ?? false,
+				fuzzyMatchThreshold: fuzzyMatchThreshold ?? 1.0,
+				writeDelayMs,
+				screenshotQuality: screenshotQuality ?? 75,
+				terminalOutputLineLimit: terminalOutputLineLimit ?? 500,
+				terminalOutputCharacterLimit: terminalOutputCharacterLimit ?? 50_000,
+				terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? 30_000,
+				terminalShellIntegrationDisabled,
+				terminalCommandDelay,
+				terminalPowershellCounter,
+				terminalZshClearEolMark,
+				terminalZshOhMy,
+				terminalZshP10k,
+				terminalZdotdir,
+				terminalCompressProgressBar,
+				mcpEnabled,
+				maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
+				maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
+				showRooIgnoredFiles: showRooIgnoredFiles ?? true,
+				enableSubfolderRules: enableSubfolderRules ?? false,
+				maxReadFileLine: maxReadFileLine ?? 500 /*kilocode_change*/,
+				maxImageFileSize: maxImageFileSize ?? 5,
+				maxTotalImageSize: maxTotalImageSize ?? 20,
+				maxConcurrentFileReads: cachedState.maxConcurrentFileReads ?? 5,
+				includeDiagnosticMessages: includeDiagnosticMessages !== undefined ? includeDiagnosticMessages : true,
+				maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
+				alwaysAllowSubtasks,
+				alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
+				followupAutoApproveTimeoutMs,
+				condensingApiConfigId: condensingApiConfigId || "",
+				includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
+				reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
+				enterBehavior: enterBehavior ?? "send",
+				includeCurrentTime: includeCurrentTime ?? true,
+				includeCurrentCost: includeCurrentCost ?? true,
+				maxGitStatusFiles: maxGitStatusFiles ?? 0,
+				profileThresholds,
+				imageGenerationProvider,
+				openRouterImageApiKey,
+				openRouterImageGenerationSelectedModel,
+				experiments,
+				customSupportPrompts,
+				alfaCodeChangeAuthor: alfaCodeChangeAuthor ?? "", // kilocode_change
+			}
+
 			vscode.postMessage({
 				type: "updateSettings",
-				updatedSettings: {
-					language,
-					alwaysAllowReadOnly: alwaysAllowReadOnly ?? undefined,
-					alwaysAllowReadOnlyOutsideWorkspace: alwaysAllowReadOnlyOutsideWorkspace ?? undefined,
-					alwaysAllowWrite: alwaysAllowWrite ?? undefined,
-					alwaysAllowWriteOutsideWorkspace: alwaysAllowWriteOutsideWorkspace ?? undefined,
-					alwaysAllowWriteProtected: alwaysAllowWriteProtected ?? undefined,
-					alwaysAllowExecute: alwaysAllowExecute ?? undefined,
-					alwaysAllowBrowser: alwaysAllowBrowser ?? undefined,
-					alwaysAllowMcp,
-					alwaysAllowModeSwitch,
-					allowedCommands: allowedCommands ?? [],
-					deniedCommands: deniedCommands ?? [],
-					// Note that we use `null` instead of `undefined` since `JSON.stringify`
-					// will omit `undefined` when serializing the object and passing it to the
-					// extension host. We may need to do the same for other nullable fields.
-					allowedMaxRequests: allowedMaxRequests ?? null,
-					allowedMaxCost: allowedMaxCost ?? null,
-					autoCondenseContext,
-					autoCondenseContextPercent,
-					contextRoutingEnabled,
-					contextRoutingFastThresholdPercent,
-					contextRoutingDeepThresholdPercent,
-					browserToolEnabled: browserToolEnabled ?? true,
-					soundEnabled: soundEnabled ?? true,
-					soundVolume: soundVolume ?? 0.5,
-					ttsEnabled,
-					ttsSpeed,
-					diffEnabled: diffEnabled ?? true,
-					enableCheckpoints: enableCheckpoints ?? false,
-					checkpointTimeout: checkpointTimeout ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
-					browserViewportSize: browserViewportSize ?? "900x600",
-					remoteBrowserHost: remoteBrowserEnabled ? remoteBrowserHost : undefined,
-					remoteBrowserEnabled: remoteBrowserEnabled ?? false,
-					fuzzyMatchThreshold: fuzzyMatchThreshold ?? 1.0,
-					writeDelayMs,
-					screenshotQuality: screenshotQuality ?? 75,
-					terminalOutputLineLimit: terminalOutputLineLimit ?? 500,
-					terminalOutputCharacterLimit: terminalOutputCharacterLimit ?? 50_000,
-					terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? 30_000,
-					terminalShellIntegrationDisabled,
-					terminalCommandDelay,
-					terminalPowershellCounter,
-					terminalZshClearEolMark,
-					terminalZshOhMy,
-					terminalZshP10k,
-					terminalZdotdir,
-					terminalCompressProgressBar,
-					mcpEnabled,
-					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
-					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
-					showRooIgnoredFiles: showRooIgnoredFiles ?? true,
-					enableSubfolderRules: enableSubfolderRules ?? false,
-					maxReadFileLine: maxReadFileLine ?? 500 /*kilocode_change*/,
-					maxImageFileSize: maxImageFileSize ?? 5,
-					maxTotalImageSize: maxTotalImageSize ?? 20,
-					maxConcurrentFileReads: cachedState.maxConcurrentFileReads ?? 5,
-					includeDiagnosticMessages:
-						includeDiagnosticMessages !== undefined ? includeDiagnosticMessages : true,
-					maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
-					alwaysAllowSubtasks,
-					alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
-					followupAutoApproveTimeoutMs,
-					condensingApiConfigId: condensingApiConfigId || "",
-					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
-					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
-					enterBehavior: enterBehavior ?? "send",
-					includeCurrentTime: includeCurrentTime ?? true,
-					includeCurrentCost: includeCurrentCost ?? true,
-					maxGitStatusFiles: maxGitStatusFiles ?? 0,
-					profileThresholds,
-					imageGenerationProvider,
-					openRouterImageApiKey,
-					openRouterImageGenerationSelectedModel,
-					experiments,
-					customSupportPrompts,
-				},
+				updatedSettings,
 			})
 			vscode.postMessage({ type: "ttsEnabled", bool: ttsEnabled })
 			vscode.postMessage({ type: "ttsSpeed", value: ttsSpeed })
@@ -632,20 +643,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 			})
 			// kilocode_change end - Auto-purge settings
 
-			// kilocode_change: After saving, sync cachedState to extensionState without clobbering
-			// the editing profile's apiConfiguration when editing a non-active profile.
-			if (editingApiConfigName !== currentApiConfigName) {
-				// Only sync non-apiConfiguration fields from extensionState
-				const { apiConfiguration: _, ...restOfExtensionState } = extensionState
-				setCachedState((prevState) => ({
-					...prevState,
-					...restOfExtensionState,
-				}))
-			} else {
-				// When editing the active profile, sync everything including apiConfiguration
-				setCachedState((prevState) => ({ ...prevState, ...extensionState }))
-			}
-			// kilocode_change end
+			setCachedState((prevState) => ({ ...prevState, ...updatedSettings }))
 			setChangeDetected(false)
 		}
 	}
@@ -1182,6 +1180,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 							setIncludeTaskHistoryInEnhance={(value) =>
 								setCachedStateField("includeTaskHistoryInEnhance", value)
 							}
+							alfaCodeChangeAuthor={alfaCodeChangeAuthor} // kilocode_change
+							setAlfaCodeChangeAuthor={(value) => setCachedStateField("alfaCodeChangeAuthor", value)} // kilocode_change
 						/>
 					)}
 

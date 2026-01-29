@@ -28,7 +28,7 @@ type GhostServiceSettingsViewProps = HTMLAttributes<HTMLDivElement> & {
 
 // Get the list of supported provider keys from AUTOCOMPLETE_PROVIDER_MODELS
 const SUPPORTED_AUTOCOMPLETE_PROVIDER_KEYS = Array.from(AUTOCOMPLETE_PROVIDER_MODELS.keys())
-const GHOST_SERVICE_KEYBINDING_COMMAND_IDS = ["kilo-code.ghost.generateSuggestions"]
+const GHOST_SERVICE_KEYBINDING_COMMAND_IDS = ["alfa-code-assistant.ghost.generateSuggestions"]
 
 export const GhostServiceSettingsView = ({
 	ghostServiceSettings,
@@ -185,20 +185,20 @@ export const GhostServiceSettingsView = ({
 								onChange={onEnableSmartInlineTaskKeybindingChange}>
 								<span className="font-medium">
 									{t("kilocode:ghost.settings.enableSmartInlineTaskKeybinding.label", {
-										keybinding: keybindings["kilo-code.ghost.generateSuggestions"],
+										keybinding: keybindings["alfa-code-assistant.ghost.generateSuggestions"],
 									})}
 								</span>
 							</VSCodeCheckbox>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								<Trans
 									i18nKey="kilocode:ghost.settings.enableSmartInlineTaskKeybinding.description"
-									values={{ keybinding: keybindings["kilo-code.ghost.generateSuggestions"] }}
+									values={{ keybinding: keybindings["alfa-code-assistant.ghost.generateSuggestions"] }}
 									components={{
 										DocsLink: (
 											<a
 												href="#"
 												onClick={() =>
-													openGlobalKeybindings("kilo-code.ghost.generateSuggestions")
+													openGlobalKeybindings("alfa-code-assistant.ghost.generateSuggestions")
 												}
 												className="text-[var(--vscode-list-highlightForeground)] hover:underline cursor-pointer"></a>
 										),

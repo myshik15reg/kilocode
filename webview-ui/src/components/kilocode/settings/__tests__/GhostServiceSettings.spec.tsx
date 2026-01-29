@@ -45,7 +45,7 @@ vi.mock("@/utils/vscode", () => ({
 // Mock useKeybindings hook
 vi.mock("@/hooks/useKeybindings", () => ({
 	useKeybindings: () => ({
-		"kilo-code.ghost.generateSuggestions": "Cmd+Shift+G",
+		"alfa-code-assistant.ghost.generateSuggestions": "Cmd+Shift+G",
 	}),
 }))
 

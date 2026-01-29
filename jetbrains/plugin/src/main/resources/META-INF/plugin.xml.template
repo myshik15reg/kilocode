@@ -11,10 +11,10 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Kilo Code</name>
+    <name>AlfaCode assistant</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor url="https://kilo.ai">Kilo Code</vendor>
+    <vendor url="https://kilo.ai">AlfaCode assistant</vendor>
 
     <!-- Resource bundles for internationalization -->
     <resource-bundle>messages.JetbrainsBundle</resource-bundle>
@@ -24,8 +24,8 @@ SPDX-License-Identifier: Apache-2.0
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-        <h1>Kilo Code AI Agent</h1>
-        <p>Open Source AI coding assistant for planning, building, and fixing code.</p>
+        <h1>AlfaCode assistant AI Agent</h1>
+        <p>AI coding assistant for planning, building, and fixing code.</p>
    ]]></description>
    
    <!-- Change notes for the plugin -->
@@ -46,9 +46,9 @@ SPDX-License-Identifier: Apache-2.0
         <postStartupActivity implementation="ai.kilocode.jetbrains.plugin.WecoderPlugin"/>
         <editorFactoryListener implementation="ai.kilocode.jetbrains.editor.EditorListener"/>
         <toolWindow factoryClass="ai.kilocode.jetbrains.ui.RooToolWindowFactory"
-                    id="Kilo Code"
+                    id="AlfaCode assistant"
                     secondary="true"
-                    icon="/icons/kilo-dark.svg"
+                    icon="/icons/kilo.png"
                     anchor="right" />
         <notificationGroup
                     id="kilocode"
@@ -97,7 +97,7 @@ SPDX-License-Identifier: Apache-2.0
         </action>
 
         <action id="kilocode.generateCommitMessage"
-                icon="/icons/kilo-dark-small.svg"
+                icon="/icons/kilo-small.png"
                 class="ai.kilocode.jetbrains.actions.GitCommitMessageAction"
                 text="Generate Commit Message"
                 description="Generate AI-powered commit message">
@@ -111,7 +111,7 @@ SPDX-License-Identifier: Apache-2.0
             <reference ref="kilocode.settingsButtonClicked" />
         </group>
 
-        <group id="kilocode.RightClickMenu" text="Kilo Code" description="kilocode main menu"  icon="/icons/kilo-dark-small.svg" popup="true">
+        <group id="kilocode.RightClickMenu" text="AlfaCode assistant" description="kilocode main menu"  icon="/icons/kilo-small.png" popup="true">
             <group id="kilocode.RightClick.Chat" class="ai.kilocode.jetbrains.actions.RightClickChatActionGroup"
                    text="Chat" description="kilocode chat tool"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>

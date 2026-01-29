@@ -2,6 +2,7 @@
 import * as vscode from "vscode"
 import { ProviderSettingsManager } from "../../core/config/ProviderSettingsManager"
 import { t } from "../../i18n"
+import { Package } from "../../shared/package"
 
 import { CommitMessageRequest, CommitMessageResult } from "./types/core"
 import { CommitMessageGenerator } from "./CommitMessageGenerator"
@@ -37,11 +38,11 @@ export class CommitMessageProvider implements vscode.Disposable {
 		this.outputChannel.appendLine(t("kilocode:commitMessage.activated"))
 
 		const disposables = [
-			vscode.commands.registerCommand("kilo-code.vsc.generateCommitMessage", (vsRequest?: VscGenerationRequest) =>
+			vscode.commands.registerCommand(`${Package.name}.vsc.generateCommitMessage`, (vsRequest?: VscGenerationRequest) =>
 				this.handleVSCodeCommand(vsRequest),
 			),
 			vscode.commands.registerCommand(
-				"kilo-code.jetbrains.generateCommitMessage",
+				`${Package.name}.jetbrains.generateCommitMessage`,
 				(...args: JetbrainsGenerationRequest): Promise<CommitMessageResult> => {
 					return this.handleJetBrainsCommand(...args)
 				},

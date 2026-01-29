@@ -26,7 +26,7 @@ import { AgentManagerProvider } from "../core/kilocode/agent-manager/AgentManage
 export function getVisibleProviderOrLog(outputChannel: vscode.OutputChannel): ClineProvider | undefined {
 	const visibleProvider = ClineProvider.getVisibleInstance()
 	if (!visibleProvider) {
-		outputChannel.appendLine("Cannot find any visible Kilo Code instances.")
+		outputChannel.appendLine("Cannot find any visible Alfa Code Assistant instances.") // kilocode_change
 		return undefined
 	}
 	return visibleProvider
@@ -238,7 +238,7 @@ const getCommandsMap = ({ context, outputChannel }: RegisterCommandOptions): Rec
 	}, // kilocode_change begin
 	focusChatInput: async () => {
 		try {
-			await vscode.commands.executeCommand("kilo-code.SidebarProvider.focus")
+			await vscode.commands.executeCommand(`${ClineProvider.sideBarId}.focus`)
 			await delay(100)
 
 			let visibleProvider = getVisibleProviderOrLog(outputChannel)
@@ -333,7 +333,7 @@ export const openClineInNewTab = async ({ context, outputChannel }: Omit<Registe
 
 	const targetCol = hasVisibleEditors ? Math.max(lastCol + 1, 1) : vscode.ViewColumn.Two
 
-	const newPanel = vscode.window.createWebviewPanel(ClineProvider.tabPanelId, "Kilo Code", targetCol, {
+	const newPanel = vscode.window.createWebviewPanel(ClineProvider.tabPanelId, "Alfa Code Assistant", targetCol, { // kilocode_change
 		enableScripts: true,
 		retainContextWhenHidden: true,
 		localResourceRoots: [context.extensionUri],

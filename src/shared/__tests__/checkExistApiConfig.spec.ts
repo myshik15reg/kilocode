@@ -40,6 +40,14 @@ describe("checkExistKey", () => {
 		expect(checkExistKey(config)).toBe(true)
 	})
 
+	it("should return true for OAuth-only providers without keys", () => {
+		const config: ProviderSettings = {
+			apiProvider: "openai-codex",
+			apiModelId: "gpt-5.2-codex",
+		}
+		expect(checkExistKey(config)).toBe(true)
+	})
+
 	it("should return false when all key fields are undefined", () => {
 		const config: ProviderSettings = {
 			apiKey: undefined,

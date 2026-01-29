@@ -1,5 +1,6 @@
 import * as vscode from "vscode"
 import { t } from "../../i18n"
+import { Package } from "../../shared/package"
 
 export class GhostCodeActionProvider implements vscode.CodeActionProvider {
 	public readonly providedCodeActionKinds = {
@@ -17,7 +18,7 @@ export class GhostCodeActionProvider implements vscode.CodeActionProvider {
 			this.providedCodeActionKinds["quickfix"],
 		)
 		action.command = {
-			command: "kilo-code.ghost.generateSuggestions",
+			command: `${Package.name}.ghost.generateSuggestions`,
 			title: "",
 			arguments: [document.uri, range],
 		}

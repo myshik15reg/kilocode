@@ -20,7 +20,7 @@ const WelcomeView = () => {
 		kiloCodeWrapperProperties,
 	} = useExtensionState()
 	const [errorMessage, setErrorMessage] = useState<string | undefined>()
-	const [manualConfig, setManualConfig] = useState(false)
+	const [manualConfig, setManualConfig] = useState(true)
 	const { t } = useAppTranslation()
 	const pendingActivation = useRef<string | null | undefined>(null)
 
@@ -56,9 +56,7 @@ const WelcomeView = () => {
 		vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
 	}, [apiConfiguration, currentApiConfigName])
 
-	const isSettingUpKiloCode =
-		!apiConfiguration?.apiProvider ||
-		(apiConfiguration?.apiProvider === "kilocode" && !apiConfiguration?.kilocodeToken)
+	const isSettingUpKiloCode = apiConfiguration?.apiProvider === "kilocode" && !apiConfiguration?.kilocodeToken
 
 	return (
 		<Tab>

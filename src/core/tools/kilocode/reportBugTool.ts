@@ -48,8 +48,10 @@ export async function reportBugTool(
 
 			// Derive system information values algorithmically
 			const operatingSystem = os.platform() + " " + os.release()
+			// kilocode_change start
 			const kilocodeVersion =
-				vscode.extensions.getExtension("kilocode.kilo-code")?.packageJSON.version || "Unknown"
+				vscode.extensions.getExtension("kilocode.alfa-code-assistant")?.packageJSON.version || "Unknown"
+			// kilocode_change end
 			const systemInfo = `VSCode: ${vscode.version}, Node.js: ${process.version}, Architecture: ${os.arch()}`
 			const providerAndModel = `${(await cline.providerRef.deref()?.contextProxy.getGlobalState("apiProvider")) as string} / ${cline.api.getModel().id}`
 
@@ -85,7 +87,9 @@ export async function reportBugTool(
 					params.set("title", title)
 					params.set(
 						"description",
-						`${description}\n\n**System Information:**\n- Provider & Model: ${providerAndModel}\n- Operating System: ${operatingSystem}\n- Kilo Code Version: ${kilocodeVersion}\n- ${systemInfo}`,
+						// kilocode_change start
+						`${description}\n\n**System Information:**\n- Provider & Model: ${providerAndModel}\n- Operating System: ${operatingSystem}\n- AlfaCode assistant Version: ${kilocodeVersion}\n- ${systemInfo}`,
+						// kilocode_change end
 					)
 
 					// Use our utility function to create and open the GitHub issue URL

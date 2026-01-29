@@ -42,6 +42,7 @@ describe("Slash Command Matching", () => {
 			expect(validateSlashCommand("newtask")).toBe("full")
 			expect(validateSlashCommand("NEWTASK")).toBe("full")
 			expect(validateSlashCommand("NewTask")).toBe("full")
+			expect(validateSlashCommand("init-memory-bank")).toBe("full")
 		})
 
 		it("should validate condense aliases", () => {

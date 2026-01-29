@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "description": "Preset for Node.js repos (npm). Runner expands common home placeholders (%USERPROFILE%, $HOME, ${HOME}, ~).",
+  "steps": [
+    { "name": "Install", "command": "npm", "args": ["ci"] },
+    { "name": "Guardrails", "command": "pwsh", "args": ["-File", "%USERPROFILE%/.kilocode/workflowai/scripts/workflowai-guardrails.ps1", "-ProjectPath", ".", "-CheckKiloCodeChangeMarkers"] },
+    { "name": "Lint", "command": "npm", "args": ["run", "lint"] },
+    { "name": "Typecheck", "command": "npm", "args": ["run", "typecheck"] },
+    { "name": "Tests+Coverage", "command": "npm", "args": ["run", "test:coverage"] }
+  ]
+}

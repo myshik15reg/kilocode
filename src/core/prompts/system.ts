@@ -37,7 +37,10 @@ import {
 	addCustomInstructions,
 	markdownFormattingSection,
 	getSkillsSection,
+	getAlfaCodeWorkflowSection, // kilocode_change
+	getAlfaCode1CSection, // kilocode_change
 } from "./sections"
+import { MemoryBankService } from "../../services/alfa-code" // kilocode_change
 import { type ClineProviderState } from "../webview/ClineProvider" // kilocode_change
 
 // Helper function to get prompt component, filtering out empty objects
@@ -97,7 +100,11 @@ async function generatePrompt(
 	// Determine the effective protocol (defaults to 'xml')
 	const effectiveProtocol = getEffectiveProtocol(settings?.toolProtocol)
 
-	const [modesSection, mcpServersSection, skillsSection] = await Promise.all([
+	// kilocode_change start
+	// AlfaCode: Initialize Memory Bank service for project context
+	const memoryBankService = new MemoryBankService(cwd)
+
+	const [modesSection, mcpServersSection, skillsSection, memoryBankContext] = await Promise.all([
 		getModesSection(context),
 		shouldIncludeMcp
 			? getMcpServersSection(
@@ -108,7 +115,9 @@ async function generatePrompt(
 				)
 			: Promise.resolve(""),
 		getSkillsSection(skillsManager, mode as string),
+		memoryBankService.getQuickContext(), // AlfaCode: Load Memory Bank context
 	])
+	// kilocode_change end
 
 	// Build tools catalog section only for XML protocol
 	const builtInToolsCatalog = isNativeProtocol(effectiveProtocol)
@@ -142,6 +151,12 @@ async function generatePrompt(
 
 	const toolsCatalog = builtInToolsCatalog + customToolsSection
 
+	// kilocode_change start
+	const alfaCodeWorkflowSection = getAlfaCodeWorkflowSection()
+	const memoryBankSection = memoryBankContext ? `\n${memoryBankContext}` : ""
+	const alfaCode1CSection = getAlfaCode1CSection(clineProviderState?.alfaCodeChangeAuthor) // kilocode_change
+	// kilocode_change end
+
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
@@ -157,6 +172,8 @@ ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 ${modesSection}
 ${skillsSection ? `\n${skillsSection}` : ""}
 ${getRulesSection(cwd, settings, clineProviderState /* kilocode_change */)}
+
+${alfaCodeWorkflowSection}${memoryBankSection}${alfaCode1CSection}
 
 ${getSystemInfoSection(cwd)}
 

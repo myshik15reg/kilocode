@@ -8,6 +8,7 @@ import {
 	newRuleToolResponse,
 	reportBugToolResponse,
 	condenseToolResponse,
+	initMemoryBankToolResponse,
 } from "../prompts/commands"
 
 function enabledWorkflowToggles(workflowToggles: ClineRulesToggles) {
@@ -34,6 +35,7 @@ export async function parseKiloSlashCommands(
 		newtask: newTaskToolResponse,
 		newrule: newRuleToolResponse,
 		reportbug: reportBugToolResponse,
+		"init-memory-bank": initMemoryBankToolResponse, // kilocode_change
 		smol: condenseAliases,
 		condense: condenseAliases,
 		compact: condenseAliases,

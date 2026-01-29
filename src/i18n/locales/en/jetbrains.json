@@ -13,7 +13,7 @@
 		"cancel": "Cancel"
 	},
 	"ui": {
-		"initializing": "Kilo Code is initializing...",
+		"initializing": "AlfaCode assistant is initializing...",
 		"systemInformation": "System Information"
 	}
 }

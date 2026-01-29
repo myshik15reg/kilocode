@@ -194,3 +194,39 @@ ${userInput}
 
 </explicit_instructions>\n
 `
+
+export const initMemoryBankToolResponse = (userInput: string) =>
+	`<explicit_instructions type="init_memory_bank">
+The user has explicitly asked you to initialize the Alfa Code Assistant Memory Bank for this workspace.
+
+Goal:
+- Create or update a structured knowledge base under .kilocode/memory-bank/ so future tasks have stable project context.
+
+Rules:
+- Do NOT invent project details. If something is unknown, leave a clear placeholder like [TODO: ...].
+- Prefer discovering facts from the codebase (package.json, config files, README, directory structure).
+- Keep Memory Bank files concise and factual.
+- If your current mode cannot write files, request switching to Code mode first (using switch_mode).
+
+Initialization options (ask the user to choose via ask_followup_question):
+1) Automatic (recommended): Analyze the repo and generate templates populated with discovered information.
+2) Guided: Ask the user for a short project description (goals/constraints), then generate the files.
+
+Create (or ensure) .kilocode/memory-bank/ with:
+- index.md (navigation + metadata)
+- brief.md (goals, constraints, Definition of Done)
+- product.md (users, UX flows, value proposition)
+- architecture.md (system design, components, key decisions)
+- tech.md (tech stack, tools, build/test commands)
+- context.md (current focus, risks/blockers, next steps)  <-- keep this updated after each significant task
+
+After creating the files:
+- List what was created/updated
+- Summarize what was discovered vs what needs manual input
+- Confirm with: [MB: INITIALIZED]
+
+User input (may contain extra context / preferences):
+<user_input>
+${userInput}
+</user_input>
+</explicit_instructions>\n`

@@ -26,9 +26,13 @@ export function getSupportedSlashCommands(
 		},
 		{
 			name: "newrule",
-			description: "Create a new Kilo rule with context from your conversation",
+			description: "Create a new AlfaCode rule with context from your conversation",
 		},
-		{ name: "reportbug", description: "Create a KiloCode GitHub issue" },
+		{
+			name: "init-memory-bank",
+			description: "Initialize .kilocode/memory-bank/ for persistent project context",
+		},
+		{ name: "reportbug", description: "Create an AlfaCode assistant GitHub issue" },
 		// kilocode_change start
 		{ name: "smol", description: "Condenses your current context window" },
 		{ name: "condense", description: "Condenses your current context window" },

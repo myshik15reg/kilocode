@@ -41,16 +41,16 @@ describe("SettingsSyncService", () => {
 			await SettingsSyncService.initialize(mockContext, mockOutputChannel)
 
 			expect(mockGlobalState.setKeysForSync).toHaveBeenCalledWith([
-				"kilo-code.allowedCommands",
-				"kilo-code.deniedCommands",
-				"kilo-code.autoApprovalEnabled",
-				"kilo-code.fuzzyMatchThreshold",
-				"kilo-code.diffEnabled",
-				"kilo-code.directoryContextAddedContext",
-				"kilo-code.language",
-				"kilo-code.customModes",
-				"kilo-code.firstInstallCompleted",
-				"kilo-code.telemetrySetting",
+				"alfa-code-assistant.allowedCommands",
+				"alfa-code-assistant.deniedCommands",
+				"alfa-code-assistant.autoApprovalEnabled",
+				"alfa-code-assistant.fuzzyMatchThreshold",
+				"alfa-code-assistant.diffEnabled",
+				"alfa-code-assistant.directoryContextAddedContext",
+				"alfa-code-assistant.language",
+				"alfa-code-assistant.customModes",
+				"alfa-code-assistant.firstInstallCompleted",
+				"alfa-code-assistant.telemetrySetting",
 			])
 			expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
 				expect.stringContaining("[SettingsSyncService] Registered 10 keys for synchronization"),
@@ -81,7 +81,7 @@ describe("SettingsSyncService", () => {
 
 			expect(mockConfiguration.get).toHaveBeenCalledWith("enableSettingsSync", true)
 			expect(mockGlobalState.setKeysForSync).toHaveBeenCalledWith(
-				expect.arrayContaining(["kilo-code.allowedCommands", "kilo-code.deniedCommands"]),
+				expect.arrayContaining(["alfa-code-assistant.allowedCommands", "alfa-code-assistant.deniedCommands"]),
 			)
 		})
 
@@ -94,7 +94,7 @@ describe("SettingsSyncService", () => {
 			await SettingsSyncService.initialize(mockContext)
 
 			expect(mockGlobalState.setKeysForSync).toHaveBeenCalledWith(
-				expect.arrayContaining(["kilo-code.allowedCommands"]),
+				expect.arrayContaining(["alfa-code-assistant.allowedCommands"]),
 			)
 		})
 	})
@@ -120,16 +120,16 @@ describe("SettingsSyncService", () => {
 			const syncKeys = SettingsSyncService.getSyncKeys()
 
 			expect(syncKeys).toEqual([
-				"kilo-code.allowedCommands",
-				"kilo-code.deniedCommands",
-				"kilo-code.autoApprovalEnabled",
-				"kilo-code.fuzzyMatchThreshold",
-				"kilo-code.diffEnabled",
-				"kilo-code.directoryContextAddedContext",
-				"kilo-code.language",
-				"kilo-code.customModes",
-				"kilo-code.firstInstallCompleted",
-				"kilo-code.telemetrySetting",
+				"alfa-code-assistant.allowedCommands",
+				"alfa-code-assistant.deniedCommands",
+				"alfa-code-assistant.autoApprovalEnabled",
+				"alfa-code-assistant.fuzzyMatchThreshold",
+				"alfa-code-assistant.diffEnabled",
+				"alfa-code-assistant.directoryContextAddedContext",
+				"alfa-code-assistant.language",
+				"alfa-code-assistant.customModes",
+				"alfa-code-assistant.firstInstallCompleted",
+				"alfa-code-assistant.telemetrySetting",
 			])
 		})
 	})

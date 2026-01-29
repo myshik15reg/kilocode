@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  Шаблон спецификации объекта 1С (Design Spec).
+  Используется 1c-system-analyst для описания требований к метаданным и логике.
+-->
+<DesignSpec xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <!-- Общая информация об объекте -->
+    <Meta>
+        <Name>ал_ИмяОбъекта</Name>
+        <Synonym>Синоним Объекта</Synonym>
+        <Type>Справочник|Документ|РегистрСведений|Обработка|Отчет</Type>
+        <Comment>Описание назначения объекта</Comment>
+        <Subsystems>
+            <Subsystem>Подсистема1</Subsystem>
+        </Subsystems>
+    </Meta>
+
+    <!-- Функциональные требования (User Stories / Features) -->
+    <Features>
+        <Feature id="F-01" priority="High">
+            <Description>Описание функциональности</Description>
+            <AcceptanceCriteria>Критерии приемки</AcceptanceCriteria>
+        </Feature>
+    </Features>
+
+    <!-- Реквизиты шапки -->
+    <Requisites>
+        <Attribute name="Реквизит1">
+            <Synonym>Синоним Реквизита</Synonym>
+            <Type>СправочникСсылка.Номенклатура</Type>
+            <Description>Описание назначения</Description>
+            <Validation>Обязательное заполнение</Validation>
+        </Attribute>
+    </Requisites>
+
+    <!-- Табличные части -->
+    <TabularSections>
+        <TabularSection name="Товары">
+            <Synonym>Товары</Synonym>
+            <Attributes>
+                <Attribute name="Номенклатура">
+                    <Type>СправочникСсылка.Номенклатура</Type>
+                </Attribute>
+                <Attribute name="Количество">
+                    <Type>Число(15,3)</Type>
+                </Attribute>
+            </Attributes>
+        </TabularSection>
+    </TabularSections>
+
+    <!-- Бизнес-логика и алгоритмы -->
+    <BusinessLogic>
+        <Process name="ОбработкаПроведения">
+            <Description>Алгоритм проведения документа</Description>
+            <Steps>
+                <Step>1. Проверка заполнения реквизитов</Step>
+                <Step>2. Контроль остатков</Step>
+                <Step>3. Формирование движений по регистрам</Step>
+            </Steps>
+        </Process>
+    </BusinessLogic>
+
+    <!-- Интеграция (HTTP, RabbitMQ) -->
+    <APIIntegration>
+        <Endpoint type="HTTP" method="POST" path="/v1/entity">
+            <Description>Создание сущности из внешней системы</Description>
+            <RequestStructure>JSON</RequestStructure>
+        </Endpoint>
+        <MessageQueue type="RabbitMQ" direction="Consumer">
+            <Queue>queue.from.app.to.1c.entity.created</Queue>
+            <Handler>ОбработкаСообщенияRabbitMQ</Handler>
+        </MessageQueue>
+    </APIIntegration>
+
+    <!-- Диаграммы (Mermaid) -->
+    <Diagrams>
+        <Diagram type="mermaid">
+            <![CDATA[
+            sequenceDiagram
+                Participant User
+                Participant 1C
+                User->>1C: Создать документ
+                1C->>1C: Валидация
+                1C-->>User: Ошибка/Успех
+            ]]>
+        </Diagram>
+    </Diagrams>
+</DesignSpec>

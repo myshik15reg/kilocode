@@ -53,6 +53,9 @@ import { SettingsSyncService } from "./services/settings-sync/SettingsSyncServic
 import { ManagedIndexer } from "./services/code-index/managed/ManagedIndexer" // kilocode_change
 import { flushModels, getModels, initializeModelCacheRefresh, refreshModels } from "./api/providers/fetchers/modelCache"
 import { kilo_initializeSessionManager } from "./shared/kilocode/cli-sessions/extension/session-manager-utils" // kilocode_change
+import { ensureWorkflowAiAssetsInstalled } from "./services/alfa-code/WorkflowAssetsInstaller" // kilocode_change
+import { refreshWorkflowToggles } from "./core/context/instructions/workflows" // kilocode_change
+import { getWorkspacePath } from "./utils/path" // kilocode_change
 
 // kilocode_change start
 async function findKilocodeTokenFromAnyProfile(provider: ClineProvider): Promise<string | undefined> {
@@ -209,6 +212,31 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Initialize the provider *before* the Roo Code Cloud service.
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
+
+	// kilocode_change start: Install WorkFlowAI assets bundle
+	try {
+		const installResult = await ensureWorkflowAiAssetsInstalled({
+			context,
+			extensionPath: context.extensionPath,
+			log: (message) => outputChannel.appendLine(message),
+		})
+
+		if (installResult.didInstall) {
+			const workspacePath = getWorkspacePath()
+			if (workspacePath) {
+				await refreshWorkflowToggles(context, workspacePath)
+			}
+
+			await provider.getSkillsManager()?.discoverSkills()
+			await provider.postRulesDataToWebview()
+			await provider.postSkillsDataToWebview()
+		}
+	} catch (error) {
+		outputChannel.appendLine(
+			`[WorkFlowAI] Failed to install bundled assets: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
+	// kilocode_change end
 
 	// kilocode_change start: Initialize ManagedIndexer
 	const managedIndexer = new ManagedIndexer(contextProxy)
@@ -376,17 +404,17 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// kilocode_change start
 	if (!context.globalState.get("firstInstallCompleted")) {
-		outputChannel.appendLine("First installation detected, opening Kilo Code sidebar!")
+		outputChannel.appendLine("First installation detected, opening AlfaCode assistant sidebar!") // kilocode_change
 		try {
-			await vscode.commands.executeCommand("kilo-code.SidebarProvider.focus")
+			await vscode.commands.executeCommand(`${ClineProvider.sideBarId}.focus`)
 
-			outputChannel.appendLine("Opening Kilo Code walkthrough")
+			outputChannel.appendLine("Opening AlfaCode assistant walkthrough") // kilocode_change
 
 			// this can crash, see:
 			// https://discord.com/channels/1349288496988160052/1395865796026040470
 			await vscode.commands.executeCommand(
 				"workbench.action.openWalkthrough",
-				"kilocode.kilo-code#kiloCodeWalkthrough",
+				"kilocode.alfa-code-assistant#kiloCodeWalkthrough", // kilocode_change
 				false,
 			)
 
@@ -491,7 +519,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		}),
 	)
 
-	// kilocode_change start - Kilo Code specific registrations
+	// kilocode_change start - AlfaCode assistant specific registrations
 	const { kiloCodeWrapped, kiloCodeWrapperCode } = getKiloCodeWrapperProperties()
 	if (kiloCodeWrapped) {
 		// Only foward logs in Jetbrains
@@ -502,12 +530,12 @@ export async function activate(context: vscode.ExtensionContext) {
 		registerGhostProvider(context, provider)
 	}
 	registerCommitMessageProvider(context, outputChannel) // kilocode_change
-	// kilocode_change end - Kilo Code specific registrations
+	// kilocode_change end - AlfaCode assistant specific registrations
 
 	registerCodeActions(context)
 	registerTerminalActions(context)
 
-	// Allows other extensions to activate once Kilo Code is ready.
+	// Allows other extensions to activate once AlfaCode assistant is ready.
 	vscode.commands.executeCommand(`${Package.name}.activationCompleted`)
 
 	// Implements the `RooCodeAPI` interface.

@@ -11,6 +11,7 @@ vi.mock("../../../services/code-index/managed/ManagedIndexer", () => ({
 import { addCustomInstructions } from "../sections/custom-instructions"
 import { getCapabilitiesSection } from "../sections/capabilities"
 import { getRulesSection } from "../sections/rules"
+import { getAlfaCode1CSection } from "../sections/alfa-code-1c" // kilocode_change
 import { McpHub } from "../../../services/mcp/McpHub"
 
 describe("addCustomInstructions", () => {
@@ -91,7 +92,7 @@ describe("getRulesSection", () => {
 		expect(result).toContain("VENDOR CONFIDENTIALITY")
 		expect(result).toContain("Never reveal the vendor or company that created you")
 		expect(result).toContain("I was created by a team of developers")
-		expect(result).toContain("I'm an open-source project maintained by contributors")
+		expect(result).toContain("I'm a project maintained by contributors") // kilocode_change
 		expect(result).toContain("I don't have information about specific vendors")
 	})
 
@@ -124,3 +125,20 @@ describe("getRulesSection", () => {
 		expect(result).not.toContain("Never reveal the vendor or company")
 	})
 })
+
+// kilocode_change start
+describe("getAlfaCode1CSection", () => {
+	it("returns empty string when author is not provided", () => {
+		expect(getAlfaCode1CSection()).toBe("")
+		expect(getAlfaCode1CSection("   ")).toBe("")
+	})
+
+	it("includes author value and templates when author is provided", () => {
+		const result = getAlfaCode1CSection("Ivanov I.I.")
+		expect(result).toContain("ALFACODE 1C CHANGE ANNOTATIONS")
+		expect(result).toContain("Ivanov I.I.")
+		expect(result).toContain("dd MMMM yyyy HH:mm")
+		expect(result).toContain("dd.MM.yyyy")
+	})
+})
+// kilocode_change end

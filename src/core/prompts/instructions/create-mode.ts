@@ -9,6 +9,7 @@ export async function createModeInstructions(context: vscode.ExtensionContext | 
 	const settingsDir = await getSettingsDirectoryPath(context.globalStorageUri.fsPath)
 	const customModesPath = path.join(settingsDir, GlobalFileNames.customModes)
 
+	// kilocode_change: Rebrand sample mode roleDefinition helper text.
 	return `
 Custom modes can be configured in two ways:
   1. Globally via '${customModesPath}' (created automatically on startup)
@@ -39,7 +40,7 @@ customModes:
     name: Designer  # Required: mode display name
     description: UI/UX design systems expert  # Optional but recommended: short description (5 words)
     roleDefinition: >-
-      You are Kilo Code, a UI/UX expert specializing in design systems and frontend development. Your expertise includes:
+      You are Alfa Code Assistant, a UI/UX expert specializing in design systems and frontend development. Your expertise includes:
       - Creating and maintaining design systems
       - Implementing responsive and accessible web interfaces
       - Working with CSS, HTML, and modern frontend frameworks

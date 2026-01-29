@@ -1240,7 +1240,7 @@ export class ClineProvider
 						window.MATERIAL_ICONS_BASE_URI = "${materialIconsUri}"
 						window.KILOCODE_BACKEND_BASE_URL = "${process.env.KILOCODE_BACKEND_BASE_URL ?? ""}"
 					</script>
-					<title>Kilo Code</title>
+					<title>AlfaCode assistant</title>
 				</head>
 				<body>
 					<div id="root"></div>
@@ -1322,7 +1322,7 @@ export class ClineProvider
 				window.MATERIAL_ICONS_BASE_URI = "${materialIconsUri}"
 				window.KILOCODE_BACKEND_BASE_URL = "${process.env.KILOCODE_BACKEND_BASE_URL ?? ""}"
 			</script>
-            <title>Kilo Code</title>
+            <title>AlfaCode assistant</title>
           </head>
           <body>
             <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -1742,7 +1742,7 @@ export class ClineProvider
 			kilocodeToken: token,
 		})
 
-		vscode.window.showInformationMessage("Kilo Code successfully configured!")
+		vscode.window.showInformationMessage("AlfaCode assistant successfully configured!")
 
 		if (this.getCurrentTask()) {
 			this.getCurrentTask()!.api = buildApiHandler({
@@ -2077,6 +2077,7 @@ export class ClineProvider
 		const {
 			apiConfiguration,
 			customInstructions,
+			alfaCodeChangeAuthor, // kilocode_change
 			alwaysAllowReadOnly,
 			alwaysAllowReadOnlyOutsideWorkspace,
 			alwaysAllowWrite,
@@ -2252,6 +2253,7 @@ export class ClineProvider
 			version: this.context.extension?.packageJSON?.version ?? "",
 			apiConfiguration,
 			customInstructions,
+			alfaCodeChangeAuthor, // kilocode_change
 			alwaysAllowReadOnly: alwaysAllowReadOnly ?? true,
 			alwaysAllowReadOnlyOutsideWorkspace: alwaysAllowReadOnlyOutsideWorkspace ?? false,
 			alwaysAllowWrite: alwaysAllowWrite ?? true,
@@ -2377,6 +2379,7 @@ export class ClineProvider
 				// kilocode_change start
 				codebaseIndexVectorStoreProvider: codebaseIndexConfig?.codebaseIndexVectorStoreProvider ?? "qdrant",
 				codebaseIndexLancedbVectorStoreDirectory: codebaseIndexConfig?.codebaseIndexLancedbVectorStoreDirectory,
+				codebaseIndexVectorStoreName: codebaseIndexConfig?.codebaseIndexVectorStoreName,
 				// kilocode_change end
 				codebaseIndexEmbedderProvider: codebaseIndexConfig?.codebaseIndexEmbedderProvider ?? "openai",
 				codebaseIndexEmbedderBaseUrl: codebaseIndexConfig?.codebaseIndexEmbedderBaseUrl ?? "",
@@ -2392,6 +2395,12 @@ export class ClineProvider
 				codebaseIndexBedrockRegion: codebaseIndexConfig?.codebaseIndexBedrockRegion,
 				codebaseIndexBedrockProfile: codebaseIndexConfig?.codebaseIndexBedrockProfile,
 				codebaseIndexOpenRouterSpecificProvider: codebaseIndexConfig?.codebaseIndexOpenRouterSpecificProvider,
+				// kilocode_change start: Expose Neo4j graph database settings to webview
+				codebaseIndexNeo4jEnabled: codebaseIndexConfig?.codebaseIndexNeo4jEnabled ?? false,
+				codebaseIndexNeo4jUri: codebaseIndexConfig?.codebaseIndexNeo4jUri,
+				codebaseIndexNeo4jUsername: codebaseIndexConfig?.codebaseIndexNeo4jUsername,
+				codebaseIndexNeo4jDatabase: codebaseIndexConfig?.codebaseIndexNeo4jDatabase ?? "neo4j",
+				// kilocode_change end: Expose Neo4j graph database settings to webview
 			},
 			// Only set mdmCompliant if there's an actual MDM policy
 			// undefined means no MDM policy, true means compliant, false means non-compliant
@@ -2500,6 +2509,12 @@ export class ClineProvider
 			)
 		}
 
+		// kilocode_change start: Prefer workspace-scoped vector store name
+		const workspaceVectorStoreName = (await this.contextProxy.getWorkspaceState(
+			"codebaseIndexVectorStoreName",
+		)) as string | undefined
+		// kilocode_change end: Prefer workspace-scoped vector store name
+
 		let cloudUserInfo: CloudUserInfo | null = null
 
 		try {
@@ -2575,6 +2590,7 @@ export class ClineProvider
 			), // kilocode_change
 			lastShownAnnouncementId: stateValues.lastShownAnnouncementId,
 			customInstructions: stateValues.customInstructions,
+			alfaCodeChangeAuthor: stateValues.alfaCodeChangeAuthor, // kilocode_change
 			apiModelId: stateValues.apiModelId,
 			alwaysAllowReadOnly: stateValues.alwaysAllowReadOnly ?? true,
 			alwaysAllowReadOnlyOutsideWorkspace: stateValues.alwaysAllowReadOnlyOutsideWorkspace ?? false,
@@ -2703,7 +2719,8 @@ export class ClineProvider
 					stateValues.codebaseIndexConfig?.codebaseIndexVectorStoreProvider ?? "qdrant",
 				codebaseIndexLancedbVectorStoreDirectory:
 					stateValues.codebaseIndexConfig?.codebaseIndexLancedbVectorStoreDirectory,
-				codebaseIndexVectorStoreName: stateValues.codebaseIndexConfig?.codebaseIndexVectorStoreName ?? undefined,
+				codebaseIndexVectorStoreName:
+					workspaceVectorStoreName ?? stateValues.codebaseIndexConfig?.codebaseIndexVectorStoreName ?? undefined,
 				// kilocode_change end
 				codebaseIndexEmbedderBaseUrl: stateValues.codebaseIndexConfig?.codebaseIndexEmbedderBaseUrl ?? "",
 				codebaseIndexEmbedderModelId: stateValues.codebaseIndexConfig?.codebaseIndexEmbedderModelId ?? "",
@@ -2722,6 +2739,12 @@ export class ClineProvider
 				codebaseIndexBedrockProfile: stateValues.codebaseIndexConfig?.codebaseIndexBedrockProfile,
 				codebaseIndexOpenRouterSpecificProvider:
 					stateValues.codebaseIndexConfig?.codebaseIndexOpenRouterSpecificProvider,
+				// kilocode_change start: Expose Neo4j graph database settings to webview
+				codebaseIndexNeo4jEnabled: stateValues.codebaseIndexConfig?.codebaseIndexNeo4jEnabled ?? false,
+				codebaseIndexNeo4jUri: stateValues.codebaseIndexConfig?.codebaseIndexNeo4jUri,
+				codebaseIndexNeo4jUsername: stateValues.codebaseIndexConfig?.codebaseIndexNeo4jUsername,
+				codebaseIndexNeo4jDatabase: stateValues.codebaseIndexConfig?.codebaseIndexNeo4jDatabase ?? "neo4j",
+				// kilocode_change end: Expose Neo4j graph database settings to webview
 			},
 			profileThresholds: stateValues.profileThresholds ?? {},
 			includeDiagnosticMessages: stateValues.includeDiagnosticMessages ?? true,
@@ -2826,7 +2849,7 @@ export class ClineProvider
 			return
 		}
 
-		// Logout from Kilo Code provider before resetting (same approach as ProfileView logout)
+		// Logout from AlfaCode assistant provider before resetting (same approach as ProfileView logout)
 		const { apiConfiguration, currentApiConfigName = "default" } = await this.getState()
 		if (apiConfiguration.kilocodeToken) {
 			await this.upsertProviderProfile(currentApiConfigName, {

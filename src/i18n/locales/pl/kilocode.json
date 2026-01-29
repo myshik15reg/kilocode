@@ -52,7 +52,7 @@
 		}
 	},
 	"commitMessage": {
-		"activated": "Generator wiadomości commit Kilo Code aktywowany",
+		"activated": "Generator wiadomości commit AlfaCode assistant aktywowany",
 		"gitNotFound": "⚠️ Nie znaleziono repozytorium Git lub git jest niedostępny",
 		"gitInitError": "⚠️ Błąd inicjalizacji Git: {{error}}",
 		"generating": "Kilo: Generowanie wiadomości commit...",
@@ -65,7 +65,7 @@
 		"errors": {
 			"noProject": "Brak dostępnego projektu",
 			"timeout": "Upłynął limit czasu żądania po 30 sekundach",
-			"connectionFailed": "Nie udało się połączyć z rozszerzeniem Kilo Code",
+			"connectionFailed": "Nie udało się połączyć z rozszerzeniem AlfaCode assistant",
 			"invalidResponse": "Nieprawidłowy format odpowiedzi otrzymany z rozszerzenia",
 			"noChanges": "Nie znaleziono zmian do zatwierdzenia",
 			"missingMessage": "Nie otrzymano komunikatu zatwierdzenia z rozszerzenia",
@@ -89,7 +89,7 @@
 		"progress": {
 			"title": "Generowanie treści commita",
 			"analyzing": "Analizowanie zmian...",
-			"connecting": "Łączenie z Kilo Code...",
+			"connecting": "Łączenie z AlfaCode assistant...",
 			"generating": "Generowanie wiadomości do commita..."
 		},
 		"ui": {
@@ -133,10 +133,10 @@
 			"snoozed": "wstrzymane",
 			"warning": "$(warning) Autocomplete",
 			"tooltip": {
-				"basic": "Kilo Code Autocomplete",
-				"disabled": "Kilo Code Autocomplete (wyłączone)",
-				"noCredits": "**Brak środków na koncie**\n\nTwoje konto Kilo Code nie ma środków. Aby korzystać z autouzupełniania, dodaj środki do swojego konta.\n\n[Otwórz Ustawienia](command:kilo-code.settingsButtonClicked)",
-				"noUsableProvider": "**Nie skonfigurowano modelu autouzupełniania**\n\nAby włączyć autouzupełnianie, dodaj profil z jednym z tych obsługiwanych dostawców: {{providers}}.\n\n[Otwórz Ustawienia](command:kilo-code.settingsButtonClicked)",
+				"basic": "AlfaCode assistant Autocomplete",
+				"disabled": "AlfaCode assistant Autocomplete (wyłączone)",
+				"noCredits": "**Brak środków na koncie**\n\nTwoje konto AlfaCode assistant nie ma środków. Aby korzystać z autouzupełniania, dodaj środki do swojego konta.\n\n[Otwórz Ustawienia](command:alfa-code-assistant.settingsButtonClicked)",
+				"noUsableProvider": "**Nie skonfigurowano modelu autouzupełniania**\n\nAby włączyć autouzupełnianie, dodaj profil z jednym z tych obsługiwanych dostawców: {{providers}}.\n\n[Otwórz Ustawienia](command:alfa-code-assistant.settingsButtonClicked)",
 				"sessionTotal": "Całkowity koszt sesji:",
 				"provider": "Dostawca:",
 				"model": "Model:",
@@ -150,36 +150,36 @@
 				"lessThanCent": "<$0.01"
 			}
 		},
-		"toggleMessage": "Kilo Code Autocomplete {{status}}",
+		"toggleMessage": "AlfaCode assistant Autocomplete {{status}}",
 		"progress": {
-			"title": "Kilo Code",
+			"title": "AlfaCode assistant",
 			"analyzing": "Analizuję twój kod...",
 			"generating": "Generuję sugerowane edycje...",
 			"processing": "Przetwarzam sugerowane edycje...",
 			"showing": "Wyświetlam sugerowane edycje..."
 		},
 		"input": {
-			"title": "Kilo Code: Szybkie Zadanie",
+			"title": "AlfaCode assistant: Szybkie Zadanie",
 			"placeholder": "np. 'zrefaktoruj tę funkcję, aby była bardziej wydajna'"
 		},
 		"commands": {
-			"generateSuggestions": "Kilo Code: Generuj Sugerowane Edycje",
+			"generateSuggestions": "AlfaCode assistant: Generuj Sugerowane Edycje",
 			"displaySuggestions": "Wyświetl Sugerowane Edycje",
 			"cancelSuggestions": "Anuluj Sugerowane Edycje",
 			"applyCurrentSuggestion": "Zastosuj Bieżącą Sugerowaną Edycję",
 			"applyAllSuggestions": "Zastosuj Wszystkie Sugerowane Edycje",
-			"category": "Kilo Code"
+			"category": "AlfaCode assistant"
 		},
 		"codeAction": {
-			"title": "Kilo Code: Sugerowane Edycje"
+			"title": "AlfaCode assistant: Sugerowane Edycje"
 		},
 		"chatParticipant": {
-			"fullName": "Kilo Code Agent",
+			"fullName": "AlfaCode assistant Agent",
 			"name": "Agent",
 			"description": "Mogę pomóc ci w szybkich zadaniach i sugerowanych edycjach."
 		},
 		"incompatibilityExtensionPopup": {
-			"message": "Kilo Code Autocomplete jest blokowane przez konflikt z GitHub Copilot. Aby to naprawić, musisz wyłączyć sugestie inline Copilot.",
+			"message": "AlfaCode assistant Autocomplete jest blokowane przez konflikt z GitHub Copilot. Aby to naprawić, musisz wyłączyć sugestie inline Copilot.",
 			"disableCopilot": "Wyłącz Copilot",
 			"disableInlineAssist": "Wyłącz Autocomplete"
 		}
@@ -206,7 +206,7 @@
 		}
 	},
 	"configDiscovery": {
-		"added": "Kilo Code: Dodano {{source}} {{configType}}: {{name}}{{modeStr}}",
+		"added": "AlfaCode assistant: Dodano {{source}} {{configType}}: {{name}}{{modeStr}}",
 		"removed": "Kilo Kod: Usunięto {{source}} {{configType}}: {{name}}{{modeStr}}"
 	}
 }

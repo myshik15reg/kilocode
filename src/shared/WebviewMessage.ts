@@ -412,6 +412,13 @@ export interface WebviewMessage {
 		// kilocode_change end
 		codebaseIndexOpenRouterSpecificProvider?: string // OpenRouter provider routing
 
+		// kilocode_change start: Neo4j graph database settings
+		codebaseIndexNeo4jEnabled?: boolean
+		codebaseIndexNeo4jUri?: string
+		codebaseIndexNeo4jUsername?: string
+		codebaseIndexNeo4jDatabase?: string
+		// kilocode_change end: Neo4j graph database settings
+
 		// Secret settings
 		codeIndexOpenAiKey?: string
 		codeIndexQdrantApiKey?: string

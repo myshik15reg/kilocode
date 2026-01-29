@@ -810,6 +810,90 @@ describe("ClineProvider", () => {
 		expect(state).toHaveProperty("writeDelayMs")
 	})
 
+	// kilocode_change start: Ensure code index Neo4j + vector store name are surfaced to webview
+	test("getState includes Neo4j settings and workspace vector store name", async () => {
+		;(mockContext.globalState.get as any).mockImplementation((key: string) => {
+			if (key === "mode") return "architect"
+			if (key === "currentApiConfigName") return "current-config"
+
+			if (key === "codebaseIndexConfig") {
+				return {
+					codebaseIndexEnabled: true,
+					codebaseIndexQdrantUrl: "http://localhost:6333",
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexVectorStoreProvider: "qdrant",
+					codebaseIndexVectorStoreName: "global-vectors",
+					codebaseIndexNeo4jEnabled: true,
+					codebaseIndexNeo4jUri: "bolt://localhost:7687",
+					codebaseIndexNeo4jUsername: "neo4j",
+					codebaseIndexNeo4jDatabase: "neo4j",
+				}
+			}
+
+			return undefined
+		})
+
+		;(mockContext.workspaceState.get as any).mockImplementation(async (key: string) => {
+			if (key === "codebaseIndexVectorStoreName") return "workspace-vectors"
+			return undefined
+		})
+
+		await provider.contextProxy.initialize()
+
+		const state = await provider.getState()
+
+		expect(state.codebaseIndexConfig).toMatchObject({
+			codebaseIndexVectorStoreName: "workspace-vectors",
+			codebaseIndexNeo4jEnabled: true,
+			codebaseIndexNeo4jUri: "bolt://localhost:7687",
+			codebaseIndexNeo4jUsername: "neo4j",
+			codebaseIndexNeo4jDatabase: "neo4j",
+		})
+	})
+	// kilocode_change end: Ensure code index Neo4j + vector store name are surfaced to webview
+
+	// kilocode_change start: Ensure posted state keeps Neo4j + vector store name
+	test("getStateToPostToWebview includes Neo4j settings and vector store name", async () => {
+		;(mockContext.globalState.get as any).mockImplementation((key: string) => {
+			if (key === "mode") return "architect"
+			if (key === "currentApiConfigName") return "current-config"
+
+			if (key === "codebaseIndexConfig") {
+				return {
+					codebaseIndexEnabled: true,
+					codebaseIndexQdrantUrl: "http://localhost:6333",
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexVectorStoreProvider: "qdrant",
+					codebaseIndexVectorStoreName: "global-vectors",
+					codebaseIndexNeo4jEnabled: true,
+					codebaseIndexNeo4jUri: "bolt://localhost:7687",
+					codebaseIndexNeo4jUsername: "neo4j",
+					codebaseIndexNeo4jDatabase: "neo4j",
+				}
+			}
+
+			return undefined
+		})
+
+		;(mockContext.workspaceState.get as any).mockImplementation(async (key: string) => {
+			if (key === "codebaseIndexVectorStoreName") return "workspace-vectors"
+			return undefined
+		})
+
+		await provider.contextProxy.initialize()
+
+		const state = await provider.getStateToPostToWebview()
+
+		expect(state.codebaseIndexConfig).toMatchObject({
+			codebaseIndexVectorStoreName: "workspace-vectors",
+			codebaseIndexNeo4jEnabled: true,
+			codebaseIndexNeo4jUri: "bolt://localhost:7687",
+			codebaseIndexNeo4jUsername: "neo4j",
+			codebaseIndexNeo4jDatabase: "neo4j",
+		})
+	})
+	// kilocode_change end: Ensure posted state keeps Neo4j + vector store name
+
 	test("language is set to VSCode language", async () => {
 		// Mock VSCode language as Spanish
 		;(vscode.env as any).language = "pt-BR"
@@ -982,6 +1066,32 @@ describe("ClineProvider", () => {
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("contextRoutingDeepThresholdPercent", 90)
 		expect(mockPostMessage).toHaveBeenCalled()
 	})
+
+	// kilocode_change start: ensure updateSettings doesn't abort when a single setting errors
+	test("updateSettings continues when VS Code configuration update fails", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
+
+		const mockConfig = vscode.workspace.getConfiguration("kilo-code") as any
+		vi.spyOn(mockConfig, "update").mockImplementation(() => {
+			throw new Error("mock config update failure")
+		})
+
+		await expect(
+			messageHandler({
+				type: "updateSettings",
+				updatedSettings: {
+					allowedCommands: ["echo ok"],
+					contextRoutingEnabled: true,
+				},
+			}),
+		).resolves.toBeUndefined()
+
+		expect(updateGlobalStateSpy).toHaveBeenCalledWith("contextRoutingEnabled", true)
+		expect(mockContext.globalState.update).toHaveBeenCalledWith("contextRoutingEnabled", true)
+		expect(mockPostMessage).toHaveBeenCalled()
+	})
+	// kilocode_change end
 
 	it("loads saved API config when switching modes", async () => {
 		await provider.resolveWebviewView(mockWebviewView)

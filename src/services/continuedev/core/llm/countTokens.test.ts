@@ -66,7 +66,7 @@ describe("countTokens()", () => {
 
 		expect(countTokens(s, "llama2")).toBe(expected)
 		expect(countTokens(s, "llama-3")).toBe(expected)
-		// DeepSeek and many open-source models default to llama tokenizer here
+		// DeepSeek and many models default to llama tokenizer here // kilocode_change
 		expect(countTokens(s, "deepseek")).toBe(expected)
 	})
 

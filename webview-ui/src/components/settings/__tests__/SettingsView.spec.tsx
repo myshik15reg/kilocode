@@ -692,3 +692,33 @@ describe("SettingsView - Duplicate Commands", () => {
 		)
 	})
 })
+
+describe("SettingsView - 1C Change Author", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("does not clear the author field after clicking Save", () => {
+		const { activateTab } = renderSettingsView()
+
+		activateTab("prompts")
+
+		const authorInput = screen.getByTestId("alfa-code-change-author-input")
+		fireEvent.change(authorInput, { target: { value: "Ivanov I.I." } })
+		expect(authorInput).toHaveValue("Ivanov I.I.")
+
+		const saveButtons = screen.getAllByTestId("save-button")
+		fireEvent.click(saveButtons[0])
+
+		expect(vscode.postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "updateSettings",
+				updatedSettings: expect.objectContaining({
+					alfaCodeChangeAuthor: "Ivanov I.I.",
+				}),
+			}),
+		)
+
+		expect(screen.getByTestId("alfa-code-change-author-input")).toHaveValue("Ivanov I.I.")
+	})
+})

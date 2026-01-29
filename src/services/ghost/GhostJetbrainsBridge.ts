@@ -9,8 +9,9 @@ import { GhostContextProvider } from "./types"
 import { FimPromptBuilder } from "./classic-auto-complete/FillInTheMiddle"
 import { HoleFiller } from "./classic-auto-complete/HoleFiller"
 import { MockTextDocument } from "../mocking/MockTextDocument"
+import { Package } from "../../shared/package"
 
-const GET_INLINE_COMPLETIONS_COMMAND = "kilo-code.jetbrains.getInlineCompletions"
+const GET_INLINE_COMPLETIONS_COMMAND = `${Package.name}.jetbrains.getInlineCompletions`
 
 // Zod schemas for validation
 const PositionSchema = z.object({

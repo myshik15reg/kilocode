@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "description": "Configure commands for your repo. Guardrails uses the global WorkFlowAI scripts; the runner expands common home placeholders (%USERPROFILE%, $HOME, ${HOME}, ~).",
+  "steps": [
+    { "name": "Guardrails", "command": "pwsh", "args": ["-File", "%USERPROFILE%/.kilocode/workflowai/scripts/workflowai-guardrails.ps1", "-ProjectPath", ".", "-CheckKiloCodeChangeMarkers"] }
+  ]
+}

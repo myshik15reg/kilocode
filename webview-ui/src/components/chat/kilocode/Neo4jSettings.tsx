@@ -64,9 +64,7 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 	}
 
 	const handleFieldChange = (field: string, value: string | boolean) => {
-		setCachedStateField("codebaseIndexConfig", {
-			[field]: value,
-		})
+		setCachedStateField(field, value)
 	}
 
 	return (

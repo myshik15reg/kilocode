@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "description": "Preset for Java (Maven + JaCoCo 100%). Runner expands common home placeholders (%USERPROFILE%, $HOME, ${HOME}, ~).",
+  "steps": [
+    { "name": "Guardrails", "command": "pwsh", "args": ["-File", "%USERPROFILE%/.kilocode/workflowai/scripts/workflowai-guardrails.ps1", "-ProjectPath", ".", "-CheckKiloCodeChangeMarkers"] },
+    { "name": "Build+Tests", "command": "mvn", "args": ["-q", "-DskipTests=false", "verify"] }
+  ]
+}
