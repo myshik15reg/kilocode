@@ -1,8 +1,14 @@
 {
 	"welcome": {
+<<<<<<< HEAD
 		"greeting": "Welcome to AlfaCode assistant!",
 		"introText1": "AlfaCode assistant is a free AI coding agent.",
 		"introText2": "It works with the latest AI models like Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5, and 450+ more.",
+=======
+		"greeting": "Welcome to Kilo Code!",
+		"introText1": "Kilo Code is a free, open source AI coding agent.",
+		"introText2": "It works with the latest AI models like Claude Opus 4.5, Gemini 3 Pro, GPT-5.2, and 450+ more.",
+>>>>>>> origin/main
 		"introText3": "Create a free account and get $20 in bonus credits when you top-up for the first time.",
 		"ctaButton": "Get Started",
 		"manualModeButton": "Use your own API key",
@@ -11,8 +17,13 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "Add Credit",
+<<<<<<< HEAD
 		"lowBalance": "Your AlfaCode assistant balance is low",
 		"newOrganization": "Using Kilo for work?"
+=======
+		"lowBalance": "Your Kilo Code balance is low",
+		"switchToFreeModel": "Switch to Free Model instead"
+>>>>>>> origin/main
 	},
 	"memoryWarning": {
 		"message": "Memory usage is at {{percentage}}%. Please restart your IDE to prevent crashes."
@@ -51,10 +62,18 @@
 			"skills": "Skills"
 		},
 		"provider": {
+<<<<<<< HEAD
 			"account": "AlfaCode assistant Account",
 			"apiKey": "AlfaCode assistant API Key",
 			"login": "Log in at AlfaCode assistant",
 			"logout": "Log out from AlfaCode assistant",
+=======
+			"account": "Kilo Code Account",
+			"apiKey": "Kilo Code API Key",
+			"login": "Log in at Kilo Code",
+			"logout": "Log out from Kilo Code",
+			"loginForPremiumModels": "Log in to access premium models & features",
+>>>>>>> origin/main
 			"providerRouting": {
 				"title": "Provider Routing",
 				"managedByOrganization": "Manage Organization-level Provider Routing",
@@ -72,8 +91,12 @@
 					"deny": "Deny prompt training",
 					"zdr": "Zero data retention"
 				}
+<<<<<<< HEAD
 			},
 			"automaticFetch": "The latest models are automatically available in AlfaCode assistant. If you're unsure which model to choose, AlfaCode assistant works best with the recommended models listed at the top in <strong>bold face</strong>."
+=======
+			}
+>>>>>>> origin/main
 		},
 		"modelInfo": {
 			"contextWindow": "Context window",
@@ -218,6 +241,8 @@
 	},
 	"ideaSuggestionsBox": {
 		"newHere": "New here?",
+		"tryOneOfThese": "Try one of these ideas to get started:",
+		"clickToInsert": "Click any suggestion to start working on it immediately",
 		"suggestionText": "<suggestionButton>Click here</suggestionButton> for a cool idea, then tap on <sendIcon /> and watch me do magic!",
 		"ideas": {
 			"idea1": "Make a spinning, glowing 3D sphere that responds to mouse movements. Make the app work in the browser.",

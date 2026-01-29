@@ -1,8 +1,14 @@
 {
 	"welcome": {
+<<<<<<< HEAD
 		"greeting": "AlfaCode assistant में आपका स्वागत है!",
 		"introText1": "AlfaCode assistant एक मुफ्त, ओपन सोर्स AI कोडिंग एजेंट है।",
 		"introText2": "यह Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5, और 450+ अन्य नवीनतम AI मॉडल्स के साथ काम करता है।",
+=======
+		"greeting": "Kilo Code में आपका स्वागत है!",
+		"introText1": "Kilo Code एक मुफ्त, ओपन सोर्स AI कोडिंग एजेंट है।",
+		"introText2": "यह Claude Opus 4.5, Gemini 3 Pro, GPT-5.2, और 450+ अन्य नवीनतम AI मॉडल्स के साथ काम करता है।",
+>>>>>>> origin/main
 		"introText3": "एक मुफ्त खाता बनाएं और पहली बार टॉप-अप करने पर $20 बोनस क्रेडिट प्राप्त करें।",
 		"ctaButton": "शुरू करें",
 		"manualModeButton": "अपनी स्वयं की API कुंजी का उपयोग करें",
@@ -11,8 +17,13 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "क्रेडिट जोड़ें",
+<<<<<<< HEAD
 		"lowBalance": "आपका AlfaCode assistant बैलेंस कम है",
 		"newOrganization": "काम के लिए Kilo उपयोग कर रहे हैं?"
+=======
+		"lowBalance": "आपका Kilo Code बैलेंस कम है",
+		"switchToFreeModel": "इसके बजाय मुफ्त मॉडल पर स्विच करें"
+>>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "पिछला",
@@ -36,11 +47,19 @@
 			"skills": "कौशल"
 		},
 		"provider": {
+<<<<<<< HEAD
 			"account": "AlfaCode assistant खाता",
 			"apiKey": "AlfaCode assistant API कुंजी",
 			"login": "AlfaCode assistant में लॉग इन करें",
 			"logout": "AlfaCode assistant से लॉग आउट करें",
 			"automaticFetch": "नवीनतम मॉडल AlfaCode assistant में स्वचालित रूप से उपलब्ध हैं। यदि आप निश्चित नहीं हैं कि कौन सा मॉडल चुनना है, तो AlfaCode assistant शीर्ष पर <strong>बोल्ड फेस</strong> में सूचीबद्ध अनुशंसित मॉडल के साथ सबसे अच्छा काम करता है।",
+=======
+			"account": "Kilo Code खाता",
+			"apiKey": "Kilo Code API कुंजी",
+			"login": "Kilo Code में लॉग इन करें",
+			"logout": "Kilo Code से लॉग आउट करें",
+			"loginForPremiumModels": "प्रीमियम मॉडल और सुविधाओं तक पहुंचने के लिए लॉग इन करें",
+>>>>>>> origin/main
 			"providerRouting": {
 				"title": "प्रदाता रूटिंग",
 				"managedByOrganization": "संगठन-स्तरीय प्रदाता रूटिंग प्रबंधित करें",
@@ -204,6 +223,8 @@
 	},
 	"ideaSuggestionsBox": {
 		"newHere": "यहाँ नए हैं?",
+		"tryOneOfThese": "शुरू करने के लिए इनमें से कोई एक विचार आज़माएं:",
+		"clickToInsert": "तुरंत काम शुरू करने के लिए किसी भी सुझाव पर क्लिक करें",
 		"suggestionText": "एक बेहतरीन विचार के लिए <suggestionButton>यहाँ क्लिक करें</suggestionButton>, फिर <sendIcon /> पर टैप करें और मुझे जादू करते देखें!",
 		"ideas": {
 			"idea1": "एक घूमता हुआ, चमकता हुआ 3D गोला बनाएं जो माउस की गतिविधियों पर प्रतिक्रिया करे। ऐप को ब्राउज़र में काम करने योग्य बनाएं।",

@@ -12,11 +12,15 @@ import {
 import * as ProgressPrimitive from "@radix-ui/react-progress"
 import { AlertTriangle } from "lucide-react"
 
+<<<<<<< HEAD
 import { CODEBASE_INDEX_DEFAULTS, createCodeIndexValidationSchema } from "@roo-code/types"
 import type { ValidationMessages } from "@roo-code/types"
 
 import type { EmbedderProvider } from "@roo/embeddingModels"
 import type { IndexingStatus } from "@roo/ExtensionMessage"
+=======
+import { type IndexingStatus, type EmbedderProvider, CODEBASE_INDEX_DEFAULTS } from "@roo-code/types"
+>>>>>>> origin/main
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"

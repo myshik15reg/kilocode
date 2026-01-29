@@ -1,8 +1,14 @@
 {
 	"welcome": {
+<<<<<<< HEAD
 		"greeting": "欢迎使用 AlfaCode assistant！",
 		"introText1": "AlfaCode assistant 是一个免费的开源 AI 编程代理。",
 		"introText2": "它适用于最新的 AI 模型，如 Claude Sonnet 4.5、Gemini 2.5 Pro、GPT-5 以及 450 多个其他模型。",
+=======
+		"greeting": "欢迎使用 Kilo Code！",
+		"introText1": "Kilo Code 是一个免费的开源 AI 编程代理。",
+		"introText2": "它适用于最新的 AI 模型，如 Claude Opus 4.5、Gemini 3 Pro、GPT-5.2 以及 450 多个其他模型。",
+>>>>>>> origin/main
 		"introText3": "创建免费账户，首次充值即可获得 20 美元奖励额度。",
 		"ctaButton": "开始使用",
 		"manualModeButton": "使用你自己的 API 密钥",
@@ -11,8 +17,13 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "添加额度",
+<<<<<<< HEAD
 		"lowBalance": "你的 AlfaCode assistant 余额不足",
 		"newOrganization": "在工作中使用 Kilo？"
+=======
+		"lowBalance": "你的 Kilo Code 余额不足",
+		"switchToFreeModel": "切换到免费模型"
+>>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "上一页",
@@ -56,11 +67,19 @@
 			"testMessage": "这是来自 AlfaCode assistant 的测试通知。"
 		},
 		"provider": {
+<<<<<<< HEAD
 			"account": "AlfaCode assistant 账号",
 			"apiKey": "AlfaCode assistant API 密钥",
 			"login": "登录 AlfaCode assistant",
 			"logout": "退出 AlfaCode assistant",
 			"automaticFetch": "最新模型在 AlfaCode assistant 中自动可用。如果您不确定选择哪个模型，AlfaCode assistant 与顶部<strong>粗体</strong>显示的推荐模型配合最佳。",
+=======
+			"account": "Kilo Code 账号",
+			"apiKey": "Kilo Code API 密钥",
+			"login": "登录 Kilo Code",
+			"logout": "退出 Kilo Code",
+			"loginForPremiumModels": "登录以访问高级模型和功能",
+>>>>>>> origin/main
 			"providerRouting": {
 				"title": "提供商路由",
 				"managedByOrganization": "管理组织级提供商路由",
@@ -218,6 +237,8 @@
 	},
 	"ideaSuggestionsBox": {
 		"newHere": "新用户？",
+		"tryOneOfThese": "试试这些想法开始使用：",
+		"clickToInsert": "点击任意建议即可立即开始",
 		"suggestionText": "<suggestionButton>点击这里</suggestionButton>获取有趣的想法，然后点击 <sendIcon /> 看我施展魔法！",
 		"ideas": {
 			"idea1": "创建一个旋转发光的 3D 球体，能够响应鼠标移动。让应用在浏览器中运行。",

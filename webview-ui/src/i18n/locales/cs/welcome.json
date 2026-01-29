@@ -16,7 +16,18 @@
 			"incentive": "Vyzkoušej Roo zdarma"
 		}
 	},
+<<<<<<< HEAD
 	"chooseProvider": "Aby mohl dělat svá kouzla, AlfaCode assistant potřebuje API klíč.",
+=======
+	"chooseProvider": "Aby mohl dělat svá kouzla, Kilo Code potřebuje API klíč.",
+	"landing": {
+		"greeting": "Vítej v Roo Code!",
+		"introduction": "S řadou vestavěných a rozšiřitelných Modes ti Roo Code umožní plánovat, navrhovat architekturu, kódovat, ladit a zvýšit svou produktivitu jako nikdy předtím.",
+		"accountMention": "Pro začátek si vytvoř svůj účet Roo Code Cloud. Získej výkonné modely, ovládání webu, analytiku, podporu a další.",
+		"getStarted": "Vytvořit účet Roo",
+		"noAccount": "nebo použít bez účtu"
+	},
+>>>>>>> origin/main
 	"providerSignup": {
 		"heading": "Vyber svého poskytovatele",
 		"chooseProvider": "Roo potřebuje poskytovatele LLM k fungování. Vyber jeden pro začátek, později můžeš přidat další.",

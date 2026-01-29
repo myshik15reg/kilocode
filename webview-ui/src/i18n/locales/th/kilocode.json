@@ -1,8 +1,14 @@
 {
 	"welcome": {
+<<<<<<< HEAD
 		"greeting": "ยินดีต้อนรับสู่ AlfaCode assistant!",
 		"introText1": "AlfaCode assistant เป็นเอเจนต์เขียนโค้ด AI แบบฟรีและโอเพ่นซอร์ส",
 		"introText2": "ทำงานร่วมกับโมเดล AI ล่าสุด เช่น Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5 และอีกกว่า 450 โมเดล",
+=======
+		"greeting": "ยินดีต้อนรับสู่ Kilo Code!",
+		"introText1": "Kilo Code เป็นเอเจนต์เขียนโค้ด AI แบบฟรีและโอเพ่นซอร์ส",
+		"introText2": "ทำงานร่วมกับโมเดล AI ล่าสุด เช่น Claude Opus 4.5, Gemini 3 Pro, GPT-5.2 และอีกกว่า 450 โมเดล",
+>>>>>>> origin/main
 		"introText3": "สร้างบัญชีฟรีและรับเครดิตโบนัส $20 เมื่อเติมเงินครั้งแรก",
 		"ctaButton": "เริ่มต้น",
 		"manualModeButton": "ใช้ API key ของคุณเอง",
@@ -11,8 +17,13 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "เติมเครดิต",
+<<<<<<< HEAD
 		"lowBalance": "ยอดเงิน AlfaCode assistant ของคุณเหลือน้อย",
 		"newOrganization": "ใช้ Kilo เพื่อการทำงาน?"
+=======
+		"lowBalance": "ยอดเงิน Kilo Code ของคุณเหลือน้อย",
+		"switchToFreeModel": "เปลี่ยนไปใช้โมเดลฟรีแทน"
+>>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "ก่อนหน้า",
@@ -56,11 +67,19 @@
 			"testMessage": "นี่คือการแจ้งเตือนทดสอบจาก AlfaCode assistant"
 		},
 		"provider": {
+<<<<<<< HEAD
 			"account": "บัญชี AlfaCode assistant",
 			"apiKey": "AlfaCode assistant API Key",
 			"login": "เข้าสู่ระบบที่ AlfaCode assistant",
 			"logout": "ออกจากระบบ AlfaCode assistant",
 			"automaticFetch": "โมเดลล่าสุดจะพร้อมใช้งานใน AlfaCode assistant โดยอัตโนมัติ หากคุณไม่แน่ใจว่าจะเลือกโมเดลใด AlfaCode assistant ทำงานได้ดีที่สุดกับโมเดลที่แนะนำซึ่งแสดงไว้ด้านบนใน<strong>ตัวหนา</strong>",
+=======
+			"account": "บัญชี Kilo Code",
+			"apiKey": "Kilo Code API Key",
+			"login": "เข้าสู่ระบบที่ Kilo Code",
+			"logout": "ออกจากระบบ Kilo Code",
+			"loginForPremiumModels": "เข้าสู่ระบบเพื่อเข้าถึงโมเดลและฟีเจอร์พรีเมียม",
+>>>>>>> origin/main
 			"providerRouting": {
 				"title": "การกำหนดเส้นทางผู้ให้บริการ",
 				"createOrganization": "สร้างองค์กรเพื่อจัดการการกำหนดเส้นทางผู้ให้บริการ",
@@ -218,6 +237,8 @@
 	},
 	"ideaSuggestionsBox": {
 		"newHere": "มาใหม่ใช่ไหม?",
+		"tryOneOfThese": "ลองไอเดียเหล่านี้เพื่อเริ่มต้น:",
+		"clickToInsert": "คลิกข้อเสนอแนะใดก็ได้เพื่อเริ่มทำงานทันที",
 		"suggestionText": "<suggestionButton>คลิกที่นี่</suggestionButton> สำหรับไอเดียเจ๋งๆ จากนั้นแตะ <sendIcon /> และดูฉันทำมายากล!",
 		"ideas": {
 			"idea1": "สร้างทรงกลม 3D ที่หมุนและเรืองแสงที่ตอบสนองต่อการเคลื่อนไหวของเมาส์ ทำให้แอปทำงานในเบราว์เซอร์",

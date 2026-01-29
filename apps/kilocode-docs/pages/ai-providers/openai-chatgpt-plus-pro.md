@@ -1,0 +1,28 @@
+---
+sidebar_label: ChatGPT Plus/Pro
+---
+
+# Using ChatGPT Subscriptions With AlfaCode assistant
+
+<<<<<<< HEAD:apps/kilocode-docs/docs/providers/openai-chatgpt-plus-pro.md
+1. Open AlfaCode assistant settings (click the gear icon <Codicon name="gear" /> in the AlfaCode assistant panel).
+=======
+1. Open Kilo Code settings (click the gear icon {% codicon name="gear" /%} in the Kilo Code panel).
+>>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/openai-chatgpt-plus-pro.md
+2. In **API Provider**, select **OpenAI – ChatGPT Plus/Pro**.
+3. Click **Sign in to OpenAI Codex**.
+4. Finish the sign-in flow in your browser.
+5. Back in AlfaCode assistant settings, pick a model from the dropdown.
+6. Save.
+
+## Tips and Notes
+
+- **Subscription Required:** You need an active ChatGPT Plus or Pro subscription. This provider won't work with free ChatGPT accounts. See [OpenAI's ChatGPT plans](https://openai.com/chatgpt/pricing) for more information.
+- **Authentication Errors:** If you receive a CSRF or other error when completing OAuth authentication, ensure you do not have another application already listening on port 1455. You can check on Linux and Mac by using `lsof -i :1455`.
+- **No API Costs:** Usage through this provider counts against your ChatGPT subscription, not separately billed API usage.
+- **Sign Out:** To disconnect, use the "Sign Out" button in the provider settings.
+
+## Limitations
+
+- **You can't use arbitrary OpenAI API models.** This provider only exposes the models listed in AlfaCode assistant's Codex model catalog.
+- **You can't export/migrate your sign-in state with settings export.** OAuth tokens are stored in VS Code SecretStorage, which isn't included in AlfaCode assistant's settings export.

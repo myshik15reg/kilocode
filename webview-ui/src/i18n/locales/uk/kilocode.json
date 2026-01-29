@@ -1,8 +1,14 @@
 {
 	"welcome": {
+<<<<<<< HEAD
 		"greeting": "Ласкаво просимо до AlfaCode assistant!",
 		"introText1": "AlfaCode assistant — це безкоштовний агент кодування AI з відкритим кодом.",
 		"introText2": "Працює з найновішими моделями AI, такими як Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5 та понад 450 іншими.",
+=======
+		"greeting": "Ласкаво просимо до Kilo Code!",
+		"introText1": "Kilo Code — це безкоштовний агент кодування AI з відкритим кодом.",
+		"introText2": "Працює з найновішими моделями AI, такими як Claude Opus 4.5, Gemini 3 Pro, GPT-5.2 та понад 450 іншими.",
+>>>>>>> origin/main
 		"introText3": "Створи безкоштовний акаунт і отримай $20 бонусних кредитів при першому поповненні.",
 		"ctaButton": "Почати",
 		"manualModeButton": "Використовуй власний API key",
@@ -11,8 +17,13 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "Додати кредит",
+<<<<<<< HEAD
 		"lowBalance": "Твій баланс AlfaCode assistant низький",
 		"newOrganization": "Використовуєш Kilo для роботи?"
+=======
+		"lowBalance": "Твій баланс Kilo Code низький",
+		"switchToFreeModel": "Перейти на безкоштовну модель"
+>>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "Попередня",
@@ -55,11 +66,19 @@
 			"scannerMaxBatchRetriesDescription": "Максимальна кількість повторних спроб для невдалого пакета під час сканування каталогів. Вищі значення підвищують стійкість до тимчасових помилок, але можуть уповільнити індексацію при постійних помилках. Нижчі значення швидше завершуються з помилкою, але можуть пропустити вміст при тимчасових проблемах."
 		},
 		"provider": {
+<<<<<<< HEAD
 			"account": "Обліковий запис AlfaCode assistant",
 			"apiKey": "AlfaCode assistant API Key",
 			"login": "Увійти в AlfaCode assistant",
 			"logout": "Вийти з AlfaCode assistant",
 			"automaticFetch": "Найновіші моделі автоматично доступні в AlfaCode assistant. Якщо ви не впевнені, яку модель вибрати, AlfaCode assistant найкраще працює з рекомендованими моделями, перерахованими вгорі <strong>жирним шрифтом</strong>.",
+=======
+			"account": "Обліковий запис Kilo Code",
+			"apiKey": "Kilo Code API Key",
+			"login": "Увійти в Kilo Code",
+			"logout": "Вийти з Kilo Code",
+			"loginForPremiumModels": "Увійдіть, щоб отримати доступ до преміум моделей та функцій",
+>>>>>>> origin/main
 			"providerRouting": {
 				"title": "Маршрутизація провайдерів",
 				"managedByOrganization": "Керувати маршрутизацією провайдерів на рівні організації",
@@ -218,6 +237,8 @@
 	},
 	"ideaSuggestionsBox": {
 		"newHere": "Новачок тут?",
+		"tryOneOfThese": "Спробуй одну з цих ідей для початку:",
+		"clickToInsert": "Натисни на будь-яку пропозицію, щоб одразу почати роботу",
 		"suggestionText": "<suggestionButton>Натисніть тут</suggestionButton> для крутої ідеї, потім торкніться <sendIcon /> і дивіться, як я творю магію!",
 		"ideas": {
 			"idea1": "Створіть обертову, світлу 3D-сферу, яка реагує на рухи миші. Зробіть так, щоб додаток працював у браузері.",

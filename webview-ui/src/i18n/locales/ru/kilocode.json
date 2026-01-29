@@ -1,8 +1,14 @@
 {
 	"welcome": {
+<<<<<<< HEAD
 		"greeting": "Добро пожаловать в AlfaCode assistant!",
 		"introText1": "AlfaCode assistant — это бесплатный агент кодирования ИИ.",
 		"introText2": "Работает с новейшими моделями ИИ, такими как Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5 и более чем 450 другими.",
+=======
+		"greeting": "Добро пожаловать в Kilo Code!",
+		"introText1": "Kilo Code — это бесплатный агент кодирования ИИ с открытым исходным кодом.",
+		"introText2": "Работает с новейшими моделями ИИ, такими как Claude Opus 4.5, Gemini 3 Pro, GPT-5.2 и более чем 450 другими.",
+>>>>>>> origin/main
 		"introText3": "Создайте бесплатную учетную запись и получите $20 бонусных кредитов при первом пополнении.",
 		"ctaButton": "Начать",
 		"manualModeButton": "Использовать свой API-ключ",
@@ -11,8 +17,13 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "Добавить кредит",
+<<<<<<< HEAD
 		"lowBalance": "Ваш баланс AlfaCode assistant низкий",
 		"newOrganization": "Используете Kilo для работы?"
+=======
+		"lowBalance": "Твой баланс Kilo Code низкий",
+		"switchToFreeModel": "Переключиться на бесплатную модель"
+>>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "Предыдущая",
@@ -43,11 +54,19 @@
 			"skills": "Навыки"
 		},
 		"provider": {
+<<<<<<< HEAD
 			"account": "Аккаунт AlfaCode assistant",
 			"apiKey": "API-ключ AlfaCode assistant",
 			"login": "Войти в AlfaCode assistant",
 			"logout": "Выйти из AlfaCode assistant",
 			"automaticFetch": "Новейшие модели автоматически доступны в AlfaCode assistant. Если вы не уверены, какую модель выбрать, AlfaCode assistant лучше всего работает с рекомендуемыми моделями, перечисленными вверху <strong>жирным шрифтом</strong>.",
+=======
+			"account": "Аккаунт Kilo Code",
+			"apiKey": "API-ключ Kilo Code",
+			"login": "Войти в Kilo Code",
+			"logout": "Выйти из Kilo Code",
+			"loginForPremiumModels": "Войдите, чтобы получить доступ к премиум моделям и функциям",
+>>>>>>> origin/main
 			"providerRouting": {
 				"title": "Маршрутизация провайдеров",
 				"managedByOrganization": "Управлять маршрутизацией провайдеров на уровне организации",
@@ -211,6 +230,8 @@
 	},
 	"ideaSuggestionsBox": {
 		"newHere": "Новичок?",
+		"tryOneOfThese": "Попробуй одну из этих идей для начала:",
+		"clickToInsert": "Нажми на любое предложение, чтобы сразу начать работу",
 		"suggestionText": "<suggestionButton>Нажмите здесь</suggestionButton> для крутой идеи, затем коснитесь <sendIcon /> и посмотрите, как я творю магию!",
 		"ideas": {
 			"idea1": "Создайте вращающуюся, светящуюся 3D-сферу, которая реагирует на движения мыши. Сделайте приложение работающим в браузере.",
