@@ -1,14 +1,8 @@
 {
 	"welcome": {
-<<<<<<< HEAD
 		"greeting": "Willkommen bei AlfaCode assistant!",
-		"introText1": "AlfaCode assistant ist ein kostenloser KI-Coding-Agent.",
+		"introText1": "AlfaCode assistant ist ein kostenloser Open-Source-KI-Coding-Agent.",
 		"introText2": "Er funktioniert mit den neuesten KI-Modellen wie Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5 und über 450 weiteren.",
-=======
-		"greeting": "Willkommen bei Kilo Code!",
-		"introText1": "Kilo Code ist ein kostenloser Open-Source-KI-Coding-Agent.",
-		"introText2": "Er funktioniert mit den neuesten KI-Modellen wie Claude Opus 4.5, Gemini 3 Pro, GPT-5.2 und über 450 weiteren.",
->>>>>>> origin/main
 		"introText3": "Erstelle ein kostenloses Konto und erhalte $20 Bonusguthaben bei deiner ersten Aufladung.",
 		"ctaButton": "Loslegen",
 		"manualModeButton": "Eigenen API-Schlüssel verwenden",
@@ -17,13 +11,9 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "Guthaben hinzufügen",
-<<<<<<< HEAD
 		"lowBalance": "Ihr AlfaCode assistant Guthaben ist niedrig",
-		"newOrganization": "Verwendest du Kilo für die Arbeit?"
-=======
-		"lowBalance": "Dein Kilo Code Guthaben ist niedrig",
+		"newOrganization": "Verwendest du AlfaCode assistant für die Arbeit?",
 		"switchToFreeModel": "Wechsle stattdessen zu einem kostenlosen Modell"
->>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "Zurück",
@@ -54,19 +44,12 @@
 			"skills": "Skills"
 		},
 		"provider": {
-<<<<<<< HEAD
 			"account": "AlfaCode assistant Konto",
 			"apiKey": "AlfaCode assistant API-Schlüssel",
 			"login": "Bei AlfaCode assistant anmelden",
 			"logout": "Von AlfaCode assistant abmelden",
-			"automaticFetch": "Die neuesten Modelle sind automatisch in AlfaCode assistant verfügbar. Wenn du dir nicht sicher bist, welches Modell du wählen sollst, funktioniert AlfaCode assistant am besten mit den empfohlenen Modellen, die oben in <strong>fetter Schrift</strong> aufgeführt sind.",
-=======
-			"account": "Kilo Code Konto",
-			"apiKey": "Kilo Code API-Schlüssel",
-			"login": "Bei Kilo Code anmelden",
-			"logout": "Von Kilo Code abmelden",
 			"loginForPremiumModels": "Melde dich an, um auf Premium-Modelle und -Funktionen zuzugreifen",
->>>>>>> origin/main
+			"automaticFetch": "Die neuesten Modelle sind automatisch in AlfaCode assistant verfügbar. Wenn du dir nicht sicher bist, welches Modell du wählen sollst, funktioniert AlfaCode assistant am besten mit den empfohlenen Modellen, die oben in <strong>fetter Schrift</strong> aufgeführt sind.",
 			"providerRouting": {
 				"title": "Anbieter-Routing",
 				"managedByOrganization": "Anbieter-Routing auf Organisationsebene verwalten",

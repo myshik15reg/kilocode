@@ -4197,6 +4197,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			profileThresholds,
 			currentProfileId,
 			useNativeTools,
+			// kilocode_change start: RLM routing inputs
+			contextRoutingEnabled: state?.contextRoutingEnabled,
+			contextRoutingFastThresholdPercent: state?.contextRoutingFastThresholdPercent,
+			contextRoutingDeepThresholdPercent: state?.contextRoutingDeepThresholdPercent,
+			// kilocode_change end
 		})
 
 		if (truncateResult.messages !== this.apiConversationHistory) {
@@ -4376,6 +4381,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				profileThresholds,
 				currentProfileId,
 				lastMessageTokens,
+				// kilocode_change start: RLM routing inputs
+				contextRoutingEnabled: state?.contextRoutingEnabled,
+				contextRoutingFastThresholdPercent: state?.contextRoutingFastThresholdPercent,
+				contextRoutingDeepThresholdPercent: state?.contextRoutingDeepThresholdPercent,
+				// kilocode_change end
 			})
 
 			// Send condenseTaskContextStarted BEFORE manageContext to show in-progress indicator
@@ -4402,6 +4412,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				profileThresholds,
 				currentProfileId,
 				useNativeTools,
+				// kilocode_change start: RLM routing inputs
+				contextRoutingEnabled: state?.contextRoutingEnabled,
+				contextRoutingFastThresholdPercent: state?.contextRoutingFastThresholdPercent,
+				contextRoutingDeepThresholdPercent: state?.contextRoutingDeepThresholdPercent,
+				// kilocode_change end
 			})
 			if (truncateResult.messages !== this.apiConversationHistory) {
 				await this.overwriteApiConversationHistory(truncateResult.messages)

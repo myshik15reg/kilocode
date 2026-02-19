@@ -187,9 +187,18 @@
 		"searchMinScoreResetTooltip": "Varsayılan değere sıfırla (0.4)",
 		"searchMaxResultsLabel": "Maksimum Arama Sonuçları",
 		"searchMaxResultsDescription": "Kod tabanı dizinini sorgularken döndürülecek maksimum arama sonucu sayısı. Daha yüksek değerler daha fazla bağlam sağlar ancak daha az alakalı sonuçlar içerebilir.",
+		"rerankSectionLabel": "Reranker",
+		"rerankEnableLabel": "Reranker'ı etkinleştir",
+		"rerankEnableDescription": "Graf genişletmesinden önce Qdrant adaylarını cross-encoder ile yeniden sıralar. Kullanılamazsa semantik sıraya geri döner.",
+		"rerankCandidateLimitLabel": "Rerank aday sınırı",
+		"rerankTopKLabel": "Rerank sonrası Top-K",
+		"rerankTimeoutMsLabel": "Rerank zaman aşımı (ms)",
 		"resetToDefault": "Varsayılana sıfırla",
 		"cancelling": "İptal ediliyor...",
-		"cancelIndexingButton": "İndekslemeyi iptal et"
+		"cancelIndexingButton": "İndekslemeyi iptal et",
+		"neo4j": {
+			"enableDescription": "Neo4j ile grafik tabanlı arama ve etki analizini etkinleştirir. Hibrit anlamsal + grafik arama için Qdrant ile birlikte çalışır."
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDE tercihlerinizde</SettingsLink> bu ayar için genel bir kısayol yapılandırabilirsiniz.",

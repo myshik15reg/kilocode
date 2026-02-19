@@ -1,10 +1,6 @@
-<<<<<<< HEAD
 # AlfaCode assistant Docs
-=======
-# Full Next.js example
->>>>>>> origin/main
 
-This is a full-featured boilerplate for a creating a documentation website using Markdoc and Next.js.
+This app contains the AlfaCode assistant documentation website, built using Markdoc and Next.js.
 
 <img width="2032" alt="image" src="https://user-images.githubusercontent.com/62121649/174916143-16f18270-0463-402c-8b48-33c627ea7a7e.png">
 

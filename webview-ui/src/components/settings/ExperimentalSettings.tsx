@@ -31,6 +31,10 @@ type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	kiloCodeImageApiKey?: string
 	setKiloCodeImageApiKey?: (apiKey: string) => void
 	currentProfileKilocodeToken?: string
+	litellmImageApiKey?: string
+	setLitellmImageApiKey?: (apiKey: string) => void
+	litellmImageBaseUrl?: string
+	setLitellmImageBaseUrl?: (baseUrl: string) => void
 	// kilocode_change end
 	apiConfiguration?: any
 	setApiConfigurationField?: any
@@ -62,6 +66,10 @@ export const ExperimentalSettings = ({
 	setKiloCodeImageApiKey,
 	kiloCodeImageApiKey,
 	currentProfileKilocodeToken,
+	litellmImageApiKey,
+	setLitellmImageApiKey,
+	litellmImageBaseUrl,
+	setLitellmImageBaseUrl,
 	// kilocode_change end
 	...props
 }: ExperimentalSettingsProps) => {
@@ -149,6 +157,8 @@ export const ExperimentalSettings = ({
 							setImageGenerationProvider &&
 							setOpenRouterImageApiKey &&
 							setKiloCodeImageApiKey &&
+							setLitellmImageApiKey &&
+							setLitellmImageBaseUrl &&
 							setImageGenerationSelectedModel
 						) {
 							return (
@@ -171,6 +181,10 @@ export const ExperimentalSettings = ({
 										kiloCodeImageApiKey={kiloCodeImageApiKey}
 										setKiloCodeImageApiKey={setKiloCodeImageApiKey}
 										currentProfileKilocodeToken={currentProfileKilocodeToken}
+										litellmImageApiKey={litellmImageApiKey}
+										setLitellmImageApiKey={setLitellmImageApiKey}
+										litellmImageBaseUrl={litellmImageBaseUrl}
+										setLitellmImageBaseUrl={setLitellmImageBaseUrl}
 									/>
 								</SearchableSetting>
 							)

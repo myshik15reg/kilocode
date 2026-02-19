@@ -60,6 +60,17 @@ export function validateToolUse(
 	) {
 		throw new Error(`Tool "${toolName}" is not allowed in ${mode} mode.`)
 	}
+
+	// FIX: codebase_search-missing-query (TestAnalyzer)
+	// Root cause: codebase_search required params were not validated at tool-call validation layer, allowing `{}` through and triggering retry loops
+	if (toolName === "codebase_search") {
+		const query = toolParams?.query
+		if (typeof query !== "string" || query.trim() === "") {
+			throw new Error(
+				'Invalid arguments for codebase_search: missing or empty required parameter "query". Do NOT retry with {}. Retry with JSON arguments like: { "query": "<what you need to find>", "path": null }. If you do not know what to search for, ask the user a clarifying question instead of calling codebase_search with an empty query.',
+			)
+		}
+	}
 }
 
 const EDIT_OPERATION_PARAMS = ["diff", "content", "operations", "search", "replace", "args", "line"] as const

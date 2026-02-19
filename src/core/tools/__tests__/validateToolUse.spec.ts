@@ -174,6 +174,16 @@ describe("mode-validator", () => {
 			)
 		})
 
+		it("throws error for codebase_search when required query is missing/empty", () => {
+			// FIX: codebase_search-missing-query (TestAnalyzer)
+			expect(() => validateToolUse("codebase_search" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for codebase_search: missing or empty required parameter "query"/,
+			)
+			expect(() => validateToolUse("codebase_search" as any, codeMode, [], undefined, { query: "   " })).toThrow(
+				/Invalid arguments for codebase_search: missing or empty required parameter "query"/,
+			)
+		})
+
 		it("throws error for disallowed tools in architect mode", () => {
 			// execute_command is a valid tool but not allowed in architect mode
 			expect(() => validateToolUse("execute_command", "architect", [])).toThrow(

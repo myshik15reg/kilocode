@@ -43,19 +43,11 @@ The AlfaCode assistant extension itself is free. In order for AlfaCode assistant
 
 There are some models available for free. The set of free models if constantly changing based on provider pricing decisions.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/faq.md
-You can also use AlfaCode assistant with a [local model](advanced-usage/local-models) or "Bring Your Own API Key" for [another model provider](getting-started/connecting-api-provider) (like [Anthropic](providers/anthropic), [OpenAI](providers/openai), [OpenRouter](providers/openrouter), [Requesty](providers/requesty), etc.).
-=======
-You can also use Kilo Code with a [local model](/docs/automate/extending/local-models) or "Bring Your Own API Key" for [another model provider](/docs/getting-started/setup-authentication) (like [Anthropic](/docs/ai-providers/anthropic), [OpenAI](/docs/ai-providers/openai), [OpenRouter](/docs/ai-providers/openrouter), [Requesty](/docs/ai-providers/requesty), etc.).
->>>>>>> origin/main:apps/kilocode-docs/pages/getting-started/faq.md
+You can also use AlfaCode assistant with a [local model](/docs/automate/extending/local-models) or "Bring Your Own API Key" for [another model provider](/docs/getting-started/setup-authentication) (like [Anthropic](/docs/ai-providers/anthropic), [OpenAI](/docs/ai-providers/openai), [OpenRouter](/docs/ai-providers/openrouter), [Requesty](/docs/ai-providers/requesty), etc.).
 
 ### How do I pay for model usage via AlfaCode assistant?
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/faq.md
-If you choose to pay for models via AlfaCode assistant, you do so by buying Kilo Credits. You can [purchase Kilo Credits](basic-usage/adding-credits) and receive bonus credits. We do not charge a markup on Kilo Credits. $1 you give us is $1 in Kilo Credits.
-=======
-If you choose to pay for models via Kilo Code, you do so by buying Kilo Credits. You can [buy Kilo Credits](/docs/getting-started/adding-credits) securely via Stripe with a credit card. We do not charge a markup on Kilo Credits. $1 you give us is $1 in Kilo Credits.
->>>>>>> origin/main:apps/kilocode-docs/pages/getting-started/faq.md
+If you choose to pay for models via AlfaCode assistant, you do so by buying Kilo Credits. You can [buy Kilo Credits](/docs/getting-started/adding-credits) securely via Stripe with a credit card. We do not charge a markup on Kilo Credits. $1 you give us is $1 in Kilo Credits.
 
 Model usage is metered by the providers in terms of different kinds of tokens. When you use a model, we debit your Kilo credits by the amount the provider charges us -- with no markup.
 
@@ -103,21 +95,13 @@ Each API provider has its own process for obtaining an API key. See the [Setting
 
 ### Can I use AlfaCode assistant with local models?
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/faq.md
-Yes, AlfaCode assistant supports running models locally using [Ollama](/providers/ollama) and [LM Studio](/providers/lmstudio). See [Using Local Models](/advanced-usage/local-models) for instructions.
-=======
-Yes, Kilo Code supports running models locally using [Ollama](/docs/providers/ollama) and [LM Studio](/docs/providers/lmstudio). See [Using Local Models](/docs/advanced-usage/local-models) for instructions.
->>>>>>> origin/main:apps/kilocode-docs/pages/getting-started/faq.md
+Yes, AlfaCode assistant supports running models locally using [Ollama](/docs/ai-providers/ollama) and [LM Studio](/docs/ai-providers/lmstudio). See [Using Local Models](/docs/automate/extending/local-models) for instructions.
 
 ## Usage
 
 ### How do I start a new task?
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/faq.md
-Open the AlfaCode assistant panel (<img src="/docs/img/kilo-v1.svg" width="12" />) and type your task in the chat box. Be clear and specific about what you want AlfaCode assistant to do. See [The Chat Interface](/basic-usage/the-chat-interface) for best practices.
-=======
-Open the Kilo Code panel (<img src="/docs/img/kilo-v1.svg" width="12" />) and type your task in the chat box. Be clear and specific about what you want Kilo Code to do. See [The Chat Interface](/docs/basic-usage/the-chat-interface) for best practices.
->>>>>>> origin/main:apps/kilocode-docs/pages/getting-started/faq.md
+Open the AlfaCode assistant panel ({% kiloCodeIcon /%}) and type your task in the chat box. Be clear and specific about what you want AlfaCode assistant to do. See [The Chat Interface](/docs/code-with-ai/agents/chat-interface) for best practices.
 
 ### When should I use chat vs autocomplete?
 
@@ -140,11 +124,7 @@ In general, autocomplete is best for quick, in-flow coding assistance, while cha
 
 ### What are modes in AlfaCode assistant?
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/faq.md
-[Modes](/basic-usage/using-modes) are different personas that AlfaCode assistant can adopt, each with a specific focus and set of capabilities. The built-in modes are:
-=======
-[Modes](/docs/basic-usage/using-modes) are different personas that Kilo Code can adopt, each with a specific focus and set of capabilities. The built-in modes are:
->>>>>>> origin/main:apps/kilocode-docs/pages/getting-started/faq.md
+[Modes](/docs/code-with-ai/agents/using-modes) are different personas that AlfaCode assistant can adopt, each with a specific focus and set of capabilities. The built-in modes are:
 
 - **Code:** For general-purpose coding tasks.
 - **Architect:** For planning and technical leadership.
@@ -158,19 +138,11 @@ Use the dropdown menu in the chat input area to select a different mode, or use 
 
 ### What are tools and how do I use them?
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/faq.md
-[Tools](/basic-usage/how-tools-work) are how AlfaCode assistant interacts with your system. AlfaCode assistant automatically selects and uses the appropriate tools to complete your tasks. You don't need to call tools directly. You will be prompted to approve or reject each tool use.
+[Tools](/docs/automate/how-tools-work) are how AlfaCode assistant interacts with your system. AlfaCode assistant automatically selects and uses the appropriate tools to complete your tasks. You don't need to call tools directly. You will be prompted to approve or reject each tool use.
 
 ### What are context mentions?
 
-[Context mentions](/basic-usage/context-mentions) are a way to provide AlfaCode assistant with specific information about your project, such as files, folders, or problems. Use the "@" symbol followed by the item you want to mention (e.g., `@/src/file.ts`, `@problems`).
-=======
-[Tools](/docs/basic-usage/how-tools-work) are how Kilo Code interacts with your system. Kilo Code automatically selects and uses the appropriate tools to complete your tasks. You don't need to call tools directly. You will be prompted to approve or reject each tool use.
-
-### What are context mentions?
-
-[Context mentions](/docs/basic-usage/context-mentions) are a way to provide Kilo Code with specific information about your project, such as files, folders, or problems. Use the "@" symbol followed by the item you want to mention (e.g., `@/src/file.ts`, `@problems`).
->>>>>>> origin/main:apps/kilocode-docs/pages/getting-started/faq.md
+[Context mentions](/docs/code-with-ai/agents/context-mentions) are a way to provide AlfaCode assistant with specific information about your project, such as files, folders, or problems. Use the "@" symbol followed by the item you want to mention (e.g., `@/src/file.ts`, `@problems`).
 
 ### Can AlfaCode assistant access the internet?
 
@@ -178,11 +150,7 @@ Yes, if you are using a provider with a model that support web browsing. Be mind
 
 ### Can AlfaCode assistant run commands in my terminal?
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/faq.md
-Yes, AlfaCode assistant can execute commands in your VS Code terminal. You will be prompted to approve each command before it's executed, unless you've enabled auto-approval for commands. Be extremely cautious about auto-approving commands. If you're experiencing issues with terminal commands, see the [Shell Integration Guide](/features/shell-integration) for troubleshooting.
-=======
-Yes, Kilo Code can execute commands in your VS Code terminal. You will be prompted to approve each command before it's executed, unless you've enabled auto-approval for commands. Be extremely cautious about auto-approving commands. If you're experiencing issues with terminal commands, see the [Shell Integration Guide](/docs/features/shell-integration) for troubleshooting.
->>>>>>> origin/main:apps/kilocode-docs/pages/getting-started/faq.md
+Yes, AlfaCode assistant can execute commands in your VS Code terminal. You will be prompted to approve each command before it's executed, unless you've enabled auto-approval for commands. Be extremely cautious about auto-approving commands. If you're experiencing issues with terminal commands, see the [Shell Integration Guide](/docs/automate/extending/shell-integration) for troubleshooting.
 
 ### How do I provide feedback to AlfaCode assistant?
 
@@ -199,11 +167,7 @@ Yes, you can customize AlfaCode assistant in several ways:
 
 ### Does AlfaCode assistant have any auto approval settings?
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/faq.md
-Yes, AlfaCode assistant has a few settings that when enabled will automatically approve actions. Find out more [here](/features/auto-approving-actions).
-=======
-Yes, Kilo Code has a few settings that when enabled will automatically approve actions. Find out more [here](/docs/features/auto-approving-actions).
->>>>>>> origin/main:apps/kilocode-docs/pages/getting-started/faq.md
+Yes, AlfaCode assistant has a few settings that when enabled will automatically approve actions. Find out more [here](/docs/features/auto-approving-actions).
 
 ## Advanced Features
 
@@ -213,15 +177,10 @@ Yes, if you use a [local model](/docs/advanced-usage/local-models).
 
 ### What is MCP (Model Context Protocol)?
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/faq.md
-[MCP](/features/mcp/overview) is a protocol that allows AlfaCode assistant to communicate with external servers, extending its capabilities with custom tools and resources.
-=======
-[MCP](/docs/features/mcp/overview) is a protocol that allows Kilo Code to communicate with external servers, extending its capabilities with custom tools and resources.
->>>>>>> origin/main:apps/kilocode-docs/pages/getting-started/faq.md
+[MCP](/docs/features/mcp/overview) is a protocol that allows AlfaCode assistant to communicate with external servers, extending its capabilities with custom tools and resources.
 
 ### Can I create my own MCP servers?
 
-Yes, you can create your own MCP servers to add custom functionality to AlfaCode assistant. See the [MCP documentation](https://github.com/modelcontextprotocol) for details.
 Yes, you can create your own MCP servers to add custom functionality to AlfaCode assistant. See the [MCP documentation](https://github.com/modelcontextprotocol) for details.
 
 ## Troubleshooting

@@ -1,17 +1,11 @@
 ---
 title: "Cloud Agent"
-description: "Using Kilo Code in the browser"
+description: "Use AlfaCode assistant in the browser"
 ---
 
 # {% $markdoc.frontmatter.title %}
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/advanced-usage/cloud-agent.md
 Cloud Agents let you run AlfaCode assistant in the cloud from any device, without relying on your local machine. They provide a remote development environment that can read and modify your GitHub repositories, run commands, and auto-commit changes as work progresses.
-
----
-=======
-Cloud Agents let you run Kilo Code in the cloud from any device, without relying on your local machine. They provide a remote development environment that can read and modify your GitHub and GitLab repositories, run commands, and auto-commit changes as work progresses.
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/platforms/cloud-agent.md
 
 ## What Cloud Agents Enable
 
@@ -30,14 +24,8 @@ Before using Cloud Agents:
 ## Cost
 
 - **Compute is free during limited beta**
-<<<<<<< HEAD:apps/kilocode-docs/docs/advanced-usage/cloud-agent.md
-    - Please provide any feedback in our Cloud Agents beta Discord channel:
-        - [Kilo Discord](https://kilo.ai/discord)
-- **AlfaCode assistant credits are still used** when the agent performs work (model usage, operations, etc.).
-=======
     - Please provide any feedback in our Cloud Agents beta Discord channel: [Kilo Discord](https://kilo.ai/discord)
-- **Kilo Code credits are still used** when the agent performs work (model usage, operations, etc.).
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/platforms/cloud-agent.md
+- **AlfaCode assistant credits are still used** when the agent performs work (model usage, operations, etc.).
 
 ## How to Use
 

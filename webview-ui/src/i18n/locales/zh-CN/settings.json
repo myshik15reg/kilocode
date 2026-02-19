@@ -41,15 +41,10 @@
 		"ui": "UI",
 		"experimental": "实验性",
 		"language": "语言",
-<<<<<<< HEAD
 		"about": "关于 AlfaCode assistant",
-		"autoPurge": "自动清理"
-=======
-		"about": "关于 Kilo Code",
 		"autoPurge": "自动清理",
 		"agentBehaviour": "智能体行为",
 		"ghost": "自动补全"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -192,9 +187,18 @@
 		"searchMinScoreResetTooltip": "恢复默认值 (0.4)",
 		"searchMaxResultsLabel": "最大搜索结果数",
 		"searchMaxResultsDescription": "查询代码库索引时返回的最大搜索结果数。较高的值提供更多上下文，但可能包含相关性较低的结果。",
+		"rerankSectionLabel": "重排序",
+		"rerankEnableLabel": "启用重排序",
+		"rerankEnableDescription": "在图扩展之前使用 cross-encoder 对 Qdrant 候选进行重排序。不可用时回退到语义顺序。",
+		"rerankCandidateLimitLabel": "重排序候选上限",
+		"rerankTopKLabel": "重排序 Top-K",
+		"rerankTimeoutMsLabel": "重排序超时（毫秒）",
 		"resetToDefault": "恢复默认值",
 		"cancelling": "正在取消...",
-		"cancelIndexingButton": "取消索引"
+		"cancelIndexingButton": "取消索引",
+		"neo4j": {
+			"enableDescription": "启用基于 Neo4j 的图谱搜索和影响分析。与 Qdrant 配合，实现混合语义 + 图谱搜索。"
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "您可以<SettingsLink>在 IDE 首选项中</SettingsLink>为此设置配置全局快捷方式。",

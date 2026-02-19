@@ -26,11 +26,7 @@ Refer to the [Glama documentation](https://glama.ai/models) for the most up-to-d
 
 ## Configuration in AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/glama.md
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/glama.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "Glama" from the "API Provider" dropdown.
 3.  **Enter API Key:** Paste your Glama API key into the "Glama API Key" field.
 4.  **Select Model:** Choose your desired model from the "Model" dropdown.

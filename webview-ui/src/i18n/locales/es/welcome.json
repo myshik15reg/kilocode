@@ -16,18 +16,14 @@
 			"incentive": "Prueba Roo gratis"
 		}
 	},
-<<<<<<< HEAD
 	"chooseProvider": "Para hacer su magia, AlfaCode assistant necesita una clave API.",
-=======
-	"chooseProvider": "Para hacer su magia, Kilo Code necesita una clave API.",
 	"landing": {
-		"greeting": "¡Bienvenido a Roo Code!",
-		"introduction": "Con una variedad de Modos integrados y extensibles, Roo Code te permite planificar, arquitectar, codificar, depurar y aumentar tu productividad como nunca antes.",
-		"accountMention": "Para comenzar, crea tu cuenta de Roo Code Cloud. Obtén modelos potentes, control web, análisis, soporte y más.",
-		"getStarted": "Crear cuenta de Roo",
+		"greeting": "¡Bienvenido a AlfaCode assistant!",
+		"introduction": "Con una variedad de Modos integrados y extensibles, AlfaCode assistant te permite planificar, arquitectar, codificar, depurar y aumentar tu productividad como nunca antes.",
+		"accountMention": "Para comenzar, crea tu cuenta de AlfaCode assistant Cloud. Obtén modelos potentes, control web, análisis, soporte y más.",
+		"getStarted": "Crear cuenta de AlfaCode",
 		"noAccount": "o usar sin cuenta"
 	},
->>>>>>> origin/main
 	"providerSignup": {
 		"heading": "Elige tu proveedor",
 		"chooseProvider": "Roo necesita un proveedor de LLM para funcionar. Elige uno para comenzar, puedes añadir más después.",

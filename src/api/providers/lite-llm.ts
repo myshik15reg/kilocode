@@ -9,11 +9,8 @@ import { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
-<<<<<<< HEAD
 import { getModelParams } from "../transform/model-params"
-=======
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
->>>>>>> origin/main
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { RouterProvider } from "./router-provider"
@@ -24,6 +21,12 @@ import { RouterProvider } from "./router-provider"
  * This handler uses the LiteLLM API to proxy requests to various LLM providers.
  * It follows the OpenAI API format for compatibility.
  */
+
+const CLAUDE_CODE_LITELLM_ANTHROPIC_VERSION = "2023-06-01" as const
+const CLAUDE_CODE_LITELLM_USER_AGENT = "claude-code/2.1.37" as const
+const CLAUDE_CODE_LITELLM_BETA_TOOLS = "tools-2024-04-04" as const
+const CLAUDE_CODE_LITELLM_BETA_PROMPT_CACHING = "prompt-caching-2024-07-31" as const
+
 export class LiteLLMHandler extends RouterProvider implements SingleCompletionHandler {
 	constructor(options: ApiHandlerOptions) {
 		super({
@@ -66,6 +69,50 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			// Also match provider-prefixed versions
 			/\b(gemini|google|vertex_ai|vertex)\/gemini[-\s](3|2\.5)/i.test(modelId)
 		)
+	}
+
+	/**
+	 * Detect Claude model variants (Opus/Sonnet/Haiku), including provider prefixes
+	 * like anthropic/... and versioned names (3/3.5/3.7/4/4.5+).
+	 */
+	private isClaudeModel(modelId: string): boolean {
+		const normalizedModelId = modelId.toLowerCase().replace(/_/g, "-")
+		const hasClaude = normalizedModelId.includes("claude")
+		const hasClaudeFamily = /\b(opus|sonnet|haiku)\b/.test(normalizedModelId)
+
+		return hasClaude && hasClaudeFamily
+	}
+
+	private getClaudeRequestOptions(
+		modelId: string,
+		info: {
+			supportsPromptCache?: boolean
+		},
+	): OpenAI.RequestOptions | undefined {
+		if (!this.isClaudeModel(modelId)) {
+			return undefined
+		}
+
+		const betas: string[] = [CLAUDE_CODE_LITELLM_BETA_TOOLS]
+		const shouldEnablePromptCachingBeta =
+			this.options.litellmUsePromptCache === true || info.supportsPromptCache === true
+		if (shouldEnablePromptCachingBeta) {
+			betas.push(CLAUDE_CODE_LITELLM_BETA_PROMPT_CACHING)
+		}
+
+		const headers: Record<string, string> = {
+			"anthropic-version": CLAUDE_CODE_LITELLM_ANTHROPIC_VERSION,
+			"User-Agent": CLAUDE_CODE_LITELLM_USER_AGENT,
+		}
+		if (betas.length > 0) {
+			headers["anthropic-beta"] = betas.join(",")
+		}
+
+		return {
+			headers: {
+				...headers,
+			},
+		}
 	}
 
 	/**
@@ -242,7 +289,10 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 		}
 
 		try {
-			const { data: completion } = await this.client.chat.completions.create(requestOptions).withResponse()
+			const customRequestOptions = this.getClaudeRequestOptions(modelId, info)
+			const { data: completion } = await this.client.chat.completions
+				.create(requestOptions, customRequestOptions)
+				.withResponse()
 
 			let lastUsage
 
@@ -356,7 +406,8 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 				requestOptions.max_tokens = info.maxTokens
 			}
 
-			const response = await this.client.chat.completions.create(requestOptions)
+			const customRequestOptions = this.getClaudeRequestOptions(modelId, info)
+			const response = await this.client.chat.completions.create(requestOptions, customRequestOptions)
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
 			if (error instanceof Error) {

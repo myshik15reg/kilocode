@@ -30,6 +30,8 @@ describe("RelationshipExtractor", () => {
 		expect(extractor.detectLanguage("component.tsx")).toBe("tsx")
 		expect(extractor.detectLanguage("module.bsl")).toBe("onec")
 		expect(extractor.detectLanguage("module.os")).toBe("onec")
+		expect(extractor.detectLanguage("Configuration.mdo")).toBe("xml")
+		expect(extractor.detectLanguage("readme.md")).toBeNull()
 		expect(extractor.detectLanguage("unknown.ext")).toBeNull()
 	})
 
@@ -51,9 +53,28 @@ describe("RelationshipExtractor", () => {
 		expect(extractMock).toHaveBeenCalledTimes(2)
 	})
 
+	it("extracts XML-like files without tree-sitter", async () => {
+		await extractor.extract("<Root />", "Configuration.mdo")
+
+		expect(constructorSpy).not.toHaveBeenCalled()
+		expect(initializeMock).not.toHaveBeenCalled()
+	})
+
+	it("falls back to plainText extractor when tree-sitter initialization fails (e.g. missing WASM)", async () => {
+		initializeMock.mockRejectedValueOnce(new Error("WASM missing"))
+
+		const result = await extractor.extract("code", "file.bsl")
+
+		// Tree-sitter extractor was constructed, but initialize failed so extract() must not be used.
+		expect(constructorSpy).toHaveBeenCalledTimes(1)
+		expect(extractMock).not.toHaveBeenCalled()
+
+		expect(result.entities).toHaveLength(1)
+		expect(result.entities[0].type).toBe("file")
+		expect(result.entities[0].language).toBe("onec")
+	})
+
 	it("throws when language cannot be resolved", async () => {
-		await expect(extractor.extract("code", "file.unknown")).rejects.toThrow(
-			"Unable to detect language",
-		)
+		await expect(extractor.extract("code", "file.unknown")).rejects.toThrow("Unable to detect language")
 	})
 })

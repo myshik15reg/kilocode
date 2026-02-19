@@ -1,17 +1,9 @@
 ---
-<<<<<<< HEAD:apps/kilocode-docs/docs/contributing/index.md
-sidebar_position: 1
-title: "Contributing to AlfaCode assistant"
----
-
-# Contributing to AlfaCode assistant
-=======
 title: "Contributing"
-description: "Contribute to Kilo Code"
+description: "Contribute to AlfaCode assistant"
 ---
 
 # Contributing Overview
->>>>>>> origin/main:apps/kilocode-docs/pages/contributing/index.md
 
 AlfaCode assistant is a community project that welcomes contributions from developers of all skill levels. This guide will help you get started with contributing to AlfaCode assistant, whether you're fixing bugs, adding features, improving documentation, or sharing custom modes.
 
@@ -32,11 +24,7 @@ Setting Up the Development Environment is described in details on the [Developme
 
 ## Understanding the Architecture
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/contributing/index.md
-Before diving into the code, we recommend reviewing the [Architecture Overview](architecture) to understand how the different components of AlfaCode assistant fit together.
-=======
-Before diving into the code, we recommend reviewing the [Architecture Overview](/docs/contributing/architecture) to understand how the different components of Kilo Code fit together.
->>>>>>> origin/main:apps/kilocode-docs/pages/contributing/index.md
+Before diving into the code, we recommend reviewing the [Architecture Overview](/docs/contributing/architecture) to understand how the different components of AlfaCode assistant fit together.
 
 ## Development Workflow
 
@@ -100,7 +88,7 @@ The [Kilo Marketplace](https://github.com/Kilo-Org/kilo-marketplace) is a commun
 
 To contribute:
 
-1. Follow the documentation for [Custom Modes](/docs/agent-behavior/custom-modes), [Skills](/docs/agent-behavior/skills), or [MCP Servers](/docs/features/mcp/overview) to create your resource
+1. Follow the documentation for [Custom Modes](/docs/customize/custom-modes), [Skills](/docs/customize/skills), or [MCP Servers](/docs/automate/mcp/overview) to create your resource
 
 2. Test your contribution thoroughly
 

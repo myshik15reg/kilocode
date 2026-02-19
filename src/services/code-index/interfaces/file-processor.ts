@@ -105,6 +105,10 @@ export interface BatchProcessingSummary {
 	processedFiles: FileProcessingResult[]
 	/** Optional error if the entire batch operation failed (e.g., database connection issue). */
 	batchError?: Error
+	/** Successfully upserted (create/update) file paths in this batch. */
+	upsertedPaths?: string[]
+	/** Explicitly deleted file paths in this batch. */
+	deletedPaths?: string[]
 }
 
 export interface FileProcessingResult {

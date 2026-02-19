@@ -13,6 +13,10 @@ import { t } from "../../../i18n"
 export class QdrantVectorStore implements IVectorStore {
 	private readonly vectorSize!: number
 	private readonly DISTANCE_METRIC = "Cosine"
+	// kilocode_change start
+	private static readonly COLLECTION_NAME_PATTERN = /^[a-zA-Z0-9_-]+$/
+	private static readonly MAX_COLLECTION_NAME_LENGTH = 255
+	// kilocode_change end
 
 	private client: QdrantClient
 	private readonly collectionName: string
@@ -23,8 +27,17 @@ export class QdrantVectorStore implements IVectorStore {
 	 * Creates a new Qdrant vector store
 	 * @param workspacePath Path to the workspace
 	 * @param url Optional URL to the Qdrant server
+	 * @param vectorSize Embedding vector dimension
+	 * @param apiKey Optional API key for Qdrant
+	 * @param vectorStoreName Optional collection name from UI settings
 	 */
-	constructor(workspacePath: string, url: string, vectorSize: number, apiKey?: string) {
+	constructor(
+		workspacePath: string,
+		url: string | undefined,
+		vectorSize: number,
+		apiKey?: string,
+		vectorStoreName?: string,
+	) {
 		// Parse the URL to determine the appropriate QdrantClient configuration
 		const parsedUrl = this.parseQdrantUrl(url)
 
@@ -77,11 +90,31 @@ export class QdrantVectorStore implements IVectorStore {
 			})
 		}
 
-		// Generate collection name from workspace path
-		const hash = createHash("sha256").update(workspacePath).digest("hex")
 		this.vectorSize = vectorSize
-		this.collectionName = `ws-${hash.substring(0, 16)}`
+		// kilocode_change start
+		this.collectionName = this.resolveCollectionName(workspacePath, vectorStoreName)
+		// kilocode_change end
 	}
+
+	// kilocode_change start
+	private resolveCollectionName(workspacePath: string, vectorStoreName?: string): string {
+		const trimmedName = vectorStoreName?.trim() ?? ""
+		if (trimmedName !== "" && this.isValidCollectionName(trimmedName)) {
+			return trimmedName
+		}
+
+		const hash = createHash("sha256").update(workspacePath).digest("hex")
+		return `ws-${hash.substring(0, 16)}`
+	}
+
+	private isValidCollectionName(name: string): boolean {
+		if (name.length === 0 || name.length > QdrantVectorStore.MAX_COLLECTION_NAME_LENGTH) {
+			return false
+		}
+
+		return QdrantVectorStore.COLLECTION_NAME_PATTERN.test(name)
+	}
+	// kilocode_change end
 
 	/**
 	 * Parses and normalizes Qdrant server URLs to handle various input formats
@@ -470,7 +503,7 @@ export class QdrantVectorStore implements IVectorStore {
 					startLine: (point.payload as Payload).startLine,
 					endLine: (point.payload as Payload).endLine,
 				}))
-	
+
 			return filteredPoints
 		} catch (error) {
 			console.error("Failed to search points:", error)

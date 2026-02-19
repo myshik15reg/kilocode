@@ -1,12 +1,7 @@
 ---
-<<<<<<< HEAD:apps/kilocode-docs/docs/basic-usage/settings-management.md
-title: Import, Export, and Reset Settings
-sidebar_label: Import/Export/Reset Settings
-description: Manage your AlfaCode assistant settings by exporting, importing, or resetting them to defaults.
-=======
-title: "Settings"
-description: "Configure Kilo Code settings and preferences"
->>>>>>> origin/main:apps/kilocode-docs/pages/getting-started/settings.md
+title: "Import, Export, and Reset Settings"
+sidebar_label: "Import/Export/Reset Settings"
+description: "Manage your AlfaCode assistant settings by exporting, importing, or resetting them to defaults."
 ---
 
 # Settings

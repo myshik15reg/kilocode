@@ -1,6 +1,6 @@
 ---
 title: "Custom Modes"
-description: "Create and configure custom modes in Kilo Code"
+description: "Create and configure custom modes in AlfaCode assistant"
 ---
 
 # Custom Modes
@@ -28,8 +28,8 @@ Custom modes are defined by several key properties. Understanding these concepts
 
 | UI Field / YAML Property                       | Conceptual Description                                                                                                                                                               |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Slug** (`slug`)                              | A unique internal identifier for the mode. Used by AlfaCode assistant to reference the mode, especially for associating mode-specific instruction files.                                      |
-| **Name** (`name`)                              | The display name for the mode as it appears in the AlfaCode assistant user interface. Should be human-readable and descriptive.                                                               |
+| **Slug** (`slug`)                              | A unique internal identifier for the mode. Used by AlfaCode assistant to reference the mode, especially for associating mode-specific instruction files.                             |
+| **Name** (`name`)                              | The display name for the mode as it appears in the AlfaCode assistant user interface. Should be human-readable and descriptive.                                                      |
 | **Description** (`description`)                | A short, user-friendly summary of the mode's purpose displayed in the mode selector UI. Keep this concise and focused on what the mode does for the user.                            |
 | **Role Definition** (`roleDefinition`)         | Defines the core identity and expertise of the mode. This text is placed at the beginning of the system prompt and defines Kilo's personality and behavior when this mode is active. |
 | **Available Tools** (`groups`)                 | Defines the allowed toolsets and file access permissions for the mode. Corresponds to selecting which general categories of tools the mode can use.                                  |
@@ -90,12 +90,8 @@ AlfaCode assistant will guide you through the process, prompting for necessary i
 
 ### 2. Using the Prompts Tab
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/agent-behavior/custom-modes.md
-1. **Open Agent Behaviour Tab:** Click the <Codicon name="gear" /> icon in the AlfaCode assistant top menu bar to open Settings, then select the `Agent Behaviour` tab and the `Modes` sub-tab
-=======
-1. **Open Prompts Tab:** Click the <Codicon name="notebook" /> icon in the Kilo Code top menu bar
->>>>>>> origin/main:apps/kilocode-docs/pages/customize/custom-modes.md
-2. **Create New Mode:** Click the <Codicon name="add" /> button to the right of the Modes heading
+1. **Open Agent Behaviour settings:** Click the {% codicon name="gear" /%} icon to open Settings, then select the **Agent Behaviour** section and the **Modes** tab.
+2. **Create New Mode:** Click the {% codicon name="add" /%} button to the right of the Modes heading
 3. **Fill in Fields:**
 
 {% image src="/docs/img/custom-modes/custom-modes-2.png" alt="Custom mode creation interface in the Prompts tab" width="600" caption="Custom mode creation interface in the Prompts tab" /%}
@@ -108,8 +104,8 @@ The interface provides fields for Name, Slug, Description, Save Location, Role D
 
 You can directly edit the configuration files to create or modify custom modes. This method offers the most control over all properties. AlfaCode assistant now supports both YAML (preferred) and JSON formats.
 
-- **Global Modes:** Edit the `custom_modes.yaml` (preferred) or `custom_modes.json` file. Access it via Prompts Tab > <Codicon name="gear" /> (Settings Menu icon next to "Global Prompts") > "Edit Global Modes"
-- **Project Modes:** Edit the `.kilocodemodes` file (which can be YAML or JSON) in your project root. Access it via Prompts Tab > <Codicon name="gear" /> (Settings Menu icon next to "Project Prompts") > "Edit Project Modes"
+- **Global Modes:** Edit the `custom_modes.yaml` (preferred) or `custom_modes.json` file.
+- **Project Modes:** Edit the `.kilocodemodes` file (which can be YAML or JSON) in your project root.
 
 These files define an array/list of custom modes.
 
@@ -500,7 +496,6 @@ customModes:
 - **Hyphens for List Items:** List items start with a hyphen and a space (e.g., `- read`)
 - **Validate Your YAML:** Use online YAML validators or your editor's built-in validation
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/agent-behavior/custom-modes.md
 ## Contributing to the Marketplace
 
 Have you created a custom mode that others might find useful? Share it with the community by contributing to the [Kilo Marketplace](https://github.com/Kilo-Org/kilo-marketplace)!
@@ -520,10 +515,8 @@ Have you created a custom mode that others might find useful? Share it with the 
 - Test your mode with different AI models if possible
 - Follow the [contribution guidelines](https://github.com/Kilo-Org/kilo-marketplace/blob/main/CONTRIBUTING.md) in the marketplace repository
 
-For more details on contributing to AlfaCode assistant, see the [Contributing Guide](/contributing).
+For more details on contributing to AlfaCode assistant, see the [Contributing Guide](/docs/contributing).
 
-=======
->>>>>>> origin/main:apps/kilocode-docs/pages/customize/custom-modes.md
 ## Community Gallery
 
 Ready to explore more? Check out the [Show and Tell](https://github.com/Kilo-Org/kilocode/discussions/categories/show-and-tell) to discover and share custom modes created by the community!

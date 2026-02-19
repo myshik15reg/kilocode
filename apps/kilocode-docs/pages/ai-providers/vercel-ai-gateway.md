@@ -54,11 +54,7 @@ Check the model description in the dropdown for specific capabilities.
 
 ## Configuration in AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/vercel-ai-gateway.md
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/vercel-ai-gateway.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "Vercel AI Gateway" from the "API Provider" dropdown.
 3.  **Enter API Key:** Paste your Vercel AI Gateway API key into the "Vercel AI Gateway API Key" field.
 4.  **Select Model:** Choose your desired model from the "Model" dropdown.

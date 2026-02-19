@@ -24,11 +24,7 @@ The git commit message generator:
 ### Generating a Commit Message
 
 1. Stage your changes using `git add` or the VS Code git interface
-<<<<<<< HEAD:apps/kilocode-docs/docs/basic-usage/git-commit-generation.md
 2. In the VS Code Source Control panel, look for the `AlfaCode assistant` logo next to the commit message field
-=======
-2. In the VS Code Source Control panel, look for the `Kilo Code` logo next to the commit message field)
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/features/git-commit-generation.md
 3. Click the logo to generate a commit message
 
 The generated message will appear in the commit message field, ready for you to review and modify if needed.
@@ -162,10 +158,5 @@ The feature integrates with VS Code's built-in git functionality. If you encount
 
 ## Related Features
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/basic-usage/git-commit-generation.md
-- [API Configuration Profiles](/features/api-configuration-profiles) - Use different models for commit generation
-- [Settings Management](/basic-usage/settings-management) - Manage all your AlfaCode assistant preferences
-=======
 - [API Configuration Profiles](/docs/features/api-configuration-profiles) - Use different models for commit generation
-- [Settings Management](/docs/features/settings-management) - Manage all your Kilo Code preferences
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/features/git-commit-generation.md
+- [Settings Management](/docs/getting-started/settings) - Manage all your AlfaCode assistant preferences

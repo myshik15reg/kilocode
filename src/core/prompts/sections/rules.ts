@@ -70,6 +70,10 @@ When asked about your creator, vendor, or company, respond with:
 	// kilocode_change end
 }
 
+// FIX: slash-commands-sync (TestAnalyzer)
+// Root cause: RULES section drifted from origin/main by injecting an attempt_completion policy line, breaking pinned system-prompt snapshots.
+const completionStepCheckRule = ""
+
 export function getRulesSection(
 	cwd: string,
 	settings?: SystemPromptSettings,

@@ -41,15 +41,10 @@
 		"ui": "واجهة المستخدم",
 		"experimental": "تجريبي",
 		"language": "اللغة",
-<<<<<<< HEAD
 		"about": "عن AlfaCode assistant",
-		"autoPurge": "التنظيف التلقائي"
-=======
-		"about": "عن Kilo Code",
 		"autoPurge": "التنظيف التلقائي",
 		"agentBehaviour": "سلوك الوكيل",
 		"ghost": "الإكمال التلقائي"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -174,6 +169,12 @@
 		"searchMinScoreResetTooltip": "إعادة للقيمة الافتراضية (0.4)",
 		"searchMaxResultsLabel": "أقصى نتائج البحث",
 		"searchMaxResultsDescription": "أقصى عدد نتائج البحث المُعادة عند الاستعلام عن فهرس الكود. القيم الأعلى توفر سياق أكثر لكن قد تشمل نتائج أقل صلة.",
+		"rerankSectionLabel": "معيد الترتيب",
+		"rerankEnableLabel": "تمكين معيد الترتيب",
+		"rerankEnableDescription": "يعيد ترتيب مرشحي Qdrant باستخدام مُرمِّز متقاطع قبل توسيع الرسم البياني. عند عدم التوفر يعود إلى الترتيب الدلالي.",
+		"rerankCandidateLimitLabel": "حد المرشحين لإعادة الترتيب",
+		"rerankTopKLabel": "Top-K بعد إعادة الترتيب",
+		"rerankTimeoutMsLabel": "مهلة إعادة الترتيب (مللي ثانية)",
 		"resetToDefault": "إعادة للافتراضي",
 		"startIndexingButton": "ابدأ الفهرسة",
 		"clearIndexDataButton": "مسح بيانات الفهرسة",
@@ -222,7 +223,10 @@
 		},
 		"cancelling": "جارٍ الإلغاء...",
 		"cancelIndexingButton": "إلغاء الفهرسة",
-		"optional": "اختياري"
+		"optional": "اختياري",
+		"neo4j": {
+			"enableDescription": "يُمكّن البحث البياني وتحليل التأثير على قاعدة الشفرة باستخدام Neo4j. يعمل مع Qdrant للبحث الهجين الدلالي + البياني."
+		}
 	},
 	"autoApproval": {
 		"title": "الموافقة التلقائية",

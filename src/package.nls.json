@@ -40,6 +40,7 @@
 	"settings.vsCodeLmModelSelector.vendor.description": "The vendor of the language model (e.g. copilot)",
 	"settings.vsCodeLmModelSelector.family.description": "The family of the language model (e.g. gpt-4)",
 	"settings.customStoragePath.description": "Custom storage path. Leave empty to use the default location. Supports absolute paths (e.g. 'D:\\AlfaCodeAssistantStorage')",
+	"settings.workflowAssetsPath.description": "Override path to the WorkFlowAI pack that will be installed into ~/.kilocode (or Windows equivalent). Leave empty to use the embedded pack shipped inside the extension. Must be an absolute path.",
 	"settings.enableCodeActions.description": "Enable Alfa Code Assistant quick fixes",
 	"settings.autoImportSettingsPath.description": "Path to an Alfa Code Assistant configuration file to automatically import on extension startup. Supports absolute paths and paths relative to the home directory (e.g. '~/Documents/alfa-code-assistant-settings.json'). Leave empty to disable auto-import.",
 	"settings.maximumIndexedFilesForFileSearch.description": "Maximum number of files to index for the @ file search feature. Higher values provide better search results in large projects but may use more memory. Default: 10,000.",

@@ -5,6 +5,7 @@ import { getAllModes } from "@roo/modes"
 import { getBasename } from "./kilocode/path-webview"
 import { Fzf } from "@/lib/word-boundary-fzf" // kilocode_change
 import { ClineRulesToggles } from "@roo/cline-rules"
+import type { Command } from "@roo-code/types"
 
 export interface SlashCommand {
 	name: string
@@ -12,14 +13,40 @@ export interface SlashCommand {
 	section?: "default" | "custom"
 }
 
+function commandToSlashCommand(command: Command): SlashCommand {
+	const description = command.description ?? (command.argumentHint ? `Args: ${command.argumentHint}` : undefined)
+
+	return {
+		name: command.name,
+		description,
+		section: command.source === "built-in" ? "default" : "custom",
+	}
+}
+
+function dedupeByName(commands: SlashCommand[]): SlashCommand[] {
+	const seen = new Set<string>()
+	return commands.filter((cmd) => {
+		const key = cmd.name.toLowerCase()
+		if (seen.has(key)) {
+			return false
+		}
+		seen.add(key)
+		return true
+	})
+}
+
 // Create a function to get all supported slash commands
 export function getSupportedSlashCommands(
 	customModes?: any[],
 	localWorkflowToggles: ClineRulesToggles = {},
 	globalWorkflowToggles: ClineRulesToggles = {},
+	commands?: Command[],
 ): SlashCommand[] {
 	// Start with non-mode commands
 	const baseCommands: SlashCommand[] = [
+		// FIX: slash-commands-sync (TestAnalyzer)
+		// Root cause: UI hardcoded list drifted from origin/main (missing init/condense/compact).
+		{ name: "init", description: "Initialize with the base set of slash commands" },
 		{
 			name: "newtask",
 			description: "Create a new task with context from the current task",
@@ -28,17 +55,11 @@ export function getSupportedSlashCommands(
 			name: "newrule",
 			description: "Create a new AlfaCode rule with context from your conversation",
 		},
-		{
-			name: "init-memory-bank",
-			description: "Initialize .kilocode/memory-bank/ for persistent project context",
-		},
 		{ name: "reportbug", description: "Create an AlfaCode assistant GitHub issue" },
-		// kilocode_change start
 		{ name: "smol", description: "Condenses your current context window" },
 		{ name: "condense", description: "Condenses your current context window" },
 		{ name: "compact", description: "Condenses your current context window" },
 		{ name: "session", description: "Session management <fork|share|show>" },
-		// kilocode_change end
 	]
 
 	// Add mode-switching commands dynamically
@@ -49,7 +70,12 @@ export function getSupportedSlashCommands(
 
 	// add workflow commands
 	const workflowCommands = getWorkflowCommands(localWorkflowToggles, globalWorkflowToggles)
-	return [...baseCommands, ...modeCommands, ...workflowCommands]
+
+	const fileCommands = (commands ?? []).map(commandToSlashCommand)
+
+	// NOTE: Order matters. We intentionally keep base/mode/workflow first, then file-based commands.
+	// Dedupe ensures we don't show duplicates like `init` coming from multiple sources.
+	return dedupeByName([...baseCommands, ...modeCommands, ...workflowCommands, ...fileCommands])
 }
 
 // Export a default instance for backward compatibility
@@ -113,15 +139,21 @@ export function getMatchingSlashCommands(
 	customModes?: any[],
 	localWorkflowToggles: ClineRulesToggles = {},
 	globalWorkflowToggles: ClineRulesToggles = {},
+	commands?: Command[],
 ): SlashCommand[] {
-	const commands = getSupportedSlashCommands(customModes, localWorkflowToggles, globalWorkflowToggles)
+	const supportedCommands = getSupportedSlashCommands(
+		customModes,
+		localWorkflowToggles,
+		globalWorkflowToggles,
+		commands,
+	)
 
 	if (!query) {
-		return [...commands]
+		return [...supportedCommands]
 	}
 
 	// kilocode_change start: Use Fzf for case-insensitive word-boundary fuzzy matching
-	const fzf = new Fzf(commands, {
+	const fzf = new Fzf(supportedCommands, {
 		selector: (cmd: SlashCommand) => cmd.name,
 	})
 	return fzf.find(query).map((result) => result.item)
@@ -153,22 +185,28 @@ export function validateSlashCommand(
 	customModes?: any[],
 	localWorkflowToggles: ClineRulesToggles = {},
 	globalWorkflowToggles: ClineRulesToggles = {},
+	commands?: Command[],
 ): "full" | "partial" | null {
 	if (!command) {
 		return null
 	}
 
-	const commands = getSupportedSlashCommands(customModes, localWorkflowToggles, globalWorkflowToggles)
+	const supportedCommands = getSupportedSlashCommands(
+		customModes,
+		localWorkflowToggles,
+		globalWorkflowToggles,
+		commands,
+	)
 
 	// Check for exact match (command name equals query, case-insensitive via FZF)
 	const lowerCommand = command.toLowerCase()
-	const exactMatch = commands.some((cmd) => cmd.name.toLowerCase() === lowerCommand)
+	const exactMatch = supportedCommands.some((cmd) => cmd.name.toLowerCase() === lowerCommand)
 	if (exactMatch) {
 		return "full"
 	}
 
 	// kilocode_change start: Use FZF for consistent fuzzy matching with getMatchingSlashCommands
-	const fzf = new Fzf(commands, {
+	const fzf = new Fzf(supportedCommands, {
 		selector: (cmd: SlashCommand) => cmd.name,
 	})
 	const results = fzf.find(command)

@@ -22,11 +22,7 @@ AlfaCode assistant supports all "always on" Synthetic AI models. The available m
 
 ## Configuration in AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/synthetic.md
-1. **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-1. **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/synthetic.md
+1. **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2. **Select Provider:** Choose "Synthetic" from the "API Provider" dropdown.
 3. **Enter API Key:** Paste your Synthetic API key into the "Synthetic API Key" field.
 4. **Select Model:** Choose your desired model from the "Model" dropdown.

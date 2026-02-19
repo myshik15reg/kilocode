@@ -5,6 +5,7 @@ import type { Mock } from "vitest"
 
 import * as path from "path"
 import * as fs from "fs/promises"
+import * as os from "os"
 
 import * as yaml from "yaml"
 import * as vscode from "vscode"
@@ -79,6 +80,7 @@ describe("CustomModesManager - Organization Modes", () => {
 	const mockSettingsPath = path.join(mockStoragePath, "settings", GlobalFileNames.customModes)
 	const mockWorkspacePath = path.resolve("/mock/workspace")
 	const mockRoomodes = path.join(mockWorkspacePath, ".kilocodemodes")
+	const mockManagedModesPath = path.join(os.homedir(), ".kilocode", "workflowai", "managed_custom_modes.yaml")
 
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -101,7 +103,7 @@ describe("CustomModesManager - Organization Modes", () => {
 
 		vi.mocked(getWorkspacePath).mockReturnValue(mockWorkspacePath)
 		vi.mocked(fileExistsAtPath).mockImplementation(async (path: string) => {
-			return path === mockSettingsPath || path === mockRoomodes
+			return path === mockSettingsPath || path === mockRoomodes || path === mockManagedModesPath
 		})
 		vi.mocked(fs.mkdir).mockResolvedValue(undefined)
 		vi.mocked(fs.writeFile).mockResolvedValue(undefined)
@@ -110,6 +112,9 @@ describe("CustomModesManager - Organization Modes", () => {
 		vi.mocked(fs.rm).mockResolvedValue(undefined)
 		vi.mocked(fs.readFile).mockImplementation((async (path: any) => {
 			if (path === mockSettingsPath) {
+				return yaml.stringify({ customModes: [] })
+			}
+			if (path === mockManagedModesPath) {
 				return yaml.stringify({ customModes: [] })
 			}
 			throw new Error("File not found")
@@ -399,6 +404,11 @@ describe("CustomModesManager - Organization Modes", () => {
 				if (path === mockRoomodes) {
 					return yaml.stringify({ customModes: roomodesModes })
 				}
+				if (path === mockManagedModesPath) {
+					return yaml.stringify({
+						customModes: [{ slug: "mode1", name: "Managed", roleDefinition: "M", groups: ["read"] }],
+					})
+				}
 				throw new Error("File not found")
 			}) as any)
 
@@ -420,6 +430,42 @@ describe("CustomModesManager - Organization Modes", () => {
 			const mode2 = mergedModes.find((m) => m.slug === "mode2")
 			expect(mode2?.name).toBe("Org Mode 2")
 			expect(mode2?.source).toBe("organization")
+		})
+
+		it("should include managed modes when refreshing with organization modes", async () => {
+			const settingsModes = [{ slug: "global", name: "Global", roleDefinition: "G", groups: ["read"] }]
+			const managedModes = [{ slug: "managed", name: "Managed", roleDefinition: "M", groups: ["read"] }]
+			const organizationModes: ModeConfig[] = [
+				{
+					slug: "org",
+					name: "Org",
+					roleDefinition: "O",
+					groups: ["read"],
+					source: "organization",
+				},
+			]
+
+			vi.mocked(fs.readFile).mockImplementation((async (p: any) => {
+				if (p === mockSettingsPath) {
+					return yaml.stringify({ customModes: settingsModes })
+				}
+				if (p === mockManagedModesPath) {
+					return yaml.stringify({ customModes: managedModes })
+				}
+				throw new Error("File not found")
+			}) as any)
+			vi.mocked(fileExistsAtPath).mockImplementation(async (p: string) => {
+				return p === mockSettingsPath || p === mockManagedModesPath
+			})
+
+			await manager.refreshWithOrganizationModes(organizationModes)
+
+			const updateCall = (mockContext.globalState.update as Mock).mock.calls.find(
+				(call) => call[0] === "customModes",
+			)
+			expect(updateCall).toBeDefined()
+			const mergedModes = updateCall![1] as ModeConfig[]
+			expect(mergedModes.map((m) => m.slug).sort()).toEqual(["global", "managed", "org"].sort())
 		})
 
 		it("should clear cache after refresh", async () => {
@@ -756,6 +802,13 @@ describe("CustomModesManager - Organization Modes", () => {
 
 			const modes = await manager.fetchOrganizationModes("test-token", "org-123")
 
+			expect(modes).toEqual([])
+		})
+
+		it("should include log line when response contains no modes array", async () => {
+			vi.mocked(axios.get).mockResolvedValue({ data: { wrong: true } })
+
+			const modes = await manager.fetchOrganizationModes("test-token", "org-123")
 			expect(modes).toEqual([])
 		})
 	})

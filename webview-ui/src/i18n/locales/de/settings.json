@@ -41,15 +41,10 @@
 		"ui": "UI",
 		"experimental": "Experimentell",
 		"language": "Sprache",
-<<<<<<< HEAD
 		"about": "Über AlfaCode assistant",
-		"autoPurge": "Auto-Bereinigung"
-=======
-		"about": "Über Kilo Code",
 		"autoPurge": "Auto-Bereinigung",
 		"agentBehaviour": "Agentenverhalten",
 		"ghost": "Autovervollständigung"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -192,9 +187,18 @@
 		"searchMinScoreResetTooltip": "Auf Standardwert zurücksetzen (0.4)",
 		"searchMaxResultsLabel": "Maximale Suchergebnisse",
 		"searchMaxResultsDescription": "Maximale Anzahl von Suchergebnissen, die bei der Abfrage des Codebase-Index zurückgegeben werden. Höhere Werte bieten mehr Kontext, können aber weniger relevante Ergebnisse enthalten.",
+		"rerankSectionLabel": "Reranker",
+		"rerankEnableLabel": "Reranker aktivieren",
+		"rerankEnableDescription": "Sortiert Qdrant-Kandidaten vor der Graph-Erweiterung mit einem Cross-Encoder neu. Fällt bei Nichtverfügbarkeit auf die semantische Reihenfolge zurück.",
+		"rerankCandidateLimitLabel": "Kandidatenlimit für Reranking",
+		"rerankTopKLabel": "Top-K nach Reranking",
+		"rerankTimeoutMsLabel": "Rerank-Timeout (ms)",
 		"resetToDefault": "Auf Standard zurücksetzen",
 		"cancelling": "Wird abgebrochen...",
-		"cancelIndexingButton": "Indizierung abbrechen"
+		"cancelIndexingButton": "Indizierung abbrechen",
+		"neo4j": {
+			"enableDescription": "Aktiviert grafbasierte Suche und Impact-Analyse für deine Codebasis mit Neo4j. Funktioniert mit Qdrant für hybride semantische + Graph-Suche."
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "Du kannst <SettingsLink>in deinen IDE-Einstellungen</SettingsLink> einen globalen Shortcut für diese Einstellung konfigurieren.",

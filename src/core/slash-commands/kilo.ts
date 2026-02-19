@@ -8,7 +8,6 @@ import {
 	newRuleToolResponse,
 	reportBugToolResponse,
 	condenseToolResponse,
-	initMemoryBankToolResponse,
 } from "../prompts/commands"
 
 function enabledWorkflowToggles(workflowToggles: ClineRulesToggles) {
@@ -29,13 +28,14 @@ export async function parseKiloSlashCommands(
 	localWorkflowToggles: ClineRulesToggles,
 	globalWorkflowToggles: ClineRulesToggles,
 ): Promise<{ processedText: string; needsRulesFileCheck: boolean }> {
+	// FIX: slash-commands-sync (TestAnalyzer)
+	// Root cause: backend parser didn't recognize /condense and /compact aliases (origin/main supports them).
 	const condenseAliases = condenseToolResponse
 
 	const commandReplacements: Record<string, ((userInput: string) => string) | undefined> = {
 		newtask: newTaskToolResponse,
 		newrule: newRuleToolResponse,
 		reportbug: reportBugToolResponse,
-		"init-memory-bank": initMemoryBankToolResponse, // kilocode_change
 		smol: condenseAliases,
 		condense: condenseAliases,
 		compact: condenseAliases,

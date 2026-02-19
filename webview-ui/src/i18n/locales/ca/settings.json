@@ -41,15 +41,10 @@
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
-<<<<<<< HEAD
 		"about": "Sobre AlfaCode assistant",
-		"autoPurge": "Auto-neteja"
-=======
-		"about": "Sobre Kilo Code",
 		"autoPurge": "Auto-neteja",
 		"agentBehaviour": "Comportament de l'agent",
 		"ghost": "Autocompletat"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -192,9 +187,18 @@
 		"searchMinScoreResetTooltip": "Restablir al valor per defecte (0.4)",
 		"searchMaxResultsLabel": "Màxim de resultats de cerca",
 		"searchMaxResultsDescription": "Nombre màxim de resultats de cerca a retornar quan es consulta l'índex de la base de codi. Els valors més alts proporcionen més context però poden incloure resultats menys rellevants.",
+		"rerankSectionLabel": "Reordenador",
+		"rerankEnableLabel": "Activa el reordenador",
+		"rerankEnableDescription": "Reordena els candidats de Qdrant amb un cross-encoder abans de l’expansió del graf. Si no està disponible, torna a l’ordre semàntic.",
+		"rerankCandidateLimitLabel": "Límit de candidats per al reordenament",
+		"rerankTopKLabel": "Top-K després del reordenament",
+		"rerankTimeoutMsLabel": "Temps d’espera del reordenament (ms)",
 		"resetToDefault": "Restablir al valor per defecte",
 		"cancelling": "S'està cancel·lant...",
-		"cancelIndexingButton": "Cancel·la la indexació"
+		"cancelIndexingButton": "Cancel·la la indexació",
+		"neo4j": {
+			"enableDescription": "Activa la cerca en graf i l’anàlisi d’impacte del teu codi amb Neo4j. Funciona amb Qdrant per a una cerca híbrida semàntica + de graf."
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "Pots configurar una drecera global per a aquesta configuració <SettingsLink>a les preferències del teu IDE</SettingsLink>.",

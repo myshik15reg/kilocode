@@ -13,7 +13,7 @@ export function getAlfaCode1CSection(author?: string): string {
 ALFACODE 1C CHANGE ANNOTATIONS
 
 When editing 1C:Enterprise (BSL) code, annotate changes using the templates below.
-Use the configured АвторИзменений value: "${normalizedAuthor}".
+АвторИзменений = значение из поля «Автор изменений» в настройках (alfaCodeChangeAuthor): "${normalizedAuthor}".
 
 Modification block:
 // + Альфа-Лизинг. ${normalizedAuthor} <?"", ДатаВремя, "ДФ='dd MMMM yyyy HH:mm'">. УЗ №<?НомерЗадачи>.

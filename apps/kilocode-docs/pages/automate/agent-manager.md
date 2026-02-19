@@ -16,11 +16,7 @@ This page reflects the actual implementation in the extension.
 
 ## Prerequisites
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/advanced-usage/agent-manager.md
-- Install/update the AlfaCode assistant CLI (latest) — see [CLI setup](/cli)
-=======
-- Install/update the Kilo Code CLI (latest) — see [CLI setup](/docs/cli)
->>>>>>> origin/main:apps/kilocode-docs/pages/automate/agent-manager.md
+- Install/update the AlfaCode assistant CLI (latest) — see [CLI setup](/docs/cli)
 - Open a project in VS Code (workspace required)
 - Authentication: You must be logged in via the extension settings OR use CLI with kilocode as provider (see [Authentication Requirements](#authentication-requirements))
 

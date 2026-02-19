@@ -2318,6 +2318,8 @@ export class ClineProvider
 			imageGenerationProvider,
 			openRouterImageApiKey,
 			kiloCodeImageApiKey,
+			litellmImageApiKey,
+			litellmImageBaseUrl,
 			openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled,
 			yoloMode, // kilocode_change
@@ -2517,8 +2519,17 @@ export class ClineProvider
 				codebaseIndexSearchMaxResults: codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: codebaseIndexConfig?.codebaseIndexSearchMinScore,
 				// kilocode_change start
+				codebaseIndexRerankEnabled: codebaseIndexConfig?.codebaseIndexRerankEnabled,
+				codebaseIndexRerankBaseUrl: codebaseIndexConfig?.codebaseIndexRerankBaseUrl,
+				codebaseIndexRerankModelId: codebaseIndexConfig?.codebaseIndexRerankModelId,
+				codebaseIndexRerankTimeoutMs: codebaseIndexConfig?.codebaseIndexRerankTimeoutMs,
+				codebaseIndexRerankCandidateLimit: codebaseIndexConfig?.codebaseIndexRerankCandidateLimit,
+				codebaseIndexRerankTopK: codebaseIndexConfig?.codebaseIndexRerankTopK,
+				// kilocode_change end
+				// kilocode_change start
 				codebaseIndexEmbeddingBatchSize: codebaseIndexConfig?.codebaseIndexEmbeddingBatchSize,
 				codebaseIndexScannerMaxBatchRetries: codebaseIndexConfig?.codebaseIndexScannerMaxBatchRetries,
+				codebaseIndexEmbedderRequestsPerMinute: codebaseIndexConfig?.codebaseIndexEmbedderRequestsPerMinute,
 				// kilocode_change end
 				codebaseIndexBedrockRegion: codebaseIndexConfig?.codebaseIndexBedrockRegion,
 				codebaseIndexBedrockProfile: codebaseIndexConfig?.codebaseIndexBedrockProfile,
@@ -2569,6 +2580,8 @@ export class ClineProvider
 			selectedMicrophoneDevice, // kilocode_change: Selected microphone device for STT
 			// kilocode_change end
 			kiloCodeImageApiKey,
+			litellmImageApiKey,
+			litellmImageBaseUrl,
 			openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled,
 			virtualQuotaActiveModel, // kilocode_change: Include virtual quota active model in state
@@ -2638,9 +2651,9 @@ export class ClineProvider
 		}
 
 		// kilocode_change start: Prefer workspace-scoped vector store name
-		const workspaceVectorStoreName = (await this.contextProxy.getWorkspaceState(
-			"codebaseIndexVectorStoreName",
-		)) as string | undefined
+		const workspaceVectorStoreName = (await this.contextProxy.getWorkspaceState("codebaseIndexVectorStoreName")) as
+			| string
+			| undefined
 		// kilocode_change end: Prefer workspace-scoped vector store name
 
 		let cloudUserInfo: CloudUserInfo | null = null
@@ -2737,12 +2750,12 @@ export class ClineProvider
 			diagnosticsEnabled: stateValues.diagnosticsEnabled ?? true,
 			allowedMaxRequests: stateValues.allowedMaxRequests,
 			allowedMaxCost: stateValues.allowedMaxCost,
-				autoCondenseContext: stateValues.autoCondenseContext ?? true,
-				autoCondenseContextPercent: stateValues.autoCondenseContextPercent ?? 100,
-				contextRoutingEnabled: stateValues.contextRoutingEnabled ?? false, // kilocode_change: 2026-01-24 Context routing toggle
-				contextRoutingFastThresholdPercent: stateValues.contextRoutingFastThresholdPercent ?? 50,
-				contextRoutingDeepThresholdPercent: stateValues.contextRoutingDeepThresholdPercent ?? 80,
-				// taskHistory: stateValues.taskHistory ?? [], // kilocode_change
+			autoCondenseContext: stateValues.autoCondenseContext ?? true,
+			autoCondenseContextPercent: stateValues.autoCondenseContextPercent ?? 100,
+			contextRoutingEnabled: stateValues.contextRoutingEnabled ?? false, // kilocode_change: 2026-01-24 Context routing toggle
+			contextRoutingFastThresholdPercent: stateValues.contextRoutingFastThresholdPercent ?? 50,
+			contextRoutingDeepThresholdPercent: stateValues.contextRoutingDeepThresholdPercent ?? 80,
+			// taskHistory: stateValues.taskHistory ?? [], // kilocode_change
 			allowedCommands: stateValues.allowedCommands,
 			deniedCommands: stateValues.deniedCommands,
 			soundEnabled: stateValues.soundEnabled ?? false,
@@ -2847,7 +2860,9 @@ export class ClineProvider
 				codebaseIndexLancedbVectorStoreDirectory:
 					stateValues.codebaseIndexConfig?.codebaseIndexLancedbVectorStoreDirectory,
 				codebaseIndexVectorStoreName:
-					workspaceVectorStoreName ?? stateValues.codebaseIndexConfig?.codebaseIndexVectorStoreName ?? undefined,
+					workspaceVectorStoreName ??
+					stateValues.codebaseIndexConfig?.codebaseIndexVectorStoreName ??
+					undefined,
 				// kilocode_change end
 				codebaseIndexEmbedderBaseUrl: stateValues.codebaseIndexConfig?.codebaseIndexEmbedderBaseUrl ?? "",
 				codebaseIndexEmbedderModelId: stateValues.codebaseIndexConfig?.codebaseIndexEmbedderModelId ?? "",
@@ -2858,9 +2873,19 @@ export class ClineProvider
 				codebaseIndexSearchMaxResults: stateValues.codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: stateValues.codebaseIndexConfig?.codebaseIndexSearchMinScore,
 				// kilocode_change start
+				codebaseIndexRerankEnabled: stateValues.codebaseIndexConfig?.codebaseIndexRerankEnabled,
+				codebaseIndexRerankBaseUrl: stateValues.codebaseIndexConfig?.codebaseIndexRerankBaseUrl,
+				codebaseIndexRerankModelId: stateValues.codebaseIndexConfig?.codebaseIndexRerankModelId,
+				codebaseIndexRerankTimeoutMs: stateValues.codebaseIndexConfig?.codebaseIndexRerankTimeoutMs,
+				codebaseIndexRerankCandidateLimit: stateValues.codebaseIndexConfig?.codebaseIndexRerankCandidateLimit,
+				codebaseIndexRerankTopK: stateValues.codebaseIndexConfig?.codebaseIndexRerankTopK,
+				// kilocode_change end
+				// kilocode_change start
 				codebaseIndexEmbeddingBatchSize: stateValues.codebaseIndexConfig?.codebaseIndexEmbeddingBatchSize,
 				codebaseIndexScannerMaxBatchRetries:
 					stateValues.codebaseIndexConfig?.codebaseIndexScannerMaxBatchRetries,
+				codebaseIndexEmbedderRequestsPerMinute:
+					stateValues.codebaseIndexConfig?.codebaseIndexEmbedderRequestsPerMinute,
 				// kilocode_change end
 				codebaseIndexBedrockRegion: stateValues.codebaseIndexConfig?.codebaseIndexBedrockRegion,
 				codebaseIndexBedrockProfile: stateValues.codebaseIndexConfig?.codebaseIndexBedrockProfile,
@@ -2895,6 +2920,8 @@ export class ClineProvider
 			imageGenerationProvider: stateValues.imageGenerationProvider,
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
 			kiloCodeImageApiKey: stateValues.kiloCodeImageApiKey,
+			litellmImageApiKey: stateValues.litellmImageApiKey,
+			litellmImageBaseUrl: stateValues.litellmImageBaseUrl,
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled: (() => {
 				try {

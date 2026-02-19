@@ -3,12 +3,6 @@ title: "Onboarding Improvements"
 description: "Onboarding and engagement improvements architecture"
 ---
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/contributing/architecture/onboarding-engagement-improvements.md
-# AlfaCode assistant Onboarding & User Engagement Improvements
-=======
-# Onboarding Improvements
->>>>>>> origin/main:apps/kilocode-docs/pages/contributing/architecture/onboarding-improvements.md
-
 # Overview
 
 New users get minimal onboarding with generic prompts and no feature guidance. This causes poor engagement and users miss key capabilities. Existing users lack visibility into new features.

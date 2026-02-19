@@ -14,13 +14,22 @@ export const CODEBASE_INDEX_DEFAULTS = {
 	SEARCH_SCORE_STEP: 0.05,
 	// kilocode_change start
 	MIN_EMBEDDING_BATCH_SIZE: 10,
-	MAX_EMBEDDING_BATCH_SIZE: 200,
+	MAX_EMBEDDING_BATCH_SIZE: 2000,
 	DEFAULT_EMBEDDING_BATCH_SIZE: 60,
 	EMBEDDING_BATCH_SIZE_STEP: 10,
 	MIN_SCANNER_MAX_BATCH_RETRIES: 1,
 	MAX_SCANNER_MAX_BATCH_RETRIES: 10,
 	DEFAULT_SCANNER_MAX_BATCH_RETRIES: 3,
 	SCANNER_MAX_BATCH_RETRIES_STEP: 1,
+	DEFAULT_RERANK_CANDIDATE_LIMIT: 50,
+	DEFAULT_RERANK_TOP_K: 10,
+	DEFAULT_RERANK_TIMEOUT_MS: 7000,
+	DEFAULT_RERANK_MODEL_ID: "bge-reranker-v2-m3",
+	// RPM (Requests Per Minute) for embedder rate limiting
+	MIN_EMBEDDER_RPM: 1,
+	MAX_EMBEDDER_RPM: 1000,
+	DEFAULT_EMBEDDER_RPM: 60,
+	EMBEDDER_RPM_STEP: 10,
 	// kilocode_change end
 } as const
 
@@ -58,6 +67,14 @@ export const codebaseIndexConfigSchema = z.object({
 		.max(CODEBASE_INDEX_DEFAULTS.MAX_SEARCH_RESULTS)
 		.optional(),
 	// kilocode_change start
+	codebaseIndexRerankEnabled: z.boolean().optional(),
+	codebaseIndexRerankBaseUrl: z.string().optional(),
+	codebaseIndexRerankModelId: z.string().optional(),
+	codebaseIndexRerankTimeoutMs: z.number().min(1).optional(),
+	codebaseIndexRerankCandidateLimit: z.number().min(1).optional(),
+	codebaseIndexRerankTopK: z.number().min(1).optional(),
+	// kilocode_change end
+	// kilocode_change start
 	codebaseIndexEmbeddingBatchSize: z
 		.number()
 		.min(CODEBASE_INDEX_DEFAULTS.MIN_EMBEDDING_BATCH_SIZE)
@@ -67,6 +84,11 @@ export const codebaseIndexConfigSchema = z.object({
 		.number()
 		.min(CODEBASE_INDEX_DEFAULTS.MIN_SCANNER_MAX_BATCH_RETRIES)
 		.max(CODEBASE_INDEX_DEFAULTS.MAX_SCANNER_MAX_BATCH_RETRIES)
+		.optional(),
+	codebaseIndexEmbedderRequestsPerMinute: z
+		.number()
+		.min(CODEBASE_INDEX_DEFAULTS.MIN_EMBEDDER_RPM)
+		.max(CODEBASE_INDEX_DEFAULTS.MAX_EMBEDDER_RPM)
 		.optional(),
 	// kilocode_change end
 	// OpenAI Compatible specific fields
@@ -119,6 +141,9 @@ export const codebaseIndexProviderSchema = z.object({
 	codebaseIndexVercelAiGatewayApiKey: z.string().optional(),
 	codebaseIndexOpenRouterApiKey: z.string().optional(),
 	codebaseIndexNeo4jPassword: z.string().optional(),
+	// kilocode_change start
+	codebaseIndexRerankApiKey: z.string().optional(),
+	// kilocode_change end
 })
 
 export type CodebaseIndexProvider = z.infer<typeof codebaseIndexProviderSchema>

@@ -1,5 +1,7 @@
 ﻿# Предложения по улучшениям Kilocode для интеграции с 1С
 
+**Автор изменений по 1С:** Kilocode Team
+
 ## Executive Summary
 
 ### Текущее состояние Kilocode
@@ -7,22 +9,28 @@
 Kilocode представляет собой мощную систему анализа кода с интеграцией Neo4j для построения графа зависимостей и Qdrant для семантического поиска. Ключевые компоненты:
 
 **Реализованные возможности:**
-- ✅ **Call Graph Extraction** - извлечение графа вызовов функций ([`relationship-extractor.ts:625-673`](../src/services/neo4j/relationship-extractor.ts))
-- ✅ **Tree-sitter парсинг** - поддержка 4 языков через Tree-sitter AST
+
+- ✅ **Call Graph Extraction** - построение `defines`/`calls` на основе Tree-sitter queries ([`tree-sitter-graph-extractor.ts`](../src/services/neo4j/extractors/tree-sitter-graph-extractor.ts))
+- ✅ **Tree-sitter парсинг** - общий [`TreeSitterParserManager`](../src/services/tree-sitter/parser-manager.ts) + нормализация языков в [`languageParser.ts`](../src/services/tree-sitter/languageParser.ts) (поддержка множества языков, включая `onec` для 1С)
 - ✅ **8 типов сущностей**: file, function, class, interface, variable, import, module, type ([`interfaces.ts:11-20`](../src/services/neo4j/interfaces.ts))
 - ✅ **9 типов отношений**: imports, calls, inherits, implements, references, defines, contains, uses, exports ([`interfaces.ts:24-33`](../src/services/neo4j/interfaces.ts))
 - ✅ **Bulk operations** - массовое создание сущностей и отношений ([`graph-service.ts:146-225`](../src/services/neo4j/graph-service.ts))
 - ✅ **Impact Analysis** - анализ влияния изменений ([`graph-service.ts:307-351`](../src/services/neo4j/graph-service.ts))
 - ✅ **Hybrid Search** - комбинированный векторный и граф-поиск
 
-**Поддерживаемые языки:**
-- TypeScript/JavaScript ([`relationship-extractor.ts:50-54`](../src/services/neo4j/relationship-extractor.ts))
-- Python ([`relationship-extractor.ts:57-59`](../src/services/neo4j/relationship-extractor.ts))
-- Java ([`relationship-extractor.ts:61-63`](../src/services/neo4j/relationship-extractor.ts))
+**Поддерживаемые языки (выборка):**
+
+- TypeScript/JavaScript, TSX
+- Python
+- Java
+- 1С:Предприятие 8.3 (`.bsl` / `.os` → `onec`) — при наличии `tree-sitter-onec.wasm`
+
+Полный список расширений и `languageId` см. в [`languageParser.ts`](../src/services/tree-sitter/languageParser.ts).
 
 **Ключевые ограничения:**
-- ❌ Отсутствие поддержки 1С Предприятие 8.3
-- ⚠️ Switch-case подход к языкам ([`relationship-extractor.ts:49-69`](../src/services/neo4j/relationship-extractor.ts)) - требует рефакторинга для каждого нового языка
+
+- ⚠️ Для 1С требуется отдельный WASM-бинарь `tree-sitter-onec.wasm` (он не поставляется пакетом `tree-sitter-wasms`) — ожидаемое размещение: `src/dist/tree-sitter-onec.wasm` (внутри пакета `src/` это путь `dist/tree-sitter-onec.wasm`).
+- ✅ Switch-case подход к языкам устранен: используется единая нормализация и маппинг расширений в [`languageParser.ts`](../src/services/tree-sitter/languageParser.ts).
 - ⚠️ Ограниченный набор типов отношений (нет `accesses`, `instantiates`, `queries`, `handles`)
 - ⚠️ Отсутствие метрик производительности парсинга
 - ⚠️ Базовый error handling без контекста
@@ -30,16 +38,19 @@ Kilocode представляет собой мощную систему ана�
 ### Стратегические рекомендации
 
 **Приоритет 1: Улучшение базовой функциональности (1-4 недели)**
+
 1. Расширение типов отношений для более детального анализа
 2. Плагинная система для языков вместо switch-case
 3. Улучшенный error handling и логирование
 
-**Приоритет 2: Интеграция с 1С (2-4 месяца)**
-1. Создание Tree-sitter грамматики для 1С
-2. Интеграция в RelationshipExtractor
-3. Специфичные анализаторы для конструкций 1С
+**Приоритет 2: Дальнейшая интеграция с 1С (2-4 месяца)**
+
+1. Сборка и поставка `tree-sitter-onec.wasm` (из [`tree-sitter-grammars/`](../tree-sitter-grammars/README.md)) в пакет расширения (`src/dist/`)
+2. Расширение грамматики 1С и queries ([`onec.ts`](../src/services/tree-sitter/queries/onec.ts)) для повышения качества `defines`/`calls`
+3. Специфичные анализаторы для конструкций 1С (запросы, метаданные, клиент-сервер) поверх базового графа
 
 **Приоритет 3: Долгосрочные инициативы (квартал+)**
+
 1. Language Plugin Marketplace
 2. Advanced Graph Analytics
 3. Multi-language project support
@@ -58,20 +69,20 @@ Kilocode представляет собой мощную систему ана�
 
 ```typescript
 export type RelationshipType =
-  | 'imports'      // A imports B
-  | 'calls'        // A calls B (function call)
-  | 'inherits'     // A inherits from B (class inheritance)
-  | 'implements'   // A implements B (interface implementation)
-  | 'references'   // A references B (generic reference)
-  | 'defines'      // A defines B (e.g., file defines function)
-  | 'contains'     // A contains B (e.g., class contains method)
-  | 'uses'         // A uses B (generic usage)
-  | 'exports'      // A exports B
-  // NEW: Additional relationship types
-  | 'accesses'     // A accesses property/field of B
-  | 'instantiates' // A instantiates (creates instance of) B
-  | 'queries'      // A queries B (database query)
-  | 'handles'      // A handles event from B (event handler)
+	| "imports" // A imports B
+	| "calls" // A calls B (function call)
+	| "inherits" // A inherits from B (class inheritance)
+	| "implements" // A implements B (interface implementation)
+	| "references" // A references B (generic reference)
+	| "defines" // A defines B (e.g., file defines function)
+	| "contains" // A contains B (e.g., class contains method)
+	| "uses" // A uses B (generic usage)
+	| "exports" // A exports B
+	// NEW: Additional relationship types
+	| "accesses" // A accesses property/field of B
+	| "instantiates" // A instantiates (creates instance of) B
+	| "queries" // A queries B (database query)
+	| "handles" // A handles event from B (event handler)
 ```
 
 #### Примеры извлечения в [`relationship-extractor.ts`](../src/services/neo4j/relationship-extractor.ts)
@@ -92,16 +103,16 @@ private extractPropertyAccess(
   if (node.type === "member_expression") {
     const objectNode = node.childForFieldName("object")
     const propertyNode = node.childForFieldName("property")
-    
+
     if (objectNode && propertyNode) {
       const callerId = `file:${filePath}:${this.currentFunction}`
       const propertyId = `file:${filePath}:${objectNode.text}.${propertyNode.text}`
-      
+
       relationships.push({
         fromId: callerId,
         toId: propertyId,
         type: "accesses",
-        properties: { 
+        properties: {
           line: node.startPosition.row + 1,
           propertyName: propertyNode.text,
           objectName: objectNode.text
@@ -127,12 +138,12 @@ private extractInstantiation(
     if (constructorNode) {
       const callerId = `file:${filePath}:${this.currentFunction}`
       const classId = `class:${constructorNode.text}`
-      
+
       relationships.push({
         fromId: callerId,
         toId: classId,
         type: "instantiates",
-        properties: { 
+        properties: {
           line: node.startPosition.row + 1,
           className: constructorNode.text
         }
@@ -143,6 +154,7 @@ private extractInstantiation(
 ```
 
 **Ценность:**
+
 - 📊 Более детальный граф зависимостей
 - 🔍 Возможность анализа data flow (через `accesses`)
 - 🏗️ Детектирование object creation patterns (через `instantiates`)
@@ -150,9 +162,10 @@ private extractInstantiation(
 
 **Сложность:** Низкая  
 **Приоритет:** Высокий  
-**Оценка времени:** 2-3 дня  
+**Оценка времени:** 2-3 дня
 
 **Необходимые изменения:**
+
 1. ✏️ [`interfaces.ts`](../src/services/neo4j/interfaces.ts) - добавить типы отношений
 2. ✏️ [`relationship-extractor.ts`](../src/services/neo4j/relationship-extractor.ts) - добавить методы извлечения
 3. ✏️ [`relationship-extractor.ts:87-129`](../src/services/neo4j/relationship-extractor.ts) - вызвать новые методы в `visitNodeWithContext`
@@ -276,6 +289,7 @@ public clearMetrics(): void {
 ```
 
 **Ценность:**
+
 - 🛡️ Устойчивость к ошибкам парсинга отдельных файлов
 - 📊 Метрики для мониторинга качества извлечения
 - 🔍 Детальное логирование для отладки
@@ -283,7 +297,7 @@ public clearMetrics(): void {
 
 **Сложность:** Низкая  
 **Приоритет:** Критический  
-**Оценка времени:** 1-2 дня  
+**Оценка времени:** 1-2 дня
 
 ---
 
@@ -304,11 +318,11 @@ public async extractFromFileWithMetrics(
   language: string
 ): Promise<ExtractionResult> {
   const startTime = performance.now()
-  
+
   try {
     const result = await this.extractFromFile(filePath, content, ast, language)
     const endTime = performance.now()
-    
+
     // Record metrics
     this.metrics.push({
       filePath,
@@ -317,11 +331,11 @@ public async extractFromFileWithMetrics(
       extractionTimeMs: endTime - startTime,
       success: true
     })
-    
+
     return result
   } catch (error) {
     const endTime = performance.now()
-    
+
     // Record failed extraction
     this.metrics.push({
       filePath,
@@ -331,7 +345,7 @@ public async extractFromFileWithMetrics(
       success: false,
       error: error instanceof Error ? error.message : String(error)
     })
-    
+
     throw error
   }
 }
@@ -343,11 +357,11 @@ public getStatistics() {
   const total = this.metrics.length
   const successful = this.metrics.filter(m => m.success).length
   const failed = total - successful
-  
+
   const avgTime = this.metrics.reduce((sum, m) => sum + m.extractionTimeMs, 0) / total
   const totalEntities = this.metrics.reduce((sum, m) => sum + m.entitiesCount, 0)
   const totalRelationships = this.metrics.reduce((sum, m) => sum + m.relationshipsCount, 0)
-  
+
   return {
     totalFiles: total,
     successful,
@@ -363,6 +377,7 @@ public getStatistics() {
 ```
 
 **Ценность:**
+
 - 📊 Мониторинг производительности
 - 🐛 Выявление медленных файлов
 - 📈 Данные для оптимизации
@@ -370,7 +385,7 @@ public getStatistics() {
 
 **Сложность:** Низкая  
 **Приоритет:** Средний  
-**Оценка времени:** 1 день  
+**Оценка времени:** 1 день
 
 ---
 
@@ -401,17 +416,17 @@ parser.setLanguage(language)
 const code = `
   function greet(name: string) {
     return \`Hello, \${name}\`
-  }
+}
 `
 const tree = parser.parse(code)
 
 // Extract relationships
 const extractor = new RelationshipExtractor()
 const result = await extractor.extractFromFile(
-  'example.ts',
-  code,
-  tree.rootNode,
-  'typescript'
+'example.ts',
+code,
+tree.rootNode,
+'typescript'
 )
 
 console.log('Entities:', result.entities)
@@ -420,40 +435,46 @@ console.log('Relationships:', result.relationships)
 
 ## Поддерживаемые типы отношений
 
-| Тип | Описание | Пример |
-|-----|----------|--------|
-| imports | Импорт модуля | \`import { x } from 'y'\` |
-| calls | Вызов функции | \`foo()\` |
-| defines | Определение сущности | \`function foo() {}\` |
-| accesses | Доступ к свойству | \`obj.property\` |
-| instantiates | Создание экземпляра | \`new Class()\` |
+| Тип          | Описание             | Пример                    |
+| ------------ | -------------------- | ------------------------- |
+| imports      | Импорт модуля        | \`import { x } from 'y'\` |
+| calls        | Вызов функции        | \`foo()\`                 |
+| defines      | Определение сущности | \`function foo() {}\`     |
+| accesses     | Доступ к свойству    | \`obj.property\`          |
+| instantiates | Создание экземпляра  | \`new Class()\`           |
 
 ## Примеры извлечения для разных языков
 
 ### TypeScript
+
 [Examples...]
 
 ### Python
+
 [Examples...]
 
 ### Java
+
 [Examples...]
 ```
 
 **Ценность:**
+
 - 📚 Упрощение онбординга новых разработчиков
 - 🎓 Референсная документация
 - 🔧 Примеры для различных сценариев
 
 **Сложность:** Низкая  
 **Приоритет:** Средний  
-**Оценка времени:** 2 дня  
+**Оценка времени:** 2 дня
 
 ---
 
 ## 2. Short-term Improvements (1-4 недели)
 
 ### 2.1. Плагинная система для языков
+
+> Примечание: этот раздел описывает ранний вариант дизайна. В текущей кодовой базе switch-case логика устранена в рамках унификации Tree-sitter (см. [`docs/tree-sitter-unification-report.md`](./tree-sitter-unification-report.md)).
 
 **Проблема:** Switch-case в [`relationship-extractor.ts:49-69`](../src/services/neo4j/relationship-extractor.ts) затрудняет добавление новых языков и делает код менее поддерживаемым.
 
@@ -469,7 +490,7 @@ graph TD
     B --> E[JavaExtractor]
     B --> F[TreeSitterGraphExtractor]
     B --> G[GenericExtractor]
-    
+
     C --> H[ILanguageExtractor]
     D --> H
     E --> H
@@ -477,7 +498,7 @@ graph TD
     G --> H
 ```
 
-#### Новый интерфейс [`language-extractor.interface.ts`](../src/services/neo4j/extractors/language-extractor.interface.ts)
+#### Интерфейс экстрактора (псевдокод)
 
 ```typescript
 import type { SyntaxNode } from "web-tree-sitter"
@@ -487,74 +508,74 @@ import type { CodeEntity, CodeRelationship } from "../interfaces"
  * Interface for language-specific extractors
  */
 export interface ILanguageExtractor {
-  /**
-   * Languages supported by this extractor
-   */
-  readonly supportedLanguages: string[]
-  
-  /**
-   * Extract entities and relationships from AST
-   */
-  extract(
-    node: SyntaxNode,
-    filePath: string,
-    language: string,
-    entities: CodeEntity[],
-    relationships: CodeRelationship[]
-  ): void
+	/**
+	 * Languages supported by this extractor
+	 */
+	readonly supportedLanguages: string[]
+
+	/**
+	 * Extract entities and relationships from AST
+	 */
+	extract(
+		node: SyntaxNode,
+		filePath: string,
+		language: string,
+		entities: CodeEntity[],
+		relationships: CodeRelationship[],
+	): void
 }
 
 /**
  * Base class for language extractors with common functionality
  */
 export abstract class BaseLanguageExtractor implements ILanguageExtractor {
-  abstract readonly supportedLanguages: string[]
-  
-  protected currentFunction: string | null = null
-  
-  abstract extract(
-    node: SyntaxNode,
-    filePath: string,
-    language: string,
-    entities: CodeEntity[],
-    relationships: CodeRelationship[]
-  ): void
-  
-  /**
-   * Visit all nodes in the tree
-   */
-  protected visitNode(node: SyntaxNode, visitor: (node: SyntaxNode) => void): void {
-    visitor(node)
-    for (const child of node.children) {
-      this.visitNode(child, visitor)
-    }
-  }
-  
-  /**
-   * Visit with context tracking
-   */
-  protected visitNodeWithContext(node: SyntaxNode, visitor: (node: SyntaxNode) => void): void {
-    const previousFunction = this.currentFunction
-    
-    if (this.isFunctionDeclaration(node)) {
-      const nameNode = node.childForFieldName("name")
-      if (nameNode) {
-        this.currentFunction = nameNode.text
-      }
-    }
-    
-    visitor(node)
-    
-    for (const child of node.children) {
-      this.visitNodeWithContext(child, visitor)
-    }
-    
-    if (this.isFunctionDeclaration(node)) {
-      this.currentFunction = previousFunction
-    }
-  }
-  
-  protected abstract isFunctionDeclaration(node: SyntaxNode): boolean
+	abstract readonly supportedLanguages: string[]
+
+	protected currentFunction: string | null = null
+
+	abstract extract(
+		node: SyntaxNode,
+		filePath: string,
+		language: string,
+		entities: CodeEntity[],
+		relationships: CodeRelationship[],
+	): void
+
+	/**
+	 * Visit all nodes in the tree
+	 */
+	protected visitNode(node: SyntaxNode, visitor: (node: SyntaxNode) => void): void {
+		visitor(node)
+		for (const child of node.children) {
+			this.visitNode(child, visitor)
+		}
+	}
+
+	/**
+	 * Visit with context tracking
+	 */
+	protected visitNodeWithContext(node: SyntaxNode, visitor: (node: SyntaxNode) => void): void {
+		const previousFunction = this.currentFunction
+
+		if (this.isFunctionDeclaration(node)) {
+			const nameNode = node.childForFieldName("name")
+			if (nameNode) {
+				this.currentFunction = nameNode.text
+			}
+		}
+
+		visitor(node)
+
+		for (const child of node.children) {
+			this.visitNodeWithContext(child, visitor)
+		}
+
+		if (this.isFunctionDeclaration(node)) {
+			this.currentFunction = previousFunction
+		}
+	}
+
+	protected abstract isFunctionDeclaration(node: SyntaxNode): boolean
 }
 ```
 
@@ -566,51 +587,46 @@ import type { SyntaxNode } from "web-tree-sitter"
 import type { CodeEntity, CodeRelationship } from "../interfaces"
 
 export class TypeScriptExtractor extends BaseLanguageExtractor {
-  readonly supportedLanguages = ["typescript", "tsx", "javascript", "jsx"]
-  
-  extract(
-    node: SyntaxNode,
-    filePath: string,
-    language: string,
-    entities: CodeEntity[],
-    relationships: CodeRelationship[]
-  ): void {
-    const fileId = `file:${filePath}`
-    
-    this.visitNodeWithContext(node, (n) => {
-      const nodeType = n.type
-      
-      if (nodeType === "import_statement") {
-        this.extractImport(n, filePath, language, entities, relationships, fileId)
-      } else if (nodeType === "function_declaration" || nodeType === "function") {
-        this.extractFunction(n, filePath, language, entities, relationships, fileId)
-      } else if (nodeType === "class_declaration") {
-        this.extractClass(n, filePath, language, entities, relationships, fileId)
-      }
-      // ... other node types
-    })
-  }
-  
-  protected isFunctionDeclaration(node: SyntaxNode): boolean {
-    return [
-      "function_declaration",
-      "function",
-      "method_definition",
-      "arrow_function"
-    ].includes(node.type)
-  }
-  
-  private extractImport(/* ... */): void {
-    // Implementation from current code
-  }
-  
-  private extractFunction(/* ... */): void {
-    // Implementation from current code
-  }
-  
-  private extractClass(/* ... */): void {
-    // Implementation from current code
-  }
+	readonly supportedLanguages = ["typescript", "tsx", "javascript", "jsx"]
+
+	extract(
+		node: SyntaxNode,
+		filePath: string,
+		language: string,
+		entities: CodeEntity[],
+		relationships: CodeRelationship[],
+	): void {
+		const fileId = `file:${filePath}`
+
+		this.visitNodeWithContext(node, (n) => {
+			const nodeType = n.type
+
+			if (nodeType === "import_statement") {
+				this.extractImport(n, filePath, language, entities, relationships, fileId)
+			} else if (nodeType === "function_declaration" || nodeType === "function") {
+				this.extractFunction(n, filePath, language, entities, relationships, fileId)
+			} else if (nodeType === "class_declaration") {
+				this.extractClass(n, filePath, language, entities, relationships, fileId)
+			}
+			// ... other node types
+		})
+	}
+
+	protected isFunctionDeclaration(node: SyntaxNode): boolean {
+		return ["function_declaration", "function", "method_definition", "arrow_function"].includes(node.type)
+	}
+
+	private extractImport(/* ... */): void {
+		// Implementation from current code
+	}
+
+	private extractFunction(/* ... */): void {
+		// Implementation from current code
+	}
+
+	private extractClass(/* ... */): void {
+		// Implementation from current code
+	}
 }
 ```
 
@@ -627,48 +643,48 @@ import { GenericExtractor } from "./generic-extractor"
  * Registry for language extractors
  */
 export class LanguageExtractorRegistry {
-  private extractors: Map<string, ILanguageExtractor> = new Map()
-  private defaultExtractor: ILanguageExtractor
-  
-  constructor() {
-    // Register built-in extractors
-    this.registerExtractor(new TypeScriptExtractor())
-    this.registerExtractor(new PythonExtractor())
-    this.registerExtractor(new JavaExtractor())
-    
-    // Set default/generic extractor
-    this.defaultExtractor = new GenericExtractor()
-  }
-  
-  /**
-   * Register a language extractor
-   */
-  registerExtractor(extractor: ILanguageExtractor): void {
-    for (const lang of extractor.supportedLanguages) {
-      this.extractors.set(lang.toLowerCase(), extractor)
-    }
-  }
-  
-  /**
-   * Get extractor for language
-   */
-  getExtractor(language: string): ILanguageExtractor {
-    return this.extractors.get(language.toLowerCase()) || this.defaultExtractor
-  }
-  
-  /**
-   * Check if language is supported
-   */
-  isSupported(language: string): boolean {
-    return this.extractors.has(language.toLowerCase())
-  }
-  
-  /**
-   * Get list of supported languages
-   */
-  getSupportedLanguages(): string[] {
-    return Array.from(this.extractors.keys())
-  }
+	private extractors: Map<string, ILanguageExtractor> = new Map()
+	private defaultExtractor: ILanguageExtractor
+
+	constructor() {
+		// Register built-in extractors
+		this.registerExtractor(new TypeScriptExtractor())
+		this.registerExtractor(new PythonExtractor())
+		this.registerExtractor(new JavaExtractor())
+
+		// Set default/generic extractor
+		this.defaultExtractor = new GenericExtractor()
+	}
+
+	/**
+	 * Register a language extractor
+	 */
+	registerExtractor(extractor: ILanguageExtractor): void {
+		for (const lang of extractor.supportedLanguages) {
+			this.extractors.set(lang.toLowerCase(), extractor)
+		}
+	}
+
+	/**
+	 * Get extractor for language
+	 */
+	getExtractor(language: string): ILanguageExtractor {
+		return this.extractors.get(language.toLowerCase()) || this.defaultExtractor
+	}
+
+	/**
+	 * Check if language is supported
+	 */
+	isSupported(language: string): boolean {
+		return this.extractors.has(language.toLowerCase())
+	}
+
+	/**
+	 * Get list of supported languages
+	 */
+	getSupportedLanguages(): string[] {
+		return Array.from(this.extractors.keys())
+	}
 }
 ```
 
@@ -676,61 +692,62 @@ export class LanguageExtractorRegistry {
 
 ```typescript
 export class RelationshipExtractor {
-  private currentFunction: string | null = null
-  private registry: LanguageExtractorRegistry
-  
-  constructor() {
-    this.registry = new LanguageExtractorRegistry()
-  }
-  
-  /**
-   * Register custom language extractor
-   */
-  public registerLanguage(extractor: ILanguageExtractor): void {
-    this.registry.registerExtractor(extractor)
-  }
-  
-  public async extractFromFile(
-    filePath: string,
-    content: string,
-    ast: SyntaxNode,
-    language: string
-  ): Promise<ExtractionResult> {
-    const entities: CodeEntity[] = []
-    const relationships: CodeRelationship[] = []
-    
-    // Create file entity
-    const fileEntity: CodeEntity = {
-      id: `file:${filePath}`,
-      type: "file",
-      name: this.getFileName(filePath),
-      filePath,
-      line: 1,
-      language,
-    }
-    entities.push(fileEntity)
-    
-    // Get appropriate extractor
-    const extractor = this.registry.getExtractor(language)
-    
-    // Extract using language-specific extractor
-    try {
-      extractor.extract(ast, filePath, language, entities, relationships)
-    } catch (error) {
-      console.error(`Failed to extract from ${filePath}:`, error)
-      fileEntity.properties = {
-        ...fileEntity.properties,
-        extractionError: error instanceof Error ? error.message : String(error),
-        extractionFailed: true
-      }
-    }
-    
-    return { entities, relationships }
-  }
+	private currentFunction: string | null = null
+	private registry: LanguageExtractorRegistry
+
+	constructor() {
+		this.registry = new LanguageExtractorRegistry()
+	}
+
+	/**
+	 * Register custom language extractor
+	 */
+	public registerLanguage(extractor: ILanguageExtractor): void {
+		this.registry.registerExtractor(extractor)
+	}
+
+	public async extractFromFile(
+		filePath: string,
+		content: string,
+		ast: SyntaxNode,
+		language: string,
+	): Promise<ExtractionResult> {
+		const entities: CodeEntity[] = []
+		const relationships: CodeRelationship[] = []
+
+		// Create file entity
+		const fileEntity: CodeEntity = {
+			id: `file:${filePath}`,
+			type: "file",
+			name: this.getFileName(filePath),
+			filePath,
+			line: 1,
+			language,
+		}
+		entities.push(fileEntity)
+
+		// Get appropriate extractor
+		const extractor = this.registry.getExtractor(language)
+
+		// Extract using language-specific extractor
+		try {
+			extractor.extract(ast, filePath, language, entities, relationships)
+		} catch (error) {
+			console.error(`Failed to extract from ${filePath}:`, error)
+			fileEntity.properties = {
+				...fileEntity.properties,
+				extractionError: error instanceof Error ? error.message : String(error),
+				extractionFailed: true,
+			}
+		}
+
+		return { entities, relationships }
+	}
 }
 ```
 
 **Ценность:**
+
 - 🔌 Простое добавление новых языков без изменения core кода
 - 🧩 Возможность внешних плагинов
 - 🎯 Переиспользование общей логики через BaseLanguageExtractor
@@ -738,9 +755,10 @@ export class RelationshipExtractor {
 
 **Сложность:** Средняя  
 **Приоритет:** Высокий  
-**Оценка времени:** 1-2 недели  
+**Оценка времени:** 1-2 недели
 
 **Этапы реализации:**
+
 1. Создать интерфейсы и базовый класс (2 дня)
 2. Рефакторинг существующих extractors (TypeScript, Python, Java) (3 дня)
 3. Внедрить Registry в RelationshipExtractor (2 дня)
@@ -752,6 +770,7 @@ export class RelationshipExtractor {
 ### 2.2. Расширенная Context Tracking система
 
 **Проблема:** Текущий [`currentFunction`](../src/services/neo4j/relationship-extractor.ts:18) не отслеживает:
+
 - Вложенные классы
 - Namespace/модули
 - Замыкания
@@ -761,61 +780,61 @@ export class RelationshipExtractor {
 
 ```typescript
 interface ExtractionContext {
-  type: 'file' | 'namespace' | 'class' | 'function' | 'block'
-  name: string
-  id: string
-  line: number
-  parent?: ExtractionContext
+	type: "file" | "namespace" | "class" | "function" | "block"
+	name: string
+	id: string
+	line: number
+	parent?: ExtractionContext
 }
 
 class ContextStack {
-  private stack: ExtractionContext[] = []
-  
-  push(context: ExtractionContext): void {
-    if (this.stack.length > 0) {
-      context.parent = this.current()
-    }
-    this.stack.push(context)
-  }
-  
-  pop(): ExtractionContext | undefined {
-    return this.stack.pop()
-  }
-  
-  current(): ExtractionContext | undefined {
-    return this.stack[this.stack.length - 1]
-  }
-  
-  /**
-   * Get full qualified name (e.g., "MyClass.MyMethod.innerFunction")
-   */
-  getQualifiedName(): string {
-    return this.stack.map(c => c.name).join('.')
-  }
-  
-  /**
-   * Get current function context
-   */
-  getCurrentFunction(): ExtractionContext | undefined {
-    for (let i = this.stack.length - 1; i >= 0; i--) {
-      if (this.stack[i].type === 'function') {
-        return this.stack[i]
-      }
-    }
-    return undefined
-  }
-  
-  /**
-   * Get current class context
-   */
-  getCurrentClass(): ExtractionContext | undefined {
-    for (let i = this.stack.length - 1; i >= 0; i--) {
-      if (this.stack[i].type === 'class') {
-        return this.stack[i]
-      }
-    }
-    return undefined
-  }
+	private stack: ExtractionContext[] = []
+
+	push(context: ExtractionContext): void {
+		if (this.stack.length > 0) {
+			context.parent = this.current()
+		}
+		this.stack.push(context)
+	}
+
+	pop(): ExtractionContext | undefined {
+		return this.stack.pop()
+	}
+
+	current(): ExtractionContext | undefined {
+		return this.stack[this.stack.length - 1]
+	}
+
+	/**
+	 * Get full qualified name (e.g., "MyClass.MyMethod.innerFunction")
+	 */
+	getQualifiedName(): string {
+		return this.stack.map((c) => c.name).join(".")
+	}
+
+	/**
+	 * Get current function context
+	 */
+	getCurrentFunction(): ExtractionContext | undefined {
+		for (let i = this.stack.length - 1; i >= 0; i--) {
+			if (this.stack[i].type === "function") {
+				return this.stack[i]
+			}
+		}
+		return undefined
+	}
+
+	/**
+	 * Get current class context
+	 */
+	getCurrentClass(): ExtractionContext | undefined {
+		for (let i = this.stack.length - 1; i >= 0; i--) {
+			if (this.stack[i].type === "class") {
+				return this.stack[i]
+			}
+		}
+		return undefined
+	}
 }
 ```
 
@@ -826,7 +845,7 @@ private contextStack = new ContextStack()
 
 private visitNodeWithContext(node: SyntaxNode, visitor: (node: SyntaxNode) => void): void {
   let pushedContext = false
-  
+
   // Push context for various node types
   if (this.isFunctionDeclaration(node)) {
     const nameNode = node.childForFieldName("name")
@@ -851,15 +870,15 @@ private visitNodeWithContext(node: SyntaxNode, visitor: (node: SyntaxNode) => vo
       pushedContext = true
     }
   }
-  
+
   // Visit current node
   visitor(node)
-  
+
   // Visit children
   for (const child of node.children) {
     this.visitNodeWithContext(child, visitor)
   }
-  
+
   // Pop context
   if (pushedContext) {
     this.contextStack.pop()
@@ -868,6 +887,7 @@ private visitNodeWithContext(node: SyntaxNode, visitor: (node: SyntaxNode) => vo
 ```
 
 **Ценность:**
+
 - 🎯 Точная идентификация вложенных сущностей
 - 🔗 Правильные qualified names
 - 📊 Поддержка сложных паттернов (классы в функциях, замыкания)
@@ -875,7 +895,7 @@ private visitNodeWithContext(node: SyntaxNode, visitor: (node: SyntaxNode) => vo
 
 **Сложность:** Средняя  
 **Приоритет:** Средний  
-**Оценка времени:** 1 неделя  
+**Оценка времени:** 1 неделя
 
 ---
 
@@ -890,45 +910,43 @@ private visitNodeWithContext(node: SyntaxNode, visitor: (node: SyntaxNode) => vo
  * Optimized bulk indexing with batching
  */
 export class OptimizedRelationshipIndexer {
-  private readonly BATCH_SIZE = 100
-  private readonly MAX_CONCURRENT = 4
-  
-  async indexFiles(filePaths: string[]): Promise<void> {
-    // Process files in parallel batches
-    const batches = this.createBatches(filePaths, this.BATCH_SIZE)
-    
-    for (let i = 0; i < batches.length; i += this.MAX_CONCURRENT) {
-      const concurrentBatches = batches.slice(i, i + this.MAX_CONCURRENT)
-      
-      await Promise.all(
-        concurrentBatches.map(batch => this.processBatch(batch))
-      )
-    }
-  }
-  
-  private createBatches<T>(items: T[], batchSize: number): T[][] {
-    const batches: T[][] = []
-    for (let i = 0; i < items.length; i += batchSize) {
-      batches.push(items.slice(i, i + batchSize))
-    }
-    return batches
-  }
-  
-  private async processBatch(filePaths: string[]): Promise<void> {
-    const allEntities: CodeEntity[] = []
-    const allRelationships: CodeRelationship[] = []
-    
-    // Extract from all files in batch
-    for (const filePath of filePaths) {
-      const { entities, relationships } = await this.extractFromFile(filePath)
-      allEntities.push(...entities)
-      allRelationships.push(...relationships)
-    }
-    
-    // Bulk insert to Neo4j
-    await this.graphService.bulkCreateEntities(allEntities)
-    await this.graphService.bulkCreateRelationships(allRelationships)
-  }
+	private readonly BATCH_SIZE = 100
+	private readonly MAX_CONCURRENT = 4
+
+	async indexFiles(filePaths: string[]): Promise<void> {
+		// Process files in parallel batches
+		const batches = this.createBatches(filePaths, this.BATCH_SIZE)
+
+		for (let i = 0; i < batches.length; i += this.MAX_CONCURRENT) {
+			const concurrentBatches = batches.slice(i, i + this.MAX_CONCURRENT)
+
+			await Promise.all(concurrentBatches.map((batch) => this.processBatch(batch)))
+		}
+	}
+
+	private createBatches<T>(items: T[], batchSize: number): T[][] {
+		const batches: T[][] = []
+		for (let i = 0; i < items.length; i += batchSize) {
+			batches.push(items.slice(i, i + batchSize))
+		}
+		return batches
+	}
+
+	private async processBatch(filePaths: string[]): Promise<void> {
+		const allEntities: CodeEntity[] = []
+		const allRelationships: CodeRelationship[] = []
+
+		// Extract from all files in batch
+		for (const filePath of filePaths) {
+			const { entities, relationships } = await this.extractFromFile(filePath)
+			allEntities.push(...entities)
+			allRelationships.push(...relationships)
+		}
+
+		// Bulk insert to Neo4j
+		await this.graphService.bulkCreateEntities(allEntities)
+		await this.graphService.bulkCreateRelationships(allRelationships)
+	}
 }
 ```
 
@@ -948,12 +966,13 @@ async bulkCreateEntitiesWithApoc(entities: CodeEntity[]): Promise<void> {
       {batchSize: 1000, parallel: true, params: {entities: $entities}}
     )
   `
-  
+
   await this.connectionManager.executeWrite(query, { entities })
 }
 ```
 
 **Ценность:**
+
 - ⚡ 3-5x ускорение индексации больших проектов
 - 💾 Меньшее потребление памяти
 - 🔄 Параллельная обработка
@@ -961,7 +980,7 @@ async bulkCreateEntitiesWithApoc(entities: CodeEntity[]): Promise<void> {
 
 **Сложность:** Средняя  
 **Приоритет:** Средний  
-**Оценка времени:** 1-2 недели  
+**Оценка времени:** 1-2 недели
 
 ---
 
@@ -1016,7 +1035,7 @@ async bulkCreateEntitiesWithApoc(entities: CodeEntity[]): Promise<void> {
 
 // 6. Запросы
 Запрос = Новый Запрос;
-Запрос.Текст = 
+Запрос.Текст =
 "ВЫБРАТЬ
 |    Номенклатура.Ссылка,
 |    Номенклатура.Наименование
@@ -1048,45 +1067,44 @@ async bulkCreateEntitiesWithApoc(entities: CodeEntity[]): Promise<void> {
 **Специфичные паттерны 1С:**
 
 1. **Event Handlers** (Обработчики событий):
-   - ПередЗаписью, ПриЗаписи, ПередУдалением
-   - ПриИзменении, ПриВыборе, ПриОткрытии
-   
+    - ПередЗаписью, ПриЗаписи, ПередУдалением
+    - ПриИзменении, ПриВыборе, ПриОткрытии
 2. **Query Language** (Язык запросов):
-   - ВЫБРАТЬ, ИЗ, ГДЕ, ОБЪЕДИНИТЬ
-   - Встроенный в строковые литералы
-   
+    - ВЫБРАТЬ, ИЗ, ГДЕ, ОБЪЕДИНИТЬ
+    - Встроенный в строковые литералы
 3. **Metadata Access** (Доступ к метаданным):
-   - Справочники.Номенклатура
-   - Документы.ПоступлениеТоваров
-   - РегистрыСведений.ЦеныНоменклатуры
+
+    - Справочники.Номенклатура
+    - Документы.ПоступлениеТоваров
+    - РегистрыСведений.ЦеныНоменклатуры
 
 4. **Export/Client-Server** (Экспорт и клиент-сервер):
-   - Модификаторы Экспорт, НаКлиенте, НаСервере
-   - Препроцессорные директивы
+    - Модификаторы Экспорт, НаКлиенте, НаСервере
+    - Препроцессорные директивы
 
 #### Требования к Tree-sitter грамматике
 
 **Обязательные возможности (MVP):**
 
-| Конструкция | Приоритет | Сложность |
-|-------------|-----------|-----------|
-| Процедуры/Функции | Критический | Низкая |
-| Переменные (Перем) | Высокий | Низкая |
-| Вызовы функций | Критический | Средняя |
-| Условия (Если) | Средний | Низкая |
-| Циклы (Для, Пока) | Средний | Низкая |
-| Присваивание | Высокий | Низкая |
+| Конструкция        | Приоритет   | Сложность |
+| ------------------ | ----------- | --------- |
+| Процедуры/Функции  | Критический | Низкая    |
+| Переменные (Перем) | Высокий     | Низкая    |
+| Вызовы функций     | Критический | Средняя   |
+| Условия (Если)     | Средний     | Низкая    |
+| Циклы (Для, Пока)  | Средний     | Низкая    |
+| Присваивание       | Высокий     | Низкая    |
 
 **Расширенные возможности:**
 
-| Конструкция | Приоритет | Сложность |
-|-------------|-----------|-----------|
-| Обработчики событий | Высокий | Средняя |
-| Запросы (распознавание) | Средний | Высокая |
-| Доступ к метаданным | Высокий | Средняя |
-| Препроцессор | Низкий | Средняя |
-| Области (#Область) | Низкий | Низкая |
-| Try-Except | Средний | Низкая |
+| Конструкция             | Приоритет | Сложность |
+| ----------------------- | --------- | --------- |
+| Обработчики событий     | Высокий   | Средняя   |
+| Запросы (распознавание) | Средний   | Высокая   |
+| Доступ к метаданным     | Высокий   | Средняя   |
+| Препроцессор            | Низкий    | Средняя   |
+| Области (#Область)      | Низкий    | Низкая    |
+| Try-Except              | Средний   | Низкая    |
 
 ---
 
@@ -1120,247 +1138,209 @@ tree-sitter-grammars/
 
 ```javascript
 module.exports = grammar({
-  name: '1c',
+	name: "1c",
 
-  extras: $ => [
-    /\s/,           // Whitespace
-    $.comment,      // Comments
-  ],
+	extras: ($) => [
+		/\s/, // Whitespace
+		$.comment, // Comments
+	],
 
-  conflicts: $ => [
-    // Will be defined as needed
-  ],
+	conflicts: ($) => [
+		// Will be defined as needed
+	],
 
-  rules: {
-    // Entry point
-    source_file: $ => repeat($._statement),
+	rules: {
+		// Entry point
+		source_file: ($) => repeat($._statement),
 
-    _statement: $ => choice(
-      $.procedure_declaration,
-      $.function_declaration,
-      $.variable_declaration,
-      $.assignment_statement,
-      $.call_expression,
-      $.if_statement,
-      $.for_statement,
-      $.while_statement,
-      $.return_statement,
-    ),
+		_statement: ($) =>
+			choice(
+				$.procedure_declaration,
+				$.function_declaration,
+				$.variable_declaration,
+				$.assignment_statement,
+				$.call_expression,
+				$.if_statement,
+				$.for_statement,
+				$.while_statement,
+				$.return_statement,
+			),
 
-    // Comments
-    comment: $ => token(choice(
-      seq('//', /.*/),
-    )),
+		// Comments
+		comment: ($) => token(choice(seq("//", /.*/))),
 
-    // Procedure declaration
-    // Процедура ИмяПроцедуры(Параметр1, Параметр2)
-    procedure_declaration: $ => seq(
-      field('keyword', caseInsensitive('Процедура')),
-      field('name', $.identifier),
-      field('parameters', optional($.parameter_list)),
-      field('export', optional(caseInsensitive('Экспорт'))),
-      repeat($._statement),
-      field('end_keyword', caseInsensitive('КонецПроцедуры'))
-    ),
+		// Procedure declaration
+		// Процедура ИмяПроцедуры(Параметр1, Параметр2)
+		procedure_declaration: ($) =>
+			seq(
+				field("keyword", caseInsensitive("Процедура")),
+				field("name", $.identifier),
+				field("parameters", optional($.parameter_list)),
+				field("export", optional(caseInsensitive("Экспорт"))),
+				repeat($._statement),
+				field("end_keyword", caseInsensitive("КонецПроцедуры")),
+			),
 
-    // Function declaration
-    // Функция ИмяФункции(Параметр1) Экспорт
-    function_declaration: $ => seq(
-      field('keyword', caseInsensitive('Функция')),
-      field('name', $.identifier),
-      field('parameters', optional($.parameter_list)),
-      field('export', optional(caseInsensitive('Экспорт'))),
-      repeat($._statement),
-      field('end_keyword', caseInsensitive('КонецФункции'))
-    ),
+		// Function declaration
+		// Функция ИмяФункции(Параметр1) Экспорт
+		function_declaration: ($) =>
+			seq(
+				field("keyword", caseInsensitive("Функция")),
+				field("name", $.identifier),
+				field("parameters", optional($.parameter_list)),
+				field("export", optional(caseInsensitive("Экспорт"))),
+				repeat($._statement),
+				field("end_keyword", caseInsensitive("КонецФункции")),
+			),
 
-    // Parameter list
-    parameter_list: $ => seq(
-      '(',
-      optional(seq(
-        $.parameter,
-        repeat(seq(',', $.parameter))
-      )),
-      ')'
-    ),
+		// Parameter list
+		parameter_list: ($) => seq("(", optional(seq($.parameter, repeat(seq(",", $.parameter)))), ")"),
 
-    parameter: $ => seq(
-      field('name', $.identifier),
-      optional(seq(
-        '=',
-        field('default_value', $._expression)
-      ))
-    ),
+		parameter: ($) => seq(field("name", $.identifier), optional(seq("=", field("default_value", $._expression)))),
 
-    // Variable declaration
-    // Перем ИмяПеременной Экспорт;
-    variable_declaration: $ => seq(
-      caseInsensitive('Перем'),
-      field('name', $.identifier),
-      optional(caseInsensitive('Экспорт')),
-      ';'
-    ),
+		// Variable declaration
+		// Перем ИмяПеременной Экспорт;
+		variable_declaration: ($) =>
+			seq(caseInsensitive("Перем"), field("name", $.identifier), optional(caseInsensitive("Экспорт")), ";"),
 
-    // Assignment
-    // Переменная = Значение;
-    assignment_statement: $ => seq(
-      field('left', $.identifier),
-      '=',
-      field('right', $._expression),
-      ';'
-    ),
+		// Assignment
+		// Переменная = Значение;
+		assignment_statement: ($) => seq(field("left", $.identifier), "=", field("right", $._expression), ";"),
 
-    // Call expression
-    // ИмяФункции(Параметр1, Параметр2)
-    call_expression: $ => seq(
-      field('function', $.identifier),
-      field('arguments', $.argument_list)
-    ),
+		// Call expression
+		// ИмяФункции(Параметр1, Параметр2)
+		call_expression: ($) => seq(field("function", $.identifier), field("arguments", $.argument_list)),
 
-    argument_list: $ => seq(
-      '(',
-      optional(seq(
-        $._expression,
-        repeat(seq(',', $._expression))
-      )),
-      ')'
-    ),
+		argument_list: ($) => seq("(", optional(seq($._expression, repeat(seq(",", $._expression)))), ")"),
 
-    // If statement
-    // Если Условие Тогда ... КонецЕсли
-    if_statement: $ => seq(
-      caseInsensitive('Если'),
-      field('condition', $._expression),
-      caseInsensitive('Тогда'),
-      repeat($._statement),
-      optional($.elsif_clause),
-      optional($.else_clause),
-      caseInsensitive('КонецЕсли'),
-      ';'
-    ),
+		// If statement
+		// Если Условие Тогда ... КонецЕсли
+		if_statement: ($) =>
+			seq(
+				caseInsensitive("Если"),
+				field("condition", $._expression),
+				caseInsensitive("Тогда"),
+				repeat($._statement),
+				optional($.elsif_clause),
+				optional($.else_clause),
+				caseInsensitive("КонецЕсли"),
+				";",
+			),
 
-    elsif_clause: $ => seq(
-      caseInsensitive('ИначеЕсли'),
-      field('condition', $._expression),
-      caseInsensitive('Тогда'),
-      repeat($._statement)
-    ),
+		elsif_clause: ($) =>
+			seq(
+				caseInsensitive("ИначеЕсли"),
+				field("condition", $._expression),
+				caseInsensitive("Тогда"),
+				repeat($._statement),
+			),
 
-    else_clause: $ => seq(
-      caseInsensitive('Иначе'),
-      repeat($._statement)
-    ),
+		else_clause: ($) => seq(caseInsensitive("Иначе"), repeat($._statement)),
 
-    // For loop
-    // Для Каждого Элемент Из Коллекция Цикл ... КонецЦикла
-    for_statement: $ => seq(
-      caseInsensitive('Для'),
-      caseInsensitive('Каждого'),
-      field('variable', $.identifier),
-      caseInsensitive('Из'),
-      field('collection', $._expression),
-      caseInsensitive('Цикл'),
-      repeat($._statement),
-      caseInsensitive('КонецЦикла'),
-      ';'
-    ),
+		// For loop
+		// Для Каждого Элемент Из Коллекция Цикл ... КонецЦикла
+		for_statement: ($) =>
+			seq(
+				caseInsensitive("Для"),
+				caseInsensitive("Каждого"),
+				field("variable", $.identifier),
+				caseInsensitive("Из"),
+				field("collection", $._expression),
+				caseInsensitive("Цикл"),
+				repeat($._statement),
+				caseInsensitive("КонецЦикла"),
+				";",
+			),
 
-    // While loop
-    // Пока Условие Цикл ... КонецЦикла
-    while_statement: $ => seq(
-      caseInsensitive('Пока'),
-      field('condition', $._expression),
-      caseInsensitive('Цикл'),
-      repeat($._statement),
-      caseInsensitive('КонецЦикла'),
-      ';'
-    ),
+		// While loop
+		// Пока Условие Цикл ... КонецЦикла
+		while_statement: ($) =>
+			seq(
+				caseInsensitive("Пока"),
+				field("condition", $._expression),
+				caseInsensitive("Цикл"),
+				repeat($._statement),
+				caseInsensitive("КонецЦикла"),
+				";",
+			),
 
-    // Return statement
-    // Возврат Значение;
-    return_statement: $ => seq(
-      caseInsensitive('Возврат'),
-      optional($._expression),
-      ';'
-    ),
+		// Return statement
+		// Возврат Значение;
+		return_statement: ($) => seq(caseInsensitive("Возврат"), optional($._expression), ";"),
 
-    // Expressions
-    _expression: $ => choice(
-      $.identifier,
-      $.number,
-      $.string,
-      $.boolean,
-      $.call_expression,
-      $.binary_expression,
-      $.member_expression,
-      $.new_expression,
-    ),
+		// Expressions
+		_expression: ($) =>
+			choice(
+				$.identifier,
+				$.number,
+				$.string,
+				$.boolean,
+				$.call_expression,
+				$.binary_expression,
+				$.member_expression,
+				$.new_expression,
+			),
 
-    // Binary expression
-    // A + B, A И B, A = B
-    binary_expression: $ => choice(
-      prec.left(1, seq($._expression, '+', $._expression)),
-      prec.left(1, seq($._expression, '-', $._expression)),
-      prec.left(2, seq($._expression, '*', $._expression)),
-      prec.left(2, seq($._expression, '/', $._expression)),
-      prec.left(0, seq($._expression, caseInsensitive('И'), $._expression)),
-      prec.left(0, seq($._expression, caseInsensitive('Или'), $._expression)),
-      prec.left(0, seq($._expression, '=', $._expression)),
-      prec.left(0, seq($._expression, '<>', $._expression)),
-      prec.left(0, seq($._expression, '>', $._expression)),
-      prec.left(0, seq($._expression, '<', $._expression)),
-    ),
+		// Binary expression
+		// A + B, A И B, A = B
+		binary_expression: ($) =>
+			choice(
+				prec.left(1, seq($._expression, "+", $._expression)),
+				prec.left(1, seq($._expression, "-", $._expression)),
+				prec.left(2, seq($._expression, "*", $._expression)),
+				prec.left(2, seq($._expression, "/", $._expression)),
+				prec.left(0, seq($._expression, caseInsensitive("И"), $._expression)),
+				prec.left(0, seq($._expression, caseInsensitive("Или"), $._expression)),
+				prec.left(0, seq($._expression, "=", $._expression)),
+				prec.left(0, seq($._expression, "<>", $._expression)),
+				prec.left(0, seq($._expression, ">", $._expression)),
+				prec.left(0, seq($._expression, "<", $._expression)),
+			),
 
-    // Member expression
-    // Объект.Свойство
-    member_expression: $ => seq(
-      field('object', $._expression),
-      '.',
-      field('property', $.identifier)
-    ),
+		// Member expression
+		// Объект.Свойство
+		member_expression: ($) => seq(field("object", $._expression), ".", field("property", $.identifier)),
 
-    // New expression
-    // Новый Тип
-    new_expression: $ => seq(
-      caseInsensitive('Новый'),
-      field('type', $.identifier),
-      optional($.argument_list)
-    ),
+		// New expression
+		// Новый Тип
+		new_expression: ($) => seq(caseInsensitive("Новый"), field("type", $.identifier), optional($.argument_list)),
 
-    // Literals
-    identifier: $ => /[А-Яа-яA-Za-z_][А-Яа-яA-Za-z0-9_]*/,
-    
-    number: $ => /\d+(\.\d+)?/,
-    
-    string: $ => choice(
-      seq('"', repeat(/[^"]/), '"'),
-      seq("'", repeat(/[^']/), "'"),
-      // Multiline string
-      seq('|', /[^\n]*/)
-    ),
-    
-    boolean: $ => choice(
-      caseInsensitive('Истина'),
-      caseInsensitive('Ложь'),
-      caseInsensitive('True'),
-      caseInsensitive('False'),
-    ),
-  }
-});
+		// Literals
+		identifier: ($) => /[А-Яа-яA-Za-z_][А-Яа-яA-Za-z0-9_]*/,
+
+		number: ($) => /\d+(\.\d+)?/,
+
+		string: ($) =>
+			choice(
+				seq('"', repeat(/[^"]/), '"'),
+				seq("'", repeat(/[^']/), "'"),
+				// Multiline string
+				seq("|", /[^\n]*/),
+			),
+
+		boolean: ($) =>
+			choice(
+				caseInsensitive("Истина"),
+				caseInsensitive("Ложь"),
+				caseInsensitive("True"),
+				caseInsensitive("False"),
+			),
+	},
+})
 
 // Helper for case-insensitive keywords
 function caseInsensitive(keyword) {
-  return new RegExp(
-    keyword
-      .split('')
-      .map(char => {
-        if (char.toLowerCase() === char.toUpperCase()) {
-          return char;
-        }
-        return `[${char.toLowerCase()}${char.toUpperCase()}]`;
-      })
-      .join('')
-  );
+	return new RegExp(
+		keyword
+			.split("")
+			.map((char) => {
+				if (char.toLowerCase() === char.toUpperCase()) {
+					return char
+				}
+				return `[${char.toLowerCase()}${char.toUpperCase()}]`
+			})
+			.join(""),
+	)
 }
 ```
 
@@ -1400,7 +1380,7 @@ Procedure with parameters
     name: (identifier)
     parameters: (parameter_list
       (parameter name: (identifier))
-      (parameter 
+      (parameter
         name: (identifier)
         default_value: (number)))
     (return_statement
@@ -1412,21 +1392,23 @@ Procedure with parameters
 **Этапы разработки Фазы 1:**
 
 1. **Неделя 1:** Настройка проекта, базовая грамматика (процедуры, функции)
-   ```bash
-   npm install -g tree-sitter-cli
-   mkdir tree-sitter-grammars && cd tree-sitter-grammars
-   npm init
-   tree-sitter init
-   # Редактировать grammar.js
-   tree-sitter generate
-   tree-sitter test
-   ```
+
+    ```bash
+    npm install -g tree-sitter-cli
+    mkdir tree-sitter-grammars && cd tree-sitter-grammars
+    npm init
+    tree-sitter init
+    # Редактировать grammar.js
+    tree-sitter generate
+    tree-sitter test
+    ```
 
 2. **Неделя 2:** Переменные, присваивания, вызовы функций
 3. **Неделя 3:** Условия, циклы, выражения
 4. **Неделя 4:** Тестирование на реальных модулях 1С, исправление багов
 
 **Результат Фазы 1:**
+
 - ✅ Парсинг 80% базовых конструкций
 - ✅ Работающие тесты
 - ✅ npm пакет `tree-sitter-onec`
@@ -1463,16 +1445,16 @@ rules: {
     'ПриКопировании',
     'ПриПроведении',
     'ПриОтменеПроведения',
-    
+
     // Form events
     'ПриСозданииНаСервере',
     'ПриОткрытии',
     'ПередЗакрытием',
     'ПриЗакрытии',
-    
+
     // Field events (with pattern)
     /При(Изменении|Выборе|НачалеВыбора|Очистке|АвтоПодборе).*/,
-    
+
     // Command events
     /.*Выполнить$/,
   ),
@@ -1590,6 +1572,7 @@ rules: {
 ```
 
 **Результат Фазы 2:**
+
 - ✅ Распознавание обработчиков событий по именам
 - ✅ Парсинг объявлений запросов
 - ✅ Идентификация доступа к метаданным
@@ -1605,19 +1588,22 @@ rules: {
 **Дополнительные возможности:**
 
 1. **Парсинг текста запросов** (внутри строковых литералов)
-   - Встроенная grammar для 1C Query Language
-   - Injection для подсветки синтаксиса
+
+    - Встроенная grammar для 1C Query Language
+    - Injection для подсветки синтаксиса
 
 2. **Аннотации и директивы компиляции**
-   - &НаСервере, &НаКлиенте, &НаСервереБезКонтекста
-   - &Вместо, &До, &После
+
+    - &НаСервере, &НаКлиенте, &НаСервереБезКонтекста
+    - &Вместо, &До, &После
 
 3. **Неявные преобразования и контекст**
-   - Автоматические ToString(), ToNumber()
+
+    - Автоматические ToString(), ToNumber()
 
 4. **Error recovery**
-   - Продолжение парсинга после ошибок
-   - Частичные AST деревья
+    - Продолжение парсинга после ошибок
+    - Частичные AST деревья
 
 **Оптимизация производительности:**
 
@@ -1636,6 +1622,7 @@ externals: $ => [
 3. **Language Server Protocol** - автодополнение, навигация
 
 **Результат Фазы 3:**
+
 - ✅ Полная грамматика 1С
 - ✅ Production-ready качество
 - ✅ npm пакет с документацией
@@ -1653,10 +1640,10 @@ externals: $ => [
 ```json
 // package.json
 {
-  "dependencies": {
-    "tree-sitter-onec": "^1.0.0",
-    "web-tree-sitter": "^0.20.0"
-  }
+	"dependencies": {
+		"tree-sitter-onec": "^1.0.0",
+		"web-tree-sitter": "^0.20.0"
+	}
 }
 ```
 
@@ -1664,38 +1651,58 @@ externals: $ => [
 
 ```typescript
 // src/services/tree-sitter/language-loader.ts
-import Parser from 'web-tree-sitter'
+import Parser from "web-tree-sitter"
 
 export class TreeSitterLanguageLoader {
-  private static languages: Map<string, Parser.Language> = new Map()
-  
-  static async loadLanguage(languageName: string): Promise<Parser.Language> {
-    // Check cache
-    if (this.languages.has(languageName)) {
-      return this.languages.get(languageName)!
-    }
-    
-    // Load WASM file
-    let wasmPath: string
-    switch (languageName) {
-      case '1c':
-      case 'bsl':
-        wasmPath = 'tree-sitter-onec.wasm'
-        break
-      case 'typescript':
-        wasmPath = 'tree-sitter-typescript.wasm'
-        break
-      // ... other languages
-      default:
-        throw new Error(`Unsupported language: ${languageName}`)
-    }
-    
-    const language = await Parser.Language.load(wasmPath)
-    this.languages.set(languageName, language)
-    
-    return language
-  }
+	private static languages: Map<string, Parser.Language> = new Map()
+
+	static async loadLanguage(languageName: string): Promise<Parser.Language> {
+		// Check cache
+		if (this.languages.has(languageName)) {
+			return this.languages.get(languageName)!
+		}
+
+		// Load WASM file
+		let wasmPath: string
+		switch (languageName) {
+			case "1c":
+			case "bsl":
+				wasmPath = "tree-sitter-onec.wasm"
+				break
+			case "typescript":
+				wasmPath = "tree-sitter-typescript.wasm"
+				break
+			// ... other languages
+			default:
+				throw new Error(`Unsupported language: ${languageName}`)
+		}
+
+		const language = await Parser.Language.load(wasmPath)
+		this.languages.set(languageName, language)
+
+		return language
+	}
 }
+```
+
+#### Шаг 2 (актуализация)
+
+В актуальной архитектуре отдельный `language-loader.ts` не требуется:
+
+- сопоставление расширений ↔ `languageId` хранится в [`languageParser.ts`](../src/services/tree-sitter/languageParser.ts)
+- загрузка и кэширование WASM выполняется через [`TreeSitterParserManager`](../src/services/tree-sitter/parser-manager.ts)
+
+Пример явной загрузки `onec` с фиксированным `wasmPath` (полезно для тестов/отладочных сценариев):
+
+```typescript
+import * as path from "path"
+import { getParserManager } from "../tree-sitter/parser-manager"
+
+const manager = getParserManager()
+// ⚠️ Запускайте из пакета `src/`, чтобы `dist/` указывал на `src/dist/`
+const wasmPath = path.join(process.cwd(), "dist", "tree-sitter-onec.wasm")
+
+await manager.getParser("onec", wasmPath)
 ```
 
 #### Шаг 3: Использовать TreeSitterGraphExtractor
@@ -1705,11 +1712,9 @@ import { TreeSitterGraphExtractor } from "../neo4j/extractors/tree-sitter-graph-
 import { getGraphQueryForLanguage } from "../tree-sitter/languageParser"
 
 const languageId = "onec"
-const extractor = new TreeSitterGraphExtractor(
-  languageId,
-  getGraphQueryForLanguage(languageId) ?? "",
-)
+const extractor = new TreeSitterGraphExtractor(languageId, getGraphQueryForLanguage(languageId) ?? "")
 await extractor.initialize("dist/tree-sitter-onec.wasm")
+// ^ `dist/` == `src/dist/` при запуске из пакета `src/`
 ```
 
 #### Шаг 4: Интеграция через RelationshipExtractor
@@ -1726,12 +1731,14 @@ const result = await extractor.extract(code, "module.bsl", "onec")
 #### Шаг 5: Интеграция тестов
 
 Актуальные тесты:
+
 - `src/services/neo4j/extractors/__tests__/tree-sitter-graph-extractor.spec.ts`
 - `src/services/neo4j/__tests__/relationship-extractor.spec.ts`
 
 Они используют мок-узлы/captures и проверяют создание `defines`/`calls` без реального tree-sitter.
 
 **Результат интеграции:**
+
 - Базовая графовая экстракция унифицирована через TreeSitterGraphExtractor.
 - Декларации и вызовы строятся из tree-sitter queries для всех поддерживаемых языков.
 
@@ -1751,71 +1758,71 @@ import type { Neo4jGraphService } from "../graph-service"
 import type { CodeEntity } from "../interfaces"
 
 export interface EventHandlerChain {
-  event: string
-  handlers: CodeEntity[]
-  callSequence: string[]
+	event: string
+	handlers: CodeEntity[]
+	callSequence: string[]
 }
 
 export class EventHandlerAnalyzer {
-  constructor(private graphService: Neo4jGraphService) {}
-  
-  /**
-   * Построить цепочку обработчиков для события
-   */
-  async analyzeEventHandlerChain(eventType: string): Promise<EventHandlerChain> {
-    // Найти все обработчики данного события
-    const handlers = await this.graphService.searchEntities({
-      type: "function",
-      properties: {
-        kind: "event_handler",
-        eventType
-      }
-    })
-    
-    // Построить граф вызовов между обработчиками
-    const callSequence: string[] = []
-    
-    for (const handler of handlers) {
-      // Получить все функции, вызываемые из этого обработчика
-      const dependencies = await this.graphService.getDependencies(handler.id, 1)
-      
-      for (const dep of dependencies) {
-        callSequence.push(`${handler.name} -> ${dep.name}`)
-      }
-    }
-    
-    return {
-      event: eventType,
-      handlers,
-      callSequence
-    }
-  }
-  
-  /**
-   * Найти циклы в обработчиках событий
-   */
-  async detectEventHandlerCycles(): Promise<string[][]> {
-    const cycles: string[][] = []
-    
-    // Получить все обработчики
-    const handlers = await this.graphService.searchEntities({
-      type: "function",
-      properties: {
-        kind: "event_handler"
-      }
-    })
-    
-    // Для каждого обработчика проверить, вызывает ли он сам себя
-    for (const handler of handlers) {
-      const path = await this.graphService.findPath(handler.id, handler.id, 10)
-      
-      if (path.length > 0) {
-        cycles.push(path[0])
-      }
-    }
-    
-    return cycles
-  }
+	constructor(private graphService: Neo4jGraphService) {}
+
+	/**
+	 * Построить цепочку обработчиков для события
+	 */
+	async analyzeEventHandlerChain(eventType: string): Promise<EventHandlerChain> {
+		// Найти все обработчики данного события
+		const handlers = await this.graphService.searchEntities({
+			type: "function",
+			properties: {
+				kind: "event_handler",
+				eventType,
+			},
+		})
+
+		// Построить граф вызовов между обработчиками
+		const callSequence: string[] = []
+
+		for (const handler of handlers) {
+			// Получить все функции, вызываемые из этого обработчика
+			const dependencies = await this.graphService.getDependencies(handler.id, 1)
+
+			for (const dep of dependencies) {
+				callSequence.push(`${handler.name} -> ${dep.name}`)
+			}
+		}
+
+		return {
+			event: eventType,
+			handlers,
+			callSequence,
+		}
+	}
+
+	/**
+	 * Найти циклы в обработчиках событий
+	 */
+	async detectEventHandlerCycles(): Promise<string[][]> {
+		const cycles: string[][] = []
+
+		// Получить все обработчики
+		const handlers = await this.graphService.searchEntities({
+			type: "function",
+			properties: {
+				kind: "event_handler",
+			},
+		})
+
+		// Для каждого обработчика проверить, вызывает ли он сам себя
+		for (const handler of handlers) {
+			const path = await this.graphService.findPath(handler.id, handler.id, 10)
+
+			if (path.length > 0) {
+				cycles.push(path[0])
+			}
+		}
+
+		return cycles
+	}
 }
 ```
 
@@ -1829,79 +1836,79 @@ import type { Neo4jGraphService } from "../graph-service"
 import type { CodeEntity, CodeRelationship } from "../interfaces"
 
 export interface QueryUsage {
-  queryVariable: string
-  declaredIn: CodeEntity
-  usedIn: CodeEntity[]
-  queryText?: string
+	queryVariable: string
+	declaredIn: CodeEntity
+	usedIn: CodeEntity[]
+	queryText?: string
 }
 
 export class QueryAnalyzer {
-  constructor(private graphService: Neo4jGraphService) {}
-  
-  /**
-   * Найти все места использования запросов
-   */
-  async analyzeQueryUsage(filePath?: string): Promise<QueryUsage[]> {
-    // Найти все переменные-запросы
-    const queries = await this.graphService.searchEntities({
-      type: "variable",
-      ...(filePath && { filePath }),
-      properties: {
-        isQuery: true
-      }
-    })
-    
-    const usages: QueryUsage[] = []
-    
-    for (const query of queries) {
-      // Найти функцию, где объявлен запрос
-      const context = await this.graphService.getEntityContext(query.id)
-      const declaredIn = context.entities.find(e => e.type === "function")
-      
-      if (!declaredIn) continue
-      
-      // Найти все места, где используется этот запрос
-      const dependents = await this.graphService.getDependents(query.id, 1)
-      
-      usages.push({
-        queryVariable: query.name,
-        declaredIn,
-        usedIn: dependents,
-        queryText: query.properties?.queryText
-      })
-    }
-    
-    return usages
-  }
-  
-  /**
-   * Найти таблицы, используемые в запросах
-   */
-  async extractQueriedTables(filePath: string): Promise<Map<string, string[]>> {
-    const queriesUsage = await this.analyzeQueryUsage(filePath)
-    const tablesByQuery = new Map<string, string[]>()
-    
-    for (const usage of queriesUsage) {
-      if (!usage.queryText) continue
-      
-      // Простой regex для извлечения таблиц из текста запроса
-      // В production используйте полноценный парсер 1C Query Language
-      const tableMatches = usage.queryText.matchAll(
-        /(?:ИЗ|FROM|СОЕДИНЕНИЕ|JOIN)\s+(Справочник|Документ|РегистрСведений|РегистрНакопления)\.(\w+)/gi
-      )
-      
-      const tables: string[] = []
-      for (const match of tableMatches) {
-        const metadataType = match[1]
-        const metadataObject = match[2]
-        tables.push(`${metadataType}.${metadataObject}`)
-      }
-      
-      tablesByQuery.set(usage.queryVariable, tables)
-    }
-    
-    return tablesByQuery
-  }
+	constructor(private graphService: Neo4jGraphService) {}
+
+	/**
+	 * Найти все места использования запросов
+	 */
+	async analyzeQueryUsage(filePath?: string): Promise<QueryUsage[]> {
+		// Найти все переменные-запросы
+		const queries = await this.graphService.searchEntities({
+			type: "variable",
+			...(filePath && { filePath }),
+			properties: {
+				isQuery: true,
+			},
+		})
+
+		const usages: QueryUsage[] = []
+
+		for (const query of queries) {
+			// Найти функцию, где объявлен запрос
+			const context = await this.graphService.getEntityContext(query.id)
+			const declaredIn = context.entities.find((e) => e.type === "function")
+
+			if (!declaredIn) continue
+
+			// Найти все места, где используется этот запрос
+			const dependents = await this.graphService.getDependents(query.id, 1)
+
+			usages.push({
+				queryVariable: query.name,
+				declaredIn,
+				usedIn: dependents,
+				queryText: query.properties?.queryText,
+			})
+		}
+
+		return usages
+	}
+
+	/**
+	 * Найти таблицы, используемые в запросах
+	 */
+	async extractQueriedTables(filePath: string): Promise<Map<string, string[]>> {
+		const queriesUsage = await this.analyzeQueryUsage(filePath)
+		const tablesByQuery = new Map<string, string[]>()
+
+		for (const usage of queriesUsage) {
+			if (!usage.queryText) continue
+
+			// Простой regex для извлечения таблиц из текста запроса
+			// В production используйте полноценный парсер 1C Query Language
+			const tableMatches = usage.queryText.matchAll(
+				/(?:ИЗ|FROM|СОЕДИНЕНИЕ|JOIN)\s+(Справочник|Документ|РегистрСведений|РегистрНакопления)\.(\w+)/gi,
+			)
+
+			const tables: string[] = []
+			for (const match of tableMatches) {
+				const metadataType = match[1]
+				const metadataObject = match[2]
+				tables.push(`${metadataType}.${metadataObject}`)
+			}
+
+			tablesByQuery.set(usage.queryVariable, tables)
+		}
+
+		return tablesByQuery
+	}
 }
 ```
 
@@ -1915,105 +1922,103 @@ import type { Neo4jGraphService } from "../graph-service"
 import type { CodeEntity, CodeRelationship } from "../interfaces"
 
 export interface PropertyAccessInfo {
-  property: string
-  accessedFrom: CodeEntity[]
-  accessCount: number
-  isWrite: boolean
-  isRead: boolean
+	property: string
+	accessedFrom: CodeEntity[]
+	accessCount: number
+	isWrite: boolean
+	isRead: boolean
 }
 
 export class PropertyAccessAnalyzer {
-  constructor(private graphService: Neo4jGraphService) {}
-  
-  /**
-   * Анализ доступа к реквизитам
-   */
-  async analyzePropertyAccess(filePath: string): Promise<PropertyAccessInfo[]> {
-    // Получить все отношения типа 'accesses'
-    const query = `
+	constructor(private graphService: Neo4jGraphService) {}
+
+	/**
+	 * Анализ доступа к реквизитам
+	 */
+	async analyzePropertyAccess(filePath: string): Promise<PropertyAccessInfo[]> {
+		// Получить все отношения типа 'accesses'
+		const query = `
       MATCH (func:CodeEntity {filePath: $filePath})-[r:ACCESSES]->(prop)
       WHERE func.type = 'function'
       RETURN func, r, prop
     `
-    
-    const result = await this.graphService.executeRead<{
-      func: Record<string, unknown>
-      r: Record<string, unknown>
-      prop: Record<string, unknown>
-    }>(query, { filePath })
-    
-    // Группировать по свойствам
-    const propertyMap = new Map<string, PropertyAccessInfo>()
-    
-    for (const row of result) {
-      const propName = row.r.properties?.propertyName as string
-      
-      if (!propertyMap.has(propName)) {
-        propertyMap.set(propName, {
-          property: propName,
-          accessedFrom: [],
-          accessCount: 0,
-          isWrite: false,
-          isRead: false
-        })
-      }
-      
-      const info = propertyMap.get(propName)!
-      info.accessedFrom.push(this.mapToCodeEntity(row.func))
-      info.accessCount++
-      
-      // Определить тип доступа (чтение/запись)
-      const isWrite = row.r.properties?.isWrite as boolean
-      if (isWrite) {
-        info.isWrite = true
-      } else {
-        info.isRead = true
-      }
-    }
-    
-    return Array.from(propertyMap.values())
-  }
-  
-  /**
-   * Найти неиспользуемые реквизиты
-   */
-  async findUnusedProperties(filePath: string): Promise<string[]> {
-    const allAccesses = await this.analyzePropertyAccess(filePath)
-    
-    // Получить все объявленные переменные
-    const allVariables = await this.graphService.searchEntities({
-      type: "variable",
-      filePath
-    })
-    
-    // Найти переменные, к которым не обращаются
-    const unusedProperties: string[] = []
-    
-    for (const variable of allVariables) {
-      const isAccessed = allAccesses.some(
-        access => access.property === variable.name
-      )
-      
-      if (!isAccessed) {
-        unusedProperties.push(variable.name)
-      }
-    }
-    
-    return unusedProperties
-  }
-  
-  private mapToCodeEntity(node: Record<string, unknown>): CodeEntity {
-    return {
-      id: node.id as string,
-      type: node.type as EntityType,
-      name: node.name as string,
-      filePath: node.filePath as string,
-      line: node.line as number,
-      column: node.column as number,
-      language: node.language as string,
-      properties: node.properties as Record<string, any>
-    }
-  }
+
+		const result = await this.graphService.executeRead<{
+			func: Record<string, unknown>
+			r: Record<string, unknown>
+			prop: Record<string, unknown>
+		}>(query, { filePath })
+
+		// Группировать по свойствам
+		const propertyMap = new Map<string, PropertyAccessInfo>()
+
+		for (const row of result) {
+			const propName = row.r.properties?.propertyName as string
+
+			if (!propertyMap.has(propName)) {
+				propertyMap.set(propName, {
+					property: propName,
+					accessedFrom: [],
+					accessCount: 0,
+					isWrite: false,
+					isRead: false,
+				})
+			}
+
+			const info = propertyMap.get(propName)!
+			info.accessedFrom.push(this.mapToCodeEntity(row.func))
+			info.accessCount++
+
+			// Определить тип доступа (чтение/запись)
+			const isWrite = row.r.properties?.isWrite as boolean
+			if (isWrite) {
+				info.isWrite = true
+			} else {
+				info.isRead = true
+			}
+		}
+
+		return Array.from(propertyMap.values())
+	}
+
+	/**
+	 * Найти неиспользуемые реквизиты
+	 */
+	async findUnusedProperties(filePath: string): Promise<string[]> {
+		const allAccesses = await this.analyzePropertyAccess(filePath)
+
+		// Получить все объявленные переменные
+		const allVariables = await this.graphService.searchEntities({
+			type: "variable",
+			filePath,
+		})
+
+		// Найти переменные, к которым не обращаются
+		const unusedProperties: string[] = []
+
+		for (const variable of allVariables) {
+			const isAccessed = allAccesses.some((access) => access.property === variable.name)
+
+			if (!isAccessed) {
+				unusedProperties.push(variable.name)
+			}
+		}
+
+		return unusedProperties
+	}
+
+	private mapToCodeEntity(node: Record<string, unknown>): CodeEntity {
+		return {
+			id: node.id as string,
+			type: node.type as EntityType,
+			name: node.name as string,
+			filePath: node.filePath as string,
+			line: node.line as number,
+			column: node.column as number,
+			language: node.language as string,
+			properties: node.properties as Record<string, any>,
+		}
+	}
 }
 ```
 
@@ -2026,166 +2031,167 @@ export class PropertyAccessAnalyzer {
 import type { Neo4jGraphService } from "../graph-service"
 
 export interface ModuleDependencyGraph {
-  nodes: ModuleNode[]
-  edges: ModuleEdge[]
+	nodes: ModuleNode[]
+	edges: ModuleEdge[]
 }
 
 export interface ModuleNode {
-  id: string
-  name: string
-  type: 'CommonModule' | 'ObjectModule' | 'FormModule' | 'ManagerModule'
-  linesOfCode: number
-  complexity: number
+	id: string
+	name: string
+	type: "CommonModule" | "ObjectModule" | "FormModule" | "ManagerModule"
+	linesOfCode: number
+	complexity: number
 }
 
 export interface ModuleEdge {
-  from: string
-  to: string
-  relationshipType: 'calls' | 'uses' | 'imports'
-  weight: number
+	from: string
+	to: string
+	relationshipType: "calls" | "uses" | "imports"
+	weight: number
 }
 
 export class ModuleDependencyVisualizer {
-  constructor(private graphService: Neo4jGraphService) {}
-  
-  /**
-   * Построить граф зависимостей модулей
-   */
-  async buildDependencyGraph(projectPath: string): Promise<ModuleDependencyGraph> {
-    // Получить все файлы модулей
-    const modules = await this.graphService.searchEntities({
-      type: "file",
-      filePath: projectPath
-    })
-    
-    const nodes: ModuleNode[] = []
-    const edges: ModuleEdge[] = []
-    
-    for (const module of modules) {
-      // Определить тип модуля по пути
-      const moduleType = this.detectModuleType(module.filePath)
-      
-      // Подсчитать метрики
-      const metrics = await this.calculateModuleMetrics(module.id)
-      
-      nodes.push({
-        id: module.id,
-        name: module.name,
-        type: moduleType,
-        linesOfCode: metrics.linesOfCode,
-        complexity: metrics.complexity
-      })
-      
-      // Получить зависимости
-      const dependencies = await this.graphService.getDependencies(module.id, 1)
-      
-      for (const dep of dependencies) {
-        // Подсчитать вес связи (количество вызовов)
-        const weight = await this.calculateEdgeWeight(module.id, dep.id)
-        
-        edges.push({
-          from: module.id,
-          to: dep.id,
-          relationshipType: 'calls',
-          weight
-        })
-      }
-    }
-    
-    return { nodes, edges }
-  }
-  
-  /**
-   * Определить тип модуля по пути файла
-   */
-  private detectModuleType(filePath: string): ModuleNode['type'] {
-    if (filePath.includes('CommonModules')) return 'CommonModule'
-    if (filePath.includes('Forms')) return 'FormModule'
-    if (filePath.includes('ManagerModules')) return 'ManagerModule'
-    return 'ObjectModule'
-  }
-  
-  /**
-   * Подсчитать метрики модуля
-   */
-  private async calculateModuleMetrics(moduleId: string): Promise<{
-    linesOfCode: number
-    complexity: number
-  }> {
-    // Получить все сущности в модуле
-    const entities = await this.graphService.searchEntities({
-      filePath: moduleId.replace('file:', '')
-    })
-    
-    // Подсчитать количество функций/процедур
-    const functions = entities.filter(e => e.type === 'function')
-    
-    // Complexity = количество функций + количество условий + циклов
-    const complexity = functions.length * 2 // Упрощенная метрика
-    
-    // LOC можно получить из файловой системы или хранить в properties
-    const linesOfCode = entities.reduce((sum, e) => sum + (e.line || 0), 0)
-    
-    return { linesOfCode, complexity }
-  }
-  
-  /**
-   * Подсчитать вес связи между модулями
-   */
-  private async calculateEdgeWeight(fromId: string, toId: string): Promise<number> {
-    const query = `
+	constructor(private graphService: Neo4jGraphService) {}
+
+	/**
+	 * Построить граф зависимостей модулей
+	 */
+	async buildDependencyGraph(projectPath: string): Promise<ModuleDependencyGraph> {
+		// Получить все файлы модулей
+		const modules = await this.graphService.searchEntities({
+			type: "file",
+			filePath: projectPath,
+		})
+
+		const nodes: ModuleNode[] = []
+		const edges: ModuleEdge[] = []
+
+		for (const module of modules) {
+			// Определить тип модуля по пути
+			const moduleType = this.detectModuleType(module.filePath)
+
+			// Подсчитать метрики
+			const metrics = await this.calculateModuleMetrics(module.id)
+
+			nodes.push({
+				id: module.id,
+				name: module.name,
+				type: moduleType,
+				linesOfCode: metrics.linesOfCode,
+				complexity: metrics.complexity,
+			})
+
+			// Получить зависимости
+			const dependencies = await this.graphService.getDependencies(module.id, 1)
+
+			for (const dep of dependencies) {
+				// Подсчитать вес связи (количество вызовов)
+				const weight = await this.calculateEdgeWeight(module.id, dep.id)
+
+				edges.push({
+					from: module.id,
+					to: dep.id,
+					relationshipType: "calls",
+					weight,
+				})
+			}
+		}
+
+		return { nodes, edges }
+	}
+
+	/**
+	 * Определить тип модуля по пути файла
+	 */
+	private detectModuleType(filePath: string): ModuleNode["type"] {
+		if (filePath.includes("CommonModules")) return "CommonModule"
+		if (filePath.includes("Forms")) return "FormModule"
+		if (filePath.includes("ManagerModules")) return "ManagerModule"
+		return "ObjectModule"
+	}
+
+	/**
+	 * Подсчитать метрики модуля
+	 */
+	private async calculateModuleMetrics(moduleId: string): Promise<{
+		linesOfCode: number
+		complexity: number
+	}> {
+		// Получить все сущности в модуле
+		const entities = await this.graphService.searchEntities({
+			filePath: moduleId.replace("file:", ""),
+		})
+
+		// Подсчитать количество функций/процедур
+		const functions = entities.filter((e) => e.type === "function")
+
+		// Complexity = количество функций + количество условий + циклов
+		const complexity = functions.length * 2 // Упрощенная метрика
+
+		// LOC можно получить из файловой системы или хранить в properties
+		const linesOfCode = entities.reduce((sum, e) => sum + (e.line || 0), 0)
+
+		return { linesOfCode, complexity }
+	}
+
+	/**
+	 * Подсчитать вес связи между модулями
+	 */
+	private async calculateEdgeWeight(fromId: string, toId: string): Promise<number> {
+		const query = `
       MATCH (from:CodeEntity {id: $fromId})-[r]->(to:CodeEntity {id: $toId})
       RETURN count(r) AS weight
     `
-    
-    const result = await this.graphService.executeRead<{ weight: number }>(
-      query,
-      { fromId, toId }
-    )
-    
-    return result[0]?.weight || 0
-  }
-  
-  /**
-   * Экспорт в формат D3.js для визуализации
-   */
-  exportForD3(graph: ModuleDependencyGraph): string {
-    return JSON.stringify({
-      nodes: graph.nodes.map(n => ({
-        id: n.id,
-        name: n.name,
-        group: n.type,
-        value: n.complexity
-      })),
-      links: graph.edges.map(e => ({
-        source: e.from,
-        target: e.to,
-        value: e.weight
-      }))
-    }, null, 2)
-  }
-  
-  /**
-   * Экспорт в формат Mermaid
-   */
-  exportForMermaid(graph: ModuleDependencyGraph): string {
-    let mermaid = 'graph TD\n'
-    
-    for (const edge of graph.edges) {
-      const fromNode = graph.nodes.find(n => n.id === edge.from)
-      const toNode = graph.nodes.find(n => n.id === edge.to)
-      
-      if (fromNode && toNode) {
-        mermaid += `  ${this.sanitizeForMermaid(fromNode.name)} -->|${edge.weight}| ${this.sanitizeForMermaid(toNode.name)}\n`
-      }
-    }
-    
-    return mermaid
-  }
-  
-  private sanitizeForMermaid(text: string): string {
-    return text.replace(/[^a-zA-Z0-9_]/g, '_')
-  }
+
+		const result = await this.graphService.executeRead<{ weight: number }>(query, { fromId, toId })
+
+		return result[0]?.weight || 0
+	}
+
+	/**
+	 * Экспорт в формат D3.js для визуализации
+	 */
+	exportForD3(graph: ModuleDependencyGraph): string {
+		return JSON.stringify(
+			{
+				nodes: graph.nodes.map((n) => ({
+					id: n.id,
+					name: n.name,
+					group: n.type,
+					value: n.complexity,
+				})),
+				links: graph.edges.map((e) => ({
+					source: e.from,
+					target: e.to,
+					value: e.weight,
+				})),
+			},
+			null,
+			2,
+		)
+	}
+
+	/**
+	 * Экспорт в формат Mermaid
+	 */
+	exportForMermaid(graph: ModuleDependencyGraph): string {
+		let mermaid = "graph TD\n"
+
+		for (const edge of graph.edges) {
+			const fromNode = graph.nodes.find((n) => n.id === edge.from)
+			const toNode = graph.nodes.find((n) => n.id === edge.to)
+
+			if (fromNode && toNode) {
+				mermaid += `  ${this.sanitizeForMermaid(fromNode.name)} -->|${edge.weight}| ${this.sanitizeForMermaid(toNode.name)}\n`
+			}
+		}
+
+		return mermaid
+	}
+
+	private sanitizeForMermaid(text: string): string {
+		return text.replace(/[^a-zA-Z0-9_]/g, "_")
+	}
 }
 ```
 
@@ -2199,129 +2205,124 @@ import type { Neo4jGraphService } from "../graph-service"
 import type { CodeEntity } from "../interfaces"
 
 export interface CircularDependency {
-  cycle: CodeEntity[]
-  severity: 'low' | 'medium' | 'high'
-  description: string
+	cycle: CodeEntity[]
+	severity: "low" | "medium" | "high"
+	description: string
 }
 
 export class CircularDependencyDetector {
-  constructor(private graphService: Neo4jGraphService) {}
-  
-  /**
-   * Найти все циклические зависимости
-   */
-  async detectCycles(projectPath: string): Promise<CircularDependency[]> {
-    const query = `
+	constructor(private graphService: Neo4jGraphService) {}
+
+	/**
+	 * Найти все циклические зависимости
+	 */
+	async detectCycles(projectPath: string): Promise<CircularDependency[]> {
+		const query = `
       MATCH path = (start:CodeEntity)-[*2..10]->(start)
       WHERE start.filePath STARTS WITH $projectPath
         AND start.type = 'file'
       RETURN path
       LIMIT 100
     `
-    
-    const result = await this.graphService.executeRead<{ path: any }>(
-      query,
-      { projectPath }
-    )
-    
-    const cycles: CircularDependency[] = []
-    
-    for (const row of result) {
-      const nodes = row.path.nodes as CodeEntity[]
-      
-      // Определить severity
-      const severity = this.determineSeverity(nodes.length)
-      
-      cycles.push({
-        cycle: nodes,
-        severity,
-        description: this.formatCycleDescription(nodes)
-      })
-    }
-    
-    return cycles
-  }
-  
-  /**
-   * Определить серьезность цикла
-   */
-  private determineSeverity(cycleLength: number): 'low' | 'medium' | 'high' {
-    if (cycleLength <= 3) return 'low'
-    if (cycleLength <= 5) return 'medium'
-    return 'high'
-  }
-  
-  /**
-   * Форматировать описание цикла
-   */
-  private formatCycleDescription(nodes: CodeEntity[]): string {
-    const names = nodes.map(n => n.name)
-    return `Circular dependency: ${names.join(' -> ')} -> ${names[0]}`
-  }
-  
-  /**
-   * Предложить решения для разрыва циклов
-   */
-  async suggestSolutions(cycle: CircularDependency): Promise<string[]> {
-    const suggestions: string[] = []
-    
-    // Найти наименее связанное звено
-    const edgeWeights = await this.calculateEdgeWeights(cycle.cycle)
-    const weakestEdge = this.findWeakestEdge(edgeWeights)
-    
-    if (weakestEdge) {
-      suggestions.push(
-        `Extract shared logic from ${weakestEdge.from.name} and ${weakestEdge.to.name} into a separate module`
-      )
-      suggestions.push(
-        `Use dependency injection to break the dependency between ${weakestEdge.from.name} and ${weakestEdge.to.name}`
-      )
-    }
-    
-    suggestions.push(
-      'Consider using an event-driven architecture to decouple modules'
-    )
-    
-    return suggestions
-  }
-  
-  private async calculateEdgeWeights(
-    nodes: CodeEntity[]
-  ): Promise<Array<{ from: CodeEntity; to: CodeEntity; weight: number }>> {
-    const weights: Array<{ from: CodeEntity; to: CodeEntity; weight: number }> = []
-    
-    for (let i = 0; i < nodes.length - 1; i++) {
-      const from = nodes[i]
-      const to = nodes[i + 1]
-      
-      const query = `
+
+		const result = await this.graphService.executeRead<{ path: any }>(query, { projectPath })
+
+		const cycles: CircularDependency[] = []
+
+		for (const row of result) {
+			const nodes = row.path.nodes as CodeEntity[]
+
+			// Определить severity
+			const severity = this.determineSeverity(nodes.length)
+
+			cycles.push({
+				cycle: nodes,
+				severity,
+				description: this.formatCycleDescription(nodes),
+			})
+		}
+
+		return cycles
+	}
+
+	/**
+	 * Определить серьезность цикла
+	 */
+	private determineSeverity(cycleLength: number): "low" | "medium" | "high" {
+		if (cycleLength <= 3) return "low"
+		if (cycleLength <= 5) return "medium"
+		return "high"
+	}
+
+	/**
+	 * Форматировать описание цикла
+	 */
+	private formatCycleDescription(nodes: CodeEntity[]): string {
+		const names = nodes.map((n) => n.name)
+		return `Circular dependency: ${names.join(" -> ")} -> ${names[0]}`
+	}
+
+	/**
+	 * Предложить решения для разрыва циклов
+	 */
+	async suggestSolutions(cycle: CircularDependency): Promise<string[]> {
+		const suggestions: string[] = []
+
+		// Найти наименее связанное звено
+		const edgeWeights = await this.calculateEdgeWeights(cycle.cycle)
+		const weakestEdge = this.findWeakestEdge(edgeWeights)
+
+		if (weakestEdge) {
+			suggestions.push(
+				`Extract shared logic from ${weakestEdge.from.name} and ${weakestEdge.to.name} into a separate module`,
+			)
+			suggestions.push(
+				`Use dependency injection to break the dependency between ${weakestEdge.from.name} and ${weakestEdge.to.name}`,
+			)
+		}
+
+		suggestions.push("Consider using an event-driven architecture to decouple modules")
+
+		return suggestions
+	}
+
+	private async calculateEdgeWeights(
+		nodes: CodeEntity[],
+	): Promise<Array<{ from: CodeEntity; to: CodeEntity; weight: number }>> {
+		const weights: Array<{ from: CodeEntity; to: CodeEntity; weight: number }> = []
+
+		for (let i = 0; i < nodes.length - 1; i++) {
+			const from = nodes[i]
+			const to = nodes[i + 1]
+
+			const query = `
         MATCH (from:CodeEntity {id: $fromId})-[r]->(to:CodeEntity {id: $toId})
         RETURN count(r) AS weight
       `
-      
-      const result = await this.graphService.executeRead<{ weight: number }>(
-        query,
-        { fromId: from.id, toId: to.id }
-      )
-      
-      weights.push({
-        from,
-        to,
-        weight: result[0]?.weight || 0
-      })
-    }
-    
-    return weights
-  }
-  
-  private findWeakestEdge(
-    edges: Array<{ from: CodeEntity; to: CodeEntity; weight: number }>
-  ): { from: CodeEntity; to: CodeEntity } | null {
-    if (edges.length === 0) return null
-    
-    const sorted = edges.sort((a, b) => a.weight - b.weight)
-    return { from: sorted[0].from, to: sorted[0].to }
-  }
+
+			const result = await this.graphService.executeRead<{ weight: number }>(query, {
+				fromId: from.id,
+				toId: to.id,
+			})
+
+			weights.push({
+				from,
+				to,
+				weight: result[0]?.weight || 0,
+			})
+		}
+
+		return weights
+	}
+
+	private findWeakestEdge(
+		edges: Array<{ from: CodeEntity; to: CodeEntity; weight: number }>,
+	): { from: CodeEntity; to: CodeEntity } | null {
+		if (edges.length === 0) return null
+
+		const sorted = edges.sort((a, b) => a.weight - b.weight)
+		return { from: sorted[0].from, to: sorted[0].to }
+	}
 }
 ```
 
@@ -2329,46 +2330,41 @@ export class CircularDependencyDetector {
 
 ```typescript
 // src/services/neo4j/analyzers/index.ts
-export { EventHandlerAnalyzer } from './event-handler-analyzer'
-export { QueryAnalyzer } from './query-analyzer'
-export { PropertyAccessAnalyzer } from './property-access-analyzer'
-export { ModuleDependencyVisualizer } from './module-dependency-visualizer'
-export { CircularDependencyDetector } from './circular-dependency-detector'
+export { EventHandlerAnalyzer } from "./event-handler-analyzer"
+export { QueryAnalyzer } from "./query-analyzer"
+export { PropertyAccessAnalyzer } from "./property-access-analyzer"
+export { ModuleDependencyVisualizer } from "./module-dependency-visualizer"
+export { CircularDependencyDetector } from "./circular-dependency-detector"
 
 // Example usage
-import { Neo4jGraphService } from '../graph-service'
-import { 
-  EventHandlerAnalyzer,
-  QueryAnalyzer,
-  ModuleDependencyVisualizer,
-  CircularDependencyDetector
-} from './index'
+import { Neo4jGraphService } from "../graph-service"
+import { EventHandlerAnalyzer, QueryAnalyzer, ModuleDependencyVisualizer, CircularDependencyDetector } from "./index"
 
 const graphService = new Neo4jGraphService()
 
 // Analyze event handlers
 const eventAnalyzer = new EventHandlerAnalyzer(graphService)
-const eventChain = await eventAnalyzer.analyzeEventHandlerChain('BeforeWrite')
-console.log('Event handler chain:', eventChain)
+const eventChain = await eventAnalyzer.analyzeEventHandlerChain("BeforeWrite")
+console.log("Event handler chain:", eventChain)
 
 // Analyze queries
 const queryAnalyzer = new QueryAnalyzer(graphService)
-const queryUsage = await queryAnalyzer.analyzeQueryUsage('Modules/Document.bsl')
-console.log('Query usage:', queryUsage)
+const queryUsage = await queryAnalyzer.analyzeQueryUsage("Modules/Document.bsl")
+console.log("Query usage:", queryUsage)
 
 // Visualize module dependencies
 const visualizer = new ModuleDependencyVisualizer(graphService)
-const depGraph = await visualizer.buildDependencyGraph('src/1C/')
+const depGraph = await visualizer.buildDependencyGraph("src/1C/")
 const mermaidGraph = visualizer.exportForMermaid(depGraph)
 console.log(mermaidGraph)
 
 // Detect circular dependencies
 const cycleDetector = new CircularDependencyDetector(graphService)
-const cycles = await cycleDetector.detectCycles('src/1C/')
+const cycles = await cycleDetector.detectCycles("src/1C/")
 for (const cycle of cycles) {
-  console.log(cycle.description, `[${cycle.severity}]`)
-  const solutions = await cycleDetector.suggestSolutions(cycle)
-  console.log('Suggested solutions:', solutions)
+	console.log(cycle.description, `[${cycle.severity}]`)
+	const solutions = await cycleDetector.suggestSolutions(cycle)
+	console.log("Suggested solutions:", solutions)
 }
 ```
 
@@ -2379,6 +2375,7 @@ for (const cycle of cycles) {
 ### 4.1. Language Plugin Marketplace
 
 **Стратегическая ценность:**
+
 - 🌐 Расширение поддержки языков силами сообщества
 - 📦 Монетизация через премиум плагины
 - 🚀 Ускорение роста экосистемы
@@ -2390,19 +2387,19 @@ graph TD
     A[Plugin Registry] --> B[Plugin Store]
     B --> C[Free Plugins]
     B --> D[Premium Plugins]
-    
+
     C --> E[1C Plugin]
     C --> F[Go Plugin]
     C --> G[Rust Plugin]
-    
+
     D --> H[ABAP Plugin]
     D --> I[COBOL Plugin]
-    
+
     A --> J[Plugin Validator]
     J --> K[Security Check]
     J --> L[API Compatibility]
     J --> M[Test Coverage]
-    
+
     A --> N[Plugin Manager]
     N --> O[Install/Update]
     N --> P[Enable/Disable]
@@ -2414,59 +2411,60 @@ graph TD
 ```typescript
 // Plugin SDK
 export interface LanguagePlugin {
-  // Metadata
-  name: string
-  version: string
-  author: string
-  license: 'MIT' | 'Apache-2.0' | 'Proprietary'
-  
-  // Language support
-  supportedLanguages: string[]
-  supportedExtensions: string[]
-  
-  // Tree-sitter grammar
-  getGrammar(): Promise<Parser.Language>
-  
-  // Extractor implementation
-  createExtractor(): ILanguageExtractor
-  
-  // Optional: Custom analyzers
-  analyzers?: {
-    [key: string]: (graphService: IGraphStore) => any
-  }
-  
-  // Optional: Custom visualizations
-  visualizations?: {
-    [key: string]: (data: any) => string
-  }
+	// Metadata
+	name: string
+	version: string
+	author: string
+	license: "MIT" | "Apache-2.0" | "Proprietary"
+
+	// Language support
+	supportedLanguages: string[]
+	supportedExtensions: string[]
+
+	// Tree-sitter grammar
+	getGrammar(): Promise<Parser.Language>
+
+	// Extractor implementation
+	createExtractor(): ILanguageExtractor
+
+	// Optional: Custom analyzers
+	analyzers?: {
+		[key: string]: (graphService: IGraphStore) => any
+	}
+
+	// Optional: Custom visualizations
+	visualizations?: {
+		[key: string]: (data: any) => string
+	}
 }
 
 // Example plugin
 export class MyLanguagePlugin implements LanguagePlugin {
-  name = "my-language-support"
-  version = "1.0.0"
-  author = "John Doe"
-  license = "MIT"
-  
-  supportedLanguages = ["mylang"]
-  supportedExtensions = [".ml"]
-  
-  async getGrammar(): Promise<Parser.Language> {
-    return await Parser.Language.load('tree-sitter-mylang.wasm')
-  }
-  
-  createExtractor(): ILanguageExtractor {
-    return new MyLanguageExtractor()
-  }
+	name = "my-language-support"
+	version = "1.0.0"
+	author = "John Doe"
+	license = "MIT"
+
+	supportedLanguages = ["mylang"]
+	supportedExtensions = [".ml"]
+
+	async getGrammar(): Promise<Parser.Language> {
+		return await Parser.Language.load("tree-sitter-mylang.wasm")
+	}
+
+	createExtractor(): ILanguageExtractor {
+		return new MyLanguageExtractor()
+	}
 }
 ```
 
 **Сложность:** Высокая  
 **Приоритет:** Средний  
 **Dependencies:** Плагинная система (раздел 2.1)  
-**Оценка времени:** 3-4 месяца  
+**Оценка времени:** 3-4 месяца
 
 **ROI:**
+
 - Revenue потенциал через премиум плагины
 - Ускорение adoption за счет поддержки большего количества языков
 - Community contribution
@@ -2476,6 +2474,7 @@ export class MyLanguagePlugin implements LanguagePlugin {
 ### 4.2. Advanced Graph Analytics
 
 **Стратегическая ценность:**
+
 - 📊 Глубокий анализ кодовой базы
 - 🎯 Выявление tech debt и проблемных областей
 - 💡 Рекомендации по рефакторингу
@@ -2483,63 +2482,67 @@ export class MyLanguagePlugin implements LanguagePlugin {
 **Возможности:**
 
 1. **Code Metrics Dashboard**
-   - Cyclomatic complexity
-   - Coupling metrics
-   - Code churn analysis
-   - Technical debt score
+
+    - Cyclomatic complexity
+    - Coupling metrics
+    - Code churn analysis
+    - Technical debt score
 
 2. **Hotspot Detection**
-   - Часто изменяемые файлы с высокой complexity
-   - Критические узлы графа (high betweenness centrality)
-   - Bottleneck detection
+
+    - Часто изменяемые файлы с высокой complexity
+    - Критические узлы графа (high betweenness centrality)
+    - Bottleneck detection
 
 3. **Change Impact Prediction**
-   - ML модель для предсказания влияния изменений
-   - Historical change analysis
-   - Risk scoring
+
+    - ML модель для предсказания влияния изменений
+    - Historical change analysis
+    - Risk scoring
 
 4. **Refactoring Recommendations**
-   - Extract method suggestions
-   - Module splitting recommendations
-   - Dependency inversion opportunities
+    - Extract method suggestions
+    - Module splitting recommendations
+    - Dependency inversion opportunities
 
 ```typescript
 export interface AdvancedMetrics {
-  // Complexity metrics
-  cyclomaticComplexity: number
-  cognitiveComplexity: number
-  
-  // Coupling metrics
-  afferentCoupling: number  // Ca - who depends on me
-  efferentCoupling: number  // Ce - who I depend on
-  instability: number       // I = Ce / (Ca + Ce)
-  
-  // Graph metrics
-  pageRank: number
-  betweennessCentrality: number
-  clusteringCoefficient: number
-  
-  // Code churn
-  changeFrequency: number
-  lastModified: Date
-  authors: string[]
-  
-  // Tech debt
-  techDebtScore: number
-  codeSmells: string[]
-  securityVulnerabilities: string[]
+	// Complexity metrics
+	cyclomaticComplexity: number
+	cognitiveComplexity: number
+
+	// Coupling metrics
+	afferentCoupling: number // Ca - who depends on me
+	efferentCoupling: number // Ce - who I depend on
+	instability: number // I = Ce / (Ca + Ce)
+
+	// Graph metrics
+	pageRank: number
+	betweennessCentrality: number
+	clusteringCoefficient: number
+
+	// Code churn
+	changeFrequency: number
+	lastModified: Date
+	authors: string[]
+
+	// Tech debt
+	techDebtScore: number
+	codeSmells: string[]
+	securityVulnerabilities: string[]
 }
 ```
 
 **Сложность:** Высокая  
 **Приоритет:** Средний  
-**Оценка времени:** 4-6 месяцев  
+**Оценка времени:** 4-6 месяцев
 
 ---
 
 ### 4.3. Multi-language Project Support
 
 **Стратегическая ценность:**
+
 - 🌐 Поддержка полиглот проектов (1C + JavaScript + Python)
 - 🔗 Cross-language call graph
 - 📊 Unified анализ
@@ -2547,21 +2550,23 @@ export interface AdvancedMetrics {
 **Технические вызовы:**
 
 1. **Cross-language references**
-   - 1C вызывает JavaScript через внешние компоненты
-   - JavaScript вызывает 1C через HTTP API
-   - Python обращается к 1C через COM
+
+    - 1C вызывает JavaScript через внешние компоненты
+    - JavaScript вызывает 1C через HTTP API
+    - Python обращается к 1C через COM
 
 2. **Unified entity model**
-   - Mapping между языками
-   - Protocol для inter-language calls
+
+    - Mapping между языками
+    - Protocol для inter-language calls
 
 3. **Visualization**
-   - Color-coded граф по языкам
-   - Language boundaries visualization
+    - Color-coded граф по языкам
+    - Language boundaries visualization
 
 **Сложность:** Высокая  
 **Приоритет:** Низкий  
-**Оценка времени:** 6+ месяцев  
+**Оценка времени:** 6+ месяцев
 
 ---
 
@@ -2576,18 +2581,18 @@ graph TD
         A2[Error handling]
         A3[Метрики]
     end
-    
+
     subgraph High_Value_High_Effort[Strategic - Планировать]
         B1[1C Tree-sitter]
         B2[Плагинная система]
         B3[Event Handler анализ]
     end
-    
+
     subgraph Low_Value_Low_Effort[Fill-ins - Делать по возможности]
         C1[Документация]
         C2[Области #Region]
     end
-    
+
     subgraph Low_Value_High_Effort[Avoid - Не приоритетно]
         D1[Multi-language]
         D2[ML predictions]
@@ -2598,30 +2603,30 @@ graph TD
 
 **Высокий приоритет (начать немедленно):**
 
-| Задача | Value | Effort | Срок |
-|--------|-------|--------|------|
-| Расширение типов отношений | ⭐⭐⭐⭐⭐ | 🔨 | 2-3 дня |
-| Error handling | ⭐⭐⭐⭐⭐ | 🔨 | 1-2 дня |
-| Метрики производительности | ⭐⭐⭐⭐ | 🔨 | 1 день |
-| Плагинная система | ⭐⭐⭐⭐⭐ | 🔨🔨🔨 | 1-2 недели |
+| Задача                     | Value      | Effort | Срок       |
+| -------------------------- | ---------- | ------ | ---------- |
+| Расширение типов отношений | ⭐⭐⭐⭐⭐ | 🔨     | 2-3 дня    |
+| Error handling             | ⭐⭐⭐⭐⭐ | 🔨     | 1-2 дня    |
+| Метрики производительности | ⭐⭐⭐⭐   | 🔨     | 1 день     |
+| Плагинная система          | ⭐⭐⭐⭐⭐ | 🔨🔨🔨 | 1-2 недели |
 
 **Средний приоритет (следующий квартал):**
 
-| Задача | Value | Effort | Срок |
-|--------|-------|--------|------|
-| 1C Tree-sitter Фаза 1 | ⭐⭐⭐⭐⭐ | 🔨🔨🔨🔨 | 2-4 недели |
-| Context Tracking | ⭐⭐⭐⭐ | 🔨🔨 | 1 неделя |
-| Performance optimization | ⭐⭐⭐⭐ | 🔨🔨 | 1-2 недели |
-| Event Handler анализ | ⭐⭐⭐⭐ | 🔨🔨 | 1 неделя |
+| Задача                   | Value      | Effort   | Срок       |
+| ------------------------ | ---------- | -------- | ---------- |
+| 1C Tree-sitter Фаза 1    | ⭐⭐⭐⭐⭐ | 🔨🔨🔨🔨 | 2-4 недели |
+| Context Tracking         | ⭐⭐⭐⭐   | 🔨🔨     | 1 неделя   |
+| Performance optimization | ⭐⭐⭐⭐   | 🔨🔨     | 1-2 недели |
+| Event Handler анализ     | ⭐⭐⭐⭐   | 🔨🔨     | 1 неделя   |
 
 **Низкий приоритет (долгосрочно):**
 
-| Задача | Value | Effort | Срок |
-|--------|-------|--------|------|
-| 1C Tree-sitter Фаза 2-3 | ⭐⭐⭐⭐⭐ | 🔨🔨🔨🔨🔨 | 2-3 месяца |
-| Plugin Marketplace | ⭐⭐⭐⭐ | 🔨🔨🔨🔨🔨 | 3-4 месяца |
-| Advanced Analytics | ⭐⭐⭐ | 🔨🔨🔨🔨🔨 | 4-6 месяцев |
-| Multi-language | ⭐⭐ | 🔨🔨🔨🔨🔨🔨 | 6+ месяцев |
+| Задача                  | Value      | Effort       | Срок        |
+| ----------------------- | ---------- | ------------ | ----------- |
+| 1C Tree-sitter Фаза 2-3 | ⭐⭐⭐⭐⭐ | 🔨🔨🔨🔨🔨   | 2-3 месяца  |
+| Plugin Marketplace      | ⭐⭐⭐⭐   | 🔨🔨🔨🔨🔨   | 3-4 месяца  |
+| Advanced Analytics      | ⭐⭐⭐     | 🔨🔨🔨🔨🔨   | 4-6 месяцев |
+| Multi-language          | ⭐⭐       | 🔨🔨🔨🔨🔨🔨 | 6+ месяцев  |
 
 ---
 
@@ -2639,6 +2644,7 @@ graph TD
 - [ ] Week 3-4: Рефакторинг существующих extractors (TS, Python, Java)
 
 **Результаты:**
+
 - ✅ Более надежная система с error handling
 - ✅ Метрики для мониторинга
 - ✅ Плагинная архитектура готова для 1С
@@ -2656,6 +2662,7 @@ graph TD
 - [ ] Week 12: Интеграция и тестирование
 
 **Результаты:**
+
 - ✅ `tree-sitter-onec` пакет с базовой грамматикой
 - ✅ TreeSitterGraphExtractor в Kilocode
 - ✅ Парсинг основных конструкций 1С
@@ -2675,6 +2682,7 @@ graph TD
 - [ ] Week 23-24: Интеграция всех анализаторов, финальное тестирование
 
 **Результаты:**
+
 - ✅ Полноценная Tree-sitter грамматика для 1С
 - ✅ 5 специализированных анализаторов
 - ✅ Production-ready интеграция с 1С
@@ -2690,6 +2698,7 @@ graph TD
 - [ ] Month 3: Advanced metrics и Code Quality Dashboard
 
 **Результаты:**
+
 - ✅ Улучшенная производительность для больших проектов
 - ✅ Детальные метрики качества кода
 - ✅ Dashboard для мониторинга
@@ -2706,6 +2715,7 @@ graph TD
 - [ ] Q4: Community plugin ecosystem
 
 **Результаты:**
+
 - ✅ Plugin Marketplace запущен
 - ✅ Advanced analytics доступны
 - ✅ Растущая экосистема плагинов
@@ -2723,15 +2733,17 @@ graph TD
 2. **Tree-sitter - правильный выбор** для 1С, несмотря на начальные инвестиции в создание грамматики
 
 3. **Поэтапный подход** минимизирует риски:
-   - Quick Wins (1-7 дней) → немедленная ценность
-   - 1C Фаза 1 (2-4 недели) → базовая функциональность
-   - 1C Фаза 2-3 (2-3 месяца) → полноценная интеграция
+
+    - Quick Wins (1-7 дней) → немедленная ценность
+    - 1C Фаза 1 (2-4 недели) → базовая функциональность
+    - 1C Фаза 2-3 (2-3 месяца) → полноценная интеграция
 
 4. **Специализированные анализаторы** для 1С добавляют уникальную ценность:
-   - Event Handler chains
-   - Query analysis
-   - Metadata dependencies
-   - Circular dependency detection
+
+    - Event Handler chains
+    - Query analysis
+    - Metadata dependencies
+    - Circular dependency detection
 
 5. **Долгосрочная стратегия** включает Plugin Marketplace и Advanced Analytics для создания устойчивой экосистемы
 
@@ -2745,9 +2757,7 @@ graph TD
 ---
 
 **Контакты для вопросов:**
+
 - Техническая архитектура: [ссылка]
 - Roadmap и приоритеты: [ссылка]
 - Вклад в проект: [ссылка]
-
-
-

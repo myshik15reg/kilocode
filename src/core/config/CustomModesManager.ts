@@ -22,6 +22,8 @@ import { X_KILOCODE_ORGANIZATIONID, X_KILOCODE_TESTER } from "../../shared/kiloc
 // kilocode_change end
 
 const ROOMODES_FILENAME = ".kilocodemodes"
+// kilocode_change: WorkFlowAI-managed modes (lowest precedence)
+const WORKFLOWAI_MANAGED_MODES_RELATIVE_PATH = path.join("workflowai", "managed_custom_modes.yaml")
 
 // Type definitions for import/export functionality
 interface RuleFile {
@@ -66,6 +68,12 @@ export class CustomModesManager {
 			console.error("[CustomModesManager] Failed to setup file watchers:", error)
 		})
 	}
+
+	// kilocode_change start
+	private getWorkflowAiManagedModesFilePath(): string {
+		return path.join(getGlobalRooDirectory(), WORKFLOWAI_MANAGED_MODES_RELATIVE_PATH)
+	}
+	// kilocode_change end
 
 	private async queueWrite(operation: () => Promise<void>): Promise<void> {
 		this.writeQueue.push(operation)
@@ -233,11 +241,12 @@ export class CustomModesManager {
 		projectModes: ModeConfig[],
 		globalModes: ModeConfig[],
 		organizationModes: ModeConfig[] = [],
+		managedModes: ModeConfig[] = [],
 	): Promise<ModeConfig[]> {
 		const slugs = new Set<string>()
 		const merged: ModeConfig[] = []
 
-		// Precedence order: organization > project > global
+		// Precedence order: organization > project > global > managed
 
 		// Add organization modes (highest precedence)
 		for (const mode of organizationModes) {
@@ -258,6 +267,14 @@ export class CustomModesManager {
 
 		// Add global modes (lowest precedence)
 		for (const mode of globalModes) {
+			if (!slugs.has(mode.slug)) {
+				slugs.add(mode.slug)
+				merged.push({ ...mode, source: "global" })
+			}
+		}
+
+		// Add managed modes (lowest precedence)
+		for (const mode of managedModes) {
 			if (!slugs.has(mode.slug)) {
 				slugs.add(mode.slug)
 				merged.push({ ...mode, source: "global" })
@@ -319,15 +336,23 @@ export class CustomModesManager {
 				const roomodesPath = await this.getWorkspaceRoomodes()
 				const roomodesModes = roomodesPath ? await this.loadModesFromFile(roomodesPath) : []
 
+				// kilocode_change start: include WorkFlowAI managed modes (lowest precedence)
+				const managedModesPath = this.getWorkflowAiManagedModesFilePath()
+				const managedModes = (await fileExistsAtPath(managedModesPath))
+					? await this.loadModesFromFile(managedModesPath)
+					: []
+				// kilocode_change end
+
 				// kilocode_change start Get organization modes from global state to preserve them
 				const storedModes = (await this.context.globalState.get<ModeConfig[]>("customModes")) || []
 				const organizationModes = storedModes.filter((mode) => mode.source === "organization")
 
-				// Merge modes from both sources with organization modes preserved
+				// Merge modes from all sources with organization modes preserved
 				const mergedModes = await this.mergeCustomModes(
 					roomodesModes,
 					result.data.customModes,
 					organizationModes,
+					managedModes,
 				)
 				// kilocode_change end
 				await this.context.globalState.update("customModes", mergedModes)
@@ -354,6 +379,12 @@ export class CustomModesManager {
 				try {
 					const settingsModes = await this.loadModesFromFile(settingsPath)
 					const roomodesModes = await this.loadModesFromFile(roomodesPath)
+					// kilocode_change start: include WorkFlowAI managed modes (lowest precedence)
+					const managedModesPath = this.getWorkflowAiManagedModesFilePath()
+					const managedModes = (await fileExistsAtPath(managedModesPath))
+						? await this.loadModesFromFile(managedModesPath)
+						: []
+					// kilocode_change end
 
 					// Get organization modes from global state to preserve them
 					const storedModes = (await this.context.globalState.get<ModeConfig[]>("customModes")) || []
@@ -361,7 +392,12 @@ export class CustomModesManager {
 
 					// kilocode_change start
 					// Merge with organization modes preserved
-					const mergedModes = await this.mergeCustomModes(roomodesModes, settingsModes, organizationModes)
+					const mergedModes = await this.mergeCustomModes(
+						roomodesModes,
+						settingsModes,
+						organizationModes,
+						managedModes,
+					)
 					await this.context.globalState.update("customModes", mergedModes)
 					// kilocode_change end
 					this.clearCache()
@@ -378,13 +414,24 @@ export class CustomModesManager {
 					// When .roomodes is deleted, refresh with only settings modes
 					try {
 						const settingsModes = await this.loadModesFromFile(settingsPath)
+						// kilocode_change start: include WorkFlowAI managed modes (lowest precedence)
+						const managedModesPath = this.getWorkflowAiManagedModesFilePath()
+						const managedModes = (await fileExistsAtPath(managedModesPath))
+							? await this.loadModesFromFile(managedModesPath)
+							: []
+						// kilocode_change end
 
 						//// kilocode_change start Get organization modes from global state to preserve them
 						const storedModes = (await this.context.globalState.get<ModeConfig[]>("customModes")) || []
 						const organizationModes = storedModes.filter((mode) => mode.source === "organization")
 
 						// Merge with organization modes preserved
-						const mergedModes = await this.mergeCustomModes([], settingsModes, organizationModes)
+						const mergedModes = await this.mergeCustomModes(
+							[],
+							settingsModes,
+							organizationModes,
+							managedModes,
+						)
 						await this.context.globalState.update("customModes", mergedModes)
 						// kilocode_change end
 						this.clearCache()
@@ -414,13 +461,20 @@ export class CustomModesManager {
 		const roomodesPath = await this.getWorkspaceRoomodes()
 		const roomodesModes = roomodesPath ? await this.loadModesFromFile(roomodesPath) : []
 
+		// kilocode_change start: include WorkFlowAI managed modes (lowest precedence)
+		const managedModesPath = this.getWorkflowAiManagedModesFilePath()
+		const managedModes = (await fileExistsAtPath(managedModesPath))
+			? await this.loadModesFromFile(managedModesPath)
+			: []
+		// kilocode_change end
+
 		// kilocode_change start: Get organization modes from global state
 		// Get organization modes from global state (they were fetched from API)
 		const storedModes = (await this.context.globalState.get<ModeConfig[]>("customModes")) || []
 		const organizationModes = storedModes.filter((mode) => mode.source === "organization")
 
-		// Merge all modes with proper precedence: project > organization > global
-		const mergedModes = await this.mergeCustomModes(roomodesModes, settingsModes, organizationModes)
+		// Merge all modes with proper precedence: organization > project > global > managed
+		const mergedModes = await this.mergeCustomModes(roomodesModes, settingsModes, organizationModes, managedModes)
 		// kilocode_change end
 
 		await this.context.globalState.update("customModes", mergedModes)
@@ -529,13 +583,19 @@ export class CustomModesManager {
 
 		const settingsModes = await this.loadModesFromFile(settingsPath)
 		const roomodesModes = roomodesPath ? await this.loadModesFromFile(roomodesPath) : []
+		// kilocode_change start: include WorkFlowAI managed modes (lowest precedence)
+		const managedModesPath = this.getWorkflowAiManagedModesFilePath()
+		const managedModes = (await fileExistsAtPath(managedModesPath))
+			? await this.loadModesFromFile(managedModesPath)
+			: []
+		// kilocode_change end
 
 		// // kilocode_change start Get organization modes from global state to preserve them
 		const storedModes = (await this.context.globalState.get<ModeConfig[]>("customModes")) || []
 		const organizationModes = storedModes.filter((mode) => mode.source === "organization")
 
 		// Merge with organization modes preserved
-		const mergedModes = await this.mergeCustomModes(roomodesModes, settingsModes, organizationModes)
+		const mergedModes = await this.mergeCustomModes(roomodesModes, settingsModes, organizationModes, managedModes)
 		// kilocode_change end
 
 		await this.context.globalState.update("customModes", mergedModes)
@@ -921,8 +981,12 @@ export class CustomModesManager {
 				// Validate the relative path to prevent path traversal attacks
 				const normalizedRelativePath = path.normalize(ruleFile.relativePath)
 
-				// Ensure the path doesn't contain traversal sequences
-				if (normalizedRelativePath.includes("..") || path.isAbsolute(normalizedRelativePath)) {
+				// Ensure the path doesn't contain traversal sequences.
+				// Note: we intentionally do NOT reject POSIX absolute paths here; they are caught by the
+				// resolved-path-in-base-directory check below (defense in depth).
+				const looksLikeWindowsAbsolute =
+					/^[a-zA-Z]:[\\/]/.test(normalizedRelativePath) || normalizedRelativePath.startsWith("\\\\")
+				if (normalizedRelativePath.includes("..") || looksLikeWindowsAbsolute) {
 					logger.error(`Invalid file path detected: ${ruleFile.relativePath}`)
 					continue // Skip this file but continue with others
 				}
@@ -936,13 +1000,16 @@ export class CustomModesManager {
 					logger.info(`Detected old export format, stripping ${rulesMatch[0]} from path`)
 				}
 
-				// Use the rules folder path instead of base directory
-				const targetPath = path.join(rulesFolderPath, cleanedRelativePath)
+				// Use path.resolve so absolute paths remain absolute, then enforce base-dir constraint.
+				const targetPath = path.resolve(rulesFolderPath, cleanedRelativePath)
 				const normalizedTargetPath = path.normalize(targetPath)
 				const expectedBasePath = path.normalize(rulesFolderPath)
+				const expectedBasePathWithSep = expectedBasePath.endsWith(path.sep)
+					? expectedBasePath
+					: `${expectedBasePath}${path.sep}`
 
 				// Ensure the resolved path stays within the rules folder
-				if (!normalizedTargetPath.startsWith(expectedBasePath)) {
+				if (!normalizedTargetPath.startsWith(expectedBasePathWithSep)) {
 					logger.error(`Path traversal attempt detected: ${ruleFile.relativePath}`)
 					continue // Skip this file but continue with others
 				}
@@ -1149,8 +1216,15 @@ export class CustomModesManager {
 			roomodesPath ? this.loadModesFromFile(roomodesPath) : Promise.resolve([]),
 		])
 
+		// kilocode_change start: include WorkFlowAI managed modes (lowest precedence)
+		const managedModesPath = this.getWorkflowAiManagedModesFilePath()
+		const managedModes = (await fileExistsAtPath(managedModesPath))
+			? await this.loadModesFromFile(managedModesPath)
+			: []
+		// kilocode_change end
+
 		// Merge with organization modes
-		const mergedModes = await this.mergeCustomModes(roomodesModes, settingsModes, organizationModes)
+		const mergedModes = await this.mergeCustomModes(roomodesModes, settingsModes, organizationModes, managedModes)
 
 		await this.context.globalState.update("customModes", mergedModes)
 		this.clearCache()

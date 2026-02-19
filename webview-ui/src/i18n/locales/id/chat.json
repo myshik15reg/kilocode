@@ -385,12 +385,8 @@
 	},
 	"browser": {
 		"session": "Sesi Browser",
-<<<<<<< HEAD
-		"rooWantsToUse": "AlfaCode assistant ingin menggunakan browser",
-=======
 		"active": "Aktif",
-		"rooWantsToUse": "Kilo Code ingin menggunakan browser",
->>>>>>> origin/main
+		"rooWantsToUse": "AlfaCode assistant ingin menggunakan browser",
 		"consoleLogs": "Log Konsol",
 		"noNewLogs": "(Tidak ada log baru)",
 		"screenshot": "Screenshot browser",

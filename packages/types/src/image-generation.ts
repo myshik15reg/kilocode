@@ -30,6 +30,9 @@ export const IMAGE_GENERATION_MODELS: ImageGenerationModel[] = [
 	{ value: "black-forest-labs/flux.2-flex", label: "Black Forest Labs FLUX.2 Flex", provider: "kilocode" },
 	{ value: "black-forest-labs/flux.2-pro", label: "Black Forest Labs FLUX.2 Pro", provider: "kilocode" },
 	// kilocode_change end
+	// kilocode_change start: LiteLLM image generation models
+	{ value: "gemini-3-pro-image", label: "Gemini 3 Pro Image", provider: "litellm" },
+	// kilocode_change end
 ]
 
 /**
@@ -40,7 +43,7 @@ export const IMAGE_GENERATION_MODEL_IDS = IMAGE_GENERATION_MODELS.map((m) => m.v
 /**
  * Image generation provider type
  */
-export type ImageGenerationProvider = "openrouter" | "kilocode" // kilocode_change: remove roo, add kilocode
+export type ImageGenerationProvider = "openrouter" | "kilocode" | "litellm" // kilocode_change: add litellm
 
 /**
  * Get the image generation provider with backwards compatibility

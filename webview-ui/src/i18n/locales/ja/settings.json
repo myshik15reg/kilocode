@@ -187,9 +187,18 @@
 		"searchMinScoreResetTooltip": "デフォルト値（0.4）にリセット",
 		"searchMaxResultsLabel": "最大検索結果数",
 		"searchMaxResultsDescription": "コードベースインデックスをクエリする際に返される検索結果の最大数。値を高くするとより多くのコンテキストが提供されますが、関連性の低い結果が含まれる可能性があります。",
+		"rerankSectionLabel": "リランカー",
+		"rerankEnableLabel": "リランカーを有効化",
+		"rerankEnableDescription": "グラフ拡張の前に cross-encoder で Qdrant の候補を再順位付けします。利用できない場合は意味的順序にフォールバックします。",
+		"rerankCandidateLimitLabel": "リランク候補上限",
+		"rerankTopKLabel": "リランク後 Top-K",
+		"rerankTimeoutMsLabel": "リランクのタイムアウト（ms）",
 		"resetToDefault": "デフォルトにリセット",
 		"cancelling": "キャンセル中...",
-		"cancelIndexingButton": "インデックス作成をキャンセル"
+		"cancelIndexingButton": "インデックス作成をキャンセル",
+		"neo4j": {
+			"enableDescription": "Neo4j によるグラフ検索と影響分析を有効にします。Qdrant と連携して、ハイブリッドなセマンティック + グラフ検索を行えます。"
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDEの環境設定</SettingsLink>で、この設定のグローバルショートカットを設定できます。",

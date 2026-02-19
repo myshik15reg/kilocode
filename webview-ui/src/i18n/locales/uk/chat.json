@@ -428,12 +428,8 @@
 	},
 	"browser": {
 		"session": "Сесія браузера",
-<<<<<<< HEAD
-		"rooWantsToUse": "AlfaCode assistant хоче використати браузер:",
-=======
-		"rooWantsToUse": "Kilo Code хоче використати браузер:",
 		"active": "Активний",
->>>>>>> origin/main
+		"rooWantsToUse": "AlfaCode assistant хоче використати браузер:",
 		"consoleLogs": "Логи консолі",
 		"noNewLogs": "(Немає нових логів)",
 		"screenshot": "Знімок екрана браузера",

@@ -220,6 +220,8 @@ export interface ExtensionMessage {
 		| "shareTaskSuccess"
 		| "codeIndexSettingsSaved"
 		| "codeIndexSecretStatus"
+		| "neo4jPasswordStatus" // kilocode_change
+		| "neo4jConnectionResult" // kilocode_change
 		| "showDeleteMessageDialog"
 		| "showEditMessageDialog"
 		| "kilocodeNotificationsResponse" // kilocode_change
@@ -340,6 +342,14 @@ export interface ExtensionMessage {
 	customMode?: ModeConfig
 	slug?: string
 	success?: boolean
+	// kilocode_change start: Neo4j settings responses
+	hasNeo4jPassword?: boolean
+	neo4jConnectionResult?: {
+		success: boolean
+		message: string
+		version?: string
+	}
+	// kilocode_change end: Neo4j settings responses
 	/** Generic payload for extension messages that use `values` */
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	values?: Record<string, any>
@@ -478,6 +488,7 @@ export type ExtensionState = Pick<
 	| "listApiConfigMeta"
 	| "pinnedApiConfigs"
 	| "customInstructions"
+	| "alfaCodeChangeAuthor" // kilocode_change
 	| "dismissedUpsells"
 	| "autoApprovalEnabled"
 	| "yoloMode" // kilocode_change
@@ -510,6 +521,11 @@ export type ExtensionState = Pick<
 	| "ttsSpeed"
 	| "soundEnabled"
 	| "soundVolume"
+	| "autoCondenseContext"
+	| "autoCondenseContextPercent"
+	| "contextRoutingEnabled" // kilocode_change
+	| "contextRoutingFastThresholdPercent" // kilocode_change
+	| "contextRoutingDeepThresholdPercent" // kilocode_change
 	| "maxConcurrentFileReads"
 	| "allowVeryLargeReads" // kilocode_change
 	| "terminalOutputLineLimit"
@@ -641,6 +657,10 @@ export type ExtensionState = Pick<
 	hasOpenedModeSelector: boolean
 	openRouterImageApiKey?: string
 	kiloCodeImageApiKey?: string
+	// kilocode_change start: LiteLLM image generation settings
+	litellmImageApiKey?: string
+	litellmImageBaseUrl?: string
+	// kilocode_change end
 	openRouterUseMiddleOutTransform?: boolean
 	messageQueue?: QueuedMessage[]
 	lastShownAnnouncementId?: string
@@ -912,6 +932,9 @@ export interface WebviewMessage {
 		| "checkRulesDirectoryResult"
 		| "saveCodeIndexSettingsAtomic"
 		| "requestCodeIndexSecretStatus"
+		| "setNeo4jPassword" // kilocode_change
+		| "getNeo4jPasswordStatus" // kilocode_change
+		| "neo4jConnectionTest" // kilocode_change
 		| "requestCommands"
 		| "openCommandFile"
 		| "deleteCommand"
@@ -920,6 +943,8 @@ export interface WebviewMessage {
 		| "showMdmAuthRequiredNotification"
 		| "imageGenerationSettings"
 		| "kiloCodeImageApiKey" // kilocode_change
+		| "litellmImageApiKey" // kilocode_change
+		| "litellmImageBaseUrl" // kilocode_change
 		| "queueMessage"
 		| "removeQueuedMessage"
 		| "editQueuedMessage"
@@ -978,6 +1003,14 @@ export interface WebviewMessage {
 	stepIndex?: number
 	isLaunchAction?: boolean
 	forceShow?: boolean
+	// kilocode_change start: Neo4j settings payloads
+	neo4jPassword?: string
+	neo4jConfig?: {
+		uri: string
+		username: string
+		database?: string
+	}
+	// kilocode_change end: Neo4j settings payloads
 	commands?: string[]
 	audioType?: AudioType
 	// kilocode_change begin
@@ -1056,6 +1089,7 @@ export interface WebviewMessage {
 			| "openrouter"
 		codebaseIndexVectorStoreProvider?: "lancedb" | "qdrant" // kilocode_change
 		codebaseIndexLancedbVectorStoreDirectory?: string // kilocode_change
+		codebaseIndexVectorStoreName?: string // kilocode_change
 		codebaseIndexEmbedderBaseUrl?: string
 		codebaseIndexEmbedderModelId: string
 		codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
@@ -1065,10 +1099,25 @@ export interface WebviewMessage {
 		codebaseIndexSearchMaxResults?: number
 		codebaseIndexSearchMinScore?: number
 		// kilocode_change start
+		codebaseIndexRerankEnabled?: boolean
+		codebaseIndexRerankBaseUrl?: string
+		codebaseIndexRerankModelId?: string
+		codebaseIndexRerankTimeoutMs?: number
+		codebaseIndexRerankCandidateLimit?: number
+		codebaseIndexRerankTopK?: number
+		// kilocode_change end
+		// kilocode_change start
 		codebaseIndexEmbeddingBatchSize?: number
 		codebaseIndexScannerMaxBatchRetries?: number
+		codebaseIndexEmbedderRequestsPerMinute?: number
 		// kilocode_change end
 		codebaseIndexOpenRouterSpecificProvider?: string // OpenRouter provider routing
+
+		// Neo4j settings
+		codebaseIndexNeo4jEnabled?: boolean
+		codebaseIndexNeo4jUri?: string
+		codebaseIndexNeo4jUsername?: string
+		codebaseIndexNeo4jDatabase?: string
 
 		// Secret settings
 		codeIndexOpenAiKey?: string
@@ -1078,6 +1127,10 @@ export interface WebviewMessage {
 		codebaseIndexMistralApiKey?: string
 		codebaseIndexVercelAiGatewayApiKey?: string
 		codebaseIndexOpenRouterApiKey?: string
+		// kilocode_change start
+		codebaseIndexRerankApiKey?: string
+		// kilocode_change end
+		codebaseIndexNeo4jPassword?: string
 	}
 	updatedSettings?: RooCodeSettings
 	// kilocode_change start: Review mode

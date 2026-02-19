@@ -87,8 +87,4 @@ With the AlfaCode assistant provider, if you sign up with Google you can also co
 - **Latest Models:** Automatic access to the most current frontier coding models
 - **Support Available:** Contact [hi@kilo.ai](mailto:hi@kilo.ai) for questions about pricing or tokens
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/kilocode.md
-For detailed setup instructions, see [Setting up AlfaCode assistant](/getting-started/setting-up).
-=======
-For detailed setup instructions, see [Setting up Kilo Code](/docs/getting-started/setting-up).
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/kilocode.md
+For detailed setup instructions, see [Setting up AlfaCode assistant](/docs/getting-started/setup-authentication).

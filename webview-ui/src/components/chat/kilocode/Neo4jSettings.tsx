@@ -3,14 +3,19 @@ import React, { useState, useEffect } from "react"
 import { VSCodeTextField, VSCodeButton, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react"
 
+import { StandardTooltip } from "@src/components/ui"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { vscode } from "@src/utils/vscode"
+
+const SAVED_PASSWORD_PLACEHOLDER = "••••••••••••••••"
 
 interface Neo4jSettingsProps {
 	enabled: boolean
 	uri: string
 	username: string
 	database: string
+	password: string
+	onPasswordChange: (password: string) => void
 	setCachedStateField: (key: string, value: any) => void
 }
 
@@ -19,10 +24,14 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 	uri,
 	username,
 	database,
+	password,
+	onPasswordChange,
 	setCachedStateField,
 }) => {
 	const { t } = useAppTranslation()
 	const [isTestingConnection, setIsTestingConnection] = useState(false)
+	const [hasSavedNeo4jPassword, setHasSavedNeo4jPassword] = useState(false)
+	const [isPasswordFocused, setIsPasswordFocused] = useState(false)
 	const [connectionTestResult, setConnectionTestResult] = useState<{
 		success: boolean
 		message: string
@@ -38,7 +47,7 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
 			if (event.data.type === "neo4jPasswordStatus") {
-				// Password status is handled by parent component
+				setHasSavedNeo4jPassword(Boolean(event.data.hasNeo4jPassword))
 			} else if (event.data.type === "neo4jConnectionResult") {
 				setConnectionTestResult(event.data.neo4jConnectionResult)
 				setIsTestingConnection(false)
@@ -67,6 +76,15 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 		setCachedStateField(field, value)
 	}
 
+	const handlePasswordInput = (e: any) => {
+		onPasswordChange(e.target.value)
+	}
+
+	const shouldShowSavedPasswordPlaceholder = hasSavedNeo4jPassword && password.length === 0 && !isPasswordFocused
+	const passwordPlaceholder = shouldShowSavedPasswordPlaceholder
+		? SAVED_PASSWORD_PLACEHOLDER
+		: t("settings:codeIndex.neo4j.passwordPlaceholder")
+
 	return (
 		<>
 			{/* Enable Neo4j Toggle */}
@@ -75,7 +93,31 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 					<VSCodeCheckbox
 						checked={enabled}
 						onChange={(e: any) => handleFieldChange("codebaseIndexNeo4jEnabled", e.target.checked)}>
-						<span className="font-medium">{t("settings:codeIndex.neo4j.enableLabel")}</span>
+						<span className="flex items-center gap-2">
+							<span className="font-medium">{t("settings:codeIndex.neo4j.enableLabel")}</span>
+							<StandardTooltip
+								content={t("settings:codeIndex.neo4j.enableDescription", {
+									defaultValue: `${t("settings:codeIndex.neo4j.aboutPoint2")} • ${t(
+										"settings:codeIndex.neo4j.aboutPoint3",
+									)}`,
+								})}
+								maxWidth={360}>
+								<span
+									className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help"
+									onPointerDown={(e) => {
+										e.preventDefault()
+										e.stopPropagation()
+									}}
+									onClick={(e) => {
+										e.preventDefault()
+										e.stopPropagation()
+									}}
+									aria-label={t("settings:codeIndex.neo4j.enableDescription", {
+										defaultValue: t("settings:codeIndex.neo4j.aboutTitle"),
+									})}
+								/>
+							</StandardTooltip>
+						</span>
 					</VSCodeCheckbox>
 				</div>
 			</div>
@@ -85,9 +127,7 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 				<div className="space-y-4 mt-4">
 					{/* URI */}
 					<div className="space-y-2">
-						<label className="text-sm font-medium">
-							{t("settings:codeIndex.neo4j.uriLabel")}
-						</label>
+						<label className="text-sm font-medium">{t("settings:codeIndex.neo4j.uriLabel")}</label>
 						<VSCodeTextField
 							value={uri || ""}
 							onInput={(e: any) => handleFieldChange("codebaseIndexNeo4jUri", e.target.value)}
@@ -98,9 +138,7 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 
 					{/* Username */}
 					<div className="space-y-2">
-						<label className="text-sm font-medium">
-							{t("settings:codeIndex.neo4j.usernameLabel")}
-						</label>
+						<label className="text-sm font-medium">{t("settings:codeIndex.neo4j.usernameLabel")}</label>
 						<VSCodeTextField
 							value={username || ""}
 							onInput={(e: any) => handleFieldChange("codebaseIndexNeo4jUsername", e.target.value)}
@@ -111,9 +149,7 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 
 					{/* Database */}
 					<div className="space-y-2">
-						<label className="text-sm font-medium">
-							{t("settings:codeIndex.neo4j.databaseLabel")}
-						</label>
+						<label className="text-sm font-medium">{t("settings:codeIndex.neo4j.databaseLabel")}</label>
 						<VSCodeTextField
 							value={database || ""}
 							onInput={(e: any) => handleFieldChange("codebaseIndexNeo4jDatabase", e.target.value)}
@@ -124,13 +160,17 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 
 					{/* Password */}
 					<div className="space-y-2">
-						<label className="text-sm font-medium">
-							{t("settings:codeIndex.neo4j.passwordLabel")}
-						</label>
+						<label className="text-sm font-medium">{t("settings:codeIndex.neo4j.passwordLabel")}</label>
 						<VSCodeTextField
 							type="password"
-							placeholder={t("settings:codeIndex.neo4j.passwordPlaceholder")}
+							value={password}
+							onInput={handlePasswordInput}
+							onFocus={() => setIsPasswordFocused(true)}
+							onBlur={() => setIsPasswordFocused(false)}
+							placeholder={passwordPlaceholder}
 							className="w-full"
+							data-testid="neo4j-password"
+							data-has-saved-password={hasSavedNeo4jPassword ? "true" : "false"}
 						/>
 						<p className="text-xs text-vscode-descriptionForeground mt-1 mb-0">
 							{t("settings:codeIndex.neo4j.passwordDescription")}
@@ -169,33 +209,18 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 									<XCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
 								)}
 								<div className="flex-1">
-									<p className="text-sm font-medium">
-										{connectionTestResult.message}
-									</p>
+									<p className="text-sm font-medium">{connectionTestResult.message}</p>
 									{connectionTestResult.version && (
 										<p className="text-xs text-vscode-descriptionForeground mt-1">
-											{t("settings:codeIndex.neo4j.version", { version: connectionTestResult.version })}
+											{t("settings:codeIndex.neo4j.version", {
+												version: connectionTestResult.version,
+											})}
 										</p>
 									)}
 								</div>
 							</div>
 						</div>
 					)}
-
-					{/* Description */}
-					<div className="mt-4 p-3 bg-vscode-editor-background border border-vscode-dropdown-border rounded">
-						<h4 className="text-sm font-medium mb-2">
-							{t("settings:codeIndex.neo4j.aboutTitle")}
-						</h4>
-						<p className="text-sm text-vscode-descriptionForeground mb-2">
-							{t("settings:codeIndex.neo4j.aboutDescription")}
-						</p>
-						<ul className="text-sm text-vscode-descriptionForeground list-disc list-inside pl-5 space-y-1">
-							<li>{t("settings:codeIndex.neo4j.aboutPoint1")}</li>
-							<li>{t("settings:codeIndex.neo4j.aboutPoint2")}</li>
-							<li>{t("settings:codeIndex.neo4j.aboutPoint3")}</li>
-						</ul>
-					</div>
 				</div>
 			)}
 		</>

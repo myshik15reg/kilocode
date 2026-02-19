@@ -1,14 +1,8 @@
 {
 	"welcome": {
-<<<<<<< HEAD
 		"greeting": "AlfaCode assistantへようこそ！",
 		"introText1": "AlfaCode assistantは無料のオープンソースAIコーディングエージェントです。",
 		"introText2": "Claude Sonnet 4.5、Gemini 2.5 Pro、GPT-5、その他450以上の最新のAIモデルと連携します。",
-=======
-		"greeting": "Kilo Codeへようこそ！",
-		"introText1": "Kilo Codeは無料のオープンソースAIコーディングエージェントです。",
-		"introText2": "Claude Opus 4.5、Gemini 3 Pro、GPT-5.2、その他450以上の最新のAIモデルと連携します。",
->>>>>>> origin/main
 		"introText3": "無料アカウントを作成して、初回チャージ時に$20のボーナスクレジットを獲得しましょう。",
 		"ctaButton": "始める",
 		"manualModeButton": "自分のAPIキーを使う",
@@ -17,13 +11,9 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "クレジットを追加",
-<<<<<<< HEAD
 		"lowBalance": "AlfaCode assistantの残高が少なくなっています",
-		"newOrganization": "仕事でKiloを使用していますか？"
-=======
-		"lowBalance": "Kilo Codeの残高が少なくなっています",
+		"newOrganization": "仕事でAlfaCode assistantを使用していますか？",
 		"switchToFreeModel": "無料モデルに切り替える"
->>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "前へ",
@@ -54,18 +44,11 @@
 			"skills": "スキル"
 		},
 		"provider": {
-<<<<<<< HEAD
 			"account": "AlfaCode assistant アカウント",
 			"apiKey": "AlfaCode assistant APIキー",
 			"login": "AlfaCode assistantにログイン",
 			"logout": "AlfaCode assistantからログアウト",
-=======
-			"account": "Kilo Code アカウント",
-			"apiKey": "Kilo Code APIキー",
-			"login": "Kilo Codeにログイン",
-			"logout": "Kilo Codeからログアウト",
 			"loginForPremiumModels": "ログインしてプレミアムモデルと機能にアクセス",
->>>>>>> origin/main
 			"providerRouting": {
 				"title": "プロバイダールーティング",
 				"managedByOrganization": "組織レベルのプロバイダールーティングを管理",
@@ -84,12 +67,8 @@
 					"deny": "プロンプトトレーニングを拒否",
 					"zdr": "データ保持なし"
 				}
-<<<<<<< HEAD
 			},
 			"automaticFetch": "最新のモデルはAlfaCode assistantで自動的に利用可能になります。どのモデルを選択すべきかわからない場合は、上部に<strong>太字</strong>で表示されている推奨モデルでAlfaCode assistantが最適に動作します。"
-=======
-			}
->>>>>>> origin/main
 		},
 		"modelInfo": {
 			"contextWindow": "コンテキストウィンドウ",

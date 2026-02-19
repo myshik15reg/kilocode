@@ -1,14 +1,8 @@
 {
 	"welcome": {
-<<<<<<< HEAD
 		"greeting": "Selamat datang di AlfaCode assistant!",
-		"introText1": "AlfaCode assistant adalah agen coding AI gratis.",
+		"introText1": "AlfaCode assistant adalah agen coding AI gratis dan open source.",
 		"introText2": "Bekerja dengan model AI terbaru seperti Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5, dan lebih dari 450 model lainnya.",
-=======
-		"greeting": "Selamat datang di Kilo Code!",
-		"introText1": "Kilo Code adalah agen coding AI gratis dan open source.",
-		"introText2": "Bekerja dengan model AI terbaru seperti Claude Opus 4.5, Gemini 3 Pro, GPT-5.2, dan lebih dari 450 model lainnya.",
->>>>>>> origin/main
 		"introText3": "Buat akun gratis dan dapatkan $20 kredit bonus saat top-up pertama kali.",
 		"ctaButton": "Mulai",
 		"manualModeButton": "Gunakan API key sendiri",
@@ -17,13 +11,9 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "Tambah Kredit",
-<<<<<<< HEAD
 		"lowBalance": "Saldo AlfaCode assistant kamu rendah",
-		"newOrganization": "Menggunakan Kilo untuk pekerjaan?"
-=======
-		"lowBalance": "Saldo Kilo Code kamu rendah",
+		"newOrganization": "Menggunakan AlfaCode assistant untuk pekerjaan?",
 		"switchToFreeModel": "Beralih ke Model Gratis"
->>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "Sebelumnya",
@@ -47,19 +37,12 @@
 			"skills": "Skill"
 		},
 		"provider": {
-<<<<<<< HEAD
 			"account": "Akun AlfaCode assistant",
 			"apiKey": "API Key AlfaCode assistant",
 			"login": "Masuk ke AlfaCode assistant",
 			"logout": "Keluar dari AlfaCode assistant",
-			"automaticFetch": "Model terbaru tersedia secara otomatis di AlfaCode assistant. Jika Anda tidak yakin model mana yang harus dipilih, AlfaCode assistant bekerja paling baik dengan model yang direkomendasikan yang tercantum di bagian atas dengan <strong>huruf tebal</strong>.",
-=======
-			"account": "Akun Kilo Code",
-			"apiKey": "API Key Kilo Code",
-			"login": "Masuk ke Kilo Code",
-			"logout": "Keluar dari Kilo Code",
 			"loginForPremiumModels": "Masuk untuk mengakses model dan fitur premium",
->>>>>>> origin/main
+			"automaticFetch": "Model terbaru tersedia secara otomatis di AlfaCode assistant. Jika Anda tidak yakin model mana yang harus dipilih, AlfaCode assistant bekerja paling baik dengan model yang direkomendasikan yang tercantum di bagian atas dengan <strong>huruf tebal</strong>.",
 			"providerRouting": {
 				"title": "Perutean Penyedia",
 				"managedByOrganization": "Kelola Perutean Penyedia Tingkat Organisasi",

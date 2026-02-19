@@ -358,7 +358,7 @@ describe("generateImageWithProvider (chat completions)", () => {
 		vi.clearAllMocks()
 	})
 
-	it("should use /chat/completions endpoint", async () => {
+	it("should use /v1/chat/completions endpoint", async () => {
 		const mockResponse = {
 			ok: true,
 			json: vi.fn().mockResolvedValue({
@@ -391,7 +391,42 @@ describe("generateImageWithProvider (chat completions)", () => {
 
 		// Verify /chat/completions endpoint was used
 		const callUrl = vi.mocked(global.fetch).mock.calls[0][0]
-		expect(callUrl).toContain("/chat/completions")
+		expect(callUrl).toBe("https://api.example.com/v1/chat/completions")
+	})
+
+	it("should normalize /v1 base URLs", async () => {
+		const mockResponse = {
+			ok: true,
+			json: vi.fn().mockResolvedValue({
+				choices: [
+					{
+						message: {
+							images: [
+								{
+									image_url: {
+										url: "data:image/png;base64,iVBORw0KGgo=",
+									},
+								},
+							],
+						},
+					},
+				],
+			}),
+		}
+
+		vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+
+		const result = await generateImageWithProvider({
+			baseURL: "https://api.example.com/v1/",
+			authToken: "test-token",
+			model: "gpt-4-vision",
+			prompt: "A cute cat",
+		})
+
+		expect(result.success).toBe(true)
+
+		const callUrl = vi.mocked(global.fetch).mock.calls[0][0]
+		expect(callUrl).toBe("https://api.example.com/v1/chat/completions")
 	})
 
 	it("should handle missing images in response", async () => {

@@ -41,15 +41,10 @@
 		"ui": "UI",
 		"experimental": "Expérimental",
 		"language": "Langue",
-<<<<<<< HEAD
 		"about": "À propos de AlfaCode assistant",
-		"autoPurge": "Auto-nettoyage"
-=======
-		"about": "À propos de Kilo Code",
 		"autoPurge": "Auto-nettoyage",
 		"agentBehaviour": "Comportement de l'agent",
 		"ghost": "Autocomplétion"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -192,9 +187,18 @@
 		"searchMinScoreResetTooltip": "Réinitialiser à la valeur par défaut (0.4)",
 		"searchMaxResultsLabel": "Résultats de recherche maximum",
 		"searchMaxResultsDescription": "Nombre maximum de résultats de recherche à retourner lors de l'interrogation de l'index de code. Des valeurs plus élevées fournissent plus de contexte mais peuvent inclure des résultats moins pertinents.",
+		"rerankSectionLabel": "Réordonnancement",
+		"rerankEnableLabel": "Activer le réordonnancement",
+		"rerankEnableDescription": "Réordonne les candidats Qdrant via un cross-encoder avant l’extension du graphe. En cas d’indisponibilité, revient à l’ordre sémantique.",
+		"rerankCandidateLimitLabel": "Limite de candidats pour le réordonnancement",
+		"rerankTopKLabel": "Top-K après réordonnancement",
+		"rerankTimeoutMsLabel": "Délai d’attente du réordonnancement (ms)",
 		"resetToDefault": "Réinitialiser par défaut",
 		"cancelling": "Annulation...",
-		"cancelIndexingButton": "Annuler l'indexation"
+		"cancelIndexingButton": "Annuler l'indexation",
+		"neo4j": {
+			"enableDescription": "Active la recherche basée sur des graphes et l’analyse d’impact avec Neo4j. Fonctionne avec Qdrant pour une recherche hybride sémantique + graphe."
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "Vous pouvez configurer un raccourci global pour ce paramètre <SettingsLink>dans les préférences de votre IDE</SettingsLink>.",

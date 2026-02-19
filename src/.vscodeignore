@@ -31,7 +31,13 @@
 !assets/vscode-material-icons/**
 !assets/icons/**
 !assets/images/**
-!assets/workflow-ai/**
+# kilocode_change start: bundle WorkFlowAI pack only
+!WorkFlowAI/**
+!WorkFlowAI/.kilocode/**
+!WorkFlowAI/.protocols/**
+!WorkFlowAI/.clinerules
+!WorkFlowAI/.kilocodemodes
+# kilocode_change end
 
 # Include .env file for telemetry
 !.env

@@ -27,8 +27,19 @@ export interface CodeIndexConfig {
 	searchMinScore?: number
 	searchMaxResults?: number
 	// kilocode_change start
+	rerankEnabled?: boolean
+	rerankBaseUrl?: string
+	rerankModelId?: string
+	rerankTimeoutMs?: number
+	rerankCandidateLimit?: number
+	rerankTopK?: number
+	rerankApiKey?: string
+	rerankAvailable?: boolean
+	// kilocode_change end
+	// kilocode_change start
 	embeddingBatchSize?: number
 	scannerMaxBatchRetries?: number
+	embedderRequestsPerMinute?: number
 	// kilocode_change end
 }
 
@@ -59,4 +70,13 @@ export type PreviousConfigSnapshot = {
 	openRouterSpecificProvider?: string
 	qdrantUrl?: string
 	qdrantApiKey?: string
+	// kilocode_change start
+	rerankBaseUrl?: string
+	rerankApiKey?: string
+	rerankModelId?: string
+	rerankTimeoutMs?: number
+	rerankCandidateLimit?: number
+	rerankTopK?: number
+	rerankEnabled?: boolean
+	// kilocode_change end
 }

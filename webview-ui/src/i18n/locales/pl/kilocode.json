@@ -1,14 +1,8 @@
 {
 	"welcome": {
-<<<<<<< HEAD
 		"greeting": "Witaj w AlfaCode assistant!",
 		"introText1": "AlfaCode assistant to darmowy, otwartoźródłowy agent kodowania AI.",
 		"introText2": "Współpracuje z najnowszymi modelami AI, takimi jak Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5 i ponad 450 innymi.",
-=======
-		"greeting": "Witaj w Kilo Code!",
-		"introText1": "Kilo Code to darmowy, otwartoźródłowy agent kodowania AI.",
-		"introText2": "Współpracuje z najnowszymi modelami AI, takimi jak Claude Opus 4.5, Gemini 3 Pro, GPT-5.2 i ponad 450 innymi.",
->>>>>>> origin/main
 		"introText3": "Stwórz darmowe konto i otrzymaj $20 bonusowych kredytów przy pierwszym doładowaniu.",
 		"ctaButton": "Rozpocznij",
 		"manualModeButton": "Użyj własnego klucza API",
@@ -17,13 +11,9 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "Dodaj kredyt",
-<<<<<<< HEAD
 		"lowBalance": "Twój stan konta AlfaCode assistant jest niski",
-		"newOrganization": "Używasz Kilo do pracy?"
-=======
-		"lowBalance": "Twój stan konta Kilo Code jest niski",
+		"newOrganization": "Używasz AlfaCode assistant do pracy?",
 		"switchToFreeModel": "Przełącz na darmowy model"
->>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "Poprzednia",
@@ -47,18 +37,11 @@
 			"skills": "Umiejętności"
 		},
 		"provider": {
-<<<<<<< HEAD
 			"account": "Konto AlfaCode assistant",
 			"apiKey": "Klucz API AlfaCode assistant",
 			"login": "Zaloguj się do AlfaCode assistant",
 			"logout": "Wyloguj się z AlfaCode assistant",
-=======
-			"account": "Konto Kilo Code",
-			"apiKey": "Klucz API Kilo Code",
-			"login": "Zaloguj się do Kilo Code",
-			"logout": "Wyloguj się z Kilo Code",
 			"loginForPremiumModels": "Zaloguj się, aby uzyskać dostęp do modeli i funkcji premium",
->>>>>>> origin/main
 			"providerRouting": {
 				"title": "Routing dostawców",
 				"managedByOrganization": "Zarządzaj routingiem dostawców na poziomie organizacji",
@@ -77,12 +60,8 @@
 					"deny": "Zabroń treningu promptów",
 					"zdr": "Zerowe przechowywanie danych"
 				}
-<<<<<<< HEAD
 			},
 			"automaticFetch": "Najnowsze modele są automatycznie dostępne w AlfaCode assistant. Jeśli nie jesteś pewien, który model wybrać, AlfaCode assistant działa najlepiej z zalecanymi modelami wymienionymi na górze <strong>pogrubioną czcionką</strong>."
-=======
-			}
->>>>>>> origin/main
 		},
 		"modelInfo": {
 			"contextWindow": "Okno kontekstu",

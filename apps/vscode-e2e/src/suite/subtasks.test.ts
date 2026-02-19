@@ -4,14 +4,9 @@ import { RooCodeEventName, type ClineMessage } from "@roo-code/types"
 
 import { waitFor } from "./utils"
 
-<<<<<<< HEAD
-suite.skip("AlfaCode assistant Subtasks", () => {
-	test("Should handle subtask cancellation and resumption correctly", async () => {
-=======
-suite("Kilo Code Subtasks", () => {
+suite("AlfaCode assistant Subtasks", () => {
 	test("Should create and complete a subtask successfully", async function () {
 		this.timeout(180_000) // 3 minutes for complex orchestration
->>>>>>> origin/main
 		const api = globalThis.api
 
 		const messages: ClineMessage[] = []

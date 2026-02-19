@@ -1,6 +1,6 @@
 /**
  * Neo4j Graph Service
- * 
+ *
  * Implements IGraphStore interface for managing code entities and relationships in Neo4j.
  * Provides CRUD operations, graph traversal, and impact analysis.
  */
@@ -51,13 +51,9 @@ export class Neo4jGraphService implements IGraphStore {
 
 		try {
 			// Check if constraints already exist
-			const existingConstraints = await this.connectionManager.executeRead<{ name: string }>(
-				"SHOW CONSTRAINTS"
-			)
+			const existingConstraints = await this.connectionManager.executeRead<{ name: string }>("SHOW CONSTRAINTS")
 
-			const hasEntityConstraint = existingConstraints.some((c) =>
-				c.name?.includes("entity_id_unique")
-			)
+			const hasEntityConstraint = existingConstraints.some((c) => c.name?.includes("entity_id_unique"))
 
 			if (hasEntityConstraint) {
 				// Already initialized
@@ -66,27 +62,27 @@ export class Neo4jGraphService implements IGraphStore {
 
 			// Create unique constraint on CodeEntity.id
 			await this.connectionManager.executeWrite(
-				"CREATE CONSTRAINT entity_id_unique IF NOT EXISTS FOR (e:CodeEntity) REQUIRE e.id IS UNIQUE"
+				"CREATE CONSTRAINT entity_id_unique IF NOT EXISTS FOR (e:CodeEntity) REQUIRE e.id IS UNIQUE",
 			)
 
 			// Create indexes for better query performance
 			await this.connectionManager.executeWrite(
-				"CREATE INDEX entity_type_idx IF NOT EXISTS FOR (e:CodeEntity) ON (e.type)"
+				"CREATE INDEX entity_type_idx IF NOT EXISTS FOR (e:CodeEntity) ON (e.type)",
 			)
 
 			await this.connectionManager.executeWrite(
-				"CREATE INDEX entity_filepath_idx IF NOT EXISTS FOR (e:CodeEntity) ON (e.filePath)"
+				"CREATE INDEX entity_filepath_idx IF NOT EXISTS FOR (e:CodeEntity) ON (e.filePath)",
 			)
 
 			await this.connectionManager.executeWrite(
-				"CREATE INDEX entity_name_idx IF NOT EXISTS FOR (e:CodeEntity) ON (e.name)"
+				"CREATE INDEX entity_name_idx IF NOT EXISTS FOR (e:CodeEntity) ON (e.name)",
 			)
 
 			console.log("[Neo4j] Graph store initialized with constraints and indexes")
 			return true
 		} catch (error) {
 			throw new Error(
-				`Failed to initialize Neo4j graph store: ${error instanceof Error ? error.message : String(error)}`
+				`Failed to initialize Neo4j graph store: ${error instanceof Error ? error.message : String(error)}`,
 			)
 		}
 	}
@@ -175,9 +171,7 @@ export class Neo4jGraphService implements IGraphStore {
 			await this.connectionManager.executeWrite(query, { entities: params })
 		} catch (error) {
 			console.error(`[Neo4jGraphService] Failed to bulk create ${entities.length} entities:`, error)
-			throw new Error(
-				`Failed to bulk create entities: ${error instanceof Error ? error.message : String(error)}`
-			)
+			throw new Error(`Failed to bulk create entities: ${error instanceof Error ? error.message : String(error)}`)
 		}
 	}
 
@@ -219,7 +213,7 @@ export class Neo4jGraphService implements IGraphStore {
 		} catch (error) {
 			console.error(`[Neo4jGraphService] Failed to bulk create ${relationships.length} relationships:`, error)
 			throw new Error(
-				`Failed to bulk create relationships: ${error instanceof Error ? error.message : String(error)}`
+				`Failed to bulk create relationships: ${error instanceof Error ? error.message : String(error)}`,
 			)
 		}
 	}
@@ -267,9 +261,7 @@ export class Neo4jGraphService implements IGraphStore {
 			}
 		} catch (error) {
 			console.error(`[Neo4jGraphService] Failed to get entity context for ${entityId}:`, error)
-			throw new Error(
-				`Failed to get entity context: ${error instanceof Error ? error.message : String(error)}`
-			)
+			throw new Error(`Failed to get entity context: ${error instanceof Error ? error.message : String(error)}`)
 		}
 	}
 
@@ -315,10 +307,7 @@ export class Neo4jGraphService implements IGraphStore {
 		const indirectImpact = await this.getDependents(entityId, maxDepth)
 
 		// Calculate impact score based on number of dependents
-		const impactScore = Math.min(
-			1.0,
-			(directImpact.length * 0.5 + indirectImpact.length * 0.3) / 100
-		)
+		const impactScore = Math.min(1.0, (directImpact.length * 0.5 + indirectImpact.length * 0.3) / 100)
 
 		// Identify potential breaking changes
 		const breakingChanges = directImpact.map((dep) => ({
@@ -341,9 +330,7 @@ export class Neo4jGraphService implements IGraphStore {
 		return {
 			entity,
 			directImpact,
-			indirectImpact: indirectImpact.filter(
-				(e) => !directImpact.some((d) => d.id === e.id)
-			),
+			indirectImpact: indirectImpact.filter((e) => !directImpact.some((d) => d.id === e.id)),
 			impactScore,
 			breakingChanges,
 			recommendations,
@@ -353,11 +340,7 @@ export class Neo4jGraphService implements IGraphStore {
 	/**
 	 * Find paths between two entities
 	 */
-	public async findPath(
-		fromId: string,
-		toId: string,
-		maxDepth: number = 5
-	): Promise<string[][]> {
+	public async findPath(fromId: string, toId: string, maxDepth: number = 5): Promise<string[][]> {
 		const query = `
 			MATCH path = shortestPath((from:CodeEntity {id: $fromId})-[*1..${maxDepth}]-(to:CodeEntity {id: $toId}))
 			RETURN [node in nodes(path) | node.id] AS pathIds
@@ -389,10 +372,7 @@ export class Neo4jGraphService implements IGraphStore {
 	/**
 	 * Search entities by criteria
 	 */
-	public async searchEntities(
-		criteria: Partial<CodeEntity>,
-		options?: GraphSearchOptions
-	): Promise<CodeEntity[]> {
+	public async searchEntities(criteria: Partial<CodeEntity>, options?: GraphSearchOptions): Promise<CodeEntity[]> {
 		let query = "MATCH (e:CodeEntity) WHERE 1=1"
 		const params: Record<string, any> = {}
 
@@ -470,13 +450,21 @@ export class Neo4jGraphService implements IGraphStore {
 	 */
 	public async isInitialized(): Promise<boolean> {
 		try {
-			const constraints = await this.connectionManager.executeRead<{ name: string }>(
-				"SHOW CONSTRAINTS"
-			)
+			const constraints = await this.connectionManager.executeRead<{ name: string }>("SHOW CONSTRAINTS")
 			return constraints.some((c) => c.name?.includes("entity_id_unique"))
 		} catch (error) {
 			return false
 		}
+	}
+
+	/**
+	 * Count total CodeEntity nodes.
+	 */
+	public async getCodeEntityCount(): Promise<number> {
+		const result = await this.connectionManager.executeRead<{ count: number }>(
+			"MATCH (e:CodeEntity) RETURN count(e) AS count",
+		)
+		return result[0]?.count ?? 0
 	}
 
 	/**
@@ -490,22 +478,22 @@ export class Neo4jGraphService implements IGraphStore {
 	}> {
 		// Get total entities
 		const entityCount = await this.connectionManager.executeRead<{ count: number }>(
-			"MATCH (e:CodeEntity) RETURN count(e) AS count"
+			"MATCH (e:CodeEntity) RETURN count(e) AS count",
 		)
 
 		// Get total relationships
 		const relCount = await this.connectionManager.executeRead<{ count: number }>(
-			"MATCH ()-[r]->() RETURN count(r) AS count"
+			"MATCH ()-[r]->() RETURN count(r) AS count",
 		)
 
 		// Get entities by type
 		const entityTypes = await this.connectionManager.executeRead<{ type: EntityType; count: number }>(
-			"MATCH (e:CodeEntity) RETURN e.type AS type, count(e) AS count"
+			"MATCH (e:CodeEntity) RETURN e.type AS type, count(e) AS count",
 		)
 
 		// Get relationships by type
 		const relTypes = await this.connectionManager.executeRead<{ type: string; count: number }>(
-			"MATCH ()-[r]->() RETURN type(r) AS type, count(r) AS count"
+			"MATCH ()-[r]->() RETURN type(r) AS type, count(r) AS count",
 		)
 
 		const entitiesByType: Record<string, number> = {}

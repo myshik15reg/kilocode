@@ -3,7 +3,7 @@
  * Tests combination of semantic and graph-based search
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest"
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { HybridSearchService } from "../hybrid-search-service"
 import type { CodeEntity, HybridSearchResult } from "../interfaces"
 import type { IEmbedder } from "../../code-index/interfaces/embedder"
@@ -99,25 +99,44 @@ describe("HybridSearchService", () => {
 	let mockEmbedder: IEmbedder
 	let mockVectorStore: IVectorStore
 	let mockGraphService: any
+	const originalFetch = globalThis.fetch
 
 	beforeEach(() => {
 		mockEmbedder = createMockEmbedder()
 		mockVectorStore = createMockVectorStore()
 		mockGraphService = createMockGraphService()
-		
-		service = new HybridSearchService(
-			mockEmbedder,
-			mockVectorStore,
-			mockGraphService,
-		)
+
+		service = new HybridSearchService(mockEmbedder, mockVectorStore, mockGraphService)
+	})
+
+	afterEach(() => {
+		;(globalThis as { fetch?: unknown }).fetch = originalFetch
 	})
 
 	describe("search", () => {
+		it("should canonicalize filePath before Neo4j lookup", async () => {
+			mockVectorStore.search = vi.fn().mockResolvedValue([
+				{
+					id: "1",
+					filePath: "src\\calculator.ts",
+					codeChunk: "function add(a: number, b: number) { return a + b }",
+					startLine: 1,
+					endLine: 3,
+					score: 0.9,
+				},
+			] as VectorStoreSearchResult[])
+
+			const results = await service.search("add function", { minScore: 0 })
+
+			expect(mockGraphService.getEntitiesByFilePath).toHaveBeenCalledWith("src/calculator.ts")
+			expect(results[0]?.relatedEntities.length).toBeGreaterThan(0)
+		})
+
 		it("should combine semantic and graph scores", async () => {
 			const results = await service.search("add function", { minScore: 0 })
 
 			expect(results).toHaveLength(2)
-			
+
 			// First result should have graph data
 			const firstResult = results[0]
 			expect(firstResult).toHaveProperty("semanticScore")
@@ -125,7 +144,7 @@ describe("HybridSearchService", () => {
 			expect(firstResult).toHaveProperty("combinedScore")
 			expect(firstResult.semanticScore).toBe(0.9)
 			expect(firstResult.graphScore).toBeGreaterThan(0)
-			
+
 			// Combined score should be weighted average
 			const expectedCombined = 0.6 * firstResult.semanticScore + 0.4 * firstResult.graphScore
 			expect(firstResult.combinedScore).toBeCloseTo(expectedCombined, 2)
@@ -137,7 +156,7 @@ describe("HybridSearchService", () => {
 			const firstResult = results[0]
 			expect(firstResult.relatedEntities).toBeDefined()
 			expect(firstResult.relatedEntities?.length).toBeGreaterThan(0)
-			
+
 			const entity = firstResult.relatedEntities?.[0]
 			expect(entity?.type).toBe("function")
 			expect(entity?.name).toBe("add")
@@ -159,8 +178,8 @@ describe("HybridSearchService", () => {
 
 			// With high min score, some results should be filtered out
 			expect(results.length).toBeLessThanOrEqual(2)
-			
-			results.forEach(result => {
+
+			results.forEach((result) => {
 				expect(result.combinedScore).toBeGreaterThanOrEqual(0.95)
 			})
 		})
@@ -179,9 +198,7 @@ describe("HybridSearchService", () => {
 
 			// Verify descending order
 			for (let i = 1; i < results.length; i++) {
-				expect(results[i - 1].combinedScore).toBeGreaterThanOrEqual(
-					results[i].combinedScore,
-				)
+				expect(results[i - 1].combinedScore).toBeGreaterThanOrEqual(results[i].combinedScore)
 			}
 		})
 
@@ -196,10 +213,9 @@ describe("HybridSearchService", () => {
 			})
 
 			const firstResult = results[0]
-			const expectedCombined = 
-				customSemanticWeight * firstResult.semanticScore +
-				customGraphWeight * firstResult.graphScore
-			
+			const expectedCombined =
+				customSemanticWeight * firstResult.semanticScore + customGraphWeight * firstResult.graphScore
+
 			expect(firstResult.combinedScore).toBeCloseTo(expectedCombined, 2)
 		})
 
@@ -210,9 +226,9 @@ describe("HybridSearchService", () => {
 			const results = await service.search("add function", { minScore: 0 })
 
 			expect(results).toHaveLength(2)
-			
+
 			// Should still have results but with zero graph scores
-			results.forEach(result => {
+			results.forEach((result) => {
 				expect(result.graphScore).toBe(0)
 				expect(result.relatedEntities).toEqual([])
 			})
@@ -229,18 +245,109 @@ describe("HybridSearchService", () => {
 
 		it("should handle errors in graph enhancement gracefully", async () => {
 			// Mock error in graph service
-			mockGraphService.getEntitiesByFilePath.mockRejectedValue(
-				new Error("Neo4j connection failed"),
-			)
+			mockGraphService.getEntitiesByFilePath.mockRejectedValue(new Error("Neo4j connection failed"))
 
 			const results = await service.search("add function", { minScore: 0 })
 
 			// Should still return results with zero graph scores
 			expect(results).toHaveLength(2)
-			results.forEach(result => {
+			results.forEach((result) => {
 				expect(result.graphScore).toBe(0)
 				expect(result.combinedScore).toBe(0.6 * result.semanticScore)
 			})
+		})
+
+		it("should reorder by rerank score when rerank is enabled and configured", async () => {
+			mockGraphService.isInitialized.mockResolvedValue(false)
+			;(globalThis as { fetch?: unknown }).fetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: vi.fn().mockResolvedValue({
+					data: [
+						{ index: 1, relevance_score: 0.99 },
+						{ index: 0, relevance_score: 0.1 },
+					],
+				}),
+			})
+
+			const rerankService = new HybridSearchService(mockEmbedder, mockVectorStore, mockGraphService, {
+				enabled: true,
+				baseUrl: "https://rerank.local/",
+				modelId: "bge-reranker-v2",
+				topK: 2,
+			})
+
+			const results = await rerankService.search("add function", { minScore: 0, maxResults: 2 })
+
+			expect(results).toHaveLength(2)
+			expect(results[0].filePath).toBe("src/math.ts")
+			expect(results[1].filePath).toBe("src/calculator.ts")
+			expect(results[0].score).toBe(0.99)
+			expect(results[0].payload?.rerank_score).toBe(0.99)
+			expect(mockVectorStore.search).toHaveBeenCalledWith(expect.any(Array), undefined, 0, 50)
+		})
+
+		it("should fallback to semantic order and warn when rerank throws", async () => {
+			mockGraphService.isInitialized.mockResolvedValue(false)
+			const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+			;(globalThis as { fetch?: unknown }).fetch = vi.fn().mockRejectedValue(new Error("rerank unavailable"))
+
+			const rerankService = new HybridSearchService(mockEmbedder, mockVectorStore, mockGraphService, {
+				enabled: true,
+				baseUrl: "https://rerank.local/",
+				modelId: "bge-reranker-v2",
+				topK: 2,
+			})
+
+			const results = await rerankService.search("add function", { minScore: 0, maxResults: 2 })
+
+			expect(results).toHaveLength(2)
+			expect(results[0].filePath).toBe("src/calculator.ts")
+			expect(results[1].filePath).toBe("src/math.ts")
+			expect(warnSpy).toHaveBeenCalledWith(
+				"[HybridSearchService] Rerank failed, falling back to semantic order:",
+				expect.any(Error),
+			)
+			warnSpy.mockRestore()
+		})
+
+		it("should normalize candidate payload for rerank path", async () => {
+			mockGraphService.isInitialized.mockResolvedValue(false)
+			mockVectorStore.search = vi.fn().mockResolvedValue([
+				{
+					id: "payload-only",
+					filePath: "",
+					codeChunk: "",
+					startLine: 0,
+					endLine: 0,
+					score: 0.6,
+					payload: {
+						filePath: "src/payload.ts",
+						codeChunk: "const payloadChunk = true",
+						startLine: 7,
+						endLine: 7,
+					},
+				},
+			] as VectorStoreSearchResult[])
+			;(globalThis as { fetch?: unknown }).fetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: vi.fn().mockResolvedValue({ data: [{ index: 0, relevance_score: 0.77 }] }),
+			})
+
+			const rerankService = new HybridSearchService(mockEmbedder, mockVectorStore, mockGraphService, {
+				enabled: true,
+				baseUrl: "https://rerank.local/",
+				modelId: "bge-reranker-v2",
+				topK: 1,
+			})
+
+			const results = await rerankService.search("payload", { minScore: 0, maxResults: 1 })
+
+			expect(results).toHaveLength(1)
+			expect(results[0].filePath).toBe("src/payload.ts")
+			expect(results[0].codeChunk).toBe("const payloadChunk = true")
+			expect(results[0].payload?.code_snippet).toBe("const payloadChunk = true")
+			expect(results[0].payload?.module).toBe("src/payload.ts")
+			expect(results[0].payload?.neo4j_id).toBe("file:src/payload.ts")
 		})
 	})
 
@@ -291,7 +398,7 @@ describe("HybridSearchService", () => {
 	describe("searchDependents", () => {
 		it("should find dependent entities", async () => {
 			const entityId = "function:src/calculator.ts:add"
-			
+
 			mockGraphService.getImpactGraph.mockResolvedValue({
 				rootEntity: {
 					id: entityId,
@@ -332,9 +439,7 @@ describe("HybridSearchService", () => {
 		})
 
 		it("should handle errors gracefully", async () => {
-			mockGraphService.getImpactGraph.mockRejectedValue(
-				new Error("Graph query failed"),
-			)
+			mockGraphService.getImpactGraph.mockRejectedValue(new Error("Graph query failed"))
 
 			const results = await service.searchDependents("function:test:func")
 
@@ -382,9 +487,9 @@ describe("HybridSearchService", () => {
 			const results = await service.search("test")
 
 			// Result with function should have higher graph score
-			const funcResult = results.find(r => r.startLine === 5)
-			const varResult = results.find(r => r.startLine === 10)
-			
+			const funcResult = results.find((r) => r.startLine === 5)
+			const varResult = results.find((r) => r.startLine === 10)
+
 			// Since we're mocking, we need to check the actual implementation
 			// This is more of an integration test
 		})

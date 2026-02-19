@@ -14,19 +14,13 @@ OpenRouter is an AI platform that provides access to a wide variety of language 
 2.  **Get an API Key:** Go to the [keys page](https://openrouter.ai/keys). You should see an API key listed. If not, create a new key.
 3.  **Copy the Key:** Copy the API key.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/openrouter.md
 ## Supported Models
 
 OpenRouter supports a large and growing number of models. AlfaCode assistant automatically fetches the list of available models. Refer to the [OpenRouter Models page](https://openrouter.ai/models) for the complete and up-to-date list.
 
 ## Configuration in AlfaCode assistant
 
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-## Configuration in Kilo Code
-
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/openrouter.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "OpenRouter" from the "API Provider" dropdown.
 3.  **Enter API Key:** Paste your OpenRouter API key into the "OpenRouter API Key" field.
 4.  **Select Model:** Choose your desired model from the "Model" dropdown.

@@ -28,6 +28,8 @@ describe("Neo4jSettings", () => {
 				uri="bolt://localhost:7687"
 				username="neo4j"
 				database="neo4j"
+				password=""
+				onPasswordChange={vi.fn()}
 				setCachedStateField={setCachedStateField}
 			/>,
 		)
@@ -39,5 +41,28 @@ describe("Neo4jSettings", () => {
 		fireEvent(checkbox as any, new Event("change", { bubbles: true }))
 
 		expect(setCachedStateField).toHaveBeenCalledWith("codebaseIndexNeo4jEnabled", true)
+	})
+
+	it("does not render the Neo4j about/description block in the form body", () => {
+		const setCachedStateField = vi.fn()
+
+		render(
+			<Neo4jSettings
+				enabled={true}
+				uri="bolt://localhost:7687"
+				username="neo4j"
+				database="neo4j"
+				password=""
+				onPasswordChange={vi.fn()}
+				setCachedStateField={setCachedStateField}
+			/>,
+		)
+
+		// These keys used to be rendered inside the removed "Description" section.
+		expect(document.body.textContent).not.toContain("settings:codeIndex.neo4j.aboutTitle")
+		expect(document.body.textContent).not.toContain("settings:codeIndex.neo4j.aboutDescription")
+		expect(document.body.textContent).not.toContain("settings:codeIndex.neo4j.aboutPoint1")
+		expect(document.body.textContent).not.toContain("settings:codeIndex.neo4j.aboutPoint2")
+		expect(document.body.textContent).not.toContain("settings:codeIndex.neo4j.aboutPoint3")
 	})
 })

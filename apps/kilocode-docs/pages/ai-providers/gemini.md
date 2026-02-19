@@ -15,7 +15,6 @@ AlfaCode assistant supports Google's Gemini family of models through the Google 
 3.  **Create API Key:** Click on "Create API key" in the left-hand menu.
 4.  **Copy API Key:** Copy the generated API key.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/gemini.md
 ## Supported Models
 
 AlfaCode assistant supports the following Gemini models:
@@ -44,12 +43,7 @@ Refer to the [Gemini documentation](https://ai.google.dev/models/gemini) for mor
 
 ## Configuration in AlfaCode assistant
 
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-## Configuration in Kilo Code
-
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/gemini.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "Google Gemini" from the "API Provider" dropdown.
 3.  **Enter API Key:** Paste your Gemini API key into the "Gemini API Key" field.
 4.  **Select Model:** Choose your desired Gemini model from the "Model" dropdown.

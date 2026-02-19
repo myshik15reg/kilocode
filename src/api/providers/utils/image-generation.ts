@@ -65,9 +65,10 @@ interface ImagesApiOptions {
 export async function generateImageWithProvider(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
 	// kilocode_change: add headers
 	const { baseURL, authToken, model, prompt, inputImage, headers } = options
+	const sanitizedBaseUrl = baseURL.replace(/\/?v1\/?$/, "") // kilocode_change: normalize base URL
 
 	try {
-		const response = await fetch(`${baseURL}/chat/completions`, {
+		const response = await fetch(`${sanitizedBaseUrl}/v1/chat/completions`, {
 			method: "POST",
 			headers: {
 				// kilocode_change start

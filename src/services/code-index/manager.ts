@@ -30,6 +30,14 @@ export class CodeIndexManager {
 	// Flag to prevent race conditions during error recovery
 	private _isRecoveringFromError = false
 
+	// FIX: task_id (TestAnalyzer)
+	// Root cause: в тестах _orchestrator может быть частично мокнут без метода stopWatcher.
+	private hasStopWatcher(
+		orchestrator: CodeIndexOrchestrator | undefined,
+	): orchestrator is CodeIndexOrchestrator & { stopWatcher: () => void } {
+		return !!orchestrator && typeof (orchestrator as { stopWatcher?: unknown }).stopWatcher === "function"
+	}
+
 	public static getInstance(context: vscode.ExtensionContext, workspacePath?: string): CodeIndexManager | undefined {
 		// If workspacePath is not provided, try to get it from the active editor or first workspace folder
 		if (!workspacePath) {
@@ -125,7 +133,7 @@ export class CodeIndexManager {
 
 		// 2. Check if feature is enabled
 		if (!this.isFeatureEnabled) {
-			if (this._orchestrator) {
+			if (this.hasStopWatcher(this._orchestrator)) {
 				this._orchestrator.stopWatcher()
 			}
 			return { requiresRestart }
@@ -211,7 +219,7 @@ export class CodeIndexManager {
 		if (!this.isFeatureEnabled) {
 			return
 		}
-		if (this._orchestrator) {
+		if (this.hasStopWatcher(this._orchestrator)) {
 			this._orchestrator.stopWatcher()
 		}
 	}
@@ -301,6 +309,19 @@ export class CodeIndexManager {
 		this.assertInitialized()
 		await this._orchestrator!.clearIndexData()
 		await this._cacheManager!.clearCacheFile()
+	}
+
+	// FIX: neo4j-cache-invalidate-on-config-change (TestAnalyzer)
+	// Root cause: Neo4j relationship indexing skips files when neo4j-cache hashes match vector hashes.
+	// If the user changes Neo4j connection settings (uri/username/database), the cache must be invalidated
+	// in-memory to avoid a "schema exists, but no data" scenario in a fresh/changed Neo4j database.
+	public async clearNeo4jCache(): Promise<void> {
+		// Even if the feature is disabled right now, we still clear the cache when requested.
+		if (!this._cacheManager) {
+			this._cacheManager = new CacheManager(this.context, this.workspacePath)
+			await this._cacheManager.initialize()
+		}
+		await this._cacheManager.clearNeo4jCacheFile()
 	}
 
 	// kilocode_change start
@@ -436,6 +457,7 @@ export class CodeIndexManager {
 	public async handleSettingsChange(): Promise<void> {
 		if (this._configManager) {
 			const { requiresRestart } = await this._configManager.loadConfiguration()
+			const rerankConfig = this._configManager.currentRerankConfig
 
 			const isFeatureEnabled = this.isFeatureEnabled
 			const isFeatureConfigured = this.isFeatureConfigured
@@ -443,7 +465,7 @@ export class CodeIndexManager {
 			// If feature is disabled, stop the service
 			if (!isFeatureEnabled) {
 				// Stop the orchestrator if it exists
-				if (this._orchestrator) {
+				if (this.hasStopWatcher(this._orchestrator)) {
 					this._orchestrator.stopWatcher()
 				}
 				// Set state to indicate service is disabled
@@ -461,6 +483,9 @@ export class CodeIndexManager {
 
 					// Recreate services with new configuration
 					await this._recreateServices()
+					if (this._configManager?.isNeo4jEnabled) {
+						await this._orchestrator?.syncNeo4jWithCurrentIndex?.()
+					}
 				} catch (error) {
 					// Error state already set in _recreateServices
 					console.error("Failed to recreate services:", error)
@@ -471,6 +496,11 @@ export class CodeIndexManager {
 					})
 					// Re-throw the error so the caller knows validation failed
 					throw error
+				}
+			} else if (this._searchService) {
+				this._searchService.updateRerankConfig(rerankConfig)
+				if (this._configManager?.isNeo4jEnabled) {
+					await this._orchestrator?.syncNeo4jWithCurrentIndex?.()
 				}
 			}
 		}

@@ -609,6 +609,7 @@ describe("Context Management", () => {
 				taskId,
 				profileThresholds: {},
 				currentProfileId: "default",
+				contextRoutingEnabled: false, // kilocode_change
 			})
 
 			// Verify summarizeConversation was called with the right parameters
@@ -677,6 +678,7 @@ describe("Context Management", () => {
 				taskId,
 				profileThresholds: {},
 				currentProfileId: "default",
+				contextRoutingEnabled: false, // kilocode_change
 			})
 
 			// Verify summarizeConversation was called
@@ -785,6 +787,7 @@ describe("Context Management", () => {
 				taskId,
 				profileThresholds: {},
 				currentProfileId: "default",
+				contextRoutingEnabled: false, // kilocode_change
 			})
 
 			// Verify summarizeConversation was called with the right parameters
@@ -838,6 +841,7 @@ describe("Context Management", () => {
 				taskId,
 				profileThresholds: {},
 				currentProfileId: "default",
+				contextRoutingEnabled: false, // kilocode_change
 			})
 
 			// Verify summarizeConversation was not called
@@ -925,6 +929,7 @@ describe("Context Management", () => {
 				taskId,
 				profileThresholds,
 				currentProfileId,
+				contextRoutingEnabled: false, // kilocode_change
 			})
 
 			// Should use summarization because 65% > 60% (profile threshold)
@@ -991,6 +996,7 @@ describe("Context Management", () => {
 				taskId,
 				profileThresholds,
 				currentProfileId,
+				contextRoutingEnabled: false, // kilocode_change
 			})
 
 			// Should use summarization because 80% > 75% (global threshold, since profile is -1)
@@ -1045,6 +1051,7 @@ describe("Context Management", () => {
 				taskId,
 				profileThresholds,
 				currentProfileId,
+				contextRoutingEnabled: false, // kilocode_change
 			})
 
 			// Should NOT use summarization because 50% < 80% (global threshold, since profile has no specific threshold)
@@ -1106,6 +1113,7 @@ describe("Context Management", () => {
 				taskId,
 				profileThresholds: {},
 				currentProfileId: "default",
+				contextRoutingEnabled: false, // kilocode_change
 			})
 			expect(result1).toEqual({
 				messages: messagesWithSmallContent,
@@ -1127,6 +1135,7 @@ describe("Context Management", () => {
 				taskId,
 				profileThresholds: {},
 				currentProfileId: "default",
+				contextRoutingEnabled: false, // kilocode_change
 			})
 			expect(result2.messages).not.toEqual(messagesWithSmallContent)
 			// Should have all original messages + truncation marker (non-destructive)
@@ -1301,6 +1310,7 @@ describe("Context Management", () => {
 				profileThresholds: {},
 				currentProfileId: "default",
 				lastMessageTokens: 0,
+				contextRoutingEnabled: false, // kilocode_change
 			})
 			expect(result).toBe(true)
 		})
@@ -1315,6 +1325,7 @@ describe("Context Management", () => {
 				profileThresholds: {},
 				currentProfileId: "default",
 				lastMessageTokens: 0,
+				contextRoutingEnabled: false, // kilocode_change
 			})
 			expect(result).toBe(false)
 		})
@@ -1330,6 +1341,7 @@ describe("Context Management", () => {
 				profileThresholds: {},
 				currentProfileId: "default",
 				lastMessageTokens: 0,
+				contextRoutingEnabled: false, // kilocode_change
 			})
 			expect(result).toBe(true)
 		})
@@ -1345,6 +1357,7 @@ describe("Context Management", () => {
 				profileThresholds: {},
 				currentProfileId: "default",
 				lastMessageTokens: 0,
+				contextRoutingEnabled: false, // kilocode_change
 			})
 			expect(result).toBe(false)
 		})
@@ -1359,6 +1372,7 @@ describe("Context Management", () => {
 				profileThresholds: { "test-profile": 50 }, // Profile threshold 50%
 				currentProfileId: "test-profile",
 				lastMessageTokens: 0,
+				contextRoutingEnabled: false, // kilocode_change
 			})
 			// Should trigger because 55% > 50% (profile threshold)
 			expect(result).toBe(true)
@@ -1374,6 +1388,7 @@ describe("Context Management", () => {
 				profileThresholds: { "test-profile": -1 }, // Profile uses global
 				currentProfileId: "test-profile",
 				lastMessageTokens: 0,
+				contextRoutingEnabled: false, // kilocode_change
 			})
 			// Should NOT trigger because 55% < 80% (global threshold)
 			expect(result).toBe(false)
@@ -1391,6 +1406,7 @@ describe("Context Management", () => {
 				profileThresholds: {},
 				currentProfileId: "default",
 				lastMessageTokens: 0,
+				contextRoutingEnabled: false, // kilocode_change
 			})
 			expect(resultWithoutLastMessage).toBe(false)
 
@@ -1403,6 +1419,7 @@ describe("Context Management", () => {
 				profileThresholds: {},
 				currentProfileId: "default",
 				lastMessageTokens: 2000, // Pushes total to 51%
+				contextRoutingEnabled: false, // kilocode_change
 			})
 			expect(resultWithLastMessage).toBe(true)
 		})

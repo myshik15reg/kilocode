@@ -31,7 +31,17 @@ const commandsSchema = z.array(
 		command: z.string(),
 		title: z.string(),
 		category: z.string().optional(),
-		icon: z.string().optional(),
+		// VS Code contributes.commands[].icon supports both a ThemeIcon string ("$(add)")
+		// and a light/dark icon path object.
+		icon: z
+			.union([
+				z.string(),
+				z.object({
+					light: z.string(),
+					dark: z.string(),
+				}),
+			])
+			.optional(),
 	}),
 )
 

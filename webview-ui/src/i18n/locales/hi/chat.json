@@ -370,12 +370,8 @@
 	},
 	"browser": {
 		"session": "ब्राउज़र सत्र",
-<<<<<<< HEAD
-		"rooWantsToUse": "AlfaCode assistant ब्राउज़र का उपयोग करना चाहता है",
-=======
 		"active": "सक्रिय",
-		"rooWantsToUse": "Kilo Code ब्राउज़र का उपयोग करना चाहता है",
->>>>>>> origin/main
+		"rooWantsToUse": "AlfaCode assistant ब्राउज़र का उपयोग करना चाहता है",
 		"consoleLogs": "कंसोल लॉग",
 		"noNewLogs": "(कोई नया लॉग नहीं)",
 		"screenshot": "ब्राउज़र स्क्रीनशॉट",

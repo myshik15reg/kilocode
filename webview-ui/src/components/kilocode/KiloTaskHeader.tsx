@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { CloudUpload, CloudDownload, FoldVertical } from "lucide-react"
 import { validateSlashCommand } from "@/utils/slash-commands"
 
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage, Command } from "@roo-code/types"
 
 import { getModelMaxOutputTokens } from "@roo/api"
 
@@ -62,8 +62,8 @@ const KiloTaskHeader = ({
 	todos,
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
-	const { showTaskTimeline, showDiffStats, clineMessages } = useExtensionState()
-	const { apiConfiguration, currentTaskItem, customModes } = useExtensionState()
+	const { showTaskTimeline, showDiffStats, clineMessages, apiConfiguration, currentTaskItem, customModes, commands } =
+		useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 
@@ -114,7 +114,9 @@ const KiloTaskHeader = ({
 								{!isTaskExpanded && ":"}
 							</span>
 							{!isTaskExpanded && (
-								<span style={{ marginLeft: 4 }}>{highlightText(task.text, false, customModes)}</span>
+								<span style={{ marginLeft: 4 }}>
+									{highlightText(task.text, false, customModes, commands)}
+								</span>
 							)}
 						</div>
 					</div>
@@ -168,7 +170,7 @@ const KiloTaskHeader = ({
 									WebkitLineClamp: "unset",
 									WebkitBoxOrient: "vertical",
 								}}>
-								{highlightText(task.text, false, customModes)}
+								{highlightText(task.text, false, customModes, commands)}
 							</div>
 						</div>
 						{task.images && task.images.length > 0 && <Thumbnails images={task.images} />}
@@ -272,14 +274,14 @@ const KiloTaskHeader = ({
 /**
  * Highlights slash-command in this text if it exists
  */
-const highlightSlashCommands = (text: string, withShadow = true, customModes?: any[]) => {
-	const match = text.match(/^\s*\/([a-zA-Z0-9_-]+)(\s*|$)/)
+const highlightSlashCommands = (text: string, withShadow = true, customModes?: any[], commands?: Command[]) => {
+	const match = text.match(/^\s*\/([a-zA-Z0-9_.-]+)(\s*|$)/)
 	if (!match) {
 		return text
 	}
 
 	const commandName = match[1]
-	const validationResult = validateSlashCommand(commandName, customModes)
+	const validationResult = validateSlashCommand(commandName, customModes, {}, {}, commands)
 
 	if (!validationResult || validationResult !== "full") {
 		return text
@@ -328,12 +330,12 @@ export const highlightMentions = (text: string, withShadow = true) => {
 /**
  * Handles parsing both mentions and slash-commands
  */
-export const highlightText = (text?: string, withShadow = true, customModes?: any[]) => {
+export const highlightText = (text?: string, withShadow = true, customModes?: any[], commands?: Command[]) => {
 	if (!text) {
 		return text
 	}
 
-	const resultWithSlashHighlighting = highlightSlashCommands(text, withShadow, customModes)
+	const resultWithSlashHighlighting = highlightSlashCommands(text, withShadow, customModes, commands)
 
 	if (resultWithSlashHighlighting === text) {
 		// no highlighting done

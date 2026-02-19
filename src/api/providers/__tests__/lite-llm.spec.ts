@@ -1,4 +1,3 @@
-import OpenAI from "openai"
 import { Anthropic } from "@anthropic-ai/sdk"
 
 import { LiteLLMHandler } from "../lite-llm"
@@ -39,6 +38,8 @@ vi.mock("../fetchers/modelCache", () => ({
 			"gpt-5-mini": gpt5Info,
 			"gpt-4": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"claude-3-opus": { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			"anthropic/claude-sonnet-4": { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			"claude-4-opus": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"llama-3": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"gpt-4-turbo": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			// Gemini models for thought signature injection tests
@@ -397,7 +398,134 @@ describe("LiteLLMHandler", () => {
 		})
 	})
 
-<<<<<<< HEAD
+	describe("Claude headers", () => {
+		it("should include Claude headers for Claude model in createMessage", async () => {
+			const optionsWithClaude: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "anthropic/claude-sonnet-4",
+			}
+			handler = new LiteLLMHandler(optionsWithClaude)
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Ok" } }],
+						usage: { prompt_tokens: 10, completion_tokens: 5 },
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			for await (const _chunk of handler.createMessage("You are a helpful assistant", [
+				{ role: "user", content: "Hello" },
+			])) {
+				// consume
+			}
+
+			const createCallRequestOptions = mockCreate.mock.calls[0][1]
+			expect(createCallRequestOptions).toEqual({
+				headers: {
+					"anthropic-version": "2023-06-01",
+					"anthropic-beta": "tools-2024-04-04,prompt-caching-2024-07-31",
+					"User-Agent": "claude-code/2.1.37",
+				},
+			})
+		})
+
+		it("should include Claude headers for Claude model in completePrompt", async () => {
+			const optionsWithClaude: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "claude-4-opus",
+			}
+			handler = new LiteLLMHandler(optionsWithClaude)
+
+			mockCreate.mockResolvedValue({
+				choices: [{ message: { content: "Ok" } }],
+			})
+
+			await handler.completePrompt("Test prompt")
+
+			const createCallRequestOptions = mockCreate.mock.calls[0][1]
+			expect(createCallRequestOptions).toEqual({
+				headers: {
+					"anthropic-version": "2023-06-01",
+					"anthropic-beta": "tools-2024-04-04,prompt-caching-2024-07-31",
+					"User-Agent": "claude-code/2.1.37",
+				},
+			})
+		})
+
+		it("should omit prompt caching beta when prompt caching is disabled and unsupported", async () => {
+			const optionsWithClaude: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "claude-3-opus",
+				litellmUsePromptCache: false,
+			}
+			handler = new LiteLLMHandler(optionsWithClaude)
+
+			vi.spyOn(handler as any, "fetchModel").mockResolvedValue({
+				id: "claude-3-opus",
+				info: { ...litellmDefaultModelInfo, supportsPromptCache: false },
+			})
+
+			mockCreate.mockResolvedValue({
+				choices: [{ message: { content: "Ok" } }],
+			})
+
+			await handler.completePrompt("Test prompt")
+
+			const createCallRequestOptions = mockCreate.mock.calls[0][1]
+			expect(createCallRequestOptions).toEqual({
+				headers: {
+					"anthropic-version": "2023-06-01",
+					"anthropic-beta": "tools-2024-04-04",
+					"User-Agent": "claude-code/2.1.37",
+				},
+			})
+		})
+
+		it("should not include Claude headers for non-Claude models", async () => {
+			const optionsWithGpt4: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "gpt-4",
+			}
+			handler = new LiteLLMHandler(optionsWithGpt4)
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Ok" } }],
+						usage: { prompt_tokens: 10, completion_tokens: 5 },
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			for await (const _chunk of handler.createMessage("You are a helpful assistant", [
+				{ role: "user", content: "Hello" },
+			])) {
+				// consume
+			}
+
+			expect(mockCreate.mock.calls[0][1]).toBeUndefined()
+
+			vi.clearAllMocks()
+			mockCreate.mockResolvedValue({
+				choices: [{ message: { content: "Ok" } }],
+			})
+
+			await handler.completePrompt("Test prompt")
+
+			expect(mockCreate.mock.calls[0][1]).toBeUndefined()
+		})
+	})
+
 	describe("reasoning support", () => {
 		it("should include reasoning_effort when configured and supported", async () => {
 			const optionsWithReasoning: ApiHandlerOptions = {
@@ -465,7 +593,9 @@ describe("LiteLLMHandler", () => {
 				{ type: "reasoning", text: "Thinking..." },
 				{ type: "text", text: "Done." },
 			])
-=======
+		})
+	})
+
 	describe("Gemini thought signature injection", () => {
 		describe("isGeminiModel detection", () => {
 			it("should detect Gemini 3 models", () => {
@@ -789,7 +919,6 @@ describe("LiteLLMHandler", () => {
 				// Tool calls should not have provider_specific_fields added
 				expect(assistantMessage.tool_calls[0].provider_specific_fields).toBeUndefined()
 			})
->>>>>>> origin/main
 		})
 	})
 })

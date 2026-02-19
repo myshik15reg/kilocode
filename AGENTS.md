@@ -2,6 +2,16 @@
 
 AlfaCode assistant is an AI coding agent for VS Code that generates code from natural language, automates tasks, and supports 500+ AI models.
 
+## Start here / Corridor
+
+If you arrived here after reading [`.clinerules`](.clinerules:1), follow this corridor:
+
+| Step | Read                                                                                                                        | Purpose                                                       |
+| ---: | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+|    1 | [`.kilocode/QUICK.md`](.kilocode/QUICK.md:1)                                                                                | Process quickstart (protocols, modes, quality gates)          |
+|    2 | [`.kilocode/memory-bank/index.md`](.kilocode/memory-bank/index.md:1)                                                        | Project context (product, architecture, tech, current status) |
+|    3 | [`.kilocode/rules/index.md`](.kilocode/rules/index.md:1) + [`.kilocode/workflows/index.md`](.kilocode/workflows/index.md:1) | Navigation for rules and workflows                            |
+
 ## Project Structure
 
 This is a pnpm monorepo using Turbo for task orchestration:
@@ -110,7 +120,7 @@ pnpm check-types      # TypeScript type checking
 
 ## Skills
 
-- **Translation**: `.kilocode/skills-translate/translation/SKILL.md` - Translation and localization guidelines
+- **Translation**: `.kilocode/skills/translation/SKILL.md` - Translation and localization guidelines
 
 ## Workflows
 

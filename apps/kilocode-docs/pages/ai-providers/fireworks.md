@@ -1,5 +1,7 @@
 ---
-title: Fireworks AI with Kilo Code
+title: "Fireworks AI"
+sidebar_label: "Fireworks AI"
+description: "Configure Fireworks AI in AlfaCode assistant"
 ---
 
 # Using Fireworks AI With AlfaCode assistant
@@ -15,9 +17,6 @@ Fireworks AI is a high-performance platform for running AI models that offers fa
 3. **Create a Key:** Click "Create API key" and give your key a descriptive name (e.g., "AlfaCode assistant").
 4. **Copy the Key:** Copy the API key _immediately_ and store it securely. You will not be able to see it again.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/fireworks.md
----
-
 ## Supported Models
 
 AlfaCode assistant supports the following Fireworks AI models:
@@ -28,16 +27,9 @@ AlfaCode assistant supports the following Fireworks AI models:
 - `accounts/fireworks/models/deepseek-r1-0528` - DeepSeek R1 reasoning model
 - `accounts/fireworks/models/deepseek-v3` - DeepSeek V3 latest generation model
 
----
-
 ## Configuration in AlfaCode assistant
 
-1. **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-## Configuration in Kilo Code
-
-1. **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/fireworks.md
+1. **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2. **Select Provider:** Choose "Fireworks AI" from the "API Provider" dropdown.
 3. **Enter API Key:** Paste your Fireworks AI API key into the "Fireworks AI API Key" field.
 4. **Select Model:** Choose your desired model from the "Model" dropdown.

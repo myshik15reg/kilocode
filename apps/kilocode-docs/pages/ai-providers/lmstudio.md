@@ -28,11 +28,7 @@ AlfaCode assistant supports running models locally using LM Studio. LM Studio pr
 
 ## Configuration in AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/lmstudio.md
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/lmstudio.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "LM Studio" from the "API Provider" dropdown.
 3.  **Enter Model ID:** Enter the _file name_ of the model you loaded in LM Studio (e.g., `codellama-7b.Q4_0.gguf`). You can find this in the LM Studio "Local Server" tab.
 4.  **(Optional) Base URL:** By default, AlfaCode assistant will connect to LM Studio at `http://localhost:1234`. If you've configured LM Studio to use a different address or port, enter the full URL here.

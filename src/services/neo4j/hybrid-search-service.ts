@@ -1,9 +1,9 @@
 /**
  * Hybrid Search Service
- * 
+ *
  * Combines semantic search (Qdrant) with graph-based search (Neo4j)
  * to provide more accurate and context-aware code search results.
- * 
+ *
  * Algorithm:
  * 1. Perform semantic search in Qdrant
  * 2. For each result, query Neo4j for related entities
@@ -15,22 +15,57 @@ import { Neo4jGraphService } from "./graph-service"
 import type { HybridSearchResult, HybridSearchOptions, CodeEntity } from "./interfaces"
 import type { IEmbedder } from "../code-index/interfaces/embedder"
 import type { IVectorStore } from "../code-index/interfaces/vector-store"
-import type { VectorStoreSearchResult } from "../code-index/interfaces"
+// kilocode_change start
+import type { Payload, VectorStoreSearchResult } from "../code-index/interfaces"
+import { BgeReranker, type RerankConfig } from "./reranker"
+import { canonicalizeNeo4jFilePath } from "./canonical-file-path"
+// kilocode_change end
+
+// kilocode_change start
+type RerankCandidatePayload = Partial<Payload> & {
+	code_snippet?: string
+	module?: string
+	neo4j_id?: string
+}
+// kilocode_change end
 
 export class HybridSearchService {
-	private graphService: Neo4jGraphService
-	
 	// Weights for combining scores
 	private static readonly SEMANTIC_WEIGHT = 0.6
 	private static readonly GRAPH_WEIGHT = 0.4
+	// kilocode_change start
+	private static readonly DEFAULT_RERANK_CANDIDATE_LIMIT = 50
+	private static readonly DEFAULT_RERANK_TOP_K = 10
+	// kilocode_change end
+
+	private graphService: Neo4jGraphService
+	// kilocode_change start
+	private reranker?: BgeReranker
+	private rerankCandidateLimit: number = HybridSearchService.DEFAULT_RERANK_CANDIDATE_LIMIT
+	private rerankTopK: number = HybridSearchService.DEFAULT_RERANK_TOP_K
+	// kilocode_change end
 
 	constructor(
 		private embedder: IEmbedder,
 		private vectorStore: IVectorStore,
 		graphService?: Neo4jGraphService,
+		// kilocode_change start
+		rerankConfig?: RerankConfig,
+		// kilocode_change end
 	) {
 		this.graphService = graphService || new Neo4jGraphService()
+		// kilocode_change start
+		this.updateRerankConfig(rerankConfig)
+		// kilocode_change end
 	}
+
+	// kilocode_change start
+	public updateRerankConfig(rerankConfig?: RerankConfig): void {
+		this.reranker = rerankConfig ? new BgeReranker(rerankConfig) : undefined
+		this.rerankCandidateLimit = rerankConfig?.candidateLimit ?? HybridSearchService.DEFAULT_RERANK_CANDIDATE_LIMIT
+		this.rerankTopK = rerankConfig?.topK ?? HybridSearchService.DEFAULT_RERANK_TOP_K
+	}
+	// kilocode_change end
 
 	/**
 	 * Perform hybrid search combining semantic and graph-based approaches
@@ -64,10 +99,7 @@ export class HybridSearchService {
 	 * })
 	 * ```
 	 */
-	public async search(
-		query: string,
-		options: HybridSearchOptions = {},
-	): Promise<HybridSearchResult[]> {
+	public async search(query: string, options: HybridSearchOptions = {}): Promise<HybridSearchResult[]> {
 		const {
 			maxResults = 10,
 			minScore = 0.7,
@@ -77,35 +109,34 @@ export class HybridSearchService {
 		} = options
 
 		// Step 1: Semantic search via Qdrant
-		const semanticResults = await this.performSemanticSearch(
-			query,
-			directoryPrefix,
-			maxResults * 2, // Get more results for better graph matching
-		)
+		// kilocode_change start
+		const shouldRerank = this.reranker?.isEnabled ?? false
+		const semanticLimit = shouldRerank ? this.rerankCandidateLimit : maxResults * 2
+		const semanticResults = await this.performSemanticSearch(query, directoryPrefix, semanticLimit)
+		// kilocode_change end
 
 		if (semanticResults.length === 0) {
 			return []
 		}
 
+		// kilocode_change start
+		const preparedResults = semanticResults.map((result) => this.ensureCandidatePayload(result))
+		const rerankedResults = await this.applyRerank(query, preparedResults)
+		const resultsForGraph = rerankedResults ?? preparedResults
+		// kilocode_change end
+
 		// Step 2: Check if Neo4j is available
 		const isNeo4jReady = await this.graphService.isInitialized()
 		if (!isNeo4jReady) {
 			// Fallback to semantic-only results
-			return this.convertToHybridResults(semanticResults, semanticWeight, graphWeight, false)
+			return this.convertToHybridResults(resultsForGraph, semanticWeight, graphWeight, false)
 		}
 
 		// Step 3: Enhance with graph information
-		const hybridResults = await this.enhanceWithGraphData(
-			semanticResults,
-			query,
-			semanticWeight,
-			graphWeight,
-		)
+		const hybridResults = await this.enhanceWithGraphData(resultsForGraph, query, semanticWeight, graphWeight)
 
 		// Step 4: Filter by minimum score and limit results
-		const filteredResults = hybridResults
-			.filter((result) => result.combinedScore >= minScore)
-			.slice(0, maxResults)
+		const filteredResults = hybridResults.filter((result) => result.combinedScore >= minScore).slice(0, maxResults)
 
 		return filteredResults
 	}
@@ -121,7 +152,7 @@ export class HybridSearchService {
 		// Generate embedding for query
 		const embeddingResponse = await this.embedder.createEmbeddings([query])
 		const vector = embeddingResponse?.embeddings[0]
-		
+
 		if (!vector) {
 			throw new Error("Failed to generate embedding for query")
 		}
@@ -151,17 +182,16 @@ export class HybridSearchService {
 		for (const semanticResult of semanticResults) {
 			try {
 				// Find entities in Neo4j for this file
-				const entities = await this.graphService.getEntitiesByFilePath(
-					semanticResult.filePath,
-				)
+				// FIX: 2026-02-17-neo4j-index-fixes (TestAnalyzer)
+				// Root cause: Neo4j stored filePath could be canonicalized (workspace-relative, POSIX), while Qdrant payload may vary.
+				const canonicalFilePath = canonicalizeNeo4jFilePath(semanticResult.filePath)
+				const entities = await this.graphService.getEntitiesByFilePath(canonicalFilePath)
 
 				// Calculate graph score based on relevance
 				const graphScore = this.calculateGraphScore(entities, query, semanticResult)
 
 				// Calculate combined score
-				const combinedScore = 
-					semanticWeight * semanticResult.score +
-					graphWeight * graphScore
+				const combinedScore = semanticWeight * semanticResult.score + graphWeight * graphScore
 
 				// Create hybrid result
 				const hybridResult: HybridSearchResult = {
@@ -170,18 +200,18 @@ export class HybridSearchService {
 					graphScore,
 					combinedScore,
 					relatedEntities: entities,
-					graphMetadata: entities.length > 0 ? {
-						entityCount: entities.length,
-						entityTypes: [...new Set(entities.map(e => e.type))],
-					} : undefined,
+					graphMetadata:
+						entities.length > 0
+							? {
+									entityCount: entities.length,
+									entityTypes: [...new Set(entities.map((e) => e.type))],
+								}
+							: undefined,
 				}
 
 				hybridResults.push(hybridResult)
 			} catch (error) {
-				console.error(
-					`[HybridSearchService] Error enhancing result for ${semanticResult.filePath}:`,
-					error,
-				)
+				console.error(`[HybridSearchService] Error enhancing result for ${semanticResult.filePath}:`, error)
 				// Fallback to semantic-only for this result
 				hybridResults.push({
 					...semanticResult,
@@ -201,7 +231,7 @@ export class HybridSearchService {
 
 	/**
 	 * Calculate graph relevance score
-	 * 
+	 *
 	 * Factors:
 	 * - Number of entities in the file
 	 * - Entity types (functions, classes are more relevant than variables)
@@ -256,6 +286,52 @@ export class HybridSearchService {
 		return normalizedScore
 	}
 
+	// kilocode_change start
+	private ensureCandidatePayload(result: VectorStoreSearchResult): VectorStoreSearchResult {
+		const payload: RerankCandidatePayload = (result.payload ?? {}) as RerankCandidatePayload
+		const filePath = result.filePath || payload.filePath || ""
+		const codeChunk = result.codeChunk || payload.codeChunk || ""
+		const startLine = result.startLine ?? payload.startLine ?? 0
+		const endLine = result.endLine ?? payload.endLine ?? startLine
+
+		const normalizedPayload: Payload = {
+			...payload,
+			filePath,
+			codeChunk,
+			startLine,
+			endLine,
+			code_snippet: payload.code_snippet ?? codeChunk,
+			module: payload.module ?? filePath,
+			neo4j_id: payload.neo4j_id ?? (filePath ? `file:${filePath}` : undefined),
+		}
+
+		return {
+			...result,
+			filePath,
+			codeChunk,
+			startLine,
+			endLine,
+			payload: normalizedPayload,
+		}
+	}
+
+	private async applyRerank(
+		query: string,
+		candidates: VectorStoreSearchResult[],
+	): Promise<VectorStoreSearchResult[] | null> {
+		if (!this.reranker?.isEnabled) {
+			return null
+		}
+
+		try {
+			return await this.reranker.rerank(query, candidates, this.rerankTopK)
+		} catch (error) {
+			console.warn("[HybridSearchService] Rerank failed, falling back to semantic order:", error)
+			return null
+		}
+	}
+	// kilocode_change end
+
 	/**
 	 * Convert semantic-only results to hybrid format (fallback)
 	 */
@@ -278,36 +354,28 @@ export class HybridSearchService {
 	 * Get related entities for a specific code location
 	 * Useful for showing context around search results
 	 */
-	public async getRelatedEntities(
-		filePath: string,
-		startLine?: number,
-		endLine?: number,
-	): Promise<CodeEntity[]> {
+	public async getRelatedEntities(filePath: string, startLine?: number, endLine?: number): Promise<CodeEntity[]> {
 		const isReady = await this.graphService.isInitialized()
 		if (!isReady) {
 			return []
 		}
 
-		const entities = await this.graphService.getEntitiesByFilePath(filePath)
-		
+		const canonicalFilePath = canonicalizeNeo4jFilePath(filePath)
+		const entities = await this.graphService.getEntitiesByFilePath(canonicalFilePath)
+
 		if (!startLine || !endLine) {
 			return entities
 		}
 
 		// Filter entities within line range
-		return entities.filter(
-			(entity) => entity.line >= startLine && entity.line <= endLine,
-		)
+		return entities.filter((entity) => entity.line >= startLine && entity.line <= endLine)
 	}
 
 	/**
 	 * Search for code that depends on a specific entity
 	 * Useful for impact analysis
 	 */
-	public async searchDependents(
-		entityId: string,
-		maxDepth: number = 2,
-	): Promise<HybridSearchResult[]> {
+	public async searchDependents(entityId: string, maxDepth: number = 2): Promise<HybridSearchResult[]> {
 		const isReady = await this.graphService.isInitialized()
 		if (!isReady) {
 			return []
@@ -322,10 +390,7 @@ export class HybridSearchService {
 			const processedFiles = new Set<string>()
 
 			// Combine direct and indirect impacts
-			const allAffectedEntities = [
-				...impactAnalysis.directImpact,
-				...impactAnalysis.indirectImpact,
-			]
+			const allAffectedEntities = [...impactAnalysis.directImpact, ...impactAnalysis.indirectImpact]
 
 			for (const entity of allAffectedEntities) {
 				if (processedFiles.has(entity.filePath)) {
@@ -365,4 +430,20 @@ export class HybridSearchService {
 	public async isAvailable(): Promise<boolean> {
 		return await this.graphService.isInitialized()
 	}
+
+	// kilocode_change start
+	public getRerankAvailability(): {
+		enabled: boolean
+		configured: boolean
+		modelId?: string
+		baseUrl?: string
+	} {
+		return (
+			this.reranker?.availability ?? {
+				enabled: false,
+				configured: false,
+			}
+		)
+	}
+	// kilocode_change end
 }

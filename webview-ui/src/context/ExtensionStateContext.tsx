@@ -549,6 +549,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 
 	useEffect(() => {
 		vscode.postMessage({ type: "webviewDidLaunch" })
+		vscode.postMessage({ type: "requestCommands" }) // kilocode_change: Ensure slash-commands autocomplete includes file-based commands on initial load
 	}, [])
 
 	// Watch for authentication state changes and refresh Roo models

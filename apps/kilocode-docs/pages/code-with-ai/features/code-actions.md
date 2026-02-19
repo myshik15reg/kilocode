@@ -1,24 +1,23 @@
 ---
 title: "Code Actions"
-description: "Quick code actions and refactoring with Kilo Code"
+description: "Quick code actions and refactoring with AlfaCode assistant"
 ---
 
 # Code Actions
 
 Code Actions are a powerful feature of VS Code that provide quick fixes, refactorings, and other code-related suggestions directly within the editor. AlfaCode assistant integrates with this system to offer AI-powered assistance for common coding tasks.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/code-actions.md
-:::tip Code Actions vs Autocomplete
+{% callout type="tip" title="Code Actions vs Autocomplete" %}
+
 **Code Actions** and **Autocomplete** are two different ways AlfaCode assistant can assist you:
 
 - **Code Actions** (this page) are **explicit and user-triggered**. You invoke them via the lightbulb icon, right-click context menu, or keyboard shortcut (`Ctrl+.` / `Cmd+.`). They operate on selected code and open a conversation in the chat panel.
-- **[Autocomplete](/basic-usage/autocomplete)** is **inline and automatic**. It suggests completions as you type, appearing as ghost text directly in the editor. You accept suggestions with `Tab`.
+- **[Autocomplete](/docs/code-with-ai/features/autocomplete)** is **inline and automatic**. It suggests completions as you type, appearing as ghost text directly in the editor. You accept suggestions with `Tab`.
 
 Use Code Actions when you want to explain, fix, or improve existing code. Use Autocomplete when you want AI to help you write new code as you type.
-:::
 
-=======
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/features/code-actions.md
+{% /callout %}
+
 ## What are Code Actions?
 
 Code Actions appear as a lightbulb icon (💡) in the editor gutter (the area to the left of the line numbers). They can also be accessed via the right-click context menu, or via keyboard shortcut. They are triggered when:
@@ -44,7 +43,7 @@ AlfaCode assistant provides the following Code Actions:
 
 The **Add to Context** action is listed first in the Code Actions menu so you can quickly add code snippets to your conversation. When you use it, AlfaCode assistant includes the filename and line numbers along with the code.
 
-This helps Kilo understand the exact context of your code within the project, allowing it to provide more relevant and accurate assistance.
+This helps AlfaCode assistant understand the exact context of your code within the project, allowing it to provide more relevant and accurate assistance.
 
 {% image src="/docs/img/code-actions/add-to-context.gif" alt="code actions - add to context gif" width="80%" /%}
 
@@ -90,20 +89,16 @@ There are three main ways to use AlfaCode assistant's Code Actions:
 
 Each code action gives you two options:
 
-- **in New Task:** Select this to begin a conversation with Kilo centered around this code action.
+- **in New Task:** Select this to begin a conversation with AlfaCode assistant centered around this code action.
 - **in Current Task:** If a conversation has already begun, this option will add the code action as an additional message.
 
 ## Customizing Code Action Prompts
 
 You can customize the prompts used for each Code Action by modifying the "Support Prompts" in the **Prompts** tab. This allows you to fine-tune the instructions given to the AI model and tailor the responses to your specific needs.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/code-actions.md
-1.  **Open the Prompts Tab:** Click the <Codicon name="notebook" /> icon in the AlfaCode assistant top menu bar.
-=======
-1.  **Open the Prompts Tab:** Click the {% codicon name="notebook" /%} icon in the Kilo Code top menu bar.
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/features/code-actions.md
-2.  **Find "Support Prompts":** You will see the support prompts, including "Enhance Prompt", "Explain Code", "Fix Code", and "Improve Code".
-3.  **Edit the Prompts:** Modify the text in the text area for the prompt you want to customize. You can use placeholders like `${filePath}` and `${selectedText}` to include information about the current file and selection.
-4.  **Click "Done":** Save your changes.
+1. **Open the Prompts tab:** Click the {% codicon name="notebook" /%} icon.
+2. **Find "Support Prompts":** You will see the support prompts, including "Enhance Prompt", "Explain Code", "Fix Code", and "Improve Code".
+3. **Edit the Prompts:** Modify the text in the text area for the prompt you want to customize. You can use placeholders like `${filePath}` and `${selectedText}` to include information about the current file and selection.
+4. **Click "Done":** Save your changes.
 
 By using AlfaCode assistant's Code Actions, you can quickly get AI-powered assistance directly within your coding workflow. This can save you time and help you write better code.

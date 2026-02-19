@@ -23,11 +23,7 @@ Before configuring this provider, you must have at least one other API provider 
 
 ## Configuration in AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/virtual-quota-fallback.md
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/virtual-quota-fallback.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "Virtual Quota Fallback" from the "API Provider" dropdown. This will open its dedicated configuration panel.
 
 <img src="/docs/img/providers/virtualQuotaSelectDropdown.png" alt="virtuaQuotaFallback dropdown selection in AlfaCode assistant settings" width="600" />

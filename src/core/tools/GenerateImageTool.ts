@@ -15,10 +15,10 @@ import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { OpenRouterHandler } from "../../api/providers/openrouter"
 import { KilocodeOpenrouterHandler } from "../../api/providers/kilocode-openrouter"
+import { generateImageWithProvider } from "../../api/providers/utils/image-generation" // kilocode_change: LiteLLM image generation
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 
-import { RooHandler } from "../../api/providers/roo"
 import { t } from "../../i18n"
 
 export class GenerateImageTool extends BaseTool<"generate_image"> {
@@ -141,10 +141,13 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 		// Get the selected model
 		let selectedModel = state?.openRouterImageGenerationSelectedModel
 		let modelInfo = undefined
-
-		// Find the model info matching both value AND provider
-		// (since the same model value can exist for multiple providers)
-		if (selectedModel) {
+		// kilocode_change start: LiteLLM always uses Gemini 3 Pro Image
+		if (imageProvider === "litellm") {
+			selectedModel = "gemini-3-pro-image"
+			modelInfo = IMAGE_GENERATION_MODELS.find((m) => m.value === selectedModel && m.provider === imageProvider)
+		} else if (selectedModel) {
+			// Find the model info matching both value AND provider
+			// (since the same model value can exist for multiple providers)
 			modelInfo = IMAGE_GENERATION_MODELS.find((m) => m.value === selectedModel && m.provider === imageProvider)
 			if (!modelInfo) {
 				// Model doesn't exist for this provider, use first model for selected provider
@@ -158,14 +161,16 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 			modelInfo = providerModels[0]
 			selectedModel = modelInfo?.value || IMAGE_GENERATION_MODEL_IDS[0]
 		}
+		// kilocode_change end
 
 		// Use the provider selection
 		const modelProvider = imageProvider
-		const apiMethod = modelInfo?.apiMethod
 
 		// Validate API key for OpenRouter
 		const openRouterApiKey = state?.openRouterImageApiKey
 		const kiloCodeApiKey = state?.kiloCodeImageApiKey // kilocode_change
+		const litellmImageApiKey = state?.litellmImageApiKey // kilocode_change
+		const litellmImageBaseUrl = state?.litellmImageBaseUrl // kilocode_change
 
 		// kilocode_change start
 		if (imageProvider === "openrouter" && !openRouterApiKey && !kiloCodeApiKey) {
@@ -175,6 +180,14 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 			pushToolResult(formatResponse.toolError(errorMessage))
 			return
 		}
+		// kilocode_change start
+		if (imageProvider === "litellm" && (!litellmImageApiKey || !litellmImageBaseUrl)) {
+			const errorMessage = t("tools:generateImage.litellmApiKeyRequired")
+			await task.say("error", errorMessage)
+			pushToolResult(formatResponse.toolError(errorMessage))
+			return
+		}
+		// kilocode_change end
 
 		const fullPath = path.resolve(task.cwd, removeClosingTag("path", relPath))
 		const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
@@ -206,29 +219,39 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 			// kilocode_change start: Updated from "roo" to "kilocode" provider
 			// Use AlfaCode assistant Cloud provider (supports both chat completions and images API via OpenRouter)
 			// Use OpenRouter provider (only supports chat completions API)
-			const handler =
-				modelProvider === "kilocode"
-					? new KilocodeOpenrouterHandler({
-							kilocodeToken: kiloCodeApiKey,
-							kilocodeOrganizationId:
-								task.apiConfiguration.apiProvider === "kilocode" &&
-								task.apiConfiguration.kilocodeToken === kiloCodeApiKey
-									? task.apiConfiguration.kilocodeOrganizationId
-									: undefined,
-						})
-					: new OpenRouterHandler({})
-			result = await handler.generateImage(
-				prompt,
-				selectedModel,
-				openRouterApiKey ||
-					kiloCodeApiKey ||
-					(() => {
-						throw new Error("Unreachable because of earlier check.")
-					})(),
+			if (modelProvider === "litellm") {
+				result = await generateImageWithProvider({
+					baseURL: litellmImageBaseUrl ?? "",
+					authToken: litellmImageApiKey ?? "",
+					model: selectedModel,
+					prompt,
+					inputImage: inputImageData,
+				})
+			} else {
+				const handler =
+					modelProvider === "kilocode"
+						? new KilocodeOpenrouterHandler({
+								kilocodeToken: kiloCodeApiKey,
+								kilocodeOrganizationId:
+									task.apiConfiguration.apiProvider === "kilocode" &&
+									task.apiConfiguration.kilocodeToken === kiloCodeApiKey
+										? task.apiConfiguration.kilocodeOrganizationId
+										: undefined,
+							})
+						: new OpenRouterHandler({})
+				result = await handler.generateImage(
+					prompt,
+					selectedModel,
+					openRouterApiKey ||
+						kiloCodeApiKey ||
+						(() => {
+							throw new Error("Unreachable because of earlier check.")
+						})(),
 
-				inputImageData,
-				task.taskId,
-			)
+					inputImageData,
+					task.taskId,
+				)
+			}
 
 			// kilocode_change end
 

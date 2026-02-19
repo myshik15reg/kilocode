@@ -1,13 +1,9 @@
-<<<<<<< HEAD:apps/kilocode-docs/docs/cli.md
-# AlfaCode assistant CLI
-=======
 ---
-title: "Kilo CLI"
-description: "Using Kilo Code from the command line"
+title: "AlfaCode assistant CLI"
+description: "Use AlfaCode assistant from the command line"
 ---
 
-# Kilo CLI
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/platforms/cli.md
+# AlfaCode assistant CLI
 
 Orchestrate agents from your terminal. Plan, debug, and code fast with keyboard-first navigation on the command line.
 
@@ -37,14 +33,14 @@ to start the CLI and begin a new task with your preferred model and relevant mod
 
 ## Update
 
-Upgrade the Kilo CLI package:
+Upgrade the AlfaCode assistant CLI package:
 
 `npm update -g @kilocode/cli`
 
 ## What you can do with AlfaCode assistant CLI
 
 - **Plan and execute code changes without leaving your terminal.** Use your command line to make edits to your project without opening your IDE.
-- **Switch between hundreds of LLMs without constraints.** Other CLI tools only work with one model or curate opinionated lists. With Kilo, you can switch models without booting up another tool.
+- **Switch between hundreds of LLMs without constraints.** Other CLI tools only work with one model or curate opinionated lists. With AlfaCode assistant, you can switch models without booting up another tool.
 - **Choose the right mode for the task in your workflow.** Select between Architect, Ask, Debug, Orchestrator, or custom agent modes.
 - **Automate tasks.** Get AI assistance writing shell scripts for tasks like renaming all of the files in a folder or transforming sizes for a set of images.
 - **Extend capabilities with skills.** Add domain expertise and repeatable workflows through [Agent Skills](#skills).

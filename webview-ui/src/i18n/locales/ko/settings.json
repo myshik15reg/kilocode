@@ -41,15 +41,10 @@
 		"ui": "UI",
 		"experimental": "실험적",
 		"language": "언어",
-<<<<<<< HEAD
 		"about": "AlfaCode assistant 정보",
-		"autoPurge": "자동 정리"
-=======
-		"about": "Kilo Code 정보",
 		"autoPurge": "자동 정리",
 		"agentBehaviour": "에이전트 동작",
 		"ghost": "자동 완성"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -192,9 +187,18 @@
 		"searchMinScoreResetTooltip": "기본값(0.4)으로 재설정",
 		"searchMaxResultsLabel": "최대 검색 결과",
 		"searchMaxResultsDescription": "코드베이스 인덱스를 쿼리할 때 반환할 최대 검색 결과 수입니다. 값이 높을수록 더 많은 컨텍스트를 제공하지만 관련성이 낮은 결과가 포함될 수 있습니다.",
+		"rerankSectionLabel": "리랭커",
+		"rerankEnableLabel": "리랭커 활성화",
+		"rerankEnableDescription": "그래프 확장 전에 cross-encoder로 Qdrant 후보를 재정렬합니다. 사용할 수 없으면 의미론적 순서로 폴백합니다.",
+		"rerankCandidateLimitLabel": "리랭크 후보 한도",
+		"rerankTopKLabel": "리랭크 Top-K",
+		"rerankTimeoutMsLabel": "리랭크 타임아웃(ms)",
 		"resetToDefault": "기본값으로 재설정",
 		"cancelling": "취소 중...",
-		"cancelIndexingButton": "인덱싱 취소"
+		"cancelIndexingButton": "인덱싱 취소",
+		"neo4j": {
+			"enableDescription": "Neo4j 기반 그래프 검색과 영향 분석을 활성화합니다. 하이브리드 시맨틱 + 그래프 검색을 위해 Qdrant와 함께 작동합니다."
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDE 환경 설정</SettingsLink>에서 이 설정에 대한 전역 바로 가기를 구성할 수 있습니다.",

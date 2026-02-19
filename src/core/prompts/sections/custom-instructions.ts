@@ -474,7 +474,24 @@ export async function addCustomInstructions(
 	// Add AGENTS.md content if enabled (default: true)
 	// Load from root and optionally subdirectories with .roo folders based on enableSubfolderRules setting
 	if (options.settings?.useAgentRules !== false) {
-		const agentRulesContent = await loadAllAgentRulesFiles(cwd, enableSubfolderRules)
+		let agentRulesContent = await loadAllAgentRulesFiles(cwd, enableSubfolderRules)
+
+		// Fallback: if the workspace does not have AGENTS.md/AGENT.md, try the global WorkFlowAI template.
+		// This avoids prompting the model to read a non-existent workspace file in empty projects.
+		if (!agentRulesContent || !agentRulesContent.trim()) {
+			const templateAgentsPath = path.join(
+				getGlobalRooDirectory(),
+				"workflowai",
+				"templates",
+				"project-root",
+				"AGENTS.md",
+			)
+			const templateContent = await safeReadFile(templateAgentsPath)
+			if (templateContent) {
+				agentRulesContent = `# Agent Rules Standard (AGENTS.md) from ${templateAgentsPath}:\n${templateContent}`
+			}
+		}
+
 		if (agentRulesContent && agentRulesContent.trim()) {
 			rules.push(agentRulesContent.trim())
 		}

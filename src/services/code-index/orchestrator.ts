@@ -9,8 +9,13 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { t } from "../../i18n"
 import { RelationshipIndexer } from "../neo4j/relationship-indexer"
-import { loadRequiredLanguageParsers, resolveLanguageConfig } from "../tree-sitter/languageParser"
+import { Neo4jConnectionManager } from "../neo4j/connection-manager"
+import { Neo4jGraphService } from "../neo4j/graph-service"
+import { canonicalizeNeo4jFilePath } from "../neo4j/canonical-file-path"
+import { resolveLanguageConfig } from "../tree-sitter/languageParser"
 import { stat } from "fs/promises"
+import { createHash } from "crypto"
+import { isGraphIndexEligiblePath, resolveFileTypeByPath } from "../file-types/file-type-registry"
 
 /**
  * Manages code indexing workflow, coordinating between different services and managers.
@@ -29,12 +34,7 @@ export class CodeIndexOrchestrator {
 		private readonly vectorStore: IVectorStore,
 		private readonly scanner: DirectoryScanner,
 		private readonly fileWatcher: IFileWatcher,
-	) {
-		// Initialize Neo4j indexer if enabled
-		if (this.configManager.isNeo4jEnabled) {
-			this.relationshipIndexer = new RelationshipIndexer()
-		}
-	}
+	) {}
 
 	// kilocode_change start
 	/**
@@ -85,6 +85,8 @@ export class CodeIndexOrchestrator {
 					}
 				}),
 				this.fileWatcher.onDidFinishBatchProcessing((summary: BatchProcessingSummary) => {
+					void this.handleNeo4jBatchSummary(summary)
+
 					if (summary.batchError) {
 						console.error(`[CodeIndexOrchestrator] Batch processing failed:`, summary.batchError)
 					} else {
@@ -157,6 +159,7 @@ export class CodeIndexOrchestrator {
 
 			if (collectionCreated) {
 				await this.cacheManager.clearCacheFile()
+				await this.cacheManager.clearNeo4jCacheFile()
 			}
 
 			// Check if collection already has indexed data
@@ -234,11 +237,10 @@ export class CodeIndexOrchestrator {
 					console.log("[CodeIndexOrchestrator] No new or changed files found")
 				}
 
-				// Neo4j indexing after successful Qdrant incremental scan
-				// Note: Incremental scan doesn't track individual files, so we skip Neo4j indexing here
-				// Full scan will handle Neo4j indexing for all files
-				if (this.configManager.isNeo4jEnabled && this.relationshipIndexer) {
-					console.log("[CodeIndexOrchestrator] Skipping Neo4j indexing for incremental scan (will be done on full scan)")
+				if (this.configManager.isNeo4jEnabled) {
+					// FIX: neo4j-enable-later-catchup (TestAnalyzer)
+					// Root cause: incremental branch never synchronized Neo4j state when only vector cache had indexed files
+					await this.syncNeo4jWithCurrentIndex()
 				}
 
 				await this._startWatcher()
@@ -285,7 +287,7 @@ export class CodeIndexOrchestrator {
 					throw new Error("Scan failed, is scanner initialized?")
 				}
 
-				const { stats } = result
+				const supportedPathsForNeo4j = Array.isArray(result.supportedPaths) ? result.supportedPaths : []
 
 				// Check if any blocks were actually indexed successfully
 				// If no blocks were indexed but blocks were found, it means all batches failed
@@ -322,11 +324,20 @@ export class CodeIndexOrchestrator {
 					throw new Error(t("embeddings:orchestrator.indexingFailedCritical"))
 				}
 
+				if (this._cancelRequested || this.scanner.isCancelled) {
+					this._isProcessing = false
+					if (this.stateManager.state !== "Error") {
+						this.stateManager.setSystemState("Standby", t("embeddings:orchestrator.indexingCancelled"))
+					}
+					return
+				}
+
 				// Neo4j indexing after successful Qdrant full scan
-				// Note: Full scan doesn't track individual files in a list, so we skip Neo4j indexing here
-				// Neo4j indexing should be triggered separately through file watcher events
-				if (this.configManager.isNeo4jEnabled && this.relationshipIndexer) {
-					console.log("[CodeIndexOrchestrator] Skipping Neo4j indexing for full scan (will be done through file watcher)")
+				if (this.configManager.isNeo4jEnabled) {
+					// FIX: neo4j-fullscan-indexing (TestAnalyzer)
+					// Root cause: full scan branch never invoked relationship indexing despite having supportedPaths from scanner
+					console.log("[CodeIndexOrchestrator] Starting Neo4j relationship indexing for full scan...")
+					await this.indexRelationshipsForChangedFiles(supportedPathsForNeo4j)
 				}
 
 				await this._startWatcher()
@@ -361,6 +372,7 @@ export class CodeIndexOrchestrator {
 			if (indexingStarted) {
 				// Indexing started but failed mid-way - clear cache to avoid cache-Qdrant mismatch
 				await this.cacheManager.clearCacheFile()
+				await this.cacheManager.clearNeo4jCacheFile()
 				console.log(
 					"[CodeIndexOrchestrator] Indexing failed after starting. Clearing cache to avoid inconsistency.",
 				)
@@ -450,6 +462,7 @@ export class CodeIndexOrchestrator {
 			}
 
 			await this.cacheManager.clearCacheFile()
+			await this.cacheManager.clearNeo4jCacheFile()
 
 			if (this.stateManager.state !== "Error") {
 				this.stateManager.setSystemState("Standby", "Index data cleared successfully.")
@@ -470,8 +483,71 @@ export class CodeIndexOrchestrator {
 	 * Index code relationships into Neo4j for given files
 	 * @param filePaths Array of file paths to index
 	 */
+	private async ensureNeo4jConnectedAndInitialized(): Promise<boolean> {
+		// FIX: neo4j-connect-initialize (TestAnalyzer)
+		// Root cause: relationship indexing called Neo4j read/write/isInitialized() without ensuring an active connection,
+		// causing SHOW CONSTRAINTS to fail (especially for remote Neo4j) and leaving UI stuck in an Indexing state.
+		const neo4jConfig = this.configManager.neo4jConfig
+		const uri = neo4jConfig?.uri
+		const username = neo4jConfig?.username
+		const password = neo4jConfig?.password
+		const database = neo4jConfig?.database
+
+		if (!uri || !username || !password) {
+			this.stateManager.setSystemState(
+				"Standby",
+				"Neo4j is enabled but not fully configured (missing uri/username/password). Relationship indexing skipped.",
+			)
+			return false
+		}
+
+		const connectionManager = Neo4jConnectionManager.getInstance()
+		try {
+			await connectionManager.connect({ uri, username, password, database })
+		} catch (error) {
+			console.warn("[CodeIndexOrchestrator] Failed to connect to Neo4j. Relationship indexing skipped.")
+			this.stateManager.setSystemState(
+				"Error",
+				`Neo4j connection failed. Relationship indexing skipped: ${error instanceof Error ? error.message : String(error)}`,
+			)
+			return false
+		}
+
+		try {
+			const graphService = new Neo4jGraphService(connectionManager)
+			await graphService.initialize()
+		} catch (error) {
+			console.warn(
+				"[CodeIndexOrchestrator] Failed to initialize Neo4j graph store. Relationship indexing skipped.",
+			)
+			this.stateManager.setSystemState(
+				"Error",
+				`Neo4j initialization failed. Relationship indexing skipped: ${error instanceof Error ? error.message : String(error)}`,
+			)
+			return false
+		}
+
+		return true
+	}
+
 	private async indexRelationshipsForChangedFiles(filePaths: string[]): Promise<void> {
-		if (!this.relationshipIndexer || !this.configManager.isNeo4jEnabled) {
+		const relationshipIndexer = this.getOrCreateRelationshipIndexer()
+		if (!relationshipIndexer || !this.configManager.isNeo4jEnabled) {
+			return
+		}
+
+		const previousStatus = this.stateManager.getCurrentStatus()
+
+		const supportedFiles = filePaths.filter((filePath) => isGraphIndexEligiblePath(filePath))
+		if (supportedFiles.length === 0) {
+			// FIX: neo4j-empty-eligible-files (TestAnalyzer)
+			// Root cause: when Neo4j is enabled but no graph-eligible files exist, relationship indexing becomes a no-op
+			// and users can observe "schema exists but no data" without any explicit status.
+			const base = previousStatus.message ? `${previousStatus.message} ` : ""
+			this.stateManager.setSystemState(
+				previousStatus.systemStatus,
+				`${base}(Neo4j) No graph-eligible files found; relationship indexing skipped.`,
+			)
 			return
 		}
 
@@ -479,31 +555,43 @@ export class CodeIndexOrchestrator {
 			return
 		}
 
-		this.stateManager.setSystemState("Indexing", "Indexing code relationships into Neo4j...")
-
 		try {
+			const neo4jReady = await this.ensureNeo4jConnectedAndInitialized()
+			if (!neo4jReady) {
+				return
+			}
+
+			// FIX: 2026-02-17-neo4j-index-fixes (TestAnalyzer)
+			// Root cause: Neo4j schema may exist while graph is empty, but neo4j-cache skip can prevent recovery indexing.
+			try {
+				const graphService = new Neo4jGraphService(Neo4jConnectionManager.getInstance())
+				const totalEntities = await graphService.getCodeEntityCount()
+				if (totalEntities === 0) {
+					await this.cacheManager.clearNeo4jCacheFile()
+					console.log(
+						"[CodeIndexOrchestrator] Neo4j graph is empty. Clearing neo4j-cache to bypass cache skip.",
+					)
+				}
+			} catch (countError) {
+				// Non-fatal: if we cannot query count, keep existing caching behavior.
+				console.warn(
+					"[CodeIndexOrchestrator] Failed to query Neo4j graph entity count. Proceeding without neo4j-cache recovery.",
+					countError,
+				)
+			}
+
+			this.stateManager.setSystemState("Indexing", "Indexing code relationships into Neo4j...")
+
 			// kilocode_change: 2026-01-24 - unified Neo4j indexing across languages
-			// Initialize Neo4j connection
-			const isReady = await this.relationshipIndexer.isReady()
+			const isReady = await relationshipIndexer.isReady()
 			if (!isReady) {
 				console.warn("[CodeIndexOrchestrator] Neo4j indexer not ready, skipping relationship indexing")
+				this.stateManager.setSystemState("Error", "Neo4j indexer is not ready. Relationship indexing skipped.")
 				return
 			}
-
-			const supportedFiles = filePaths.filter((filePath) => {
-				const ext = path.extname(filePath).toLowerCase().slice(1)
-				const resolution = resolveLanguageConfig(ext)
-				return Boolean(resolution && !("skip" in resolution))
-			})
-
-			if (supportedFiles.length === 0) {
-				return
-			}
-
-			// Load language parsers
-			const languageParsers = await loadRequiredLanguageParsers(supportedFiles)
 
 			let processedCount = 0
+			let skippedByCacheCount = 0
 			const totalFiles = supportedFiles.length
 
 			// Process files in batches
@@ -513,6 +601,13 @@ export class CodeIndexOrchestrator {
 				}
 
 				try {
+					const vectorHash = this.cacheManager.getHash(filePath)
+					const cachedNeo4jHash = this.cacheManager.getNeo4jHash(filePath)
+					if (vectorHash && cachedNeo4jHash === vectorHash) {
+						skippedByCacheCount++
+						continue
+					}
+
 					// Check file size
 					const stats = await stat(filePath)
 					const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
@@ -525,43 +620,60 @@ export class CodeIndexOrchestrator {
 						.readFile(vscode.Uri.file(filePath))
 						.then((buffer) => Buffer.from(buffer).toString("utf-8"))
 
-					// Get file extension
-					const ext = path.extname(filePath).toLowerCase().slice(1)
-					const resolution = resolveLanguageConfig(ext)
-					if (!resolution || "skip" in resolution) {
+					const fileType = resolveFileTypeByPath(filePath)
+					if (!fileType || !fileType.indexing.graph) {
 						continue
 					}
 
-					const parserEntry = languageParsers[resolution.parserKey]
-					if (!parserEntry) {
-						continue
+					const dummyAst = {} as unknown as import("web-tree-sitter").Node
+					let languageId = fileType.languageId
+					if (fileType.contentKind === "treeSitter") {
+						const ext = path.extname(filePath).toLowerCase().slice(1)
+						const resolution = resolveLanguageConfig(ext)
+						if (resolution && !("skip" in resolution)) {
+							languageId = resolution.languageId
+						} else {
+							// Graceful fallback when tree-sitter resolution is unavailable/misaligned.
+							languageId = languageId ?? "plainText"
+						}
+					} else if (fileType.contentKind === "xml") {
+						languageId = "xml"
+					} else {
+						languageId = "plainText"
 					}
 
-					// Parse with tree-sitter to get AST
-					const tree = parserEntry.parser.parse(content)
-					if (tree) {
-						await this.relationshipIndexer.indexFile(
-							filePath,
-							content,
-							tree.rootNode,
-							resolution.languageId
-						)
-					}
-	
+					const neo4jFilePath = canonicalizeNeo4jFilePath(filePath, this.workspacePath)
+					await relationshipIndexer.indexFile(neo4jFilePath, content, dummyAst, languageId ?? "plainText")
+					const contentHash = vectorHash ?? createHash("sha256").update(content).digest("hex")
+					this.cacheManager.updateNeo4jHash(filePath, contentHash)
+
 					processedCount++
 					if (processedCount % 10 === 0) {
 						this.stateManager.setSystemState(
 							"Indexing",
-							`Indexing relationships: ${processedCount}/${totalFiles} files...`
+							`Indexing relationships: ${processedCount}/${totalFiles} files...`,
 						)
 					}
 				} catch (fileError) {
-					console.error(`[CodeIndexOrchestrator] Error indexing Neo4j relationships for ${filePath}:`, fileError)
+					console.error(
+						`[CodeIndexOrchestrator] Error indexing Neo4j relationships for ${filePath}:`,
+						fileError,
+					)
 					// Continue with other files
 				}
 			}
 
-			console.log(`[CodeIndexOrchestrator] Neo4j relationship indexing completed: ${processedCount}/${totalFiles} files`)
+			console.log(
+				`[CodeIndexOrchestrator] Neo4j relationship indexing completed: ${processedCount}/${totalFiles} files`,
+			)
+			// FIX: neo4j-cache-all-skipped (TestAnalyzer)
+			// Root cause: when all files are skipped due to cache, Neo4j DB may remain empty with no explicit status.
+			const restoredMessage =
+				processedCount === 0 && skippedByCacheCount === totalFiles
+					? `${previousStatus.message ? `${previousStatus.message} ` : ""}(Neo4j) 0/${totalFiles} files indexed (all skipped by cache).`
+					: previousStatus.message
+			// Ensure UI isn't left in Neo4j-specific Indexing state when invoked from watcher batch callbacks.
+			this.stateManager.setSystemState(previousStatus.systemStatus, restoredMessage)
 		} catch (error) {
 			console.error("[CodeIndexOrchestrator] Error during Neo4j relationship indexing:", error)
 			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
@@ -569,7 +681,91 @@ export class CodeIndexOrchestrator {
 				stack: error instanceof Error ? error.stack : undefined,
 				location: "indexRelationshipsForChangedFiles",
 			})
-			throw error
+			this.stateManager.setSystemState(
+				"Error",
+				`Neo4j relationship indexing failed: ${error instanceof Error ? error.message : String(error)}`,
+			)
+			// Non-fatal: relationship indexing should not abort Qdrant indexing or leave UI stuck.
+			return
 		}
+	}
+
+	private getOrCreateRelationshipIndexer(): RelationshipIndexer | null {
+		if (!this.configManager.isNeo4jEnabled) {
+			return null
+		}
+
+		if (!this.relationshipIndexer) {
+			this.relationshipIndexer = new RelationshipIndexer()
+		}
+
+		return this.relationshipIndexer
+	}
+
+	private async deleteRelationshipsForRemovedFiles(filePaths: string[]): Promise<void> {
+		const relationshipIndexer = this.getOrCreateRelationshipIndexer()
+		if (!relationshipIndexer || !this.configManager.isNeo4jEnabled || filePaths.length === 0) {
+			return
+		}
+
+		try {
+			const neo4jReady = await this.ensureNeo4jConnectedAndInitialized()
+			if (!neo4jReady) {
+				return
+			}
+
+			const isReady = await relationshipIndexer.isReady()
+			if (!isReady) {
+				return
+			}
+
+			const neo4jFilePaths = filePaths.map((filePath) => canonicalizeNeo4jFilePath(filePath, this.workspacePath))
+			await relationshipIndexer.deleteFiles(neo4jFilePaths)
+			for (const filePath of filePaths) {
+				this.cacheManager.deleteNeo4jHash(filePath)
+			}
+		} catch (error) {
+			console.error("[CodeIndexOrchestrator] Error deleting Neo4j relationships for removed files:", error)
+		}
+	}
+
+	private async handleNeo4jBatchSummary(summary: BatchProcessingSummary): Promise<void> {
+		if (!this.configManager.isNeo4jEnabled || summary.batchError) {
+			return
+		}
+
+		const deletedPaths = Array.isArray(summary.deletedPaths) ? summary.deletedPaths : []
+		const upsertedPaths = Array.isArray(summary.upsertedPaths) ? summary.upsertedPaths : []
+
+		if (deletedPaths.length > 0) {
+			await this.deleteRelationshipsForRemovedFiles(deletedPaths)
+		}
+
+		if (upsertedPaths.length > 0) {
+			// FIX: neo4j-watcher-incremental (TestAnalyzer)
+			// Root cause: watcher batch events were not propagating incremental Neo4j indexing for changed files
+			await this.indexRelationshipsForChangedFiles(upsertedPaths)
+		}
+	}
+
+	public async syncNeo4jWithCurrentIndex(): Promise<void> {
+		if (!this.configManager.isNeo4jEnabled) {
+			return
+		}
+
+		const vectorHashes = this.cacheManager.getAllHashes()
+		const vectorPaths = Object.keys(vectorHashes)
+
+		if (vectorPaths.length === 0) {
+			return
+		}
+
+		const neo4jHashes = this.cacheManager.getAllNeo4jHashes()
+		const staleNeo4jPaths = Object.keys(neo4jHashes).filter((filePath) => !vectorHashes[filePath])
+		if (staleNeo4jPaths.length > 0) {
+			await this.deleteRelationshipsForRemovedFiles(staleNeo4jPaths)
+		}
+
+		await this.indexRelationshipsForChangedFiles(vectorPaths)
 	}
 }

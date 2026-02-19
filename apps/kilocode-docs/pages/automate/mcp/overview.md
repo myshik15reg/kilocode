@@ -11,17 +11,13 @@ The Model Context Protocol (MCP) is a standard for extending AlfaCode assistant'
 
 This documentation is organized into several sections:
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/mcp/overview.md
-- [**Using MCP in AlfaCode assistant**](/features/mcp/using-mcp-in-kilo-code) - Comprehensive guide to configuring, enabling, and managing MCP servers with AlfaCode assistant. Includes server settings, tool approval, and troubleshooting.
-=======
-- [**Using MCP in Kilo Code**](/docs/features/mcp/using-mcp-in-kilo-code) - Comprehensive guide to configuring, enabling, and managing MCP servers with Kilo Code. Includes server settings, tool approval, and troubleshooting.
->>>>>>> origin/main:apps/kilocode-docs/pages/automate/mcp/overview.md
+- [**Using MCP in AlfaCode assistant**](/docs/automate/mcp/using-in-kilo-code) - Comprehensive guide to configuring, enabling, and managing MCP servers with AlfaCode assistant. Includes server settings, tool approval, and troubleshooting.
 
-- [**What is MCP?**](/docs/features/mcp/what-is-mcp) - Clear explanation of the Model Context Protocol, its client-server architecture, and how it enables AI systems to interact with external tools.
+- [**What is MCP?**](/docs/automate/mcp/what-is-mcp) - Clear explanation of the Model Context Protocol, its client-server architecture, and how it enables AI systems to interact with external tools.
 
-- [**STDIO & SSE Transports**](/docs/features/mcp/server-transports) - Detailed comparison of local (STDIO) and remote (SSE) transport mechanisms with deployment considerations for each approach.
+- [**STDIO & SSE Transports**](/docs/automate/mcp/server-transports) - Detailed comparison of local (STDIO) and remote (SSE) transport mechanisms with deployment considerations for each approach.
 
-- [**MCP vs API**](/docs/features/mcp/mcp-vs-api) - Analysis of the fundamental distinction between MCP and REST APIs, explaining how they operate at different layers of abstraction for AI systems.
+- [**MCP vs API**](/docs/automate/mcp/mcp-vs-api) - Analysis of the fundamental distinction between MCP and REST APIs, explaining how they operate at different layers of abstraction for AI systems.
 
 ## Contributing to the Marketplace
 
@@ -43,8 +39,4 @@ Have you created an MCP server that others might find useful? Share it with the 
 - Note any platform-specific requirements (Windows, macOS, Linux)
 - Follow the [contribution guidelines](https://github.com/Kilo-Org/kilo-marketplace/blob/main/CONTRIBUTING.md) in the marketplace repository
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/mcp/overview.md
-For more details on contributing to AlfaCode assistant, see the [Contributing Guide](/contributing).
-=======
-For more details on contributing to Kilo Code, see the [Contributing Guide](/docs/contributing).
->>>>>>> origin/main:apps/kilocode-docs/pages/automate/mcp/overview.md
+For more details on contributing to AlfaCode assistant, see the [Contributing Guide](/docs/contributing).

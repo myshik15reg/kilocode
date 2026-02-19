@@ -5,6 +5,7 @@ import { fileURLToPath } from "url"
 import { createRequire } from "module"
 import process from "node:process"
 import * as console from "node:console"
+import crypto from "node:crypto" // kilocode_change
 
 import { copyPaths, copyWasms, copyLocales, setupLocaleWatcher } from "@roo-code/build"
 
@@ -71,18 +72,34 @@ async function main() {
 			name: "copyFiles",
 			setup(build) {
 				build.onEnd(() => {
-					copyPaths(
-						[
-							["../README.md", "README.md"],
-							["../CHANGELOG.md", "CHANGELOG.md"],
-							["../LICENSE", "LICENSE"],
-							["../.env", ".env", { optional: true }],
-							["node_modules/vscode-material-icons/generated", "assets/vscode-material-icons"],
-							["../webview-ui/audio", "webview-ui/audio"],
-						],
-						srcDir,
-						buildDir,
-					)
+				copyPaths(
+					[
+						["../README.md", "README.md"],
+						["../CHANGELOG.md", "CHANGELOG.md"],
+						["../LICENSE", "LICENSE"],
+						["../.env", ".env", { optional: true }],
+						// kilocode_change start: bundle WorkFlowAI pack
+						["../WorkFlowAI", "WorkFlowAI"],
+						// kilocode_change end
+						["node_modules/vscode-material-icons/generated", "assets/vscode-material-icons"],
+						["../webview-ui/audio", "webview-ui/audio"],
+					],
+					srcDir,
+					buildDir,
+				)
+
+					// kilocode_change start: generate embedded WorkFlowAI pack manifest (fingerprint)
+					try {
+						const workflowAiPackDir = path.join(buildDir, "WorkFlowAI")
+						generateEmbeddedPackManifest(workflowAiPackDir)
+						console.log(`[${name}] Generated WorkFlowAI embedded pack manifest`)
+					} catch (error) {
+						console.error(
+							`[${name}] Failed to generate WorkFlowAI embedded pack manifest:`,
+							error?.message ?? String(error),
+						)
+					}
+					// kilocode_change end
 
 					// Copy walkthrough files to dist directory
 					copyPaths([["walkthrough", "walkthrough"]], srcDir, distDir)
@@ -219,6 +236,80 @@ async function main() {
 		await Promise.all([extensionCtx.dispose(), workerCtx.dispose(), agentRuntimeCtx.dispose()]) // kilocode_change
 	}
 }
+
+// kilocode_change start: embedded WorkFlowAI pack fingerprint/manifest
+function listFilesRecursive(rootDir) {
+	/** @type {string[]} */
+	const files = []
+	/** @type {string[]} */
+	const stack = [rootDir]
+
+	while (stack.length > 0) {
+		const current = stack.pop()
+		if (!current) {
+			continue
+		}
+
+		const entries = fs.readdirSync(current, { withFileTypes: true })
+		for (const entry of entries) {
+			const absolutePath = path.join(current, entry.name)
+			if (entry.isDirectory()) {
+				stack.push(absolutePath)
+			} else if (entry.isFile()) {
+				files.push(absolutePath)
+			}
+		}
+	}
+
+	return files
+}
+
+function normalizeRelativePath(rootDir, absoluteFilePath) {
+	return path.relative(rootDir, absoluteFilePath).split(path.sep).join("/")
+}
+
+function computeDirectoryFingerprintSha256(rootDir, excludedAbsolutePaths = []) {
+	const excluded = new Set(excludedAbsolutePaths.map((p) => path.resolve(p)))
+	const files = listFilesRecursive(rootDir)
+		.filter((filePath) => !excluded.has(path.resolve(filePath)))
+		.filter((filePath) => {
+			const rel = normalizeRelativePath(rootDir, filePath)
+			return rel !== ".DS_Store" && !rel.endsWith("/.DS_Store") && rel !== "Thumbs.db" && !rel.endsWith("/Thumbs.db")
+		})
+		.sort((a, b) => normalizeRelativePath(rootDir, a).localeCompare(normalizeRelativePath(rootDir, b)))
+
+	const hash = crypto.createHash("sha256")
+
+	for (const filePath of files) {
+		const rel = normalizeRelativePath(rootDir, filePath)
+		const buffer = fs.readFileSync(filePath)
+		const fileHash = crypto.createHash("sha256").update(buffer).digest("hex")
+		hash.update(rel)
+		hash.update("\0")
+		hash.update(String(buffer.length))
+		hash.update("\0")
+		hash.update(fileHash)
+		hash.update("\n")
+	}
+
+	return { fingerprint: hash.digest("hex"), fileCount: files.length }
+}
+
+function generateEmbeddedPackManifest(workflowAiPackDir) {
+	const manifestPath = path.join(workflowAiPackDir, ".kilocode", "embedded-pack.manifest.json")
+	const { fingerprint, fileCount } = computeDirectoryFingerprintSha256(workflowAiPackDir, [manifestPath])
+
+	const manifest = {
+		fingerprint,
+		algorithm: "sha256",
+		fileCount,
+		generatedAt: new Date().toISOString(),
+	}
+
+	fs.mkdirSync(path.dirname(manifestPath), { recursive: true })
+	fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
+}
+// kilocode_change end
 
 main().catch((e) => {
 	console.error(e)

@@ -442,12 +442,8 @@
 	"rooCloudAnnouncement": "موفر Roo Code Cloud الآن يقدم نماذج مدفوعة: اشترِ رصيداً واستخدمه للوكلاء السحابيين والاستنتاج",
 	"browser": {
 		"session": "جلسة المتصفح",
-<<<<<<< HEAD
-		"rooWantsToUse": "AlfaCode assistant يريد استخدام المتصفح:",
-=======
 		"active": "نشط",
-		"rooWantsToUse": "Kilo Code يريد استخدام المتصفح:",
->>>>>>> origin/main
+		"rooWantsToUse": "AlfaCode assistant يريد استخدام المتصفح:",
 		"consoleLogs": "سجلات الكونسول",
 		"noNewLogs": "(لا توجد سجلات جديدة)",
 		"screenshot": "لقطة شاشة للمتصفح",

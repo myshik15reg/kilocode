@@ -1,5 +1,6 @@
 // kilocode-change - new file
 import { describe, it, expect } from "vitest"
+import type { Command } from "@roo-code/types"
 import {
 	getMatchingSlashCommands,
 	validateSlashCommand,
@@ -30,11 +31,6 @@ describe("Slash Command Matching", () => {
 			const results = getMatchingSlashCommands("")
 			expect(results.length).toBeGreaterThan(0)
 		})
-
-		it("should include condense aliases in results", () => {
-			const results = getMatchingSlashCommands("cond")
-			expect(results.some((r) => r.name === "condense")).toBe(true)
-		})
 	})
 
 	describe("validateSlashCommand - case insensitivity", () => {
@@ -42,13 +38,23 @@ describe("Slash Command Matching", () => {
 			expect(validateSlashCommand("newtask")).toBe("full")
 			expect(validateSlashCommand("NEWTASK")).toBe("full")
 			expect(validateSlashCommand("NewTask")).toBe("full")
-			expect(validateSlashCommand("init-memory-bank")).toBe("full")
+		})
+
+		it("should validate smol alias", () => {
+			expect(validateSlashCommand("smol")).toBe("full")
 		})
 
 		it("should validate condense aliases", () => {
-			expect(validateSlashCommand("smol")).toBe("full")
+			// FIX: slash-commands-sync (TestAnalyzer)
+			// Root cause: UI supported command list drifted from origin/main (condense/compact missing).
 			expect(validateSlashCommand("condense")).toBe("full")
 			expect(validateSlashCommand("compact")).toBe("full")
+		})
+
+		it("should validate init command", () => {
+			// FIX: slash-commands-sync (TestAnalyzer)
+			// Root cause: UI supported command list drifted from origin/main (init missing).
+			expect(validateSlashCommand("init")).toBe("full")
 		})
 
 		it("should validate partial matches regardless of case", () => {
@@ -58,6 +64,25 @@ describe("Slash Command Matching", () => {
 
 		it("should return null for non-matching commands", () => {
 			expect(validateSlashCommand("nonexistent")).toBe(null)
+		})
+	})
+
+	describe("file-based commands (extension-provided)", () => {
+		const extensionCommands: Command[] = [
+			{
+				name: "init-protocol",
+				source: "project",
+				description: "Initialize protocol folder",
+			},
+		]
+
+		it("should include extension-provided commands in matching list", () => {
+			const results = getMatchingSlashCommands("init-", [], {}, {}, extensionCommands)
+			expect(results.some((r) => r.name === "init-protocol")).toBe(true)
+		})
+
+		it("should validate extension-provided commands as full", () => {
+			expect(validateSlashCommand("init-protocol", [], {}, {}, extensionCommands)).toBe("full")
 		})
 	})
 

@@ -13,19 +13,13 @@ AlfaCode assistant supports accessing models through the [Requesty](https://www.
 1.  **Sign Up/Sign In:** Go to the [Requesty website](https://www.requesty.ai/) and create an account or sign in.
 2.  **Get API Key:** You can get an API key from the [API Management](https://app.requesty.ai/manage-api) section of your Requesty dashboard.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/requesty.md
 ## Supported Models
 
 Requesty provides access to a wide range of models. AlfaCode assistant will automatically fetch the latest list of available models. You can see the full list of available models on the [Model List](https://app.requesty.ai/router/list) page.
 
 ## Configuration in AlfaCode assistant
 
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-## Configuration in Kilo Code
-
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/requesty.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "Requesty" from the "API Provider" dropdown.
 3.  **Enter API Key:** Paste your Requesty API key into the "Requesty API Key" field.
 4.  **Select Model:** Choose your desired model from the "Model" dropdown.

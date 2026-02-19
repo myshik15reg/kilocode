@@ -1,10 +1,5 @@
 import { useState, useEffect, FormEvent } from "react"
-<<<<<<< HEAD
 import { VSCodeTextArea, VSCodeCheckbox, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { MessageSquare } from "lucide-react"
-=======
-import { VSCodeTextArea, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
->>>>>>> origin/main
 
 import { supportPrompt, SupportPromptType } from "@roo/support-prompt"
 

@@ -23,6 +23,7 @@ import {
 	tomlQuery,
 	vueQuery,
 	luaQuery,
+	scalaQuery,
 	systemrdlQuery,
 	tlaPlusQuery,
 	zigQuery,
@@ -73,7 +74,7 @@ const EXTENSION_LANGUAGE_MAP: Record<string, LanguageResolution> = {
 	htm: { languageId: "html", parserKey: "htm", query: htmlQuery },
 	ml: { languageId: "ocaml", parserKey: "ml", query: ocamlQuery },
 	mli: { languageId: "ocaml", parserKey: "mli", query: ocamlQuery },
-	scala: { languageId: "scala", parserKey: "scala", query: luaQuery },
+	scala: { languageId: "scala", parserKey: "scala", query: scalaQuery },
 	sol: { languageId: "solidity", parserKey: "sol", query: solidityQuery },
 	toml: { languageId: "toml", parserKey: "toml", query: tomlQuery },
 	vue: { languageId: "vue", parserKey: "vue", query: vueQuery },
@@ -113,7 +114,7 @@ const LANGUAGE_QUERY_MAP: Record<string, string> = {
 	css: cssQuery,
 	html: htmlQuery,
 	ocaml: ocamlQuery,
-	scala: luaQuery,
+	scala: scalaQuery,
 	solidity: solidityQuery,
 	toml: tomlQuery,
 	vue: vueQuery,
@@ -163,7 +164,7 @@ export function getGraphQueryForLanguage(languageId: string): string | null {
  */
 async function loadLanguage(langName: string, sourceDirectory?: string) {
 	const manager = getParserManager()
-	
+
 	// Определяем путь к WASM файлу
 	let wasmPath: string | undefined
 	if (sourceDirectory) {
@@ -232,6 +233,10 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 
 		const parser = await manager.getParser(languageId, wasmPath)
 		parsers[parserKey] = { parser, query }
+		// Ensure lookups by extension keep working even when parserKey differs (e.g. ejs/erb).
+		if (parserKey !== ext) {
+			parsers[ext] = { parser, query }
+		}
 	}
 
 	return parsers

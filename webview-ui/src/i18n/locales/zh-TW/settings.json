@@ -62,11 +62,7 @@
 		"contact": {
 			"label": "需要與我們聯絡？請寫信"
 		},
-<<<<<<< HEAD
-		"community": "想要獲取使用技巧或與其他 AlfaCode assistant 使用者交流？加入 <redditLink>reddit.com/r/kilocode</redditLink> 或 <discordLink>kilo.ai/discord</discordLink>",
-=======
-		"community": "想要取得使用技巧或與其他 Kilo Code 使用者交流？加入 <redditLink>reddit.com/r/kilocode</redditLink> 或 <discordLink>kilo.ai/discord</discordLink>",
->>>>>>> origin/main
+		"community": "想要取得使用技巧或與其他 AlfaCode assistant 使用者交流？加入 <redditLink>reddit.com/r/kilocode</redditLink> 或 <discordLink>kilo.ai/discord</discordLink>",
 		"contactAndCommunity": "聯絡與社群",
 		"manageSettings": "管理設定",
 		"debugMode": {
@@ -201,18 +197,22 @@
 		"searchMinScoreResetTooltip": "重設為預設值 (0.4)",
 		"searchMaxResultsLabel": "最大搜尋結果數",
 		"searchMaxResultsDescription": "查詢程式碼庫索引時傳回的最大搜尋結果數。較高的值提供更多上下文，但可能包含相關性較低的結果。",
+		"rerankSectionLabel": "重新排序",
+		"rerankEnableLabel": "啟用重新排序",
+		"rerankEnableDescription": "在圖形擴展前使用 cross-encoder 重新排序 Qdrant 候選。不可用時回退為語義順序。",
+		"rerankCandidateLimitLabel": "重新排序候選上限",
+		"rerankTopKLabel": "重新排序 Top-K",
+		"rerankTimeoutMsLabel": "重新排序逾時（毫秒）",
 		"resetToDefault": "重設為預設值",
 		"cancelling": "正在取消...",
-		"cancelIndexingButton": "取消索引"
+		"cancelIndexingButton": "取消索引",
+		"neo4j": {
+			"enableDescription": "啟用基於 Neo4j 的圖形搜尋與影響分析。與 Qdrant 搭配，可進行混合語義 + 圖形搜尋。"
+		}
 	},
 	"autoApprove": {
-<<<<<<< HEAD
-		"toggleShortcut": "您可以<SettingsLink>在 IDE 偏好設定中</SettingsLink>為此設定設定全域快捷鍵。",
-		"description": "允許 AlfaCode assistant 無需核准即執行操作。僅在您完全信任 AI 並了解相關安全風險時啟用這些設定。",
-=======
 		"toggleShortcut": "您可以在 <SettingsLink>IDE 偏好設定</SettingsLink> 中為此設定設定全域快捷鍵。",
-		"description": "允許 Kilo Code 無需核准即執行操作。僅在您完全信任 AI 並了解相關安全風險時啟用這些設定。",
->>>>>>> origin/main
+		"description": "允許 AlfaCode assistant 無需核准即執行操作。僅在您完全信任 AI 並了解相關安全風險時啟用這些設定。",
 		"enabled": "自動核准已啟用",
 		"readOnly": {
 			"label": "讀取",
@@ -520,11 +520,7 @@
 			"draftModelDesc": "草稿模型必須來自相同模型系列才能正確運作。",
 			"selectDraftModel": "選擇草稿模型",
 			"noModelsFound": "未找到草稿模型。請確保 LM Studio 以伺服器模式執行。",
-<<<<<<< HEAD
-			"description": "LM Studio 允許您在本機電腦執行模型。詳細資訊請參閱快速入門指南。您需要啟動 LM Studio 的本機伺服器功能才能與此擴充功能搭配使用。<span>注意：</span> AlfaCode assistant 使用複雜提示，與 Claude 模型搭配最佳。功能較弱的模型可能無法正常運作。"
-=======
-			"description": "LM Studio 允許您在本機電腦執行模型。詳細資訊請參閱快速入門指南。您需要啟動 LM Studio 的本機伺服器功能才能與此擴充功能搭配使用。<span>注意：</span> Kilo Code 使用複雜提示詞，與 Claude 模型搭配最佳。功能較弱的模型可能無法正常運作。"
->>>>>>> origin/main
+			"description": "LM Studio 允許您在本機電腦執行模型。詳細資訊請參閱快速入門指南。您需要啟動 LM Studio 的本機伺服器功能才能與此擴充功能搭配使用。<span>注意：</span> AlfaCode assistant 使用複雜提示詞，與 Claude 模型搭配最佳。功能較弱的模型可能無法正常運作。"
 		},
 		"ollama": {
 			"baseUrl": "基礎 URL（選用）",
@@ -535,11 +531,7 @@
 			"numCtx": "上下文視窗大小（num_ctx）",
 			"numCtxHelp": "覆寫模型的預設上下文視窗大小。留空以使用模型的 Modelfile 設定。最小值為 128。",
 			"description": "Ollama 允許您在本機電腦執行模型。請參閱快速入門指南。",
-<<<<<<< HEAD
-			"warning": "注意：AlfaCode assistant 使用複雜提示，與 Claude 模型搭配最佳。功能較弱的模型可能無法正常運作。"
-=======
-			"warning": "注意：Kilo Code 使用複雜提示詞，與 Claude 模型搭配最佳。功能較弱的模型可能無法正常運作。"
->>>>>>> origin/main
+			"warning": "注意：AlfaCode assistant 使用複雜提示詞，與 Claude 模型搭配最佳。功能較弱的模型可能無法正常運作。"
 		},
 		"unboundApiKey": "Unbound API 金鑰",
 		"getUnboundApiKey": "取得 Unbound API 金鑰",
@@ -974,19 +966,12 @@
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "啟用並行檔案讀取",
-			"description": "啟用後，Kilo Code 可以在單一請求中讀取多個檔案。停用後，Kilo Code 必須逐一讀取檔案。在使用能力較弱的模型或希望對檔案存取有更多控制時，停用此功能可能會有所幫助。"
+			"description": "啟用後，AlfaCode assistant 可以在單一請求中讀取多個檔案（最多 15 個檔案）。停用後，AlfaCode assistant 必須逐一讀取檔案。在使用能力較弱的模型或希望對檔案存取有更多控制時，停用此功能可能會有所幫助。"
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "使用實驗性多區塊差異比對工具",
 			"description": "啟用後，AlfaCode assistant 將使用多區塊差異比對工具，嘗試在單一請求中更新檔案內的多個程式碼區塊。"
 		},
-<<<<<<< HEAD
-		"CONCURRENT_FILE_READS": {
-			"name": "啟用並行檔案讀取",
-			"description": "啟用後，AlfaCode assistant 可以在單一請求中讀取多個檔案（最多 15 個檔案）。停用後，AlfaCode assistant 必須逐一讀取檔案。在使用能力較弱的模型或希望對檔案存取有更多控制時，停用此功能可能會有所幫助。"
-		},
-=======
->>>>>>> origin/main
 		"MARKETPLACE": {
 			"name": "啟用 Marketplace",
 			"description": "啟用後，您可以從 Marketplace 安裝 MCP 和自訂模式。"
@@ -1026,39 +1011,21 @@
 			"description": "啟用後，new_task 工具將需要提供 todos 參數。這可以確保所有新工作都以明確的目標列表開始。停用時（預設），todos 參數保持可選，以實現向後相容。"
 		},
 		"IMAGE_GENERATION": {
-<<<<<<< HEAD
-			"providerLabel": "提供商",
-			"providerDescription": "選擇用於圖像生成的提供商。",
-			"name": "啟用 AI 圖像生成",
-			"description": "啟用後，AlfaCode assistant 可以從文字提示生成圖像。需要設定 AlfaCode assistant 或 OpenRouter API 金鑰。",
-=======
 			"name": "啟用 AI 影像生成",
-			"description": "啟用後，Kilo Code 可以從文字提示生成影像。需要設定 Kilo Code 或 OpenRouter API 金鑰。",
->>>>>>> origin/main
+			"description": "啟用後，AlfaCode assistant 可以從文字提示生成影像。需要設定 AlfaCode assistant 或 OpenRouter API 金鑰。",
 			"apiProvider": "API 供應商",
 			"providerLabel": "供應商",
 			"providerDescription": "選擇用於影像生成的供應商。",
 			"openRouterApiKeyLabel": "OpenRouter API 金鑰",
 			"openRouterApiKeyPlaceholder": "輸入您的 OpenRouter API 金鑰",
-<<<<<<< HEAD
 			"kiloCodeApiKeyLabel": "AlfaCode assistant API 金鑰",
 			"kiloCodeApiKeyPlaceholder": "輸入您的 AlfaCode assistant API 金鑰",
 			"kiloCodeApiKeyPaste": "貼上目前的 AlfaCode assistant API 金鑰",
-			"getApiKeyText": "取得您的 API 金鑰從",
-			"modelSelectionLabel": "圖像生成模型",
-			"modelSelectionDescription": "選擇用於圖像生成的模型",
-			"warningMissingKey": "⚠️ 圖像生成需要 API 金鑰，請在上方設定。",
-			"successConfigured": "✓ 圖像生成已設定完成並準備使用"
-=======
-			"kiloCodeApiKeyLabel": "Kilo Code API 金鑰",
-			"kiloCodeApiKeyPlaceholder": "輸入您的 Kilo Code API 金鑰",
-			"kiloCodeApiKeyPaste": "貼上目前的 Kilo Code API 金鑰",
 			"getApiKeyText": "取得您的 API 金鑰請前往",
 			"modelSelectionLabel": "影像生成模型",
 			"modelSelectionDescription": "選擇用於影像生成的模型",
 			"warningMissingKey": "⚠️ 影像生成需要 API 金鑰，請在上方設定。",
 			"successConfigured": "✓ 影像生成已設定完成並準備使用"
->>>>>>> origin/main
 		},
 		"INLINE_ASSIST": {
 			"name": "自動補全",
@@ -1134,11 +1101,7 @@
 		"support": "如有財務相關問題，請聯絡客戶支援 <supportLink>https://kilo.ai/support</supportLink>",
 		"telemetry": {
 			"label": "允許匿名錯誤與使用情況回報",
-<<<<<<< HEAD
-			"description": "透過傳送匿名的使用資料與錯誤回報，協助改善 AlfaCode assistant。我們絕不會傳送您的程式碼、提示或個人資訊。詳細資訊請參閱我們的隱私權政策。"
-=======
-			"description": "透過傳送匿名的使用資料與錯誤回報，協助改善 Kilo Code。我們絕不會傳送您的程式碼、提示詞或個人資訊。詳細資訊請參閱我們的隱私權政策。"
->>>>>>> origin/main
+			"description": "透過傳送匿名的使用資料與錯誤回報，協助改善 AlfaCode assistant。我們絕不會傳送您的程式碼、提示詞或個人資訊。詳細資訊請參閱我們的隱私權政策。"
 		},
 		"settings": {
 			"import": "匯入",

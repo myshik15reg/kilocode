@@ -15,7 +15,6 @@ MiniMax is a global AI foundation model company focused on fast, cost-efficient 
 3. **Create a Key:** Click to generate a new API key and give it a descriptive name (e.g., "AlfaCode assistant").
 4. **Copy the Key:** Copy the key immediately. You may not be able to view it again. Store it securely.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/minimax.md
 ## Supported Models
 
 AlfaCode assistant supports the following MiniMax models:
@@ -29,12 +28,7 @@ AlfaCode assistant supports the following MiniMax models:
 
 ## Configuration in AlfaCode assistant
 
-1. **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-## Configuration in Kilo Code
-
-1. **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/minimax.md
+1. **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2. **Select Provider:** Navigate to **Providers**. Choose **MiniMax** from the API Provider dropdown.
 3. **Enter API Key:** Paste your MiniMax API key into the MiniMax API Key field.
 4. **Select Model:** Choose your desired MiniMax model from the Model dropdown.

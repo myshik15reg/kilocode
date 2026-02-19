@@ -16,18 +16,14 @@
 			"incentive": "Probeer Roo gratis uit"
 		}
 	},
-<<<<<<< HEAD
 	"chooseProvider": "Om zijn magie te doen, heeft AlfaCode assistant een API-sleutel nodig.",
-=======
-	"chooseProvider": "Om zijn magie te doen, heeft Kilo Code een API-sleutel nodig.",
 	"landing": {
-		"greeting": "Welkom bij Roo Code!",
-		"introduction": "Met een reeks ingebouwde en uitbreidbare Modi laat Roo Code je plannen, ontwerpen, coderen, debuggen en je productiviteit verhogen als nooit tevoren.",
-		"accountMention": "Maak je Roo Code Cloud-account aan om te beginnen. Krijg krachtige modellen, webcontrole, analyses, ondersteuning en meer.",
-		"getStarted": "Roo-account aanmaken",
+		"greeting": "Welkom bij AlfaCode assistant!",
+		"introduction": "Met een reeks ingebouwde en uitbreidbare Modi laat AlfaCode assistant je plannen, ontwerpen, coderen, debuggen en je productiviteit verhogen als nooit tevoren.",
+		"accountMention": "Maak je AlfaCode assistant Cloud-account aan om te beginnen. Krijg krachtige modellen, webcontrole, analyses, ondersteuning en meer.",
+		"getStarted": "AlfaCode-account aanmaken",
 		"noAccount": "of gebruik zonder account"
 	},
->>>>>>> origin/main
 	"providerSignup": {
 		"heading": "Kies je provider",
 		"chooseProvider": "Roo heeft een LLM-provider nodig om te werken. Kies er een om te beginnen, je kunt er later meer toevoegen.",

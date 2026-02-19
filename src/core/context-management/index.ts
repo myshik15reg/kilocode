@@ -7,6 +7,10 @@ import { ApiHandler } from "../../api"
 import { MAX_CONDENSE_THRESHOLD, MIN_CONDENSE_THRESHOLD, summarizeConversation, SummarizeResponse } from "../condense"
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
+// kilocode_change start: RLM context routing
+import { resolveContextRoutingMode } from "./context-routing"
+import { RlmMode, summarizeConversationRlm } from "./rlm"
+// kilocode_change end
 
 /**
  * Context Management
@@ -23,6 +27,11 @@ import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
  * Used by Context Management to determine when to trigger condensation or (fallback) sliding window truncation.
  */
 export const TOKEN_BUFFER_PERCENTAGE = 0.1
+
+// kilocode_change start: RLM helper
+const resolveRlmMode = (routingMode: string): RlmMode | undefined =>
+	routingMode === "deep" || routingMode === "fast" ? (routingMode as RlmMode) : undefined
+// kilocode_change end
 
 /**
  * Counts tokens for user content using the provider's token counting implementation.
@@ -146,6 +155,11 @@ export type WillManageContextOptions = {
 	profileThresholds: Record<string, number>
 	currentProfileId: string
 	lastMessageTokens: number
+	// kilocode_change start: RLM context routing inputs
+	contextRoutingEnabled?: boolean
+	contextRoutingFastThresholdPercent?: number
+	contextRoutingDeepThresholdPercent?: number
+	// kilocode_change end
 }
 
 /**
@@ -166,6 +180,11 @@ export function willManageContext({
 	profileThresholds,
 	currentProfileId,
 	lastMessageTokens,
+	// kilocode_change start: RLM context routing inputs
+	contextRoutingEnabled,
+	contextRoutingFastThresholdPercent,
+	contextRoutingDeepThresholdPercent,
+	// kilocode_change end
 }: WillManageContextOptions): boolean {
 	if (!autoCondenseContext) {
 		// When auto-condense is disabled, only truncation can occur
@@ -192,6 +211,19 @@ export function willManageContext({
 	}
 
 	const contextPercent = (100 * prevContextTokens) / contextWindow
+	// kilocode_change start: context routing triggers RLM
+	const routingMode = resolveContextRoutingMode({
+		enabled: contextRoutingEnabled ?? false,
+		totalTokens: prevContextTokens,
+		contextWindow,
+		fastThresholdPercent: contextRoutingFastThresholdPercent ?? 50,
+		deepThresholdPercent: contextRoutingDeepThresholdPercent ?? 80,
+	})
+	const shouldRouteRlm = routingMode === "fast" || routingMode === "deep"
+	if (shouldRouteRlm) {
+		return true
+	}
+	// kilocode_change end
 	return contextPercent >= effectiveThreshold || prevContextTokens > allowedTokens
 }
 
@@ -220,6 +252,11 @@ export type ContextManagementOptions = {
 	profileThresholds: Record<string, number>
 	currentProfileId: string
 	useNativeTools?: boolean
+	// kilocode_change start: RLM context routing inputs
+	contextRoutingEnabled?: boolean
+	contextRoutingFastThresholdPercent?: number
+	contextRoutingDeepThresholdPercent?: number
+	// kilocode_change end
 }
 
 export type ContextManagementResult = SummarizeResponse & {
@@ -250,6 +287,11 @@ export async function manageContext({
 	profileThresholds,
 	currentProfileId,
 	useNativeTools,
+	// kilocode_change start: RLM context routing inputs
+	contextRoutingEnabled,
+	contextRoutingFastThresholdPercent,
+	contextRoutingDeepThresholdPercent,
+	// kilocode_change end
 }: ContextManagementOptions): Promise<ContextManagementResult> {
 	let error: string | undefined
 	let cost = 0
@@ -292,8 +334,42 @@ export async function manageContext({
 
 	if (autoCondenseContext) {
 		const contextPercent = (100 * prevContextTokens) / contextWindow
-		if (contextPercent >= effectiveThreshold || prevContextTokens > allowedTokens) {
-			// Attempt to intelligently condense the context
+		// kilocode_change start: RLM routing
+		const routingMode = resolveContextRoutingMode({
+			enabled: contextRoutingEnabled ?? false,
+			totalTokens: prevContextTokens,
+			contextWindow,
+			fastThresholdPercent: contextRoutingFastThresholdPercent ?? 50,
+			deepThresholdPercent: contextRoutingDeepThresholdPercent ?? 80,
+		})
+		const rlmMode = resolveRlmMode(routingMode)
+		const shouldCondense =
+			contextPercent >= effectiveThreshold || prevContextTokens > allowedTokens || Boolean(rlmMode)
+		// kilocode_change end
+		if (shouldCondense) {
+			// kilocode_change start: Attempt RLM first when routing requires it
+			if (rlmMode) {
+				const rlmResult = await summarizeConversationRlm({
+					messages,
+					apiHandler,
+					systemPrompt,
+					taskId,
+					prevContextTokens,
+					mode: rlmMode,
+					contextWindow,
+					isAutomaticTrigger: true,
+					customCondensingPrompt,
+					condensingApiHandler,
+					useNativeTools,
+				})
+				if (!rlmResult.error) {
+					return { ...rlmResult, prevContextTokens }
+				}
+				error = rlmResult.error
+				cost = rlmResult.cost
+			}
+			// kilocode_change end
+			// Attempt to intelligently condense the context (fallback)
 			const result = await summarizeConversation(
 				messages,
 				apiHandler,

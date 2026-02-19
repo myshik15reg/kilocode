@@ -1965,6 +1965,16 @@ export const webviewMessageHandler = async (
 			await provider.contextProxy.setValue("kiloCodeImageApiKey", message.text)
 			await provider.postStateToWebview()
 			break
+		// kilocode_change start
+		case "litellmImageApiKey":
+			await provider.contextProxy.setValue("litellmImageApiKey", message.text)
+			await provider.postStateToWebview()
+			break
+		case "litellmImageBaseUrl":
+			await provider.contextProxy.setValue("litellmImageBaseUrl", message.text)
+			await provider.postStateToWebview()
+			break
+		// kilocode_change end
 		case "showAutoApproveMenu":
 			await updateGlobalState("showAutoApproveMenu", message.bool ?? true)
 			await provider.postStateToWebview()
@@ -3382,24 +3392,15 @@ export const webviewMessageHandler = async (
 				const currentConfig = getGlobalState("codebaseIndexConfig") || {}
 				const embedderProviderChanged =
 					currentConfig.codebaseIndexEmbedderProvider !== settings.codebaseIndexEmbedderProvider
-	
-				// kilocode_change start: Migration logic - provide fallback for vectorStoreName
-				let vectorStoreName = settings.codebaseIndexVectorStoreName
-				
-				// If vectorStoreName is missing or empty, generate a default value
-				if (!vectorStoreName || vectorStoreName.trim() === "") {
-					// Try to get workspace folder name from vscode API
-					const workspaceFolders = vscode.workspace.workspaceFolders
-					const workspaceFolderName = workspaceFolders?.[0]?.name
-					
-					// Generate default: workspace-name-vectors or codebase-index-vectors
-					vectorStoreName = workspaceFolderName
-						? `${workspaceFolderName}-vectors`
-						: "codebase-index-vectors"
-					
-					provider.log(`[Migration] Generated default vectorStoreName: ${vectorStoreName}`)
-				}
-				// kilocode_change end
+
+				const vectorStoreName = settings.codebaseIndexVectorStoreName
+
+				// FIX: neo4j-cache-invalidate-on-config-change (TestAnalyzer)
+				// Root cause: neo4j-cache is keyed only by workspace path, so changing Neo4j connection settings
+				// (uri/username/database) can result in all files being skipped by cache against an empty database.
+				const prevNeo4jUri = (currentConfig.codebaseIndexNeo4jUri ?? "") as string
+				const prevNeo4jUsername = (currentConfig.codebaseIndexNeo4jUsername ?? "") as string
+				const prevNeo4jDatabase = ((currentConfig.codebaseIndexNeo4jDatabase ?? "neo4j") as string) || "neo4j"
 
 				// Save global state settings atomically (including vectorStoreName for backward compatibility)
 				const globalStateConfig = {
@@ -3421,8 +3422,17 @@ export const webviewMessageHandler = async (
 					codebaseIndexSearchMaxResults: settings.codebaseIndexSearchMaxResults,
 					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
 					// kilocode_change start
+					codebaseIndexRerankEnabled: settings.codebaseIndexRerankEnabled,
+					codebaseIndexRerankBaseUrl: settings.codebaseIndexRerankBaseUrl,
+					codebaseIndexRerankModelId: settings.codebaseIndexRerankModelId,
+					codebaseIndexRerankTimeoutMs: settings.codebaseIndexRerankTimeoutMs,
+					codebaseIndexRerankCandidateLimit: settings.codebaseIndexRerankCandidateLimit,
+					codebaseIndexRerankTopK: settings.codebaseIndexRerankTopK,
+					// kilocode_change end
+					// kilocode_change start
 					codebaseIndexEmbeddingBatchSize: settings.codebaseIndexEmbeddingBatchSize,
 					codebaseIndexScannerMaxBatchRetries: settings.codebaseIndexScannerMaxBatchRetries,
+					codebaseIndexEmbedderRequestsPerMinute: settings.codebaseIndexEmbedderRequestsPerMinute,
 					// kilocode_change end
 					codebaseIndexOpenRouterSpecificProvider: settings.codebaseIndexOpenRouterSpecificProvider,
 					// kilocode_change start: Persist Neo4j graph database settings
@@ -3436,59 +3446,119 @@ export const webviewMessageHandler = async (
 					// kilocode_change end: Persist Neo4j graph database settings
 				}
 
-				// Save global state first
+				// FIX: code-index-settings-atomic (TestAnalyzer)
+				// Root cause: global state was previously updated before secret writes, causing non-atomic saves and
+				// leaving the webview state stale when secrets storage failed.
+				// Save secrets first so we don't change codebaseIndexConfig if secret persistence fails.
+				if (settings.codeIndexOpenAiKey !== undefined) {
+					// FIX: code-index-settings-atomic (TestAnalyzer)
+					// Root cause: UI may send an empty string to clear a secret; normalize to `undefined` so SecretStorage deletes.
+					await provider.contextProxy.storeSecret(
+						"codeIndexOpenAiKey",
+						settings.codeIndexOpenAiKey === "" ? undefined : settings.codeIndexOpenAiKey,
+					)
+				}
+				if (settings.codeIndexQdrantApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codeIndexQdrantApiKey",
+						settings.codeIndexQdrantApiKey === "" ? undefined : settings.codeIndexQdrantApiKey,
+					)
+				}
+				if (settings.codebaseIndexOpenAiCompatibleApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexOpenAiCompatibleApiKey",
+						settings.codebaseIndexOpenAiCompatibleApiKey === ""
+							? undefined
+							: settings.codebaseIndexOpenAiCompatibleApiKey,
+					)
+				}
+				if (settings.codebaseIndexGeminiApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexGeminiApiKey",
+						settings.codebaseIndexGeminiApiKey === "" ? undefined : settings.codebaseIndexGeminiApiKey,
+					)
+				}
+				if (settings.codebaseIndexMistralApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexMistralApiKey",
+						settings.codebaseIndexMistralApiKey === "" ? undefined : settings.codebaseIndexMistralApiKey,
+					)
+				}
+				if (settings.codebaseIndexVercelAiGatewayApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexVercelAiGatewayApiKey",
+						settings.codebaseIndexVercelAiGatewayApiKey === ""
+							? undefined
+							: settings.codebaseIndexVercelAiGatewayApiKey,
+					)
+				}
+				if (settings.codebaseIndexOpenRouterApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexOpenRouterApiKey",
+						settings.codebaseIndexOpenRouterApiKey === ""
+							? undefined
+							: settings.codebaseIndexOpenRouterApiKey,
+					)
+				}
+				if (settings.codebaseIndexRerankApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexRerankApiKey",
+						settings.codebaseIndexRerankApiKey === "" ? undefined : settings.codebaseIndexRerankApiKey,
+					)
+				}
+				if (settings.codebaseIndexNeo4jPassword !== undefined) {
+					// FIX: code-index-neo4j-secret-atomic (TestAnalyzer)
+					// Root cause: Neo4j password was saved via a separate message, so failures were silent and non-atomic.
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexNeo4jPassword",
+						settings.codebaseIndexNeo4jPassword === "" ? undefined : settings.codebaseIndexNeo4jPassword,
+					)
+				}
+
+				// Save global state after secrets (atomic UX)
 				await updateGlobalState("codebaseIndexConfig", globalStateConfig)
 
 				// kilocode_change start: Save vectorStoreName to workspaceState
 				await provider.context.workspaceState.update("codebaseIndexVectorStoreName", vectorStoreName)
 				// kilocode_change end
 
+				// FIX: neo4j-cache-invalidate-on-config-change (TestAnalyzer)
+				// Root cause: existing neo4j-cache can cause all files to be skipped after switching Neo4j DB/URI/user.
+				const nextNeo4jUri = (globalStateConfig.codebaseIndexNeo4jUri ?? "") as string
+				const nextNeo4jUsername = (globalStateConfig.codebaseIndexNeo4jUsername ?? "") as string
+				const nextNeo4jDatabase =
+					((globalStateConfig.codebaseIndexNeo4jDatabase ?? "neo4j") as string) || "neo4j"
+				const neo4jConnectionChanged =
+					prevNeo4jUri !== nextNeo4jUri ||
+					prevNeo4jUsername !== nextNeo4jUsername ||
+					prevNeo4jDatabase !== nextNeo4jDatabase
+
+				const currentCodeIndexManager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (neo4jConnectionChanged && currentCodeIndexManager?.clearNeo4jCache) {
+					try {
+						await currentCodeIndexManager.clearNeo4jCache()
+						provider.log(
+							`Neo4j connection config changed (uri/username/database). Cleared neo4j-cache for workspace.`,
+						)
+					} catch (cacheError) {
+						provider.log(
+							`Failed to clear neo4j-cache after config change: ${
+								cacheError instanceof Error ? cacheError.message : String(cacheError)
+							}`,
+						)
+					}
+				}
+
 				// kilocode_change start: Update the batch size in the running scanner and file watcher
 				if (settings.codebaseIndexEmbeddingBatchSize !== undefined) {
-					const currentCodeIndexManager = provider.getCurrentWorkspaceCodeIndexManager()
-					if (currentCodeIndexManager) {
-						currentCodeIndexManager.updateBatchSegmentThreshold(settings.codebaseIndexEmbeddingBatchSize)
+					// FIX: no-shadow-code-index-manager (TestAnalyzer)
+					// Root cause: inner variable shadowed the outer `currentCodeIndexManager`, which can trip lint rules.
+					const managerForBatchUpdate = provider.getCurrentWorkspaceCodeIndexManager()
+					if (managerForBatchUpdate) {
+						managerForBatchUpdate.updateBatchSegmentThreshold(settings.codebaseIndexEmbeddingBatchSize)
 					}
 				}
 				// kilocode_change end
-
-				// Save secrets directly using context proxy
-				if (settings.codeIndexOpenAiKey !== undefined) {
-					await provider.contextProxy.storeSecret("codeIndexOpenAiKey", settings.codeIndexOpenAiKey)
-				}
-				if (settings.codeIndexQdrantApiKey !== undefined) {
-					await provider.contextProxy.storeSecret("codeIndexQdrantApiKey", settings.codeIndexQdrantApiKey)
-				}
-				if (settings.codebaseIndexOpenAiCompatibleApiKey !== undefined) {
-					await provider.contextProxy.storeSecret(
-						"codebaseIndexOpenAiCompatibleApiKey",
-						settings.codebaseIndexOpenAiCompatibleApiKey,
-					)
-				}
-				if (settings.codebaseIndexGeminiApiKey !== undefined) {
-					await provider.contextProxy.storeSecret(
-						"codebaseIndexGeminiApiKey",
-						settings.codebaseIndexGeminiApiKey,
-					)
-				}
-				if (settings.codebaseIndexMistralApiKey !== undefined) {
-					await provider.contextProxy.storeSecret(
-						"codebaseIndexMistralApiKey",
-						settings.codebaseIndexMistralApiKey,
-					)
-				}
-				if (settings.codebaseIndexVercelAiGatewayApiKey !== undefined) {
-					await provider.contextProxy.storeSecret(
-						"codebaseIndexVercelAiGatewayApiKey",
-						settings.codebaseIndexVercelAiGatewayApiKey,
-					)
-				}
-				if (settings.codebaseIndexOpenRouterApiKey !== undefined) {
-					await provider.contextProxy.storeSecret(
-						"codebaseIndexOpenRouterApiKey",
-						settings.codebaseIndexOpenRouterApiKey,
-					)
-				}
 
 				// Send success response first - settings are saved regardless of validation
 				await provider.postMessageToWebview({
@@ -3501,7 +3571,6 @@ export const webviewMessageHandler = async (
 				await provider.postStateToWebview()
 
 				// Then handle validation and initialization for the current workspace
-				const currentCodeIndexManager = provider.getCurrentWorkspaceCodeIndexManager()
 				if (currentCodeIndexManager) {
 					// If embedder provider changed, perform proactive validation
 					if (embedderProviderChanged) {
@@ -3569,12 +3638,24 @@ export const webviewMessageHandler = async (
 					})
 				}
 			} catch (error) {
-				provider.log(`Error saving code index settings: ${error.message || error}`)
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error saving code index settings: ${errorMessage}`)
 				await provider.postMessageToWebview({
 					type: "codeIndexSettingsSaved",
 					success: false,
-					error: error.message || "Failed to save settings",
+					error: errorMessage || "Failed to save settings",
 				})
+
+				// FIX: code-index-settings-atomic (TestAnalyzer)
+				// Keep webview state consistent even on failure (prevents UI rollback to stale values).
+				try {
+					await provider.postStateToWebview()
+				} catch (postStateError) {
+					// FIX: code-index-settings-atomic (TestAnalyzer)
+					// Root cause: empty catch triggers eslint no-empty and hides secondary failures.
+					const errorType = postStateError instanceof Error ? postStateError.name : typeof postStateError
+					provider.log(`postStateToWebview failed after saveCodeIndexSettingsAtomic error (${errorType})`)
+				}
 			}
 			break
 		}
@@ -3615,19 +3696,16 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "requestCodeIndexSecretStatus": {
-			// Check if secrets are set using the VSCode context directly for async access
-			const hasOpenAiKey = !!(await provider.context.secrets.get("codeIndexOpenAiKey"))
-			const hasQdrantApiKey = !!(await provider.context.secrets.get("codeIndexQdrantApiKey"))
-			const hasOpenAiCompatibleApiKey = !!(await provider.context.secrets.get(
-				"codebaseIndexOpenAiCompatibleApiKey",
-			))
-			const hasGeminiApiKey = !!(await provider.context.secrets.get("codebaseIndexGeminiApiKey"))
-			const hasMistralApiKey = !!(await provider.context.secrets.get("codebaseIndexMistralApiKey"))
-			const hasVercelAiGatewayApiKey = !!(await provider.context.secrets.get(
-				"codebaseIndexVercelAiGatewayApiKey",
-			))
-			const hasOpenRouterApiKey = !!(await provider.context.secrets.get("codebaseIndexOpenRouterApiKey"))
-	
+			// Read via ContextProxy cache to support chunked secrets.
+			const hasOpenAiKey = !!provider.contextProxy.getSecret("codeIndexOpenAiKey")
+			const hasQdrantApiKey = !!provider.contextProxy.getSecret("codeIndexQdrantApiKey")
+			const hasOpenAiCompatibleApiKey = !!provider.contextProxy.getSecret("codebaseIndexOpenAiCompatibleApiKey")
+			const hasGeminiApiKey = !!provider.contextProxy.getSecret("codebaseIndexGeminiApiKey")
+			const hasMistralApiKey = !!provider.contextProxy.getSecret("codebaseIndexMistralApiKey")
+			const hasVercelAiGatewayApiKey = !!provider.contextProxy.getSecret("codebaseIndexVercelAiGatewayApiKey")
+			const hasOpenRouterApiKey = !!provider.contextProxy.getSecret("codebaseIndexOpenRouterApiKey")
+			const hasRerankApiKey = !!provider.contextProxy.getSecret("codebaseIndexRerankApiKey")
+
 			provider.postMessageToWebview({
 				type: "codeIndexSecretStatus",
 				values: {
@@ -3638,6 +3716,7 @@ export const webviewMessageHandler = async (
 					hasMistralApiKey,
 					hasVercelAiGatewayApiKey,
 					hasOpenRouterApiKey,
+					hasRerankApiKey,
 				},
 			})
 			break
@@ -3649,7 +3728,7 @@ export const webviewMessageHandler = async (
 					provider.log("Neo4j password is required but not provided")
 					break
 				}
-	
+
 				// Save password to SecretStorage
 				await provider.contextProxy.storeSecret("codebaseIndexNeo4jPassword", message.neo4jPassword)
 				provider.log("Neo4j password saved successfully to SecretStorage")
@@ -3661,9 +3740,9 @@ export const webviewMessageHandler = async (
 		}
 		case "getNeo4jPasswordStatus": {
 			try {
-				// Check if password is saved in SecretStorage
-				const hasPassword = !!(await provider.context.secrets.get("codebaseIndexNeo4jPassword"))
-	
+				// Check if password is saved in SecretStorage (supports chunked secrets via ContextProxy)
+				const hasPassword = !!provider.contextProxy.getSecret("codebaseIndexNeo4jPassword")
+
 				await provider.postMessageToWebview({
 					type: "neo4jPasswordStatus",
 					hasNeo4jPassword: hasPassword,
@@ -3671,7 +3750,7 @@ export const webviewMessageHandler = async (
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error)
 				provider.log(`Error checking Neo4j password status: ${errorMessage}`)
-				
+
 				await provider.postMessageToWebview({
 					type: "neo4jPasswordStatus",
 					hasNeo4jPassword: false,
@@ -3685,28 +3764,28 @@ export const webviewMessageHandler = async (
 				if (!message.neo4jConfig) {
 					throw new Error("Neo4j configuration is required")
 				}
-	
+
 				const { uri, username, database } = message.neo4jConfig
-	
+
 				if (!uri || !username) {
 					throw new Error("URI and username are required")
 				}
-	
+
 				// Get password from message or SecretStorage
 				let password = message.neo4jPassword
 				if (!password) {
-					password = await provider.context.secrets.get("codebaseIndexNeo4jPassword")
+					password = provider.contextProxy.getSecret("codebaseIndexNeo4jPassword")
 					if (!password) {
 						throw new Error("Password is required. Please set password first.")
 					}
 				}
-	
+
 				// Import Neo4jConnectionManager
 				const { Neo4jConnectionManager } = await import("../../services/neo4j/connection-manager")
-	
+
 				// Get singleton instance
 				const connectionManager = Neo4jConnectionManager.getInstance()
-	
+
 				// Create config object
 				const config = {
 					uri,
@@ -3715,23 +3794,56 @@ export const webviewMessageHandler = async (
 					database: database || "neo4j",
 					connectionTimeout: 10000, // 10 seconds timeout for connection test
 				}
-	
+
 				// Test connection
 				await connectionManager.connect(config)
-	
-				// Execute simple test query to verify database access
+
+				// Execute simple test query to verify database access (read)
 				const result = await connectionManager.executeQuery<{ n: number }>("RETURN 1 as n")
-	
+
 				// Verify result
 				if (!result || result.length === 0 || result[0].n !== 1) {
 					throw new Error("Connection test query returned unexpected result")
 				}
-	
+
+				// FIX: neo4j-connection-test-write-check (TestAnalyzer)
+				// Root cause: connection test previously validated only READ access, so users could see schema/labels
+				// but indexing would fail to write any nodes/relationships.
+				// Verify write + delete permissions using a temporary node.
+				const writeTestId = `kilocode-write-test-${Date.now()}`
+				await connectionManager.executeWrite(
+					"MERGE (n:__KiloCodeWriteTest {id: $id}) SET n.updatedAt = datetime()",
+					{ id: writeTestId },
+				)
+				const writeReadback = await connectionManager.executeRead<{ count: number }>(
+					"MATCH (n:__KiloCodeWriteTest {id: $id}) RETURN count(n) AS count",
+					{ id: writeTestId },
+				)
+				if (!writeReadback?.length || writeReadback[0].count !== 1) {
+					throw new Error("Write test node was not readable after write")
+				}
+				await connectionManager.executeWrite("MATCH (n:__KiloCodeWriteTest {id: $id}) DETACH DELETE n", {
+					id: writeTestId,
+				})
+
+				// FIX: neo4j-connection-test-constraints-check (TestAnalyzer)
+				// Root cause: graph indexing relies on SHOW CONSTRAINTS and creating constraints/indexes.
+				// Validate that the connected user can at least read constraints.
+				try {
+					await connectionManager.executeRead("SHOW CONSTRAINTS")
+				} catch (constraintsError) {
+					throw new Error(
+						`Constraints check failed (SHOW CONSTRAINTS). Neo4j indexing requires constraint/index permissions: ${
+							constraintsError instanceof Error ? constraintsError.message : String(constraintsError)
+						}`,
+					)
+				}
+
 				// Get Neo4j version if possible
 				let version: string | undefined
 				try {
 					const versionResult = await connectionManager.executeQuery<{ version: string }>(
-						"CALL dbms.components() YIELD versions UNWIND versions as version RETURN version LIMIT 1"
+						"CALL dbms.components() YIELD versions UNWIND versions as version RETURN version LIMIT 1",
 					)
 					if (versionResult && versionResult.length > 0) {
 						version = versionResult[0].version
@@ -3740,10 +3852,10 @@ export const webviewMessageHandler = async (
 					// Version query failed, not critical
 					version = undefined
 				}
-	
+
 				// Disconnect after test (cleanup)
 				await connectionManager.disconnect()
-	
+
 				// Send success response
 				await provider.postMessageToWebview({
 					type: "neo4jConnectionResult",
@@ -3756,7 +3868,7 @@ export const webviewMessageHandler = async (
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error)
 				provider.log(`Neo4j connection test failed: ${errorMessage}`)
-	
+
 				// Send error response
 				await provider.postMessageToWebview({
 					type: "neo4jConnectionResult",

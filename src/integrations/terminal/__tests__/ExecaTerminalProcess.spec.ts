@@ -2,15 +2,17 @@
 
 const mockPid = 12345
 
+let mockIterableFactory: () => AsyncIterable<string | Uint8Array> = () =>
+	(async function* () {
+		yield "test output\n"
+	})()
+
 vitest.mock("execa", () => {
 	const mockKill = vitest.fn()
-	const execa = vitest.fn((options: any) => {
-		return (_template: TemplateStringsArray, ...args: any[]) => ({
+	const execa = vitest.fn((_options: any) => {
+		return (_template: TemplateStringsArray, ..._args: any[]) => ({
 			pid: mockPid,
-			iterable: (_opts: any) =>
-				(async function* () {
-					yield "test output\n"
-				})(),
+			iterable: (_opts: any) => mockIterableFactory(),
 			kill: mockKill,
 		})
 	})
@@ -54,6 +56,10 @@ describe("ExecaTerminalProcess", () => {
 
 	afterEach(() => {
 		process.env = originalEnv
+		mockIterableFactory = () =>
+			(async function* () {
+				yield "test output\n"
+			})()
 		vitest.clearAllMocks()
 	})
 
@@ -119,6 +125,31 @@ describe("ExecaTerminalProcess", () => {
 			await terminalProcess.run("echo test")
 			expect(mockTerminal.setActiveStream).toHaveBeenCalledWith(expect.any(Object), mockPid)
 			expect(mockTerminal.setActiveStream).toHaveBeenLastCalledWith(undefined)
+		})
+	})
+
+	describe("streaming UTF-8 decode", () => {
+		// FIX: 2026-02-19-ps-cyrillic-output (TestAnalyzer)
+		// Root cause: decoding each chunk independently corrupts UTF-8 when characters span chunk boundaries.
+		it("should decode Cyrillic UTF-8 correctly across chunk boundaries", async () => {
+			const encoder = new TextEncoder()
+			const bytes = encoder.encode("Привет\n")
+
+			// Split within multibyte sequences to reproduce replacement chars ("�")
+			// if decoding is done per-chunk without streaming.
+			mockIterableFactory = () =>
+				(async function* () {
+					yield bytes.slice(0, 1)
+					yield bytes.slice(1, 4)
+					yield bytes.slice(4, 7)
+					yield bytes.slice(7)
+				})()
+
+			const spy = vitest.fn()
+			terminalProcess.on("completed", spy)
+			await terminalProcess.run("echo test")
+
+			expect(spy).toHaveBeenCalledWith("Привет\n")
 		})
 	})
 

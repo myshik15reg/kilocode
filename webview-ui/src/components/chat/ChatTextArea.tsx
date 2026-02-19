@@ -159,6 +159,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			togglePinnedApiConfig,
 			localWorkflows, // kilocode_change
 			globalWorkflows, // kilocode_change
+			commands: availableCommands, // kilocode_change
 			taskHistoryVersion, // kilocode_change
 			clineMessages,
 			ghostServiceSettings, // kilocode_change
@@ -691,6 +692,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								customModes,
 								localWorkflows,
 								globalWorkflows,
+								availableCommands,
 							) // kilocode_change
 
 							if (commands.length === 0) {
@@ -710,6 +712,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							customModes,
 							localWorkflows,
 							globalWorkflows,
+							availableCommands,
 						)
 						if (commands.length > 0) {
 							handleSlashCommandsSelect(commands[selectedSlashCommandsIndex])
@@ -864,6 +867,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				showSlashCommandsMenu, // kilocode_change start
 				localWorkflows,
 				globalWorkflows,
+				availableCommands,
 				customModes,
 				handleSlashCommandsSelect,
 				selectedSlashCommandsIndex,
@@ -1152,7 +1156,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 				// extract and validate the exact command text
 				const commandText = processedText.substring(slashIndex + 1, endIndex)
-				const isValidCommand = validateSlashCommand(commandText, customModes)
+				const isValidCommand = validateSlashCommand(commandText, customModes, {}, {}, availableCommands)
 
 				if (isValidCommand) {
 					const fullCommand = processedText.substring(slashIndex, endIndex) // includes slash
@@ -1190,7 +1194,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			highlightLayerRef.current.innerHTML = processedText
 			highlightLayerRef.current.scrollTop = textAreaRef.current.scrollTop
 			highlightLayerRef.current.scrollLeft = textAreaRef.current.scrollLeft
-		}, [customModes, ghostText, inputValue, isRecording, previewRanges]) // kilocode_change - merged dependencies
+		}, [availableCommands, customModes, ghostText, inputValue, isRecording, previewRanges]) // kilocode_change - merged dependencies
 
 		useLayoutEffect(() => {
 			updateHighlights()

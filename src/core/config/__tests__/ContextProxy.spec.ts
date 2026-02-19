@@ -22,6 +22,7 @@ describe("ContextProxy", () => {
 	let mockContext: any
 	let mockGlobalState: any
 	let mockSecrets: any
+	let secretStore: Map<string, string>
 
 	beforeEach(async () => {
 		// Reset mocks
@@ -33,11 +34,16 @@ describe("ContextProxy", () => {
 			update: vi.fn().mockResolvedValue(undefined),
 		}
 
-		// Mock secrets
+		// Mock secrets (in-memory)
+		secretStore = new Map<string, string>()
 		mockSecrets = {
-			get: vi.fn().mockResolvedValue("test-secret"),
-			store: vi.fn().mockResolvedValue(undefined),
-			delete: vi.fn().mockResolvedValue(undefined),
+			get: vi.fn(async (key: string) => secretStore.get(key)),
+			store: vi.fn(async (key: string, value: string) => {
+				secretStore.set(key, value)
+			}),
+			delete: vi.fn(async (key: string) => {
+				secretStore.delete(key)
+			}),
 		}
 
 		// Mock the extension context
@@ -217,6 +223,102 @@ describe("ContextProxy", () => {
 			// Should have stored undefined in cache
 			const storedValue = await proxy.getSecret("apiKey")
 			expect(storedValue).toBeUndefined()
+		})
+
+		it("should store and reconstruct long secrets via chunking", async () => {
+			const key = "codebaseIndexOpenAiCompatibleApiKey"
+			const longSecret = "a".repeat(50_000)
+
+			await proxy.storeSecret(key, longSecret)
+
+			// Cache should hold full value
+			expect(proxy.getSecret(key)).toBe(longSecret)
+
+			// Storage should contain metadata at base key (not the full secret)
+			const storedBase = secretStore.get(key)
+			expect(typeof storedBase).toBe("string")
+			expect(storedBase).toMatch(/^__kilocode_chunked_secret_v1__:/)
+
+			const metaJson = storedBase!.replace(/^__kilocode_chunked_secret_v1__:/, "")
+			const meta = JSON.parse(metaJson) as {
+				v: number
+				nonce: string
+				chunkSize: number
+				chunkCount: number
+				totalLength: number
+			}
+
+			expect(meta.v).toBe(1)
+			expect(meta.totalLength).toBe(longSecret.length)
+			expect(meta.chunkCount).toBeGreaterThan(1)
+
+			const chunks = Array.from({ length: meta.chunkCount }, (_, index) => {
+				const chunkKey = `${key}__kc_chunk_v1__${meta.nonce}__${index}`
+				return secretStore.get(chunkKey)
+			})
+			expect(chunks.every((c) => typeof c === "string")).toBe(true)
+			expect(chunks.join("")).toBe(longSecret)
+
+			// Simulate restart: new ContextProxy reads from storage and reconstructs
+			const restarted = new ContextProxy(mockContext)
+			await restarted.initialize()
+			expect(restarted.getSecret(key)).toBe(longSecret)
+		})
+
+		it("should overwrite long secrets and remove old chunks", async () => {
+			const key = "codebaseIndexOpenAiCompatibleApiKey"
+			const longA = "a".repeat(50_000)
+			const longB = "b".repeat(50_000)
+
+			await proxy.storeSecret(key, longA)
+			const baseA = secretStore.get(key)!
+			const metaA = JSON.parse(baseA.replace(/^__kilocode_chunked_secret_v1__:/, "")) as {
+				nonce: string
+				chunkCount: number
+			}
+			const oldChunkKeys = Array.from(
+				{ length: metaA.chunkCount },
+				(_, index) => `${key}__kc_chunk_v1__${metaA.nonce}__${index}`,
+			)
+			oldChunkKeys.forEach((k) => expect(secretStore.has(k)).toBe(true))
+
+			await proxy.storeSecret(key, longB)
+			expect(proxy.getSecret(key)).toBe(longB)
+
+			// Old chunks must be removed
+			oldChunkKeys.forEach((k) => expect(secretStore.has(k)).toBe(false))
+
+			// New chunks exist and reconstruct to longB
+			const baseB = secretStore.get(key)!
+			const metaB = JSON.parse(baseB.replace(/^__kilocode_chunked_secret_v1__:/, "")) as {
+				nonce: string
+				chunkCount: number
+			}
+			const newChunks = Array.from({ length: metaB.chunkCount }, (_, index) =>
+				secretStore.get(`${key}__kc_chunk_v1__${metaB.nonce}__${index}`),
+			)
+			expect(newChunks.join("")).toBe(longB)
+		})
+
+		it("should delete long secrets and remove all chunks", async () => {
+			const key = "codebaseIndexOpenAiCompatibleApiKey"
+			const longSecret = "a".repeat(50_000)
+			await proxy.storeSecret(key, longSecret)
+
+			const base = secretStore.get(key)!
+			const meta = JSON.parse(base.replace(/^__kilocode_chunked_secret_v1__:/, "")) as {
+				nonce: string
+				chunkCount: number
+			}
+			const chunkKeys = Array.from(
+				{ length: meta.chunkCount },
+				(_, index) => `${key}__kc_chunk_v1__${meta.nonce}__${index}`,
+			)
+
+			await proxy.storeSecret(key, undefined)
+			expect(proxy.getSecret(key)).toBeUndefined()
+			expect(secretStore.has(key)).toBe(false)
+			chunkKeys.forEach((k) => expect(secretStore.has(k)).toBe(false))
 		})
 	})
 

@@ -3,11 +3,7 @@ title: Free and Budget Models
 description: Learn how to use Kilo Code effectively while minimizing or eliminating costs through free models, budget-friendly alternatives, and smart usage strategies.
 ---
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/advanced-usage/free-and-budget-models.md
-# Using AlfaCode assistant for Free and on a Budget
-=======
 # Free and Budget Models
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/agents/free-and-budget-models.md
 
 **Why this matters:** AI model costs can add up quickly during development. This guide shows you how to use AlfaCode assistant effectively while minimizing or eliminating costs through free models, budget-friendly alternatives, and smart usage strategies.
 

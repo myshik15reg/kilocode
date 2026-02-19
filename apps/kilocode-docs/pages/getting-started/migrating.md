@@ -7,14 +7,9 @@ description: "Guide for migrating to Kilo Code from other AI coding tools"
 
 Quickly migrate your custom rules from Cursor or Windsurf to AlfaCode assistant. The process typically takes just a few minutes per project.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/advanced-usage/migrating-from-cursor-windsurf.md
-:::info Two Workflow Approaches
-AlfaCode assistant supports **two complementary workflows**—choose the one that fits your style, or use both:
-=======
-{% callout type="info" title="Two Workflow Approaches"%}
+{% callout type="info" title="Two Workflow Approaches" %}
 
-Kilo Code supports **two complementary workflows**—choose the one that fits your style, or use both:
->>>>>>> origin/main:apps/kilocode-docs/pages/getting-started/migrating.md
+AlfaCode assistant supports **two complementary workflows**—choose the one that fits your style, or use both:
 
 1. **Autocomplete (Ghost)**: Tab-to-accept inline suggestions as you type, similar to Cursor and Windsurf. Enable via Settings → Ghost.
 2. **Chat-driven**: Describe what you want in the chat panel and the AI generates complete implementations.
@@ -43,7 +38,7 @@ Choose your current tool:
 
 ### What's Different in AlfaCode assistant
 
-| Cursor                                      | AlfaCode assistant                                 | Key Difference                              |
+| Cursor                                      | AlfaCode assistant                        | Key Difference                              |
 | ------------------------------------------- | ----------------------------------------- | ------------------------------------------- |
 | `.cursor/rules/*.mdc` with YAML frontmatter | `.kilocode/rules/*.md` plain Markdown     | No YAML metadata required                   |
 | `alwaysApply: true/false` metadata          | File location determines scope            | Scope controlled by directory structure     |
@@ -165,7 +160,7 @@ Cursor supports nested `.cursor/rules/` directories. AlfaCode assistant uses fla
 
 ### What's Different in AlfaCode assistant
 
-| Windsurf                                                       | AlfaCode assistant                      | Key Difference                              |
+| Windsurf                                                       | AlfaCode assistant             | Key Difference                              |
 | -------------------------------------------------------------- | ------------------------------ | ------------------------------------------- |
 | `.windsurf/rules/*.md`                                         | `.kilocode/rules/*.md`         | Same Markdown format                        |
 | GUI configuration for activation modes                         | File location determines scope | Scope controlled by directory structure     |
@@ -225,7 +220,7 @@ If you had rules approaching the 12,000 character limit, split them:
 
 Windsurf configures activation through the GUI. In AlfaCode assistant, file organization replaces GUI configuration:
 
-| Windsurf GUI Mode        | AlfaCode assistant Equivalent                                        |
+| Windsurf GUI Mode        | AlfaCode assistant Equivalent                               |
 | ------------------------ | ----------------------------------------------------------- |
 | **Always On**            | Place in `.kilocode/rules/` (default)                       |
 | **Glob** (file patterns) | Mode-specific directory or custom mode                      |

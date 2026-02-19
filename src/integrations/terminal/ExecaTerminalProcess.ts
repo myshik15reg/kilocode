@@ -93,9 +93,26 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 			const rawStream = this.subprocess.iterable({ from: "all", preserveNewlines: true })
 
 			// Wrap the stream to ensure all chunks are strings (execa can return Uint8Array)
+			// FIX: 2026-02-19-ps-cyrillic-output (TestAnalyzer)
+			// Root cause: we were decoding each Uint8Array chunk with a new TextDecoder,
+			// which breaks multibyte UTF-8 characters (e.g. Cyrillic) when a character spans
+			// chunk boundaries, producing replacement chars ("�") in tool output.
+			const decoder = new TextDecoder("utf-8")
 			const stream = (async function* () {
 				for await (const chunk of rawStream) {
-					yield typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk)
+					if (typeof chunk === "string") {
+						yield chunk
+						continue
+					}
+
+					// Use streaming decode to correctly handle multibyte characters across chunks.
+					yield decoder.decode(chunk, { stream: true })
+				}
+
+				// Flush any buffered bytes (e.g. when the last chunk ends mid-character).
+				const tail = decoder.decode()
+				if (tail) {
+					yield tail
 				}
 			})()
 

@@ -1,14 +1,8 @@
 {
 	"welcome": {
-<<<<<<< HEAD
 		"greeting": "Benvingut a AlfaCode assistant!",
 		"introText1": "AlfaCode assistant és un agent de codificació d'IA gratuït i de codi obert.",
 		"introText2": "Funciona amb els models d'IA més recents com Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5, i més de 450 més.",
-=======
-		"greeting": "Benvingut a Kilo Code!",
-		"introText1": "Kilo Code és un agent de codificació d'IA gratuït i de codi obert.",
-		"introText2": "Funciona amb els models d'IA més recents com Claude Opus 4.5, Gemini 3 Pro, GPT-5.2, i més de 450 més.",
->>>>>>> origin/main
 		"introText3": "Crea un compte gratuït i obtén $20 en crèdits de bonificació quan recarreguis per primera vegada.",
 		"ctaButton": "Comença",
 		"manualModeButton": "Utilitza la teva pròpia clau API",
@@ -17,13 +11,9 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "Afegir crèdit",
-<<<<<<< HEAD
 		"lowBalance": "El teu saldo de AlfaCode assistant és baix",
-		"newOrganization": "Utilitzes Kilo per a la feina?"
-=======
-		"lowBalance": "El teu saldo de Kilo Code és baix",
+		"newOrganization": "Utilitzes AlfaCode assistant per a la feina?",
 		"switchToFreeModel": "Canvia a un model gratuït"
->>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "Anterior",
@@ -47,19 +37,12 @@
 			"skills": "Habilitats"
 		},
 		"provider": {
-<<<<<<< HEAD
 			"account": "Compte de AlfaCode assistant",
 			"apiKey": "Clau API de AlfaCode assistant",
 			"login": "Iniciar sessió a AlfaCode assistant",
 			"logout": "Tancar sessió de AlfaCode assistant",
-			"automaticFetch": "Els models més recents estan disponibles automàticament a AlfaCode assistant. Si no estàs segur de quin model triar, AlfaCode assistant funciona millor amb els models recomanats que apareixen a la part superior en <strong>negreta</strong>.",
-=======
-			"account": "Compte de Kilo Code",
-			"apiKey": "Clau API de Kilo Code",
-			"login": "Iniciar sessió a Kilo Code",
-			"logout": "Tancar sessió de Kilo Code",
 			"loginForPremiumModels": "Inicia sessió per accedir a models i funcions premium",
->>>>>>> origin/main
+			"automaticFetch": "Els models més recents estan disponibles automàticament a AlfaCode assistant. Si no estàs segur de quin model triar, AlfaCode assistant funciona millor amb els models recomanats que apareixen a la part superior en <strong>negreta</strong>.",
 			"providerRouting": {
 				"title": "Encaminament de proveïdors",
 				"managedByOrganization": "Gestionar encaminament de proveïdors a nivell d'organització",

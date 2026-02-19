@@ -15,7 +15,6 @@ AlfaCode assistant supports accessing models through the DeepSeek API, including
 3.  **Create a Key:** Click "Create new API key". Give your key a descriptive name (e.g., "AlfaCode assistant").
 4.  **Copy the Key:** **Important:** Copy the API key _immediately_. You will not be able to see it again. Store it securely.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/deepseek.md
 ## Supported Models
 
 AlfaCode assistant supports the following DeepSeek models:
@@ -25,12 +24,7 @@ AlfaCode assistant supports the following DeepSeek models:
 
 ## Configuration in AlfaCode assistant
 
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-## Configuration in Kilo Code
-
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/deepseek.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "DeepSeek" from the "API Provider" dropdown.
 3.  **Enter API Key:** Paste your DeepSeek API key into the "DeepSeek API Key" field.
 4.  **Select Model:** Choose your desired model from the "Model" dropdown.

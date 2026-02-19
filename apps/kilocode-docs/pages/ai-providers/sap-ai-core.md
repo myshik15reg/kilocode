@@ -78,11 +78,7 @@ The exact list of available models depends on your SAP AI Core configuration and
 
 ## Configuration in AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/sap-ai-core.md
-1. **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-1. **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/sap-ai-core.md
+1. **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2. **Select Provider:** Choose "SAP AI Core" from the "API Provider" dropdown.
 3. **Enter Credentials:**
     - **Client ID:** Enter your SAP AI Core OAuth2 client ID

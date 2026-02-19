@@ -1,14 +1,8 @@
 {
 	"welcome": {
-<<<<<<< HEAD
 		"greeting": "Vítej v AlfaCode assistant!",
-		"introText1": "AlfaCode assistant je bezplatný AI coding agent.",
+		"introText1": "AlfaCode assistant je bezplatný open source AI coding agent.",
 		"introText2": "Funguje s nejnovějšími AI modely jako Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5 a více než 450 dalšími.",
-=======
-		"greeting": "Vítej v Kilo Code!",
-		"introText1": "Kilo Code je bezplatný open source AI coding agent.",
-		"introText2": "Funguje s nejnovějšími AI modely jako Claude Opus 4.5, Gemini 3 Pro, GPT-5.2 a více než 450 dalšími.",
->>>>>>> origin/main
 		"introText3": "Vytvoř si bezplatný účet a získej $20 bonusových kreditů při prvním dobití.",
 		"ctaButton": "Začít",
 		"manualModeButton": "Použij vlastní API key",
@@ -17,13 +11,9 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "Přidat kredit",
-<<<<<<< HEAD
 		"lowBalance": "Tvůj AlfaCode assistant zůstatek je nízký",
-		"newOrganization": "Používáš Kilo pro práci?"
-=======
-		"lowBalance": "Tvůj Kilo Code zůstatek je nízký",
+		"newOrganization": "Používáš AlfaCode assistant pro práci?",
 		"switchToFreeModel": "Přepnout na bezplatný model"
->>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "Předchozí",
@@ -54,19 +44,12 @@
 			"skills": "Dovednosti"
 		},
 		"provider": {
-<<<<<<< HEAD
 			"account": "Účet AlfaCode assistant",
 			"apiKey": "AlfaCode assistant API Key",
 			"login": "Přihlásit se do AlfaCode assistant",
 			"logout": "Odhlásit se z AlfaCode assistant",
-			"automaticFetch": "Nejnovější modely jsou v AlfaCode assistant automaticky dostupné. Pokud si nejste jisti, který model zvolit, AlfaCode assistant funguje nejlépe s doporučenými modely uvedenými nahoře <strong>tučně</strong>.",
-=======
-			"account": "Účet Kilo Code",
-			"apiKey": "Kilo Code API Key",
-			"login": "Přihlásit se do Kilo Code",
-			"logout": "Odhlásit se z Kilo Code",
 			"loginForPremiumModels": "Přihlas se pro přístup k prémiovým modelům a funkcím",
->>>>>>> origin/main
+			"automaticFetch": "Nejnovější modely jsou v AlfaCode assistant automaticky dostupné. Pokud si nejste jisti, který model zvolit, AlfaCode assistant funguje nejlépe s doporučenými modely uvedenými nahoře <strong>tučně</strong>.",
 			"providerRouting": {
 				"title": "Směrování poskytovatelů",
 				"managedByOrganization": "Spravovat směrování poskytovatelů na úrovni organizace",

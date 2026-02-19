@@ -61,13 +61,7 @@ Context mentions are a powerful way to provide AlfaCode assistant with specific 
 
 ### Terminal Mention
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/basic-usage/context-mentions.md
-<img src="/docs/img/context-mentions/context-mentions-4.png" alt="Terminal mention example showing terminal output being included in AlfaCode assistant's context" width="600" />
-
-_Terminal mentions capture recent command output for debugging and analysis._
-=======
-{% image src="/docs/img/context-mentions/context-mentions-4.png" alt="Terminal mention example showing terminal output being included in Kilo Code's context" width="600" caption="Terminal mentions capture recent command output for debugging and analysis." /%}
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/agents/context-mentions.md
+{% image src="/docs/img/context-mentions/context-mentions-4.png" alt="Terminal mention example showing terminal output being included in AlfaCode assistant's context" width="600" caption="Terminal mentions capture recent command output for debugging and analysis." /%}
 
 | Capability     | Details                                            |
 | -------------- | -------------------------------------------------- |
@@ -79,11 +73,7 @@ _Terminal mentions capture recent command output for debugging and analysis._
 
 ### Git Mentions
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/basic-usage/context-mentions.md
-<img src="/docs/img/context-mentions/context-mentions-5.png" alt="Git commit mention example showing commit details being analyzed by AlfaCode assistant" width="600" />
-=======
-{% image src="/docs/img/context-mentions/context-mentions-5.png" alt="Git commit mention example showing commit details being analyzed by Kilo Code" width="600" caption="Git mentions provide commit details and diffs for context-aware version analysis." /%}
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/agents/context-mentions.md
+{% image src="/docs/img/context-mentions/context-mentions-5.png" alt="Git commit mention example showing commit details being analyzed by AlfaCode assistant" width="600" caption="Git mentions provide commit details and diffs for context-aware version analysis." /%}
 
 | Type                | Format         | Provides                                            | Limitations                    |
 | ------------------- | -------------- | --------------------------------------------------- | ------------------------------ |

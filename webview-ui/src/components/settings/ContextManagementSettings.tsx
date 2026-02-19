@@ -2,11 +2,7 @@ import { HTMLAttributes } from "react"
 import React from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-<<<<<<< HEAD
-import { Database, FoldVertical, Gauge } from "lucide-react"
-=======
-import { FoldVertical } from "lucide-react"
->>>>>>> origin/main
+import { FoldVertical, Gauge } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Button } from "@/components/ui"
@@ -62,7 +58,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "includeCurrentTime"
 		| "includeCurrentCost"
 		| "maxGitStatusFiles"
-		>
+	>
 }
 
 export const ContextManagementSettings = ({

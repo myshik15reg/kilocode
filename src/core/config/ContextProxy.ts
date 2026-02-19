@@ -1,6 +1,7 @@
 import * as vscode from "vscode"
 import { ZodError } from "zod"
 import { EventEmitter } from "events"
+import crypto from "crypto"
 
 import {
 	PROVIDER_SETTINGS_KEYS,
@@ -82,7 +83,7 @@ export class ContextProxy {
 		const promises = [
 			...SECRET_STATE_KEYS.map(async (key) => {
 				try {
-					this.secretCache[key] = await this.originalContext.secrets.get(key)
+					this.secretCache[key] = await this.getSecretFromStorageWithChunking(key)
 				} catch (error) {
 					logger.error(
 						`Error loading secret ${key}: ${error instanceof Error ? error.message : String(error)}`,
@@ -91,7 +92,7 @@ export class ContextProxy {
 			}),
 			...GLOBAL_SECRET_KEYS.map(async (key) => {
 				try {
-					this.secretCache[key] = await this.originalContext.secrets.get(key)
+					this.secretCache[key] = await this.getSecretFromStorageWithChunking(key)
 				} catch (error) {
 					logger.error(
 						`Error loading global secret ${key}: ${error instanceof Error ? error.message : String(error)}`,
@@ -145,11 +146,7 @@ export class ContextProxy {
 
 				// Migrate the API key if it exists and we don't already have one
 				if (oldNestedSettings.openRouterApiKey && !this.secretCache.openRouterImageApiKey) {
-					await this.originalContext.secrets.store(
-						"openRouterImageApiKey",
-						oldNestedSettings.openRouterApiKey,
-					)
-					this.secretCache.openRouterImageApiKey = oldNestedSettings.openRouterApiKey
+					await this.storeSecret("openRouterImageApiKey", oldNestedSettings.openRouterApiKey)
 					logger.info("Migrated openRouterImageApiKey to secrets")
 				}
 
@@ -237,15 +234,183 @@ export class ContextProxy {
 		return this.secretCache[key]
 	}
 
-	storeSecret(key: SecretStateKey, value?: string) {
-		// Update cache.
+	// kilocode_change start: long-secret chunking wrapper for VS Code SecretStorage
+	/**
+	 * Safe chunk size to stay well under OS/SecretStorage per-entry limits.
+	 * This is in UTF-16 code units (JS string length).
+	 */
+	private static readonly SAFE_SECRET_CHUNK_SIZE = 8_000
+
+	private static readonly CHUNKED_SECRET_PREFIX = "__kilocode_chunked_secret_v1__:"
+	private static readonly CHUNK_KEY_INFIX = "__kc_chunk_v1__"
+
+	private static buildChunkKey(baseKey: string, nonce: string, index: number): string {
+		return `${baseKey}${ContextProxy.CHUNK_KEY_INFIX}${nonce}__${index}`
+	}
+
+	private static serializeChunkedMetadata(meta: {
+		v: 1
+		nonce: string
+		chunkSize: number
+		chunkCount: number
+		totalLength: number
+	}): string {
+		return `${ContextProxy.CHUNKED_SECRET_PREFIX}${JSON.stringify(meta)}`
+	}
+
+	private static parseChunkedMetadata(value: string): {
+		v: 1
+		nonce: string
+		chunkSize: number
+		chunkCount: number
+		totalLength: number
+	} | null {
+		if (!value.startsWith(ContextProxy.CHUNKED_SECRET_PREFIX)) {
+			return null
+		}
+
+		const json = value.slice(ContextProxy.CHUNKED_SECRET_PREFIX.length)
+		try {
+			const parsed = JSON.parse(json) as unknown
+			if (typeof parsed !== "object" || parsed === null) return null
+			const meta = parsed as Record<string, unknown>
+			if (meta.v !== 1) return null
+			if (typeof meta.nonce !== "string" || meta.nonce.length === 0) return null
+			if (typeof meta.chunkSize !== "number" || meta.chunkSize <= 0) return null
+			if (typeof meta.chunkCount !== "number" || meta.chunkCount <= 0) return null
+			if (typeof meta.totalLength !== "number" || meta.totalLength < 0) return null
+
+			return {
+				v: 1,
+				nonce: meta.nonce,
+				chunkSize: meta.chunkSize,
+				chunkCount: meta.chunkCount,
+				totalLength: meta.totalLength,
+			}
+		} catch {
+			return null
+		}
+	}
+
+	private async getChunkedMetadataFromStorage(
+		key: string,
+	): Promise<ReturnType<typeof ContextProxy.parseChunkedMetadata>> {
+		const stored = await this.originalContext.secrets.get(key)
+		if (!stored) return null
+		return ContextProxy.parseChunkedMetadata(stored)
+	}
+
+	private async getSecretFromStorageWithChunking(key: string): Promise<string | undefined> {
+		const stored = await this.originalContext.secrets.get(key)
+		if (stored === undefined) return undefined
+
+		const meta = ContextProxy.parseChunkedMetadata(stored)
+		if (!meta) {
+			return stored
+		}
+
+		const chunkPromises = Array.from({ length: meta.chunkCount }, async (_, index) => {
+			const chunkKey = ContextProxy.buildChunkKey(key, meta.nonce, index)
+			const chunk = await this.originalContext.secrets.get(chunkKey)
+			if (chunk === undefined) {
+				throw new Error(`Missing secret chunk for key ${key} (chunk ${index + 1}/${meta.chunkCount})`)
+			}
+			return chunk
+		})
+
+		const chunks = await Promise.all(chunkPromises)
+		const reconstructed = chunks.join("")
+		if (reconstructed.length !== meta.totalLength) {
+			throw new Error(
+				`Chunked secret length mismatch for key ${key} (expected ${meta.totalLength}, got ${reconstructed.length})`,
+			)
+		}
+		return reconstructed
+	}
+
+	async storeSecret(key: SecretStateKey, value?: string) {
+		const previousValue = this.secretCache[key]
 		this.secretCache[key] = value
 
-		// Write directly to context.
-		return value === undefined
-			? this.originalContext.secrets.delete(key)
-			: this.originalContext.secrets.store(key, value)
+		try {
+			const oldMeta = await this.getChunkedMetadataFromStorage(key)
+
+			if (value === undefined) {
+				if (oldMeta) {
+					await Promise.all(
+						Array.from({ length: oldMeta.chunkCount }, (_, index) =>
+							this.originalContext.secrets.delete(ContextProxy.buildChunkKey(key, oldMeta.nonce, index)),
+						),
+					)
+				}
+
+				await this.originalContext.secrets.delete(key)
+				return
+			}
+
+			if (value.length <= ContextProxy.SAFE_SECRET_CHUNK_SIZE) {
+				await this.originalContext.secrets.store(key, value)
+
+				// Cleanup old chunks if we are replacing a previously-chunked secret.
+				if (oldMeta) {
+					await Promise.all(
+						Array.from({ length: oldMeta.chunkCount }, (_, index) =>
+							this.originalContext.secrets.delete(ContextProxy.buildChunkKey(key, oldMeta.nonce, index)),
+						),
+					)
+				}
+				return
+			}
+
+			// Chunked storage path
+			const nonce = crypto.randomBytes(8).toString("hex")
+			const chunkSize = ContextProxy.SAFE_SECRET_CHUNK_SIZE
+			const chunkCount = Math.ceil(value.length / chunkSize)
+			const totalLength = value.length
+			const metaValue = ContextProxy.serializeChunkedMetadata({ v: 1, nonce, chunkSize, chunkCount, totalLength })
+
+			const createdChunkKeys: string[] = []
+			try {
+				await Promise.all(
+					Array.from({ length: chunkCount }, async (_, index) => {
+						const start = index * chunkSize
+						const end = Math.min(start + chunkSize, value.length)
+						const chunk = value.slice(start, end)
+						const chunkKey = ContextProxy.buildChunkKey(key, nonce, index)
+						createdChunkKeys.push(chunkKey)
+						await this.originalContext.secrets.store(chunkKey, chunk)
+					}),
+				)
+
+				// Store metadata last so partial chunk writes don't look like a valid secret.
+				await this.originalContext.secrets.store(key, metaValue)
+			} catch (error) {
+				// Best-effort cleanup of partially-written chunk keys.
+				await Promise.all(createdChunkKeys.map((chunkKey) => this.originalContext.secrets.delete(chunkKey)))
+
+				logger.error(
+					`Failed to store chunked secret ${key} (length=${value.length}): ${
+						error instanceof Error ? error.message : String(error)
+					}`,
+				)
+				throw error
+			}
+
+			// Cleanup old chunks after successful write.
+			if (oldMeta) {
+				await Promise.all(
+					Array.from({ length: oldMeta.chunkCount }, (_, index) =>
+						this.originalContext.secrets.delete(ContextProxy.buildChunkKey(key, oldMeta.nonce, index)),
+					),
+				)
+			}
+		} catch (error) {
+			// Revert cache on failure.
+			this.secretCache[key] = previousValue
+			throw error
+		}
 	}
+	// kilocode_change end: long-secret chunking wrapper for VS Code SecretStorage
 
 	/**
 	 * Refresh secrets from storage and update cache
@@ -255,7 +420,7 @@ export class ContextProxy {
 		const promises = [
 			...SECRET_STATE_KEYS.map(async (key) => {
 				try {
-					this.secretCache[key] = await this.originalContext.secrets.get(key)
+					this.secretCache[key] = await this.getSecretFromStorageWithChunking(key)
 				} catch (error) {
 					logger.error(
 						`Error refreshing secret ${key}: ${error instanceof Error ? error.message : String(error)}`,
@@ -264,7 +429,7 @@ export class ContextProxy {
 			}),
 			...GLOBAL_SECRET_KEYS.map(async (key) => {
 				try {
-					this.secretCache[key] = await this.originalContext.secrets.get(key)
+					this.secretCache[key] = await this.getSecretFromStorageWithChunking(key)
 				} catch (error) {
 					logger.error(
 						`Error refreshing global secret ${key}: ${error instanceof Error ? error.message : String(error)}`,
@@ -479,8 +644,8 @@ export class ContextProxy {
 
 		await Promise.all([
 			...GLOBAL_STATE_KEYS.map((key) => this.originalContext.globalState.update(key, undefined)),
-			...SECRET_STATE_KEYS.map((key) => this.originalContext.secrets.delete(key)),
-			...GLOBAL_SECRET_KEYS.map((key) => this.originalContext.secrets.delete(key)),
+			...SECRET_STATE_KEYS.map((key) => this.storeSecret(key, undefined)),
+			...GLOBAL_SECRET_KEYS.map((key) => this.storeSecret(key as SecretStateKey, undefined)),
 		])
 
 		await this.initialize()

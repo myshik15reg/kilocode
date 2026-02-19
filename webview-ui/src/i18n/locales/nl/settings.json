@@ -41,15 +41,10 @@
 		"ui": "UI",
 		"experimental": "Experimenteel",
 		"language": "Taal",
-<<<<<<< HEAD
 		"about": "Over AlfaCode assistant",
-		"autoPurge": "Auto-opruimen"
-=======
-		"about": "Over Kilo Code",
 		"autoPurge": "Auto-opruimen",
 		"agentBehaviour": "Agentgedrag",
 		"ghost": "Autocomplete"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -192,9 +187,18 @@
 		"searchMinScoreResetTooltip": "Reset naar standaardwaarde (0.4)",
 		"searchMaxResultsLabel": "Maximum Zoekresultaten",
 		"searchMaxResultsDescription": "Maximum aantal zoekresultaten dat wordt geretourneerd bij het doorzoeken van de codebase-index. Hogere waarden bieden meer context maar kunnen minder relevante resultaten bevatten.",
+		"rerankSectionLabel": "Reranker",
+		"rerankEnableLabel": "Reranker inschakelen",
+		"rerankEnableDescription": "Herschikt Qdrant-kandidaten met een cross-encoder vóór grafuitbreiding. Valt terug op semantische volgorde als deze niet beschikbaar is.",
+		"rerankCandidateLimitLabel": "Kandidatenlimiet voor reranking",
+		"rerankTopKLabel": "Top-K na reranking",
+		"rerankTimeoutMsLabel": "Rerank-timeout (ms)",
 		"resetToDefault": "Reset naar standaard",
 		"cancelling": "Bezig met annuleren...",
-		"cancelIndexingButton": "Indexering annuleren"
+		"cancelIndexingButton": "Indexering annuleren",
+		"neo4j": {
+			"enableDescription": "Schakelt grafgebaseerd zoeken en impactanalyse in met Neo4j. Werkt met Qdrant voor hybride semantisch + graf zoeken."
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "U kunt een globale sneltoets voor deze instelling configureren <SettingsLink>in de voorkeuren van uw IDE</SettingsLink>.",

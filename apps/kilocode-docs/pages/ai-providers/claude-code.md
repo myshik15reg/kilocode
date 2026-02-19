@@ -2,17 +2,13 @@
 sidebar_label: Claude Code
 ---
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/claude-code.md
-# Using Claude Code With AlfaCode assistant
-=======
 {% callout type="warning" title="Important Notice" %}
 In January 2026, Anthropic decided to restrict Claude Code CLI to official Claude Code clients. Claude Code credentials cannot be used in Kilo Code or other third-party harnesses.
 
-For continued use of Anthropic models in Kilo Code, please use the [Anthropic API provider](/docs/ai-providers/anthropic) with an API key instead.
+For continued use of Anthropic models in AlfaCode assistant, please use the [Anthropic API provider](/docs/ai-providers/anthropic) with an API key instead.
 {% /callout %}
 
-# Using Claude Code With Kilo Code
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/claude-code.md
+# Using Claude Code With AlfaCode assistant
 
 Claude Code is Anthropic's official CLI that provides direct access to Claude models from your terminal. Using Claude Code with AlfaCode assistant lets you leverage your existing CLI setup without needing separate API keys.
 
@@ -27,19 +23,11 @@ Claude Code is Anthropic's official CLI that provides direct access to Claude mo
 {% callout type="warning" title="Environment Variable Usage" %}
 The `claude` command-line tool, like other Anthropic SDKs, can use the `ANTHROPIC_API_KEY` environment variable for authentication. This is a common method for authorizing CLI tools in non-interactive environments.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/claude-code.md
 If this environment variable is set on your system, the `claude` tool may use it for authentication instead of the interactive `/login` method. When AlfaCode assistant executes the tool, it will accurately reflect that an API key is being used, as this is the underlying behavior of the `claude` CLI itself.
-:::
-=======
-If this environment variable is set on your system, the `claude` tool may use it for authentication instead of the interactive `/login` method. When Kilo Code executes the tool, it will accurately reflect that an API key is being used, as this is the underlying behavior of the `claude` CLI itself.
 {% /callout %}
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/claude-code.md
-
-**Website:** [https://docs.anthropic.com/en/docs/claude-code/setup](https://docs.anthropic.com/en/docs/claude-code/setup)
 
 ## Supported Models
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/claude-code.md
 AlfaCode assistant supports the following Claude models through Claude Code:
 
 - **Claude Opus 4.1** (Most capable)
@@ -48,18 +36,11 @@ AlfaCode assistant supports the following Claude models through Claude Code:
 - **Claude 3.7 Sonnet**
 - **Claude 3.5 Sonnet**
 - **Claude 3.5 Haiku** (Fast responses)
-
-=======
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/claude-code.md
-The specific models available depend on your Claude subscription and plan. See [Anthropic's Model Documentation](https://docs.anthropic.com/en/docs/about-claude/models) for more details on each model's capabilities.
+  The specific models available depend on your Claude subscription and plan. See [Anthropic's Model Documentation](https://docs.anthropic.com/en/docs/about-claude/models) for more details on each model's capabilities.
 
 ## Configuration in AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/claude-code.md
-1. **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-1. **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/claude-code.md
+1. **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2. **Select Provider:** Choose "Claude Code" from the "API Provider" dropdown.
 3. **Select Model:** Choose your desired Claude model from the "Model" dropdown.
 4. **(Optional) Custom CLI Path:** If you installed Claude Code to a location other than the default `claude` command, enter the full path to your Claude executable in the "Claude Code Path" field. Most users won't need to change this.

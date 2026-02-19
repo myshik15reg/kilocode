@@ -18,6 +18,7 @@
 	},
 	"generateImage": {
 		"openRouterApiKeyRequired": "Для генерации изображений с моделями OpenRouter требуется API-ключ OpenRouter. Настройте его в экспериментальных настройках генерации изображений.",
+		"litellmApiKeyRequired": "Для генерации изображений через LiteLLM нужны API-ключ LiteLLM и base URL. Настройте их в экспериментальных настройках генерации изображений.",
 		"failedWithStatus": "Не удалось сгенерировать изображение: {{status}} {{statusText}}",
 		"failedWithMessage": "Не удалось сгенерировать изображение: {{message}}",
 		"noImageGenerated": "В ответе не было сгенерировано изображение",

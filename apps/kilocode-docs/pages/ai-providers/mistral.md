@@ -15,7 +15,6 @@ AlfaCode assistant supports accessing models through the Mistral AI API, includi
     - [La Plateforme API Key](https://console.mistral.ai/api-keys/) and/or
     - [Codestral API Key](https://console.mistral.ai/codestral)
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/mistral.md
 ## Supported Models
 
 AlfaCode assistant supports the following Mistral models:
@@ -30,19 +29,14 @@ AlfaCode assistant supports the following Mistral models:
 | mistral-small-latest | 0.3                       | ✅               | ❌                     |
 | pixtral-large-latest | 0.7                       | ✅               | ✅                     |
 
-The default model temperature in AlfaCode assistant is 0.0, so you should consider experimenting with [temperature adjustments](/features/model-temperature)!
+The default model temperature in AlfaCode assistant is 0.0, so you should consider experimenting with [temperature adjustments](/docs/code-with-ai/agents/model-selection)!
 
 **Note:** Model availability and specifications may change.
 Refer to the [Mistral AI documentation](https://docs.mistral.ai/api/) and [Mistral Model Overview](https://docs.mistral.ai/getting-started/models/models_overview/) for the latest information.
 
 ## Configuration in AlfaCode assistant
 
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-## Configuration in Kilo Code
-
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/mistral.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "Mistral" from the "API Provider" dropdown.
 3.  **Enter API Key:** Paste your Mistral API key into the "Mistral API Key" field if you're using a `mistral` model. If you intend to use `codestral-latest`, see the "Codestral" section below.
 4.  **Select Model:** Choose your desired model from the "Model" dropdown.

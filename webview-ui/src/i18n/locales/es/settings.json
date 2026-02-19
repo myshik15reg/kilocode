@@ -41,15 +41,10 @@
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
-<<<<<<< HEAD
 		"about": "Acerca de AlfaCode assistant",
-		"autoPurge": "Auto-limpieza"
-=======
-		"about": "Acerca de Kilo Code",
 		"autoPurge": "Auto-limpieza",
 		"agentBehaviour": "Comportamiento del agente",
 		"ghost": "Autocompletado"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -192,11 +187,18 @@
 		"searchMinScoreResetTooltip": "Restablecer al valor predeterminado (0.4)",
 		"searchMaxResultsLabel": "Resultados máximos de búsqueda",
 		"searchMaxResultsDescription": "Número máximo de resultados de búsqueda a devolver al consultar el índice de código. Valores más altos proporcionan más contexto pero pueden incluir resultados menos relevantes.",
+		"rerankSectionLabel": "Reordenador",
+		"rerankEnableLabel": "Activar reordenador",
+		"rerankEnableDescription": "Reordena candidatos de Qdrant con un cross-encoder antes de la expansión del grafo. Si no está disponible, vuelve al orden semántico.",
+		"rerankCandidateLimitLabel": "Límite de candidatos para reordenar",
+		"rerankTopKLabel": "Top-K tras reordenar",
+		"rerankTimeoutMsLabel": "Tiempo de espera del reordenamiento (ms)",
 		"resetToDefault": "Restablecer al valor predeterminado",
 		"cancelling": "Cancelando...",
 		"cancelIndexingButton": "Cancelar la indexación",
 		"neo4j": {
 			"enableLabel": "Habilitar base de grafos Neo4j",
+			"enableDescription": "Habilita la búsqueda basada en grafos y el análisis de impacto con Neo4j. Funciona con Qdrant para la búsqueda híbrida semántica + basada en grafos.",
 			"uriLabel": "URI de Neo4j",
 			"uriPlaceholder": "bolt://localhost:7687",
 			"usernameLabel": "Nombre de usuario",

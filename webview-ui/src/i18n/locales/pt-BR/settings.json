@@ -187,9 +187,18 @@
 		"searchMinScoreResetTooltip": "Redefinir para o valor padrão (0.4)",
 		"searchMaxResultsLabel": "Resultados máximos de busca",
 		"searchMaxResultsDescription": "Número máximo de resultados de busca a retornar ao consultar o índice de código. Valores mais altos fornecem mais contexto, mas podem incluir resultados menos relevantes.",
+		"rerankSectionLabel": "Reranker",
+		"rerankEnableLabel": "Habilitar reranker",
+		"rerankEnableDescription": "Reordena candidatos do Qdrant com um cross-encoder antes da expansão do grafo. Se indisponível, usa a ordem semântica.",
+		"rerankCandidateLimitLabel": "Limite de candidatos para rerank",
+		"rerankTopKLabel": "Top-K após rerank",
+		"rerankTimeoutMsLabel": "Timeout do rerank (ms)",
 		"resetToDefault": "Redefinir para o padrão",
 		"cancelling": "Cancelando...",
-		"cancelIndexingButton": "Cancelar indexação"
+		"cancelIndexingButton": "Cancelar indexação",
+		"neo4j": {
+			"enableDescription": "Ativa a busca baseada em grafo e a análise de impacto com Neo4j. Funciona com Qdrant para busca híbrida semântica + de grafo."
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "Você pode configurar um atalho global para esta configuração <SettingsLink>nas preferências do seu IDE</SettingsLink>.",

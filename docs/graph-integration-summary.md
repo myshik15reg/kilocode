@@ -7,6 +7,7 @@ The Neo4j graph pipeline is now language-agnostic. Graph extraction uses a singl
 ## Core Components
 
 ### TreeSitterGraphExtractor
+
 - Unified graph extractor for all supported languages.
 - Builds `file` entities and `defines` relationships from query captures.
 - Adds `calls` relationships when call captures are present.
@@ -14,6 +15,7 @@ The Neo4j graph pipeline is now language-agnostic. Graph extraction uses a singl
 **Location:** `src/services/neo4j/extractors/tree-sitter-graph-extractor.ts`
 
 ### RelationshipExtractor
+
 - Resolves language by extension or explicit languageId.
 - Normalizes to canonical Tree-sitter languageId.
 - Caches extractors per language.
@@ -21,11 +23,13 @@ The Neo4j graph pipeline is now language-agnostic. Graph extraction uses a singl
 **Location:** `src/services/neo4j/relationship-extractor.ts`
 
 ### RelationshipIndexer
+
 - Writes entities/relationships into Neo4j.
 
 **Location:** `src/services/neo4j/relationship-indexer.ts`
 
 ### CodeIndexOrchestrator
+
 - Triggers graph indexing for all supported languages.
 - Uses shared language resolution (no language-specific branches).
 
@@ -34,6 +38,7 @@ The Neo4j graph pipeline is now language-agnostic. Graph extraction uses a singl
 ## Language Normalization
 
 Examples:
+
 - `bsl`, `os`, `1c` -> `onec`
 - `js`, `jsx`, `json` -> `javascript`
 - `ejs`, `erb` -> `embedded_template`
@@ -66,8 +71,10 @@ const result2 = await extractor.extract("procedure Test() endprocedure", "module
 
 - Tree-sitter WASM binaries must be available for runtime parsing.
 - Graph extraction depends on available definition queries for each language.
+- For 1C (`onec`), the WASM binary is `tree-sitter-onec.wasm` (built from `tree-sitter-grammars/` and placed alongside other parsers in `src/dist/`).
 
 ## Files/Directories
 
 - `tree-sitter-grammars/` - grammar sources
+- `src/dist/` - packaged Tree-sitter WASM parsers (`tree-sitter-*.wasm`)
 - `src/services/tree-sitter/queries/` - definition queries

@@ -41,15 +41,10 @@
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Language",
-<<<<<<< HEAD
 		"about": "About AlfaCode assistant",
-		"autoPurge": "Auto-Cleanup"
-=======
-		"about": "About Kilo Code",
 		"autoPurge": "Auto-Cleanup",
 		"agentBehaviour": "Agent Behaviour",
 		"ghost": "Autocomplete"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -162,6 +157,12 @@
 		"searchMinScoreResetTooltip": "Reset to default value (0.4)",
 		"searchMaxResultsLabel": "Maximum Search Results",
 		"searchMaxResultsDescription": "Maximum number of search results to return when querying the codebase index. Higher values provide more context but may include less relevant results.",
+		"rerankSectionLabel": "Reranker",
+		"rerankEnableLabel": "Enable Reranker",
+		"rerankEnableDescription": "Re-rank Qdrant candidates with a cross-encoder before graph expansion. Falls back to semantic order if unavailable.",
+		"rerankCandidateLimitLabel": "Rerank Candidate Limit",
+		"rerankTopKLabel": "Rerank Top K",
+		"rerankTimeoutMsLabel": "Rerank Timeout (ms)",
 		"resetToDefault": "Reset to default",
 		"startIndexingButton": "Start Indexing",
 		"clearIndexDataButton": "Clear Index Data",
@@ -207,7 +208,7 @@
 			"ollamaBaseUrlRequired": "Ollama base URL is required",
 			"baseUrlRequired": "Base URL is required",
 			"modelDimensionMinValue": "Model dimension must be greater than 0",
-				"vectorStoreNameRequired": "Vector database name is required"
+			"vectorStoreNameRequired": "Vector database name is required"
 		},
 		"cancelling": "Cancelling...",
 		"cancelIndexingButton": "Cancel Indexing",
@@ -216,6 +217,7 @@
 		"vectorStoreNamePlaceholder": "Enter vector database name",
 		"neo4j": {
 			"enableLabel": "Enable Neo4j Graph Database",
+			"enableDescription": "Enables graph-based code search and analysis with Neo4j. Works alongside Qdrant for hybrid semantic + graph search.",
 			"uriLabel": "Neo4j URI",
 			"uriPlaceholder": "bolt://localhost:7687",
 			"usernameLabel": "Username",
@@ -834,10 +836,10 @@
 			"reset": "Reset to Default",
 			"hint": "Empty = use default prompt"
 		},
-			"autoCondenseContext": {
-				"name": "Automatically trigger intelligent context condensing",
-				"description": "When enabled, AlfaCode assistant will automatically condense the context when the threshold is reached. When disabled, you can still manually trigger context condensing."
-			},
+		"autoCondenseContext": {
+			"name": "Automatically trigger intelligent context condensing",
+			"description": "When enabled, AlfaCode assistant will automatically condense the context when the threshold is reached. When disabled, you can still manually trigger context condensing."
+		},
 		"contextRouting": {
 			"name": "Enable context routing (fast/deep)",
 			"description": "When enabled, AlfaCode assistant will switch to fast or deep processing modes based on how full the context window is.",
@@ -1082,7 +1084,7 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "Enable AI image generation",
-			"description": "When enabled, AlfaCode assistant can generate images from text prompts. Requires a AlfaCode assistant or OpenRouter API key to be configured.",
+			"description": "When enabled, AlfaCode assistant can generate images from text prompts. Supports LiteLLM with Gemini 3 Pro Image plus AlfaCode assistant/OpenRouter.",
 			"apiProvider": "API Provider",
 			"providerLabel": "Provider",
 			"providerDescription": "Select which provider to use for image generation.",
@@ -1091,6 +1093,11 @@
 			"kiloCodeApiKeyLabel": "AlfaCode assistant API Key",
 			"kiloCodeApiKeyPlaceholder": "Enter your AlfaCode assistant API key",
 			"kiloCodeApiKeyPaste": "Paste current AlfaCode assistant API Key",
+			"litellmApiKeyLabel": "LiteLLM API Key",
+			"litellmApiKeyPlaceholder": "Enter your LiteLLM API key",
+			"litellmBaseUrlLabel": "LiteLLM Base URL",
+			"litellmBaseUrlPlaceholder": "https://your-litellm-host",
+			"litellmDescription": "Uses Gemini 3 Pro Image via your LiteLLM gateway.",
 			"getApiKeyText": "Get your API key from",
 			"modelSelectionLabel": "Image Generation Model",
 			"modelSelectionDescription": "Select the model to use for image generation",

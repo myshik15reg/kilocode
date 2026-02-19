@@ -42,14 +42,9 @@
 		"ui": "UI",
 		"experimental": "ทดลอง",
 		"language": "ภาษา",
-<<<<<<< HEAD
 		"about": "เกี่ยวกับ AlfaCode assistant",
-		"autoPurge": "ทำความสะอาดอัตโนมัติ"
-=======
-		"about": "เกี่ยวกับ Kilo Code",
 		"autoPurge": "ทำความสะอาดอัตโนมัติ",
 		"agentBehaviour": "พฤติกรรม Agent"
->>>>>>> origin/main
 	},
 	"about": {
 		"debugMode": {
@@ -174,6 +169,12 @@
 		"searchMinScoreResetTooltip": "รีเซ็ตเป็นค่าเริ่มต้น (0.4)",
 		"searchMaxResultsLabel": "ผลการค้นหาสูงสุด",
 		"searchMaxResultsDescription": "จำนวนผลการค้นหาสูงสุดที่จะส่งคืนเมื่อสอบถามดัชนี codebase ค่าที่สูงขึ้นจะให้บริบทมากขึ้นแต่อาจรวมผลลัพธ์ที่เกี่ยวข้องน้อยลง",
+		"rerankSectionLabel": "ตัวจัดอันดับซ้ำ",
+		"rerankEnableLabel": "เปิดใช้การจัดอันดับซ้ำ",
+		"rerankEnableDescription": "จัดเรียงผู้สมัครจาก Qdrant ใหม่ด้วย cross-encoder ก่อนขยายกราฟ หากไม่พร้อมใช้งานจะย้อนกลับไปใช้ลำดับเชิงความหมาย.",
+		"rerankCandidateLimitLabel": "จำนวนผู้สมัครสำหรับ rerank",
+		"rerankTopKLabel": "Top-K หลัง rerank",
+		"rerankTimeoutMsLabel": "หมดเวลา rerank (มิลลิวินาที)",
 		"resetToDefault": "รีเซ็ตเป็นค่าเริ่มต้น",
 		"optional": "ไม่บังคับ",
 		"startIndexingButton": "เริ่มการสร้างดัชนี",
@@ -222,7 +223,10 @@
 			"bedrockProfileRequired": "จำเป็นต้องมี AWS profile"
 		},
 		"cancelling": "กำลังยกเลิก...",
-		"cancelIndexingButton": "ยกเลิกการจัดทำดัชนี"
+		"cancelIndexingButton": "ยกเลิกการจัดทำดัชนี",
+		"neo4j": {
+			"enableDescription": "เปิดใช้การค้นหาแบบกราฟและการวิเคราะห์ผลกระทบด้วย Neo4j ทำงานร่วมกับ Qdrant สำหรับการค้นหาแบบไฮบริดเชิงความหมาย + กราฟ"
+		}
 	},
 	"autoApprove": {
 		"description": "อนุญาตให้ AlfaCode assistant ดำเนินการโดยอัตโนมัติโดยไม่ต้องขออนุมัติ เปิดใช้งานการตั้งค่าเหล่านี้เฉพาะเมื่อคุณเชื่อถือ AI อย่างเต็มที่และเข้าใจความเสี่ยงด้านความปลอดภัยที่เกี่ยวข้อง",

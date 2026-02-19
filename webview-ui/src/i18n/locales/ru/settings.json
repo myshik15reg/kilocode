@@ -41,15 +41,10 @@
 		"ui": "UI",
 		"experimental": "Экспериментальное",
 		"language": "Язык",
-<<<<<<< HEAD
 		"about": "О AlfaCode assistant",
-		"autoPurge": "Авто-очистка"
-=======
-		"about": "О Kilo Code",
 		"autoPurge": "Авто-очистка",
 		"agentBehaviour": "Поведение агента",
 		"ghost": "Автодополнение"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -199,6 +194,12 @@
 		"searchMinScoreResetTooltip": "Сбросить к значению по умолчанию (0.4)",
 		"searchMaxResultsLabel": "Максимальное количество результатов поиска",
 		"searchMaxResultsDescription": "Максимальное количество результатов поиска, возвращаемых при запросе индекса кодовой базы. Более высокие значения предоставляют больше контекста, но могут включать менее релевантные результаты.",
+		"rerankSectionLabel": "Реранкер",
+		"rerankEnableLabel": "Включить реранкер",
+		"rerankEnableDescription": "Пересортировка кандидатов из Qdrant кросс-энкодером перед графовым расширением. При недоступности используется исходный порядок.",
+		"rerankCandidateLimitLabel": "Лимит кандидатов для реранка",
+		"rerankTopKLabel": "Топ-K после реранка",
+		"rerankTimeoutMsLabel": "Таймаут реранка (мс)",
 		"resetToDefault": "Сбросить к значению по умолчанию",
 		"cancelling": "Отмена...",
 		"cancelIndexingButton": "Отменить индексацию",
@@ -206,6 +207,7 @@
 		"vectorStoreNamePlaceholder": "Введите имя векторной базы данных",
 		"neo4j": {
 			"enableLabel": "Включить графовую базу Neo4j",
+			"enableDescription": "Включает графовый поиск и анализ кода с Neo4j. Работает вместе с Qdrant для гибридного семантического + графового поиска.",
 			"uriLabel": "URI Neo4j",
 			"uriPlaceholder": "bolt://localhost:7687",
 			"usernameLabel": "Имя пользователя",
@@ -1040,13 +1042,18 @@
 			"providerLabel": "Провайдер",
 			"providerDescription": "Выберите провайдера для генерации изображений.",
 			"name": "Включить генерацию изображений ИИ",
-			"description": "Когда включено, AlfaCode assistant может генерировать изображения из текстовых запросов. Требует настроенный API-ключ AlfaCode assistant или OpenRouter.",
+			"description": "Когда включено, AlfaCode assistant может генерировать изображения из текстовых запросов. Поддерживается LiteLLM с Gemini 3 Pro Image, а также AlfaCode assistant/OpenRouter.",
 			"apiProvider": "Провайдер API",
 			"openRouterApiKeyLabel": "API-ключ OpenRouter",
 			"openRouterApiKeyPlaceholder": "Введите ваш API-ключ OpenRouter",
 			"kiloCodeApiKeyLabel": "API-ключ AlfaCode assistant",
 			"kiloCodeApiKeyPlaceholder": "Введите ваш API-ключ AlfaCode assistant",
 			"kiloCodeApiKeyPaste": "Вставить текущий API-ключ AlfaCode assistant",
+			"litellmApiKeyLabel": "API-ключ LiteLLM",
+			"litellmApiKeyPlaceholder": "Введите ваш API-ключ LiteLLM",
+			"litellmBaseUrlLabel": "Base URL LiteLLM",
+			"litellmBaseUrlPlaceholder": "https://ваш-litellm-хост",
+			"litellmDescription": "Использует Gemini 3 Pro Image через ваш LiteLLM-шлюз.",
 			"getApiKeyText": "Получите ваш API-ключ от",
 			"modelSelectionLabel": "Модель генерации изображений",
 			"modelSelectionDescription": "Выберите модель для генерации изображений",

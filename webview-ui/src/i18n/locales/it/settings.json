@@ -41,16 +41,10 @@
 		"ui": "UI",
 		"experimental": "Sperimentale",
 		"language": "Lingua",
-<<<<<<< HEAD
 		"about": "Informazioni su AlfaCode assistant",
-		"ghost": "Ghost",
-		"autoPurge": "Auto-pulizia"
-=======
-		"about": "Informazioni su Kilo Code",
 		"autoPurge": "Auto-pulizia",
 		"agentBehaviour": "Comportamento agente",
 		"ghost": "Ghost"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -193,9 +187,18 @@
 		"searchMinScoreResetTooltip": "Ripristina al valore predefinito (0.4)",
 		"searchMaxResultsLabel": "Risultati di ricerca massimi",
 		"searchMaxResultsDescription": "Numero massimo di risultati di ricerca da restituire quando si interroga l'indice del codice. Valori più alti forniscono più contesto ma possono includere risultati meno pertinenti.",
+		"rerankSectionLabel": "Reranker",
+		"rerankEnableLabel": "Abilita reranker",
+		"rerankEnableDescription": "Riordina i candidati di Qdrant con un cross-encoder prima dell’espansione del grafo. Se non disponibile, torna all’ordine semantico.",
+		"rerankCandidateLimitLabel": "Limite candidati per reranking",
+		"rerankTopKLabel": "Top-K dopo il reranking",
+		"rerankTimeoutMsLabel": "Timeout del reranking (ms)",
 		"resetToDefault": "Ripristina al valore predefinito",
 		"cancelling": "Annullamento...",
-		"cancelIndexingButton": "Annulla indicizzazione"
+		"cancelIndexingButton": "Annulla indicizzazione",
+		"neo4j": {
+			"enableDescription": "Abilita la ricerca basata su grafi e l’analisi d’impatto con Neo4j. Funziona con Qdrant per la ricerca ibrida semantica + a grafo."
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "Puoi configurare una scorciatoia globale per questa impostazione <SettingsLink>nelle preferenze del tuo IDE</SettingsLink>.",

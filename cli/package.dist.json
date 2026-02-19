@@ -1,12 +1,7 @@
 {
 	"name": "@kilocode/cli",
-<<<<<<< HEAD
-	"version": "0.26.0",
-	"description": "Terminal User Interface for AlfaCode assistant",
-=======
 	"version": "0.26.1",
-	"description": "Terminal User Interface for Kilo Code",
->>>>>>> origin/main
+	"description": "Terminal User Interface for AlfaCode assistant",
 	"type": "module",
 	"main": "index.js",
 	"bin": {

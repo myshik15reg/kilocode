@@ -72,13 +72,8 @@ By default, API requests time out after 10 minutes. Local models can be slow, if
 
 ### Configure AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/ollama.md
-- Open the AlfaCode assistant sidebar (<img src="/docs/img/kilo-v1.svg" width="12" /> icon).
-- Click the Settings gear icon (<Codicon name="gear" />).
-=======
-- Open the Kilo Code sidebar (<img src="/docs/img/kilo-v1.svg" width="12" /> icon).
+- Open the AlfaCode assistant sidebar ({% kiloCodeIcon /%}).
 - Click the Settings gear icon ({% codicon name="gear" /%}).
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/ollama.md
 - Select "Ollama" as the API Provider.
 - Select the model configured in the previous step.
 - (Optional) You can configure the base URL if you're running Ollama on a different machine. The default is `http://localhost:11434`.

@@ -14,7 +14,6 @@ To use Groq with AlfaCode assistant, you'll need an API key from the [GroqCloud 
 
 ## Supported Models
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/groq.md
 AlfaCode assistant will attempt to fetch the list of available models from the Groq API. Common models available via Groq include:
 
 - `llama3-8b-8192`
@@ -22,19 +21,12 @@ AlfaCode assistant will attempt to fetch the list of available models from the G
 - `mixtral-8x7b-32768`
 - `gemma-7b-it`
 - `moonshotai/kimi-k2-instruct` (Kimi K2 model)
-=======
-Kilo Code will attempt to fetch the list of available models from the Groq API.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/groq.md
 
 **Note:** Model availability and specifications may change. Refer to the [Groq Documentation](https://console.groq.com/docs/models) for the most up-to-date list of supported models and their capabilities.
 
 ## Configuration in AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/groq.md
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/groq.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "Groq" from the "API Provider" dropdown.
 3.  **Enter API Key:** Paste your Groq API key into the "Groq API Key" field.
 4.  **Select Model:** Choose your desired model from the "Model" dropdown.
@@ -62,11 +54,7 @@ AlfaCode assistant supports the following models through Groq:
 
 ## Configuration in AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/groq.md
-1. **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-1. **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/groq.md
+1. **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2. **Select Provider:** Choose "Groq" from the "API Provider" dropdown.
 3. **Enter API Key:** Paste your Groq API key into the "Groq API Key" field.
 4. **Select Model:** Choose your desired model from the "Model" dropdown.

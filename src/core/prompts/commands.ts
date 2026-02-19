@@ -130,6 +130,8 @@ ${userInput}
 </explicit_instructions>\n`
 
 export const condenseToolResponse = (userInput: string) =>
+	// FIX: slash-commands-sync (TestAnalyzer)
+	// Root cause: prompt text didn't explicitly list all supported slash-command aliases (/smol, /condense, /compact) after syncing with origin/main.
 	`<explicit_instructions type="condense">
 The user has explicitly asked you to create a detailed summary of the conversation so far, which will be used to compact the current context window while retaining key information. The user may have provided instructions or additional information for you to consider when summarizing the conversation.
 Irrespective of whether additional information or instructions are given, you are only allowed to respond to this message by calling the condense tool.
@@ -139,7 +141,7 @@ The condense tool is defined below:
 Description:
 Your task is to create a detailed summary of the conversation so far, paying close attention to the user's explicit requests and your previous actions. This summary should be thorough in capturing technical details, code patterns, and architectural decisions that would be essential for continuing with the conversation and supporting any continuing tasks.
 The user will be presented with a preview of your generated summary and can choose to use it to compact their context window or keep chatting in the current conversation.
-Users may refer to this tool as 'smol' or 'compact' as well. You should consider these to be equivalent to 'condense' when used in a similar context.
+Users may refer to this tool as 'smol', 'condense', or 'compact' as well. You should consider these to be equivalent to 'condense' when used in a similar context.
 
 Parameters:
 - message: (required) The detailed summary of the conversation. If applicable based on the current task, this should include:
@@ -194,39 +196,3 @@ ${userInput}
 
 </explicit_instructions>\n
 `
-
-export const initMemoryBankToolResponse = (userInput: string) =>
-	`<explicit_instructions type="init_memory_bank">
-The user has explicitly asked you to initialize the Alfa Code Assistant Memory Bank for this workspace.
-
-Goal:
-- Create or update a structured knowledge base under .kilocode/memory-bank/ so future tasks have stable project context.
-
-Rules:
-- Do NOT invent project details. If something is unknown, leave a clear placeholder like [TODO: ...].
-- Prefer discovering facts from the codebase (package.json, config files, README, directory structure).
-- Keep Memory Bank files concise and factual.
-- If your current mode cannot write files, request switching to Code mode first (using switch_mode).
-
-Initialization options (ask the user to choose via ask_followup_question):
-1) Automatic (recommended): Analyze the repo and generate templates populated with discovered information.
-2) Guided: Ask the user for a short project description (goals/constraints), then generate the files.
-
-Create (or ensure) .kilocode/memory-bank/ with:
-- index.md (navigation + metadata)
-- brief.md (goals, constraints, Definition of Done)
-- product.md (users, UX flows, value proposition)
-- architecture.md (system design, components, key decisions)
-- tech.md (tech stack, tools, build/test commands)
-- context.md (current focus, risks/blockers, next steps)  <-- keep this updated after each significant task
-
-After creating the files:
-- List what was created/updated
-- Summarize what was discovered vs what needs manual input
-- Confirm with: [MB: INITIALIZED]
-
-User input (may contain extra context / preferences):
-<user_input>
-${userInput}
-</user_input>
-</explicit_instructions>\n`

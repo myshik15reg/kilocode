@@ -32,7 +32,6 @@ You have three options for configuring AWS credentials:
 3.  **AWS Profile:**
     - Configure an AWS profile using the AWS CLI or by manually editing your AWS credentials file. See the [AWS CLI documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for details.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/bedrock.md
 ## Supported Models
 
 AlfaCode assistant supports the following models through Bedrock (based on source code):
@@ -76,12 +75,7 @@ Refer to the [Amazon Bedrock documentation](https://docs.aws.amazon.com/bedrock/
 
 ## Configuration in AlfaCode assistant
 
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-## Configuration in Kilo Code
-
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/bedrock.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "Bedrock" from the "API Provider" dropdown.
 3.  **Select Authentication Method:**
     - **Bedrock API Key:**

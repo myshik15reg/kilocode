@@ -22,7 +22,6 @@ You can report any bugs or feedbacks by chatting with us in our [Discord server]
 2.  **Navigate to Public Cloud:** Go to the Public Cloud section, and create a new project. Navigate to AI Endpoints in the _AI & Machine Learning_ section.
 3.  **Create a Key:** Click to _API keys_ and create a new key.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/ovhcloud.md
 ## Supported Models
 
 AlfaCode assistant will automatically fetch our models from our API. It will be up-to-date.
@@ -31,12 +30,7 @@ You can browse our [catalog](https://endpoints.ai.cloud.ovh.net/catalog) to see 
 
 ## Configuration in AlfaCode assistant
 
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-## Configuration in Kilo Code
-
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/ovhcloud.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "OVHcloud AI Endpoints" from the "API Provider" dropdown.
 3.  **Enter API Key:** Paste your AI Endpoints API key into the "OVHcloud AI Endpoints API Key" field.
 4.  **Select Model:** Choose your desired model from the "Model" dropdown.

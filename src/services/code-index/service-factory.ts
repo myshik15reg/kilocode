@@ -20,6 +20,7 @@ import { MistralEmbedder } from "./embedders/mistral"
 import { VercelAiGatewayEmbedder } from "./embedders/vercel-ai-gateway"
 import { BedrockEmbedder } from "./embedders/bedrock"
 import { OpenRouterEmbedder } from "./embedders/openrouter"
+import { ThrottledEmbedder } from "./embedders/throttled-embedder" // kilocode_change
 import { QdrantVectorStore } from "./vector-store/qdrant-client"
 import { LanceDBVectorStore } from "./vector-store/lancedb-vector-store"
 import { codeParser, DirectoryScanner, FileWatcher } from "./processors"
@@ -48,13 +49,15 @@ export class CodeIndexServiceFactory {
 
 		const provider = config.embedderProvider as EmbedderProvider
 
+		// kilocode_change start: wrap embedder creation to apply shared RPM throttling for indexing
+		let embedder: IEmbedder
 		if (provider === "openai") {
 			const apiKey = config.openAiOptions?.openAiNativeApiKey
 
 			if (!apiKey) {
 				throw new Error(t("embeddings:serviceFactory.openAiConfigMissing"))
 			}
-			return new OpenAiEmbedder({
+			embedder = new OpenAiEmbedder({
 				...config.openAiOptions,
 				openAiEmbeddingModelId: config.modelId,
 			})
@@ -62,7 +65,7 @@ export class CodeIndexServiceFactory {
 			if (!config.ollamaOptions?.ollamaBaseUrl) {
 				throw new Error(t("embeddings:serviceFactory.ollamaConfigMissing"))
 			}
-			return new CodeIndexOllamaEmbedder({
+			embedder = new CodeIndexOllamaEmbedder({
 				...config.ollamaOptions,
 				ollamaModelId: config.modelId,
 			})
@@ -70,7 +73,7 @@ export class CodeIndexServiceFactory {
 			if (!config.openAiCompatibleOptions?.baseUrl || !config.openAiCompatibleOptions?.apiKey) {
 				throw new Error(t("embeddings:serviceFactory.openAiCompatibleConfigMissing"))
 			}
-			return new OpenAICompatibleEmbedder(
+			embedder = new OpenAICompatibleEmbedder(
 				config.openAiCompatibleOptions.baseUrl,
 				config.openAiCompatibleOptions.apiKey,
 				config.modelId,
@@ -79,38 +82,41 @@ export class CodeIndexServiceFactory {
 			if (!config.geminiOptions?.apiKey) {
 				throw new Error(t("embeddings:serviceFactory.geminiConfigMissing"))
 			}
-			return new GeminiEmbedder(config.geminiOptions.apiKey, config.modelId)
+			embedder = new GeminiEmbedder(config.geminiOptions.apiKey, config.modelId)
 		} else if (provider === "mistral") {
 			if (!config.mistralOptions?.apiKey) {
 				throw new Error(t("embeddings:serviceFactory.mistralConfigMissing"))
 			}
-			return new MistralEmbedder(config.mistralOptions.apiKey, config.modelId)
+			embedder = new MistralEmbedder(config.mistralOptions.apiKey, config.modelId)
 		} else if (provider === "vercel-ai-gateway") {
 			if (!config.vercelAiGatewayOptions?.apiKey) {
 				throw new Error(t("embeddings:serviceFactory.vercelAiGatewayConfigMissing"))
 			}
-			return new VercelAiGatewayEmbedder(config.vercelAiGatewayOptions.apiKey, config.modelId)
+			embedder = new VercelAiGatewayEmbedder(config.vercelAiGatewayOptions.apiKey, config.modelId)
 		} else if (provider === "bedrock") {
 			// Only region is required for Bedrock (profile is optional)
 			if (!config.bedrockOptions?.region) {
 				throw new Error(t("embeddings:serviceFactory.bedrockConfigMissing"))
 			}
-			return new BedrockEmbedder(config.bedrockOptions.region, config.bedrockOptions.profile, config.modelId)
+			embedder = new BedrockEmbedder(config.bedrockOptions.region, config.bedrockOptions.profile, config.modelId)
 		} else if (provider === "openrouter") {
 			if (!config.openRouterOptions?.apiKey) {
 				throw new Error(t("embeddings:serviceFactory.openRouterConfigMissing"))
 			}
-			return new OpenRouterEmbedder(
+			embedder = new OpenRouterEmbedder(
 				config.openRouterOptions.apiKey,
 				config.modelId,
 				undefined, // maxItemTokens
 				config.openRouterOptions.specificProvider,
 			)
+		} else {
+			throw new Error(
+				t("embeddings:serviceFactory.invalidEmbedderType", { embedderProvider: config.embedderProvider }),
+			)
 		}
 
-		throw new Error(
-			t("embeddings:serviceFactory.invalidEmbedderType", { embedderProvider: config.embedderProvider }),
-		)
+		return new ThrottledEmbedder(embedder, () => this.configManager.currentEmbedderRequestsPerMinute)
+		// kilocode_change end
 	}
 
 	/**
@@ -189,8 +195,14 @@ export class CodeIndexServiceFactory {
 			throw new Error(t("embeddings:serviceFactory.qdrantUrlMissing"))
 		}
 
-		// Assuming constructor is updated: new QdrantVectorStore(workspacePath, url, vectorSize, apiKey?)
-		return new QdrantVectorStore(this.workspacePath, config.qdrantUrl, vectorSize, config.qdrantApiKey)
+		// Assuming constructor is updated: new QdrantVectorStore(workspacePath, url, vectorSize, apiKey?, vectorStoreName?)
+		return new QdrantVectorStore(
+			this.workspacePath,
+			config.qdrantUrl,
+			vectorSize,
+			config.qdrantApiKey,
+			config.vectorStoreName,
+		)
 	}
 
 	/**

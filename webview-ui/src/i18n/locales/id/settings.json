@@ -41,15 +41,10 @@
 		"ui": "UI",
 		"experimental": "Eksperimental",
 		"language": "Bahasa",
-<<<<<<< HEAD
 		"about": "Tentang AlfaCode assistant",
-		"autoPurge": "Pembersihan Otomatis"
-=======
-		"about": "Tentang Kilo Code",
 		"autoPurge": "Pembersihan Otomatis",
 		"agentBehaviour": "Perilaku Agent",
 		"ghost": "Autocomplete"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -192,9 +187,18 @@
 		"searchMinScoreResetTooltip": "Reset ke nilai default (0.4)",
 		"searchMaxResultsLabel": "Hasil Pencarian Maksimum",
 		"searchMaxResultsDescription": "Jumlah maksimum hasil pencarian yang dikembalikan saat melakukan query indeks basis kode. Nilai yang lebih tinggi memberikan lebih banyak konteks tetapi mungkin menyertakan hasil yang kurang relevan.",
+		"rerankSectionLabel": "Reranker",
+		"rerankEnableLabel": "Aktifkan reranker",
+		"rerankEnableDescription": "Mengurutkan ulang kandidat Qdrant dengan cross-encoder sebelum perluasan graf. Jika tidak tersedia, kembali ke urutan semantik.",
+		"rerankCandidateLimitLabel": "Batas kandidat rerank",
+		"rerankTopKLabel": "Top-K setelah rerank",
+		"rerankTimeoutMsLabel": "Timeout rerank (ms)",
 		"resetToDefault": "Reset ke default",
 		"cancelling": "Membatalkan...",
-		"cancelIndexingButton": "Batalkan pengindeksan"
+		"cancelIndexingButton": "Batalkan pengindeksan",
+		"neo4j": {
+			"enableDescription": "Mengaktifkan pencarian berbasis graf dan analisis dampak dengan Neo4j. Bekerja dengan Qdrant untuk pencarian hibrida semantik + graf."
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "Anda dapat mengonfigurasi pintasan global untuk pengaturan ini <SettingsLink>di preferensi IDE Anda</SettingsLink>.",

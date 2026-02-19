@@ -7,20 +7,9 @@ description: "Persistent context storage for long-term projects"
 
 ## Overview
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/advanced-usage/memory-bank.md
-<YouTubeEmbed
-  url="https://youtu.be/FwAYGslfB6Y"
-/>
+{% youtube url="https://youtu.be/FwAYGslfB6Y" caption="Memory Bank overview" /%}
 
-<figure style={{ float: 'right', width: '40%', maxWidth: '350px', margin: '0 0 10px 20px' }}>
-  <img src="/docs/img/memory-bank/at-work.png" alt="Executing task with the memory bank" style={{ border: '1px solid grey', borderRadius: '5px', width: '100%' }} />
-  <figcaption style={{ fontSize: '0.9rem', color: '#666', marginTop: '8px', textAlign: 'center' }}>
-    AlfaCode assistant works more efficiently with Memory Bank enabled, instantly understanding project context and technologies.
-  </figcaption>
-</figure>
-=======
-{% image src="/docs/img/memory-bank/at-work.png" alt="Executing task with the memory bank" width="350" caption="Kilo Code works more efficiently with Memory Bank enabled, instantly understanding project context and technologies." /%}
->>>>>>> origin/main:apps/kilocode-docs/pages/customize/context/memory-bank.md
+{% image src="/docs/img/memory-bank/at-work.png" alt="Executing task with the memory bank" width="350" caption="AlfaCode assistant works more efficiently with Memory Bank enabled, instantly understanding project context and technologies." /%}
 
 ### The Problem: AI Memory Loss
 
@@ -44,11 +33,7 @@ When Memory Bank is active, AlfaCode assistant begins each task with `[Memory Ba
 
 ## How Memory Bank Works
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/advanced-usage/memory-bank.md
-Memory Bank is built on AlfaCode assistant's [Custom Rules](/agent-behavior/custom-rules) feature, providing a specialized framework for project documentation. Memory Bank files are standard markdown files stored in `.kilocode/rules/memory-bank` folder within your project repository. They're not hidden or proprietary - they're regular documentation files that both you and AlfaCode assistant can access.
-=======
-Memory Bank is built on Kilo Code's [Custom Rules](/docs/advanced-usage/custom-rules) feature, providing a specialized framework for project documentation. Memory Bank files are standard markdown files stored in `.kilocode/rules/memory-bank` folder within your project repository. They're not hidden or proprietary - they're regular documentation files that both you and Kilo Code can access.
->>>>>>> origin/main:apps/kilocode-docs/pages/customize/context/memory-bank.md
+Memory Bank complements AlfaCode assistant's [Custom Rules](/docs/customize/custom-rules) by providing a specialized framework for project documentation. Memory Bank files are standard Markdown files stored in the `.kilocode/memory-bank/` folder within your project repository. They're not hidden or proprietary — they're regular documentation files that both you and AlfaCode assistant can access.
 
 At the start of every task, AlfaCode assistant reads all Memory Bank files to build a comprehensive understanding of your project. This happens automatically without requiring any action from you. AlfaCode assistant then indicates successful Memory Bank activation with `[Memory Bank: Active]` at the beginning of its response, followed by a brief summary of its understanding of your project.
 
@@ -133,14 +118,15 @@ Example: Adding support for new AI models, implementing API endpoints, or any ta
 
 ### First-Time Setup
 
-1. Create a `.kilocode/rules/memory-bank/` folder in your project
-2. Write a basic project brief in `.kilocode/rules/memory-bank/brief.md`
-3. Create a file `.kilocode/rules/memory-bank-instructions.md` and paste there [this document](pathname:///downloads/memory-bank.md)
-4. Switch to `Architect` mode
-5. Check if a best available AI model is selected, don't use "lightweight" models
-6. Ask AlfaCode assistant to "initialize memory bank"
-7. Wait for AlfaCode assistant to analyze your project and initialize the Memory Bank files
-8. Verify the content of the files to see if the project is described correctly. Update the files if necessary.
+1. Create a `.kilocode/memory-bank/` folder in your project
+2. Write a basic project brief in `.kilocode/memory-bank/brief.md`
+3. Switch to `Architect` mode
+4. Check if a best available AI model is selected, don't use "lightweight" models
+5. Ask AlfaCode assistant to initialize/scaffold the remaining Memory Bank files in `.kilocode/memory-bank/` based on your project
+6. Wait for AlfaCode assistant to analyze your project and initialize the Memory Bank files
+7. Verify the content of the files to see if the project is described correctly. Update the files if necessary.
+
+If you prefer to set things up manually, you can also create the core files (`product.md`, `context.md`, `architecture.md`, `tech.md`) yourself and gradually fill them in as you work.
 
 ### Project Brief Tips
 
@@ -170,13 +156,13 @@ The initialization step is critically important as it establishes the foundation
     - Documentation and comments
     - Dependencies and external integrations
     - Testing frameworks and patterns
-2. Create comprehensive memory bank files in the `.kilocode/rules/memory-bank` folder
+2. Create comprehensive memory bank files in the `.kilocode/memory-bank/` folder
 3. Provide a detailed summary of what it has understood about your project
 4. Ask you to verify the accuracy of the generated files
 
-:::warning Important
+{% callout type="warning" title="Important" %}
 Take time to carefully review and correct the generated files after initialization. Any misunderstandings or missing information at this stage will affect all future interactions. A thorough initialization dramatically improves AlfaCode assistant's effectiveness, while a rushed or incomplete initialization will permanently limit its ability to assist you effectively.
-:::
+{% /callout %}
 
 #### Memory Bank Updates
 
@@ -271,7 +257,7 @@ This ensures that even with imperfect documentation, AlfaCode assistant can stil
 
 ### Where are the memory bank files stored?
 
-The Memory Bank files are regular markdown files stored in your project repository, typically in a `.kilocode/rules/memory-bank/` folder. They're not hidden system files - they're designed to be part of your project documentation.
+The Memory Bank files are regular Markdown files stored in your project repository, typically in a `.kilocode/memory-bank/` folder. They're not hidden system files — they're designed to be part of your project documentation.
 
 ### How often should I update the memory bank?
 
@@ -291,7 +277,7 @@ Memory Bank works with all AI models, but more powerful models will create more 
 
 ### Can I use Memory Bank with multiple projects?
 
-Yes! Each project has its own Memory Bank in its `.kilocode/rules/memory-bank/` folder. AlfaCode assistant will automatically use the correct Memory Bank for each project.
+Yes! Each project has its own Memory Bank in its `.kilocode/memory-bank/` folder. AlfaCode assistant will automatically use the correct Memory Bank for each project.
 
 ### Doesn't Memory Bank use up my context window?
 

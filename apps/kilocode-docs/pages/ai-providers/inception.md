@@ -23,11 +23,7 @@ Refer to the [Inception documentation](https://docs.inception.ai) for the most u
 
 ## Configuration in AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/inception.md
-1. **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-1. **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/inception.md
+1. **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2. **Select Provider:** Choose "Inception" from the "API Provider" dropdown.
 3. **Enter API Key:** Paste your Inception API key into the "Inception API Key" field.
 4. **Select Model:** Choose your desired model from the "Model" dropdown.

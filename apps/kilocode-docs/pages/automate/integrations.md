@@ -1,15 +1,11 @@
 ---
 title: "Integrations"
-description: "Overview of Kilo Code integrations"
+description: "Overview of AlfaCode assistant integrations"
 ---
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/advanced-usage/integrations.md
-Kilo Integrations lets you connect your GitHub account (and soon, GitLab and Bitbucket) to enable advanced features inside AlfaCode assistant. Once connected, Kilo can access your repositories securely through the **KiloConnect** GitHub App, enabling features like **Cloud Agents** and **Kilo Deploy**.
-=======
-# Kilo Code Integrations
+# Integrations
 
-Kilo Integrations lets you connect your GitHub account (and soon, GitLab and Bitbucket) to enable advanced features inside Kilo Code. Once connected, Kilo can access your repositories securely through the **KiloConnect** GitHub App, enabling features like **Cloud Agents** and **Kilo Deploy**.
->>>>>>> origin/main:apps/kilocode-docs/pages/automate/integrations.md
+Kilo Integrations lets you connect your GitHub account (and soon, GitLab and Bitbucket) to enable advanced features inside AlfaCode assistant. Once connected, Kilo can access your repositories securely through the **KiloConnect** GitHub App, enabling features like **Cloud Agents** and **Kilo Deploy**.
 
 ## What You Can Do With Integrations
 

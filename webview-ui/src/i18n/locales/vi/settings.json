@@ -187,9 +187,18 @@
 		"searchMinScoreResetTooltip": "Đặt lại về giá trị mặc định (0.4)",
 		"searchMaxResultsLabel": "Số Kết Quả Tìm Kiếm Tối Đa",
 		"searchMaxResultsDescription": "Số lượng kết quả tìm kiếm tối đa được trả về khi truy vấn chỉ mục cơ sở mã. Giá trị cao hơn cung cấp nhiều ngữ cảnh hơn nhưng có thể bao gồm các kết quả ít liên quan hơn.",
+		"rerankSectionLabel": "Reranker",
+		"rerankEnableLabel": "Bật reranker",
+		"rerankEnableDescription": "Sắp xếp lại các ứng viên Qdrant bằng cross-encoder trước khi mở rộng đồ thị. Nếu không khả dụng, sẽ quay về thứ tự ngữ nghĩa.",
+		"rerankCandidateLimitLabel": "Giới hạn ứng viên rerank",
+		"rerankTopKLabel": "Top-K sau rerank",
+		"rerankTimeoutMsLabel": "Timeout rerank (ms)",
 		"resetToDefault": "Đặt lại về mặc định",
 		"cancelling": "Đang hủy...",
-		"cancelIndexingButton": "Hủy lập chỉ mục"
+		"cancelIndexingButton": "Hủy lập chỉ mục",
+		"neo4j": {
+			"enableDescription": "Bật tìm kiếm dựa trên đồ thị và phân tích tác động với Neo4j. Hoạt động cùng Qdrant cho tìm kiếm lai ngữ nghĩa + đồ thị."
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "Bạn có thể định cấu hình một phím tắt chung cho cài đặt này <SettingsLink>trong tùy chọn IDE của bạn</SettingsLink>.",

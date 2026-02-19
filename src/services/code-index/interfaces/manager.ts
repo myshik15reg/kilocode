@@ -80,6 +80,10 @@ export type EmbedderProvider =
 	| "bedrock"
 	| "openrouter"
 
+// kilocode_change start
+export type RerankerProvider = "bge-reranker-v2-m3"
+// kilocode_change end
+
 export interface IndexProgressUpdate {
 	systemStatus: IndexingState
 	message?: string

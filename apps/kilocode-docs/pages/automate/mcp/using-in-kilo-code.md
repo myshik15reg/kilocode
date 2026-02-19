@@ -1,25 +1,14 @@
 ---
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/mcp/using-mcp-in-kilo-code.md
-title: Using MCP in AlfaCode assistant
-sidebar_label: Using MCP in AlfaCode assistant
-=======
-title: "Using MCP in Kilo Code"
-description: "How to use MCP servers in Kilo Code"
->>>>>>> origin/main:apps/kilocode-docs/pages/automate/mcp/using-in-kilo-code.md
+title: "Using MCP in AlfaCode assistant"
+sidebar_label: "Using MCP in AlfaCode assistant"
+description: "How to configure and use MCP servers in AlfaCode assistant"
 ---
 
 # Using MCP in AlfaCode assistant
 
 Model Context Protocol (MCP) extends AlfaCode assistant's capabilities by connecting to external tools and services. This guide covers everything you need to know about using MCP with AlfaCode assistant.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/mcp/using-mcp-in-kilo-code.md
-<YouTubeEmbed
-  url="https://youtu.be/6O9RQoQRX8A"
-  caption="Demostrating MCP installation in AlfaCode assistant"
-/>
-=======
-{% youtube url="https://youtu.be/6O9RQoQRX8A" caption="Demostrating MCP installation in Kilo Code" /%}
->>>>>>> origin/main:apps/kilocode-docs/pages/automate/mcp/using-in-kilo-code.md
+{% youtube url="https://youtu.be/6O9RQoQRX8A" caption="Demonstrating MCP installation in AlfaCode assistant" /%}
 
 ## Configuring MCP Servers
 
@@ -34,11 +23,7 @@ MCP server configurations can be managed at two levels:
 
 You can edit both global and project-level MCP configuration files directly from the AlfaCode assistant settings.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/mcp/using-mcp-in-kilo-code.md
-1. Click the <Codicon name="gear" /> icon in the top navigation of the AlfaCode assistant pane to open `Settings`.
-=======
-1. Click the {% codicon name="gear" /%} icon in the top navigation of the Kilo Code pane to open `Settings`.
->>>>>>> origin/main:apps/kilocode-docs/pages/automate/mcp/using-in-kilo-code.md
+1. Click the {% codicon name="gear" /%} icon in the top navigation of the AlfaCode assistant pane to open `Settings`.
 2. Click the `Agent Behaviour` tab on the left side
 3. Select the `MCP Servers` sub-tab
 4. Click the appropriate button:
@@ -81,7 +66,7 @@ Used for local servers running on your machine:
 - Simpler setup (no HTTP server needed)
 - Runs as a child process on your machine
 
-For more in-depth information about how STDIO transport works, see [STDIO Transport](/docs/features/mcp/server-transports#stdio-transport).
+For more in-depth information about how STDIO transport works, see [STDIO Transport](/docs/automate/mcp/server-transports#stdio-transport).
 
 STDIO configuration example:
 
@@ -140,7 +125,7 @@ Used for remote servers accessed over HTTP/HTTPS:
 - Requires network access
 - Allows centralized deployment and management
 
-For more in-depth information about how SSE transport works, see [SSE Transport](/docs/features/mcp/server-transports#sse-transport).
+For more in-depth information about how SSE transport works, see [SSE Transport](/docs/automate/mcp/server-transports#sse-transport).
 
 SSE configuration example:
 

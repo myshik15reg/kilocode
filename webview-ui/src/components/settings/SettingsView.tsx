@@ -261,6 +261,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 		imageGenerationProvider,
 		openRouterImageApiKey,
 		kiloCodeImageApiKey,
+		litellmImageApiKey,
+		litellmImageBaseUrl,
 		openRouterImageGenerationSelectedModel,
 		reasoningBlockCollapsed,
 		enterBehavior,
@@ -507,6 +509,20 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 		})
 	}, [])
 
+	const setLitellmImageApiKey = useCallback((apiKey: string) => {
+		setCachedState((prevState) => {
+			setChangeDetected(true)
+			return { ...prevState, litellmImageApiKey: apiKey }
+		})
+	}, [])
+
+	const setLitellmImageBaseUrl = useCallback((baseUrl: string) => {
+		setCachedState((prevState) => {
+			setChangeDetected(true)
+			return { ...prevState, litellmImageBaseUrl: baseUrl }
+		})
+	}, [])
+
 	const setImageGenerationSelectedModel = useCallback((model: string) => {
 		setCachedState((prevState) => {
 			if (prevState.openRouterImageGenerationSelectedModel !== model) {
@@ -608,6 +624,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 				imageGenerationProvider,
 				openRouterImageApiKey,
 				openRouterImageGenerationSelectedModel,
+				litellmImageApiKey,
+				litellmImageBaseUrl,
 				experiments,
 				customSupportPrompts,
 				alfaCodeChangeAuthor: alfaCodeChangeAuthor ?? "", // kilocode_change
@@ -640,6 +658,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 			vscode.postMessage({ type: "fastApplyModel", text: fastApplyModel }) // kilocode_change: Fast Apply model selection
 			vscode.postMessage({ type: "fastApplyApiProvider", text: fastApplyApiProvider }) // kilocode_change: Fast Apply model api base url
 			vscode.postMessage({ type: "kiloCodeImageApiKey", text: kiloCodeImageApiKey })
+			vscode.postMessage({ type: "litellmImageApiKey", text: litellmImageApiKey })
+			vscode.postMessage({ type: "litellmImageBaseUrl", text: litellmImageBaseUrl })
 			// kilocode_change start - Auto-purge settings
 			vscode.postMessage({ type: "autoPurgeEnabled", bool: autoPurgeEnabled })
 			vscode.postMessage({ type: "autoPurgeDefaultRetentionDays", value: autoPurgeDefaultRetentionDays })
@@ -1199,41 +1219,14 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 							/>
 						)}
 
-<<<<<<< HEAD
-					{/* Context Management Section */}
-					{activeTab === "contextManagement" && (
-						<ContextManagementSettings
-							autoCondenseContext={autoCondenseContext}
-							autoCondenseContextPercent={autoCondenseContextPercent}
-							contextRoutingEnabled={contextRoutingEnabled}
-							contextRoutingFastThresholdPercent={contextRoutingFastThresholdPercent}
-							contextRoutingDeepThresholdPercent={contextRoutingDeepThresholdPercent}
-							listApiConfigMeta={listApiConfigMeta ?? []}
-							maxOpenTabsContext={maxOpenTabsContext}
-							maxWorkspaceFiles={maxWorkspaceFiles ?? 200}
-							showRooIgnoredFiles={showRooIgnoredFiles}
-							enableSubfolderRules={enableSubfolderRules}
-							maxReadFileLine={maxReadFileLine}
-							maxImageFileSize={maxImageFileSize}
-							maxTotalImageSize={maxTotalImageSize}
-							maxConcurrentFileReads={maxConcurrentFileReads}
-							allowVeryLargeReads={allowVeryLargeReads /* kilocode_change */}
-							profileThresholds={profileThresholds}
-							includeDiagnosticMessages={includeDiagnosticMessages}
-							maxDiagnosticMessages={maxDiagnosticMessages}
-							writeDelayMs={writeDelayMs}
-							includeCurrentTime={includeCurrentTime}
-							includeCurrentCost={includeCurrentCost}
-							maxGitStatusFiles={maxGitStatusFiles}
-							setCachedStateField={setCachedStateField}
-						/>
-					)}
-=======
 						{/* Context Management Section */}
 						{activeTab === "contextManagement" && (
 							<ContextManagementSettings
 								autoCondenseContext={autoCondenseContext}
 								autoCondenseContextPercent={autoCondenseContextPercent}
+								contextRoutingEnabled={contextRoutingEnabled ?? false} // kilocode_change
+								contextRoutingFastThresholdPercent={contextRoutingFastThresholdPercent ?? 50} // kilocode_change
+								contextRoutingDeepThresholdPercent={contextRoutingDeepThresholdPercent ?? 80} // kilocode_change
 								listApiConfigMeta={listApiConfigMeta ?? []}
 								maxOpenTabsContext={maxOpenTabsContext}
 								maxWorkspaceFiles={maxWorkspaceFiles ?? 200}
@@ -1254,7 +1247,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
->>>>>>> origin/main
 
 						{/* Terminal Section */}
 						{activeTab === "terminal" && (
@@ -1282,21 +1274,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 
 						{/*kilocode_change: removed: MCP Section */}
 
-<<<<<<< HEAD
-					{/* Prompts Section */}
-					{activeTab === "prompts" && (
-						<PromptsSettings
-							customSupportPrompts={customSupportPrompts || {}}
-							setCustomSupportPrompts={setCustomSupportPromptsField}
-							includeTaskHistoryInEnhance={includeTaskHistoryInEnhance}
-							setIncludeTaskHistoryInEnhance={(value) =>
-								setCachedStateField("includeTaskHistoryInEnhance", value)
-							}
-							alfaCodeChangeAuthor={alfaCodeChangeAuthor} // kilocode_change
-							setAlfaCodeChangeAuthor={(value) => setCachedStateField("alfaCodeChangeAuthor", value)} // kilocode_change
-						/>
-					)}
-=======
 						{/* Prompts Section */}
 						{renderTab === "prompts" && (
 							<PromptsSettings
@@ -1306,9 +1283,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 								setIncludeTaskHistoryInEnhance={(value) =>
 									setCachedStateField("includeTaskHistoryInEnhance", value)
 								}
+								alfaCodeChangeAuthor={alfaCodeChangeAuthor} // kilocode_change
+								setAlfaCodeChangeAuthor={(value) => setCachedStateField("alfaCodeChangeAuthor", value)} // kilocode_change
 							/>
 						)}
->>>>>>> origin/main
 
 						{/* UI Section */}
 						{renderTab === "ui" && (
@@ -1335,12 +1313,16 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 								imageGenerationProvider={imageGenerationProvider}
 								openRouterImageApiKey={openRouterImageApiKey as string | undefined}
 								kiloCodeImageApiKey={kiloCodeImageApiKey}
+								litellmImageApiKey={litellmImageApiKey}
+								litellmImageBaseUrl={litellmImageBaseUrl}
 								openRouterImageGenerationSelectedModel={
 									openRouterImageGenerationSelectedModel as string | undefined
 								}
 								setImageGenerationProvider={setImageGenerationProvider}
 								setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 								setKiloCodeImageApiKey={setKiloCodeImageApiKey}
+								setLitellmImageApiKey={setLitellmImageApiKey}
+								setLitellmImageBaseUrl={setLitellmImageBaseUrl}
 								setImageGenerationSelectedModel={setImageGenerationSelectedModel}
 								currentProfileKilocodeToken={apiConfiguration.kilocodeToken}
 							/>

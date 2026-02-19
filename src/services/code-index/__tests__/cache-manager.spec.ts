@@ -70,6 +70,10 @@ describe("CacheManager", () => {
 				mockContext.globalStorageUri,
 				`roo-index-cache-${expectedHash}.json`,
 			)
+			expect(vscode.Uri.joinPath).toHaveBeenCalledWith(
+				mockContext.globalStorageUri,
+				`roo-neo4j-index-cache-${expectedHash}.json`,
+			)
 		})
 
 		it("should set up debounced save function", () => {
@@ -81,7 +85,9 @@ describe("CacheManager", () => {
 		it("should load existing cache file successfully", async () => {
 			const mockCache = { "file1.ts": "hash1", "file2.ts": "hash2" }
 			const mockBuffer = Buffer.from(JSON.stringify(mockCache))
-			;(vscode.workspace.fs.readFile as Mock).mockResolvedValue(mockBuffer)
+			;(vscode.workspace.fs.readFile as Mock)
+				.mockResolvedValueOnce(mockBuffer)
+				.mockResolvedValueOnce(Buffer.from(JSON.stringify({ "file1.ts": "neo-hash" })))
 
 			await cacheManager.initialize()
 
@@ -90,11 +96,14 @@ describe("CacheManager", () => {
 		})
 
 		it("should handle missing cache file by creating empty cache", async () => {
-			;(vscode.workspace.fs.readFile as Mock).mockRejectedValue(new Error("File not found"))
+			;(vscode.workspace.fs.readFile as Mock)
+				.mockRejectedValueOnce(new Error("File not found"))
+				.mockRejectedValueOnce(new Error("File not found"))
 
 			await cacheManager.initialize()
 
 			expect(cacheManager.getAllHashes()).toEqual({})
+			expect(cacheManager.getAllNeo4jHashes()).toEqual({})
 		})
 	})
 
@@ -132,6 +141,19 @@ describe("CacheManager", () => {
 
 			// Original should remain unchanged
 			expect(cacheManager.getHash(filePath)).toBe(hash)
+		})
+
+		it("should update and delete Neo4j hash independently from vector hash cache", () => {
+			cacheManager.updateHash("vector.ts", "vector-hash")
+			cacheManager.updateNeo4jHash("neo4j.ts", "neo-hash")
+
+			expect(cacheManager.getHash("vector.ts")).toBe("vector-hash")
+			expect(cacheManager.getNeo4jHash("neo4j.ts")).toBe("neo-hash")
+
+			cacheManager.deleteNeo4jHash("neo4j.ts")
+
+			expect(cacheManager.getHash("vector.ts")).toBe("vector-hash")
+			expect(cacheManager.getNeo4jHash("neo4j.ts")).toBeUndefined()
 		})
 	})
 
@@ -191,6 +213,17 @@ describe("CacheManager", () => {
 			)
 
 			consoleErrorSpy.mockRestore()
+		})
+
+		it("should clear Neo4j cache file and reset Neo4j state", async () => {
+			cacheManager.updateNeo4jHash("neo4j.ts", "hash")
+			;(safeWriteJson as Mock).mockClear()
+			;(safeWriteJson as Mock).mockResolvedValue(undefined)
+
+			await cacheManager.clearNeo4jCacheFile()
+
+			expect(safeWriteJson).toHaveBeenCalledWith(mockCachePath.fsPath, {})
+			expect(cacheManager.getAllNeo4jHashes()).toEqual({})
 		})
 	})
 })

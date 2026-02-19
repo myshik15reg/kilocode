@@ -127,23 +127,13 @@ When you start a task in AlfaCode assistant:
 
 AGENTS.md works alongside AlfaCode assistant's other configuration systems:
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/agent-behavior/agents-md.md
-| Feature                                                        | Scope   | Location                  | Purpose                                    | Priority    |
-| -------------------------------------------------------------- | ------- | ------------------------- | ------------------------------------------ | ----------- |
-| **[Mode-specific Custom Rules](/agent-behavior/custom-rules)** | Project | `.kilocode/rules-{mode}/` | Mode-specific rules and constraints        | 1 (Highest) |
-| **[Custom Rules](/agent-behavior/custom-rules)**               | Project | `.kilocode/rules/`        | AlfaCode assistant-specific rules and constraints   | 2           |
-| **AGENTS.md**                                                  | Project | Project root or subfolder | Cross-tool standard for project guidelines | 3           |
-| **[Global Custom Rules](/agent-behavior/custom-rules)**        | Global  | `~/.kilocode/rules/`      | Global AlfaCode assistant rules                     | 4           |
-| **[Custom Instructions](/agent-behavior/custom-instructions)** | Global  | IDE settings              | Personal preferences across all projects   | 5 (Lowest)  |
-=======
-| Feature                                                             | Scope   | Location                  | Purpose                                    | Priority    |
-| ------------------------------------------------------------------- | ------- | ------------------------- | ------------------------------------------ | ----------- |
-| **[Mode-specific Custom Rules](/docs/agent-behavior/custom-rules)** | Project | `.kilocode/rules-{mode}/` | Mode-specific rules and constraints        | 1 (Highest) |
-| **[Custom Rules](/docs/agent-behavior/custom-rules)**               | Project | `.kilocode/rules/`        | Kilo Code-specific rules and constraints   | 2           |
-| **AGENTS.md**                                                       | Project | Project root or subfolder | Cross-tool standard for project guidelines | 3           |
-| **[Global Custom Rules](/docs/agent-behavior/custom-rules)**        | Global  | `~/.kilocode/rules/`      | Global Kilo Code rules                     | 4           |
-| **[Custom Instructions](/docs/agent-behavior/custom-instructions)** | Global  | IDE settings              | Personal preferences across all projects   | 5 (Lowest)  |
->>>>>>> origin/main:apps/kilocode-docs/pages/customize/agents-md.md
+| Feature                                                        | Scope   | Location                  | Purpose                                      | Priority    |
+| -------------------------------------------------------------- | ------- | ------------------------- | -------------------------------------------- | ----------- |
+| **[Mode-specific Rules](/docs/customize/custom-rules)**        | Project | `.kilocode/rules-{mode}/` | Mode-specific rules and constraints          | 1 (Highest) |
+| **[Custom Rules](/docs/customize/custom-rules)**               | Project | `.kilocode/rules/`        | AlfaCode assistant-specific rules/guardrails | 2           |
+| **AGENTS.md**                                                  | Project | Project root or subfolder | Cross-tool standard for project guidelines   | 3           |
+| **[Global Custom Rules](/docs/customize/custom-rules)**        | Global  | `~/.kilocode/rules/`      | Global AlfaCode assistant rules/guardrails   | 4           |
+| **[Custom Instructions](/docs/customize/custom-instructions)** | Global  | IDE settings              | Personal preferences across all projects     | 5 (Lowest)  |
 
 ### Enabling/Disabling AGENTS.md
 
@@ -157,17 +147,10 @@ AGENTS.md support is **enabled by default** in AlfaCode assistant. To disable it
 
 ## Related Features
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/agent-behavior/agents-md.md
-- **[Custom Rules](/agent-behavior/custom-rules)** - AlfaCode assistant-specific rules with more control
-- **[Custom Modes](/agent-behavior/custom-modes)** - Specialized workflows with specific permissions
-- **[Custom Instructions](/agent-behavior/custom-instructions)** - Personal preferences across all projects
-- **[Migrating from Cursor or Windsurf](/advanced-usage/migrating-from-cursor-windsurf)** - Migration guide for other tools
-=======
-- **[Custom Rules](/docs/agent-behavior/custom-rules)** - Kilo Code-specific rules with more control
-- **[Custom Modes](/docs/agent-behavior/custom-modes)** - Specialized workflows with specific permissions
-- **[Custom Instructions](/docs/agent-behavior/custom-instructions)** - Personal preferences across all projects
-- **[Migrating from Cursor or Windsurf](/docs/advanced-usage/migrating-from-cursor-windsurf)** - Migration guide for other tools
->>>>>>> origin/main:apps/kilocode-docs/pages/customize/agents-md.md
+- **[Custom Rules](/docs/customize/custom-rules)** - AlfaCode assistant-specific rules with more control
+- **[Custom Modes](/docs/customize/custom-modes)** - Specialized workflows with specific permissions
+- **[Custom Instructions](/docs/customize/custom-instructions)** - Personal preferences across all projects
+- **[Migrating from Cursor or Windsurf](/docs/getting-started/migrating)** - Migration guide for other tools
 
 ## External Resources
 

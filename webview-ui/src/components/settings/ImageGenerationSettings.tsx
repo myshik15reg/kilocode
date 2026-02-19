@@ -17,6 +17,10 @@ interface ImageGenerationSettingsProps {
 	kiloCodeImageApiKey?: string
 	setKiloCodeImageApiKey: (apiKey: string) => void
 	currentProfileKilocodeToken?: string
+	litellmImageApiKey?: string
+	setLitellmImageApiKey: (apiKey: string) => void
+	litellmImageBaseUrl?: string
+	setLitellmImageBaseUrl: (baseUrl: string) => void
 	// kilocode_change end
 }
 
@@ -33,6 +37,10 @@ export const ImageGenerationSettings = ({
 	kiloCodeImageApiKey,
 	setKiloCodeImageApiKey,
 	currentProfileKilocodeToken,
+	litellmImageApiKey,
+	setLitellmImageApiKey,
+	litellmImageBaseUrl,
+	setLitellmImageBaseUrl,
 	// kilocode_change end
 }: ImageGenerationSettingsProps) => {
 	const { t } = useAppTranslation()
@@ -51,7 +59,29 @@ export const ImageGenerationSettings = ({
 		if (currentProvider !== "openrouter" && openRouterImageApiKey) {
 			setOpenRouterImageApiKey("")
 		}
-	}, [enabled, currentProvider, openRouterImageApiKey, setOpenRouterImageApiKey])
+		if (currentProvider !== "kilocode" && kiloCodeImageApiKey) {
+			setKiloCodeImageApiKey("")
+		}
+		if (currentProvider !== "litellm") {
+			if (litellmImageApiKey) {
+				setLitellmImageApiKey("")
+			}
+			if (litellmImageBaseUrl) {
+				setLitellmImageBaseUrl("")
+			}
+		}
+	}, [
+		enabled,
+		currentProvider,
+		openRouterImageApiKey,
+		setOpenRouterImageApiKey,
+		kiloCodeImageApiKey,
+		setKiloCodeImageApiKey,
+		litellmImageApiKey,
+		setLitellmImageApiKey,
+		litellmImageBaseUrl,
+		setLitellmImageBaseUrl,
+	])
 	// kilocode_change end
 
 	const availableModels = useMemo(() => {
@@ -60,6 +90,9 @@ export const ImageGenerationSettings = ({
 
 	// Derive the current model value - either from props or first available
 	const currentModel = useMemo(() => {
+		if (currentProvider === "litellm") {
+			return "gemini-3-pro-image"
+		}
 		// If we have a stored model, verify it exists for the current provider
 		// (check both value and provider since some models have duplicate values)
 		if (openRouterImageGenerationSelectedModel) {
@@ -84,6 +117,9 @@ export const ImageGenerationSettings = ({
 		// Smart model selection when switching providers:
 		// 1. If current model exists for new provider (same model name), keep it
 		// 2. Otherwise, switch to first available model for new provider
+		if (newProvider === "litellm") {
+			return
+		}
 		const providerModels = IMAGE_GENERATION_MODELS.filter((m) => m.provider === newProvider)
 		if (providerModels.length > 0) {
 			// Check if current model exists for new provider
@@ -109,12 +145,25 @@ export const ImageGenerationSettings = ({
 		setKiloCodeImageApiKey(value)
 	}
 
+	const handleLitellmApiKeyChange = (value: string) => {
+		setLitellmImageApiKey(value)
+	}
+
+	const handleLitellmBaseUrlChange = (value: string) => {
+		setLitellmImageBaseUrl(value)
+	}
+
 	// Handle model selection changes
 	const handleModelChange = (value: string) => {
 		setImageGenerationSelectedModel(value)
 	}
 
-	const isConfigured = currentProvider === "openrouter" ? openRouterImageApiKey : kiloCodeImageApiKey // kilocode_change
+	const isConfigured =
+		currentProvider === "openrouter"
+			? openRouterImageApiKey
+			: currentProvider === "litellm"
+				? litellmImageApiKey && litellmImageBaseUrl
+				: kiloCodeImageApiKey // kilocode_change
 
 	return (
 		<div className="space-y-4">
@@ -142,6 +191,9 @@ export const ImageGenerationSettings = ({
 							className="w-full">
 							<VSCodeOption value="kilocode" className="py-2 px-3">
 								Kilo Gateway
+							</VSCodeOption>
+							<VSCodeOption value="litellm" className="py-2 px-3">
+								LiteLLM
 							</VSCodeOption>
 							<VSCodeOption value="openrouter" className="py-2 px-3">
 								OpenRouter
@@ -178,7 +230,7 @@ export const ImageGenerationSettings = ({
 
 					{
 						// kilocode_change start
-						<div style={{ display: currentProvider === "openrouter" ? "none" : undefined }}>
+						<div style={{ display: currentProvider === "kilocode" ? undefined : "none" }}>
 							<label className="block font-medium mb-1">
 								{t("settings:experimental.IMAGE_GENERATION.kiloCodeApiKeyLabel")}
 							</label>
@@ -214,6 +266,38 @@ export const ImageGenerationSettings = ({
 						// kilocode_change end
 					}
 
+					{/* LiteLLM Configuration */}
+					{currentProvider === "litellm" && (
+						<div className="space-y-2">
+							<div>
+								<label className="block font-medium mb-1">
+									{t("settings:experimental.IMAGE_GENERATION.litellmApiKeyLabel")}
+								</label>
+								<VSCodeTextField
+									value={litellmImageApiKey || ""}
+									onInput={(e: any) => handleLitellmApiKeyChange(e.target.value)}
+									placeholder={t("settings:experimental.IMAGE_GENERATION.litellmApiKeyPlaceholder")}
+									className="w-full"
+									type="password"
+								/>
+							</div>
+							<div>
+								<label className="block font-medium mb-1">
+									{t("settings:experimental.IMAGE_GENERATION.litellmBaseUrlLabel")}
+								</label>
+								<VSCodeTextField
+									value={litellmImageBaseUrl || ""}
+									onInput={(e: any) => handleLitellmBaseUrlChange(e.target.value)}
+									placeholder={t("settings:experimental.IMAGE_GENERATION.litellmBaseUrlPlaceholder")}
+									className="w-full"
+								/>
+							</div>
+							<p className="text-vscode-descriptionForeground text-xs">
+								{t("settings:experimental.IMAGE_GENERATION.litellmDescription")}
+							</p>
+						</div>
+					)}
+
 					{/* API Key Configuration (only for OpenRouter) */}
 					{currentProvider === "openrouter" && (
 						<div>
@@ -241,24 +325,26 @@ export const ImageGenerationSettings = ({
 					)}
 
 					{/* Model Selection */}
-					<div>
-						<label className="block font-medium mb-1">
-							{t("settings:experimental.IMAGE_GENERATION.modelSelectionLabel")}
-						</label>
-						<VSCodeDropdown
-							value={currentModel}
-							onChange={(e: any) => handleModelChange(e.target.value)}
-							className="w-full">
-							{availableModels.map((model) => (
-								<VSCodeOption key={model.value} value={model.value} className="py-2 px-3">
-									{model.label}
-								</VSCodeOption>
-							))}
-						</VSCodeDropdown>
-						<p className="text-vscode-descriptionForeground text-xs mt-1">
-							{t("settings:experimental.IMAGE_GENERATION.modelSelectionDescription")}
-						</p>
-					</div>
+					{currentProvider !== "litellm" && (
+						<div>
+							<label className="block font-medium mb-1">
+								{t("settings:experimental.IMAGE_GENERATION.modelSelectionLabel")}
+							</label>
+							<VSCodeDropdown
+								value={currentModel}
+								onChange={(e: any) => handleModelChange(e.target.value)}
+								className="w-full">
+								{availableModels.map((model) => (
+									<VSCodeOption key={model.value} value={model.value} className="py-2 px-3">
+										{model.label}
+									</VSCodeOption>
+								))}
+							</VSCodeDropdown>
+							<p className="text-vscode-descriptionForeground text-xs mt-1">
+								{t("settings:experimental.IMAGE_GENERATION.modelSelectionDescription")}
+							</p>
+						</div>
+					)}
 
 					{/* Status Message */}
 					{enabled && !isConfigured && (

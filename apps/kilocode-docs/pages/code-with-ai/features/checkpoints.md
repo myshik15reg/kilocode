@@ -31,11 +31,7 @@ Access checkpoint settings in AlfaCode assistant settings under the "Checkpoints
 1. Open Settings by clicking the gear icon {% codicon name="gear" /%} → Checkpoints
 2. Check or uncheck the "Enable automatic checkpoints" checkbox
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/checkpoints.md
- <img src="/docs/img/checkpoints/checkpoints.png" alt="Checkpoint settings in AlfaCode assistant configuration" width="500" />
-=======
-    {% image src="/docs/img/checkpoints/checkpoints.png" alt="Checkpoint settings in Kilo Code configuration" width="500" /%}
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/features/checkpoints.md
+{% image src="/docs/img/checkpoints/checkpoints.png" alt="Checkpoint settings in AlfaCode assistant" width="500" /%}
 
 ## How Checkpoints Work
 

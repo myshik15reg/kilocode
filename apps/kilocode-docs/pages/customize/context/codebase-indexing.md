@@ -5,15 +5,9 @@ description: "Index your codebase for improved AI understanding"
 
 # Codebase Indexing
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/codebase-indexing.md
-<YouTubeEmbed
-  url="https://www.youtube.com/watch?v=dj59Vi83oDw"
-/>
+{% youtube url="https://www.youtube.com/watch?v=dj59Vi83oDw" caption="Codebase Indexing overview" /%}
 
 Codebase Indexing enables semantic code search across your entire project using AI embeddings. Instead of searching for exact text matches, it understands the _meaning_ of your queries, helping AlfaCode assistant find relevant code even when you don't know specific function names or file locations.
-=======
-Codebase Indexing enables semantic code search across your entire project using AI embeddings. Instead of searching for exact text matches, it understands the _meaning_ of your queries, helping Kilo Code find relevant code even when you don't know specific function names or file locations.
->>>>>>> origin/main:apps/kilocode-docs/pages/customize/context/codebase-indexing.md
 
 {% image src="/docs/img/codebase-indexing/codebase-indexing.png" alt="Codebase Indexing Settings" width="800" caption="Codebase Indexing Settings" /%}
 
@@ -24,11 +18,7 @@ When enabled, the indexing system:
 1. **Parses your code** using Tree-sitter to identify semantic blocks (functions, classes, methods)
 2. **Creates embeddings** of each code block using AI models
 3. **Stores vectors** in a Qdrant database for fast similarity search
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/codebase-indexing.md
-4. **Provides the [`codebase_search`](/advanced-usage/available-tools/codebase-search) tool** to AlfaCode assistant for intelligent code discovery
-=======
-4. **Provides the [`codebase_search`](/docs/advanced-usage/available-tools/codebase-search) tool** to Kilo Code for intelligent code discovery
->>>>>>> origin/main:apps/kilocode-docs/pages/customize/context/codebase-indexing.md
+4. **Provides the [`codebase_search`](/docs/automate/tools/codebase-search) tool** to AlfaCode assistant for intelligent code discovery
 
 This enables natural language queries like "user authentication logic" or "database connection handling" to find relevant code across your entire project.
 
@@ -109,7 +99,7 @@ For team or production use:
 
 ## Configuration
 
-1. Open AlfaCode assistant settings (<Codicon name="gear" /> icon)
+1. Open AlfaCode assistant settings ({% codicon name="gear" /%} icon)
 2. Navigate to **Codebase Indexing** section
 3. Enable **"Enable Codebase Indexing"** using the toggle switch
 4. Configure your embedding provider:
@@ -201,11 +191,7 @@ The indexer automatically excludes:
 
 ## Using the Search Feature
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/codebase-indexing.md
-Once indexed, AlfaCode assistant can use the [`codebase_search`](/advanced-usage/available-tools/codebase-search) tool to find relevant code:
-=======
-Once indexed, Kilo Code can use the [`codebase_search`](/docs/advanced-usage/available-tools/codebase-search) tool to find relevant code:
->>>>>>> origin/main:apps/kilocode-docs/pages/customize/context/codebase-indexing.md
+Once indexed, AlfaCode assistant can use the [`codebase_search`](/docs/automate/tools/codebase-search) tool to find relevant code:
 
 **Example Queries:**
 

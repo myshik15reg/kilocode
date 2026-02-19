@@ -61,10 +61,14 @@ export const globalSettingsSchema = z.object({
 	dismissedUpsells: z.array(z.string()).optional(),
 
 	// Image generation settings (experimental) - flattened for simplicity
-	imageGenerationProvider: z.enum(["openrouter", "kilocode"]).optional(), // kilocode_change: Updated from "roo" to "kilocode"
+	imageGenerationProvider: z.enum(["openrouter", "kilocode", "litellm"]).optional(), // kilocode_change: add litellm
 	openRouterImageApiKey: z.string().optional(),
 	openRouterImageGenerationSelectedModel: z.string().optional(),
 	kiloCodeImageApiKey: z.string().optional(),
+	// kilocode_change start: LiteLLM image generation settings
+	litellmImageApiKey: z.string().optional(),
+	litellmImageBaseUrl: z.string().optional(),
+	// kilocode_change end
 
 	condensingApiConfigId: z.string().optional(),
 	customCondensingPrompt: z.string().optional(),
@@ -305,6 +309,7 @@ export const SECRET_STATE_KEYS = [
 	"codebaseIndexMistralApiKey",
 	"codebaseIndexVercelAiGatewayApiKey",
 	"codebaseIndexOpenRouterApiKey",
+	"codebaseIndexRerankApiKey",
 	"codebaseIndexNeo4jPassword",
 	"huggingFaceApiKey",
 	"sambaNovaApiKey",
@@ -321,6 +326,9 @@ export const SECRET_STATE_KEYS = [
 export const GLOBAL_SECRET_KEYS = [
 	"openRouterImageApiKey", // For image generation
 	"kiloCodeImageApiKey",
+	// kilocode_change start: LiteLLM image generation secrets
+	"litellmImageApiKey",
+	// kilocode_change end
 ] as const
 
 // Type for the actual secret storage keys

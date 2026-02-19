@@ -20,11 +20,7 @@ Unbound allows you configure a list of supported models in your application, and
 
 ## Configuration in AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/unbound.md
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/unbound.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "Unbound" from the "API Provider" dropdown.
 3.  **Enter API Key:** Paste your Unbound API key into the "Unbound API Key" field.
 4.  **Select Model:** Choose your desired model from the "Model" dropdown.

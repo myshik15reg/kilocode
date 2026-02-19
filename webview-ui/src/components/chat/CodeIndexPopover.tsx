@@ -12,15 +12,13 @@ import {
 import * as ProgressPrimitive from "@radix-ui/react-progress"
 import { AlertTriangle } from "lucide-react"
 
-<<<<<<< HEAD
-import { CODEBASE_INDEX_DEFAULTS, createCodeIndexValidationSchema } from "@roo-code/types"
-import type { ValidationMessages } from "@roo-code/types"
-
-import type { EmbedderProvider } from "@roo/embeddingModels"
-import type { IndexingStatus } from "@roo/ExtensionMessage"
-=======
-import { type IndexingStatus, type EmbedderProvider, CODEBASE_INDEX_DEFAULTS } from "@roo-code/types"
->>>>>>> origin/main
+import {
+	CODEBASE_INDEX_DEFAULTS,
+	createCodeIndexValidationSchema,
+	type EmbedderProvider,
+	type IndexingStatus,
+	type ValidationMessages,
+} from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -52,6 +50,7 @@ import { useRooPortal } from "@src/components/ui/hooks/useRooPortal"
 import { useEscapeKey } from "@src/hooks/useEscapeKey"
 // kilocode_change start
 import { EmbeddingBatchSizeSlider } from "./kilocode/EmbeddingBatchSizeSlider"
+import { EmbedderRpmSlider } from "./kilocode/EmbedderRpmSlider"
 import { MaxBatchRetriesSlider } from "./kilocode/MaxBatchRetriesSlider"
 import { Neo4jSettings } from "./kilocode/Neo4jSettings"
 // kilocode_change end
@@ -92,6 +91,16 @@ interface LocalCodeIndexSettings {
 	codebaseIndexSearchMinScore?: number
 	codebaseIndexEmbeddingBatchSize?: number
 	codebaseIndexScannerMaxBatchRetries?: number
+	codebaseIndexEmbedderRequestsPerMinute?: number // kilocode_change
+	// kilocode_change start
+	codebaseIndexRerankEnabled?: boolean
+	codebaseIndexRerankBaseUrl?: string
+	codebaseIndexRerankModelId?: string
+	codebaseIndexRerankTimeoutMs?: number
+	codebaseIndexRerankCandidateLimit?: number
+	codebaseIndexRerankTopK?: number
+	codebaseIndexRerankApiKey?: string
+	// kilocode_change end
 
 	// Bedrock-specific settings
 	codebaseIndexBedrockRegion?: string
@@ -166,6 +175,16 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 	const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
 	const [saveError, setSaveError] = useState<string | null>(null)
+	const saveErrorResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+	useEffect(() => {
+		return () => {
+			if (saveErrorResetTimeoutRef.current) {
+				clearTimeout(saveErrorResetTimeoutRef.current)
+				saveErrorResetTimeoutRef.current = null
+			}
+		}
+	}, [])
 
 	// Form validation state
 	const [formErrors, setFormErrors] = useState<Record<string, string>>({})
@@ -190,6 +209,16 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexSearchMinScore: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
 		codebaseIndexEmbeddingBatchSize: CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDING_BATCH_SIZE,
 		codebaseIndexScannerMaxBatchRetries: CODEBASE_INDEX_DEFAULTS.DEFAULT_SCANNER_MAX_BATCH_RETRIES,
+		codebaseIndexEmbedderRequestsPerMinute: CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDER_RPM, // kilocode_change
+		// kilocode_change start
+		codebaseIndexRerankEnabled: false,
+		codebaseIndexRerankBaseUrl: "",
+		codebaseIndexRerankModelId: CODEBASE_INDEX_DEFAULTS.DEFAULT_RERANK_MODEL_ID,
+		codebaseIndexRerankTimeoutMs: CODEBASE_INDEX_DEFAULTS.DEFAULT_RERANK_TIMEOUT_MS,
+		codebaseIndexRerankCandidateLimit: CODEBASE_INDEX_DEFAULTS.DEFAULT_RERANK_CANDIDATE_LIMIT,
+		codebaseIndexRerankTopK: CODEBASE_INDEX_DEFAULTS.DEFAULT_RERANK_TOP_K,
+		codebaseIndexRerankApiKey: "",
+		// kilocode_change end
 		codebaseIndexBedrockRegion: "",
 		codebaseIndexBedrockProfile: "",
 		codebaseIndexVectorStoreName: "",
@@ -215,6 +244,15 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	// Current settings state - tracks user changes
 	const [currentSettings, setCurrentSettings] = useState<LocalCodeIndexSettings>(getDefaultSettings())
 
+	// kilocode_change start - Neo4j password draft (SecretStorage, not part of codebaseIndexConfig)
+	// Neo4j password is a secret (must not be stored inside codebaseIndexConfig)
+	const [neo4jPasswordDraft, setNeo4jPasswordDraft] = useState("")
+	const [neo4jPasswordDirty, setNeo4jPasswordDirty] = useState(false)
+	// kilocode_change end
+
+	// Guard against overwriting user input from external state updates (e.g. config refresh)
+	const hasUnsavedChangesRef = useRef(false)
+
 	// Update indexing status from parent
 	useEffect(() => {
 		setIndexingStatus(externalIndexingStatus)
@@ -222,15 +260,12 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 	// Initialize settings from global state
 	useEffect(() => {
-		// kilocode_change start
-		// Don't update settings if we just saved (prevents race condition with state updates)
-		// Skip update if we're currently saving or just saved
-		if (saveStatus === "saving" || saveStatus === "saved") {
-			return
-		}
-		// kilocode_change end
-
 		if (codebaseIndexConfig) {
+			// FIX: code-index-popover-save-blink (TestAnalyzer)
+			// Root cause: this effect re-hydrates settings from non-secret global config, but it also set secret
+			// fields to empty strings. After a successful save, postStateToWebview() triggers a config refresh and
+			// this wiped the just-saved secrets in local state until secret status arrived, producing a visible
+			// "blink"/rollback in the form.
 			const settings = {
 				codebaseIndexEnabled: codebaseIndexConfig.codebaseIndexEnabled ?? true,
 				codebaseIndexQdrantUrl: codebaseIndexConfig.codebaseIndexQdrantUrl || "",
@@ -247,12 +282,30 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					codebaseIndexConfig.codebaseIndexSearchMaxResults ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 				codebaseIndexSearchMinScore:
 					codebaseIndexConfig.codebaseIndexSearchMinScore ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+				// kilocode_change start
+				codebaseIndexRerankEnabled: codebaseIndexConfig.codebaseIndexRerankEnabled ?? false,
+				codebaseIndexRerankBaseUrl: codebaseIndexConfig.codebaseIndexRerankBaseUrl || "",
+				codebaseIndexRerankModelId:
+					codebaseIndexConfig.codebaseIndexRerankModelId ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_RERANK_MODEL_ID,
+				codebaseIndexRerankTimeoutMs:
+					codebaseIndexConfig.codebaseIndexRerankTimeoutMs ??
+					CODEBASE_INDEX_DEFAULTS.DEFAULT_RERANK_TIMEOUT_MS,
+				codebaseIndexRerankCandidateLimit:
+					codebaseIndexConfig.codebaseIndexRerankCandidateLimit ??
+					CODEBASE_INDEX_DEFAULTS.DEFAULT_RERANK_CANDIDATE_LIMIT,
+				codebaseIndexRerankTopK:
+					codebaseIndexConfig.codebaseIndexRerankTopK ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_RERANK_TOP_K,
+				codebaseIndexRerankApiKey: "",
+				// kilocode_change end
 				codebaseIndexEmbeddingBatchSize:
 					codebaseIndexConfig.codebaseIndexEmbeddingBatchSize ??
-						CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDING_BATCH_SIZE,
+					CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDING_BATCH_SIZE,
 				codebaseIndexScannerMaxBatchRetries:
 					codebaseIndexConfig.codebaseIndexScannerMaxBatchRetries ??
-						CODEBASE_INDEX_DEFAULTS.DEFAULT_SCANNER_MAX_BATCH_RETRIES,
+					CODEBASE_INDEX_DEFAULTS.DEFAULT_SCANNER_MAX_BATCH_RETRIES,
+				codebaseIndexEmbedderRequestsPerMinute:
+					codebaseIndexConfig.codebaseIndexEmbedderRequestsPerMinute ??
+					CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDER_RPM, // kilocode_change
 				codebaseIndexBedrockRegion: codebaseIndexConfig.codebaseIndexBedrockRegion || "",
 				codebaseIndexBedrockProfile: codebaseIndexConfig.codebaseIndexBedrockProfile || "",
 				codebaseIndexVectorStoreName: codebaseIndexConfig.codebaseIndexVectorStoreName || "",
@@ -261,6 +314,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				codebaseIndexNeo4jUri: codebaseIndexConfig.codebaseIndexNeo4jUri || "bolt://localhost:7687",
 				codebaseIndexNeo4jUsername: codebaseIndexConfig.codebaseIndexNeo4jUsername || "neo4j",
 				codebaseIndexNeo4jDatabase: codebaseIndexConfig.codebaseIndexNeo4jDatabase || "neo4j",
+				// Secret fields are preserved from previous local state (they're loaded/represented via secret-status)
 				codeIndexOpenAiKey: "",
 				codeIndexQdrantApiKey: "",
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl || "",
@@ -272,13 +326,31 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				codebaseIndexOpenRouterSpecificProvider:
 					codebaseIndexConfig.codebaseIndexOpenRouterSpecificProvider || "",
 			}
-			setInitialSettings(settings)
-			setCurrentSettings(settings)
+			// Only overwrite local state from external config if the user has no unsaved changes.
+			// This prevents "rollback" of local input on save error or other external refreshes.
+			if (!hasUnsavedChangesRef.current) {
+				const preserveSecrets = (prev: LocalCodeIndexSettings): LocalCodeIndexSettings => ({
+					...settings,
+					codeIndexOpenAiKey: prev.codeIndexOpenAiKey ?? "",
+					codeIndexQdrantApiKey: prev.codeIndexQdrantApiKey ?? "",
+					codebaseIndexOpenAiCompatibleApiKey: prev.codebaseIndexOpenAiCompatibleApiKey ?? "",
+					codebaseIndexGeminiApiKey: prev.codebaseIndexGeminiApiKey ?? "",
+					codebaseIndexMistralApiKey: prev.codebaseIndexMistralApiKey ?? "",
+					codebaseIndexVercelAiGatewayApiKey: prev.codebaseIndexVercelAiGatewayApiKey ?? "",
+					codebaseIndexOpenRouterApiKey: prev.codebaseIndexOpenRouterApiKey ?? "",
+					codebaseIndexRerankApiKey: prev.codebaseIndexRerankApiKey ?? "",
+				})
+				setInitialSettings(preserveSecrets)
+				setCurrentSettings(preserveSecrets)
+				// kilocode_change - clear secret draft on config refresh
+				setNeo4jPasswordDraft("")
+				setNeo4jPasswordDirty(false)
+			}
 
 			// Request secret status to check if secrets exist
 			vscode.postMessage({ type: "requestCodeIndexSecretStatus" })
 		}
-	}, [codebaseIndexConfig, saveStatus]) // kilocode_change - Added saveStatus to dependency array
+	}, [codebaseIndexConfig])
 
 	// Request initial indexing status
 	useEffect(() => {
@@ -319,25 +391,74 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				}
 			} else if (event.data.type === "codeIndexSettingsSaved") {
 				if (event.data.success) {
+					if (saveErrorResetTimeoutRef.current) {
+						clearTimeout(saveErrorResetTimeoutRef.current)
+						saveErrorResetTimeoutRef.current = null
+					}
+
 					setSaveStatus("saved")
-					// Update initial settings to match current settings after successful save
-					// This ensures hasUnsavedChanges becomes false
-					const savedSettings = { ...currentSettingsRef.current }
+					setSaveError(null)
+					// FIX: code-index-popover-save-blink (TestAnalyzer)
+					// Root cause: after successful save, the extension posts updated (non-secret) config back to the
+					// webview, which re-hydrates local state and temporarily clears secret inputs.
+					// Normalize secret fields to placeholders immediately so the UI doesn't "blink" or appear to revert.
+					const normalizeSecretValue = (value: string | undefined): string => {
+						if (!value) return ""
+						if (value === SECRET_PLACEHOLDER) return SECRET_PLACEHOLDER
+						return SECRET_PLACEHOLDER
+					}
+					const savedSettings: LocalCodeIndexSettings = {
+						...currentSettingsRef.current,
+						codeIndexOpenAiKey: normalizeSecretValue(currentSettingsRef.current.codeIndexOpenAiKey),
+						codeIndexQdrantApiKey: normalizeSecretValue(currentSettingsRef.current.codeIndexQdrantApiKey),
+						codebaseIndexOpenAiCompatibleApiKey: normalizeSecretValue(
+							currentSettingsRef.current.codebaseIndexOpenAiCompatibleApiKey,
+						),
+						codebaseIndexGeminiApiKey: normalizeSecretValue(
+							currentSettingsRef.current.codebaseIndexGeminiApiKey,
+						),
+						codebaseIndexMistralApiKey: normalizeSecretValue(
+							currentSettingsRef.current.codebaseIndexMistralApiKey,
+						),
+						codebaseIndexVercelAiGatewayApiKey: normalizeSecretValue(
+							currentSettingsRef.current.codebaseIndexVercelAiGatewayApiKey,
+						),
+						codebaseIndexOpenRouterApiKey: normalizeSecretValue(
+							currentSettingsRef.current.codebaseIndexOpenRouterApiKey,
+						),
+						codebaseIndexRerankApiKey: normalizeSecretValue(
+							currentSettingsRef.current.codebaseIndexRerankApiKey,
+						),
+					}
 					setInitialSettings(savedSettings)
-					// Also update current settings to maintain consistency
 					setCurrentSettings(savedSettings)
+					// kilocode_change start - clear secret draft after successful save
+					// Clear Neo4j password draft after successful save
+					setNeo4jPasswordDraft("")
+					setNeo4jPasswordDirty(false)
+					// kilocode_change end
 					// Request secret status to ensure we have the latest state
 					// This is important to maintain placeholder display after save
-
 					vscode.postMessage({ type: "requestCodeIndexSecretStatus" })
-
-					setSaveStatus("idle")
+					// kilocode_change start - refresh Neo4j password status in SecretStorage
+					// Refresh Neo4j secret status (password is stored separately)
+					vscode.postMessage({ type: "getNeo4jPasswordStatus" })
+					// kilocode_change end
 				} else {
+					if (saveErrorResetTimeoutRef.current) {
+						clearTimeout(saveErrorResetTimeoutRef.current)
+						saveErrorResetTimeoutRef.current = null
+					}
+
 					setSaveStatus("error")
 					setSaveError(event.data.error || t("settings:codeIndex.saveError"))
-					// Clear error message after 5 seconds
-					setSaveStatus("idle")
-					setSaveError(null)
+
+					// Keep error visible for a few seconds (prevents "blink")
+					saveErrorResetTimeoutRef.current = setTimeout(() => {
+						setSaveStatus("idle")
+						setSaveError(null)
+						saveErrorResetTimeoutRef.current = null
+					}, 5000)
 				}
 			}
 		}
@@ -345,6 +466,15 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		window.addEventListener("message", handleMessage)
 		return () => window.removeEventListener("message", handleMessage)
 	}, [t, cwd])
+
+	// kilocode_change start - propagate Neo4j password draft changes
+	const handleNeo4jPasswordDraftChange = useCallback((password: unknown) => {
+		// Mark as dirty immediately (same rationale as updateSetting)
+		hasUnsavedChangesRef.current = true
+		setNeo4jPasswordDirty(true)
+		setNeo4jPasswordDraft(typeof password === "string" ? password : "")
+	}, [])
+	// kilocode_change end
 
 	// Listen for secret status
 	useEffect(() => {
@@ -395,13 +525,16 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 							? SECRET_PLACEHOLDER
 							: ""
 					}
+					if (!prev.codebaseIndexRerankApiKey || prev.codebaseIndexRerankApiKey === SECRET_PLACEHOLDER) {
+						updated.codebaseIndexRerankApiKey = secretStatus.hasRerankApiKey ? SECRET_PLACEHOLDER : ""
+					}
 
 					return updated
 				}
 
-				// Only update settings if we're not in the middle of saving
-				// After save is complete (saved status), we still want to update to maintain consistency
-				if (saveStatus === "idle" || saveStatus === "saved") {
+				// Only update settings if we're not in the middle of saving.
+				// In particular, we still want this to run on save error, to keep placeholders accurate.
+				if (saveStatus !== "saving") {
 					setCurrentSettings(updateWithSecrets)
 					setInitialSettings(updateWithSecrets)
 				}
@@ -414,6 +547,11 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 	// Generic comparison function that detects changes between initial and current settings
 	const hasUnsavedChanges = useMemo(() => {
+		// kilocode_change - neo4j password draft counts as unsaved change
+		// NOTE: treat any interaction with the password field as a change (even if value becomes empty)
+		if (neo4jPasswordDirty) {
+			return true
+		}
 		// Get all keys from both objects to handle any field
 		const allKeys = [...Object.keys(initialSettings), ...Object.keys(currentSettings)] as Array<
 			keyof LocalCodeIndexSettings
@@ -439,9 +577,16 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		}
 
 		return false
-	}, [currentSettings, initialSettings])
+	}, [currentSettings, initialSettings, neo4jPasswordDirty])
+
+	useEffect(() => {
+		hasUnsavedChangesRef.current = hasUnsavedChanges
+	}, [hasUnsavedChanges])
 
 	const updateSetting = (key: keyof LocalCodeIndexSettings, value: any) => {
+		// Mark as "dirty" immediately to avoid races where external config refresh overwrites
+		// local input between a user edit and the next effect flush.
+		hasUnsavedChangesRef.current = true
 		setCurrentSettings((prev) => ({ ...prev, [key]: value }))
 		// Clear validation error for this field when user starts typing
 		if (formErrors[key]) {
@@ -466,7 +611,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 		const schema = createCodeIndexValidationSchema(
 			currentSettings.codebaseIndexEmbedderProvider,
-			getValidationMessages(t)
+			getValidationMessages(t),
 		)
 
 		// Prepare data for validation
@@ -481,7 +626,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					key === "codebaseIndexGeminiApiKey" ||
 					key === "codebaseIndexMistralApiKey" ||
 					key === "codebaseIndexVercelAiGatewayApiKey" ||
-					key === "codebaseIndexOpenRouterApiKey"
+					key === "codebaseIndexOpenRouterApiKey" ||
+					key === "codebaseIndexRerankApiKey"
 				) {
 					dataToValidate[key] = "placeholder-valid"
 				}
@@ -535,6 +681,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 			if (confirm) {
 				// Discard changes: Reset to initial settings
 				setCurrentSettings(initialSettings)
+				// kilocode_change - discard secret draft too
+				setNeo4jPasswordDraft("")
+				setNeo4jPasswordDirty(false)
 				setFormErrors({}) // Clear any validation errors
 				confirmDialogHandler.current?.() // Execute the pending action (e.g., close popover)
 			}
@@ -601,8 +750,19 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 			return
 		}
 
+		// If there is a pending error reset timer, cancel it so it can't override the new save flow.
+		if (saveErrorResetTimeoutRef.current) {
+			clearTimeout(saveErrorResetTimeoutRef.current)
+			saveErrorResetTimeoutRef.current = null
+		}
+
 		setSaveStatus("saving")
 		setSaveError(null)
+
+		// FIX: code-index-neo4j-secret-atomic (TestAnalyzer)
+		// Root cause: Neo4j password was previously persisted via a separate message, so SecretStorage failures
+		// were silent and config+secrets were not saved atomically.
+		// We now include the password as part of the atomic save payload (as a secret key).
 
 		// Prepare settings to save
 		const settingsToSave: any = {}
@@ -619,6 +779,13 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 			// Include all other fields, including empty strings (which clear secrets)
 			settingsToSave[key] = value
+		}
+
+		// FIX: code-index-neo4j-secret-atomic (TestAnalyzer)
+		// Root cause: Neo4j password draft lived outside currentSettings and was saved via a separate message.
+		// Include it in the atomic payload so config+secrets either persist together or fail with an explicit error.
+		if (neo4jPasswordDirty) {
+			settingsToSave.codebaseIndexNeo4jPassword = neo4jPasswordDraft
 		}
 
 		// Always include codebaseIndexEnabled to ensure it's persisted
@@ -665,6 +832,10 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				!!currentSettings.codebaseIndexEmbedderModelId,
 		},
 	)
+
+	// kilocode_change start
+	const isRerankEnabled = currentSettings.codebaseIndexRerankEnabled ?? false
+	// kilocode_change end
 
 	const portalContainer = useRooPortal("roo-portal")
 
@@ -1232,50 +1403,6 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 										</>
 									)}
 
-									{/* vectorStoreProviderLabel */}
-									{/* kilocode_change start */}
-									<div className="space-y-2">
-										<label className="text-sm font-medium">
-											{t("settings:codeIndex.vectorStoreProviderLabel")}
-										</label>
-										<Select
-											value={currentSettings.codebaseIndexVectorStoreProvider}
-											onValueChange={(value: "lancedb" | "qdrant") => {
-												updateSetting("codebaseIndexVectorStoreProvider", value)
-											}}>
-											<SelectTrigger className="w-full">
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="qdrant">Qdrant</SelectItem>
-												<SelectItem value="lancedb">LanceDB</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-					
-									{/* Vector Store Name Field */}
-									<div className="space-y-2">
-										<label className="text-sm font-medium">
-											{t("settings:codeIndex.vectorStoreName")}
-										</label>
-										<VSCodeTextField
-											value={currentSettings.codebaseIndexVectorStoreName || ""}
-											onInput={(e: any) =>
-												updateSetting("codebaseIndexVectorStoreName", e.target.value)
-											}
-											placeholder={t("settings:codeIndex.vectorStoreNamePlaceholder")}
-											className={cn("w-full", {
-												"border-vscode-errorForeground": formErrors.codebaseIndexVectorStoreName,
-											})}
-										/>
-										{formErrors.codebaseIndexVectorStoreName && (
-											<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
-												{formErrors.codebaseIndexVectorStoreName}
-											</p>
-										)}
-									</div>
-									{/* kilocode_change end */}
-
 									{currentSettings.codebaseIndexEmbedderProvider === "vercel-ai-gateway" && (
 										<>
 											<div className="space-y-2">
@@ -1553,6 +1680,186 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 										</>
 									)}
 
+									{/* kilocode_change start */}
+									<div className="space-y-3">
+										<div className="flex items-center gap-2">
+											<label className="text-sm font-medium">
+												{t("settings:codeIndex.rerankSectionLabel")}
+											</label>
+											<StandardTooltip content={t("settings:codeIndex.rerankEnableDescription")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+										<VSCodeCheckbox
+											checked={isRerankEnabled}
+											onChange={(e: any) =>
+												updateSetting("codebaseIndexRerankEnabled", e.target.checked)
+											}>
+											<span className="font-medium">
+												{t("settings:codeIndex.rerankEnableLabel")}
+											</span>
+										</VSCodeCheckbox>
+
+										{isRerankEnabled && (
+											<div className="space-y-3">
+												<div className="space-y-2">
+													<label className="text-sm font-medium">
+														{t("settings:codeIndex.openAiCompatibleBaseUrlLabel")}
+													</label>
+													<VSCodeTextField
+														value={currentSettings.codebaseIndexRerankBaseUrl || ""}
+														onInput={(e: any) =>
+															updateSetting("codebaseIndexRerankBaseUrl", e.target.value)
+														}
+														placeholder={t(
+															"settings:codeIndex.openAiCompatibleBaseUrlPlaceholder",
+														)}
+														className="w-full"
+													/>
+												</div>
+
+												<div className="space-y-2">
+													<label className="text-sm font-medium">
+														{t("settings:codeIndex.openAiCompatibleApiKeyLabel")}
+													</label>
+													<VSCodeTextField
+														type="password"
+														value={currentSettings.codebaseIndexRerankApiKey || ""}
+														onInput={(e: any) =>
+															updateSetting("codebaseIndexRerankApiKey", e.target.value)
+														}
+														placeholder={t(
+															"settings:codeIndex.openAiCompatibleApiKeyPlaceholder",
+														)}
+														className="w-full"
+													/>
+													<p className="text-xs text-vscode-descriptionForeground">
+														{t("settings:providers.apiKeyStorageNotice")}
+													</p>
+												</div>
+
+												<div className="space-y-2">
+													<label className="text-sm font-medium">
+														{t("settings:codeIndex.modelLabel")}
+													</label>
+													<VSCodeTextField
+														value={currentSettings.codebaseIndexRerankModelId || ""}
+														onInput={(e: any) =>
+															updateSetting("codebaseIndexRerankModelId", e.target.value)
+														}
+														placeholder={t("settings:codeIndex.modelPlaceholder")}
+														className="w-full"
+													/>
+												</div>
+
+												<div className="space-y-2">
+													<label className="text-sm font-medium">
+														{t("settings:codeIndex.rerankCandidateLimitLabel")}
+													</label>
+													<VSCodeTextField
+														value={
+															currentSettings.codebaseIndexRerankCandidateLimit?.toString() ||
+															""
+														}
+														onInput={(e: any) => {
+															const value = e.target.value
+																? parseInt(e.target.value, 10) || undefined
+																: undefined
+															updateSetting("codebaseIndexRerankCandidateLimit", value)
+														}}
+														placeholder={CODEBASE_INDEX_DEFAULTS.DEFAULT_RERANK_CANDIDATE_LIMIT.toString()}
+														className="w-full"
+													/>
+												</div>
+
+												<div className="space-y-2">
+													<label className="text-sm font-medium">
+														{t("settings:codeIndex.rerankTopKLabel")}
+													</label>
+													<VSCodeTextField
+														value={
+															currentSettings.codebaseIndexRerankTopK?.toString() || ""
+														}
+														onInput={(e: any) => {
+															const value = e.target.value
+																? parseInt(e.target.value, 10) || undefined
+																: undefined
+															updateSetting("codebaseIndexRerankTopK", value)
+														}}
+														placeholder={CODEBASE_INDEX_DEFAULTS.DEFAULT_RERANK_TOP_K.toString()}
+														className="w-full"
+													/>
+												</div>
+
+												<div className="space-y-2">
+													<label className="text-sm font-medium">
+														{t("settings:codeIndex.rerankTimeoutMsLabel")}
+													</label>
+													<VSCodeTextField
+														value={
+															currentSettings.codebaseIndexRerankTimeoutMs?.toString() ||
+															""
+														}
+														onInput={(e: any) => {
+															const value = e.target.value
+																? parseInt(e.target.value, 10) || undefined
+																: undefined
+															updateSetting("codebaseIndexRerankTimeoutMs", value)
+														}}
+														placeholder={CODEBASE_INDEX_DEFAULTS.DEFAULT_RERANK_TIMEOUT_MS.toString()}
+														className="w-full"
+													/>
+												</div>
+											</div>
+										)}
+									</div>
+									{/* kilocode_change end */}
+
+									{/* vectorStoreProviderLabel */}
+									{/* kilocode_change start */}
+									<div className="space-y-2">
+										<label className="text-sm font-medium">
+											{t("settings:codeIndex.vectorStoreProviderLabel")}
+										</label>
+										<Select
+											value={currentSettings.codebaseIndexVectorStoreProvider}
+											onValueChange={(value: "lancedb" | "qdrant") => {
+												updateSetting("codebaseIndexVectorStoreProvider", value)
+											}}>
+											<SelectTrigger className="w-full">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="qdrant">Qdrant</SelectItem>
+												<SelectItem value="lancedb">LanceDB</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+
+									{/* Vector Store Name Field */}
+									<div className="space-y-2">
+										<label className="text-sm font-medium">
+											{t("settings:codeIndex.vectorStoreName")}
+										</label>
+										<VSCodeTextField
+											value={currentSettings.codebaseIndexVectorStoreName || ""}
+											onInput={(e: any) =>
+												updateSetting("codebaseIndexVectorStoreName", e.target.value)
+											}
+											placeholder={t("settings:codeIndex.vectorStoreNamePlaceholder")}
+											className={cn("w-full", {
+												"border-vscode-errorForeground":
+													formErrors.codebaseIndexVectorStoreName,
+											})}
+										/>
+										{formErrors.codebaseIndexVectorStoreName && (
+											<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+												{formErrors.codebaseIndexVectorStoreName}
+											</p>
+										)}
+									</div>
+									{/* kilocode_change end */}
+
 									{/* Qdrant Settings */}
 									{currentSettings.codebaseIndexVectorStoreProvider === "qdrant" && (
 										<>
@@ -1568,7 +1875,6 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 													onBlur={(e: any) => {
 														// Set default Qdrant URL if field is empty
 														if (!e.target.value.trim()) {
-															currentSettings.codebaseIndexQdrantUrl = DEFAULT_QDRANT_URL
 															updateSetting("codebaseIndexQdrantUrl", DEFAULT_QDRANT_URL)
 														}
 													}}
@@ -1607,16 +1913,22 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 											</div>
 										</>
 									)}
-									
+
 									{/* Neo4j Settings */}
 									<Neo4jSettings
 										enabled={currentSettings.codebaseIndexNeo4jEnabled ?? false}
 										uri={currentSettings.codebaseIndexNeo4jUri ?? ""}
 										username={currentSettings.codebaseIndexNeo4jUsername ?? ""}
 										database={currentSettings.codebaseIndexNeo4jDatabase ?? ""}
-										setCachedStateField={(field, value) => updateSetting(field as keyof LocalCodeIndexSettings, value)}
+										// kilocode_change start - secret draft plumbed to child component
+										password={neo4jPasswordDraft}
+										onPasswordChange={handleNeo4jPasswordDraftChange}
+										// kilocode_change end
+										setCachedStateField={(field, value) =>
+											updateSetting(field as keyof LocalCodeIndexSettings, value)
+										}
 									/>
-									
+
 									{/* kilocode_change start */}
 									{/* LanceDB Vector Store Settings */}
 									{currentSettings.codebaseIndexVectorStoreProvider === "lancedb" && (
@@ -1757,7 +2069,14 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 										value={currentSettings.codebaseIndexEmbeddingBatchSize}
 										onChange={(value) => updateSetting("codebaseIndexEmbeddingBatchSize", value)}
 									/>
-					
+
+									<EmbedderRpmSlider
+										value={currentSettings.codebaseIndexEmbedderRequestsPerMinute}
+										onChange={(value) =>
+											updateSetting("codebaseIndexEmbedderRequestsPerMinute", value)
+										}
+									/>
+
 									<MaxBatchRetriesSlider
 										value={currentSettings.codebaseIndexScannerMaxBatchRetries}
 										onChange={(value) =>
@@ -1785,12 +2104,16 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 								{currentSettings.codebaseIndexEnabled &&
 									(indexingStatus.systemStatus === "Error" ||
 										indexingStatus.systemStatus === "Standby") && (
-									<Button
-										onClick={() => vscode.postMessage({ type: "startIndexing" })}
-										disabled={saveStatus === "saving" || hasUnsavedChanges || !currentSettings.codebaseIndexVectorStoreName?.trim()}>
-										{t("settings:codeIndex.startIndexingButton")}
-									</Button>
-								)}
+										<Button
+											onClick={() => vscode.postMessage({ type: "startIndexing" })}
+											disabled={
+												saveStatus === "saving" ||
+												hasUnsavedChanges ||
+												!currentSettings.codebaseIndexVectorStoreName?.trim()
+											}>
+											{t("settings:codeIndex.startIndexingButton")}
+										</Button>
+									)}
 
 								{currentSettings.codebaseIndexEnabled &&
 									(indexingStatus.systemStatus === "Indexed" ||

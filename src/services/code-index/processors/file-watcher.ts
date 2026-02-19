@@ -500,6 +500,14 @@ export class FileWatcher implements IFileWatcher {
 		this._onDidFinishBatchProcessing.fire({
 			processedFiles: batchResults,
 			batchError: overallBatchError,
+			upsertedPaths: overallBatchError
+				? []
+				: successfullyProcessedForUpsert
+						.map((item) => item.path)
+						.filter((filePath) =>
+							batchResults.some((result) => result.path === filePath && result.status === "success"),
+						),
+			deletedPaths: [...pathsToExplicitlyDelete],
 		})
 		this._onBatchProgressUpdate.fire({
 			processedInBatch: totalFilesInBatch,

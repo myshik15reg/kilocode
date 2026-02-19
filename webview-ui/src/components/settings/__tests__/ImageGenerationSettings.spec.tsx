@@ -14,6 +14,8 @@ describe.skip("ImageGenerationSettings", () => {
 	const mockSetImageGenerationProvider = vi.fn()
 	const mockSetOpenRouterImageApiKey = vi.fn()
 	const mockSetKiloCodeImageApiKey = vi.fn()
+	const mockSetLitellmImageApiKey = vi.fn()
+	const mockSetLitellmImageBaseUrl = vi.fn()
 	const mockSetImageGenerationSelectedModel = vi.fn()
 	const mockOnChange = vi.fn()
 
@@ -27,6 +29,8 @@ describe.skip("ImageGenerationSettings", () => {
 		setImageGenerationProvider: mockSetImageGenerationProvider,
 		setOpenRouterImageApiKey: mockSetOpenRouterImageApiKey,
 		setKiloCodeImageApiKey: mockSetKiloCodeImageApiKey,
+		setLitellmImageApiKey: mockSetLitellmImageApiKey,
+		setLitellmImageBaseUrl: mockSetLitellmImageBaseUrl,
 		setImageGenerationSelectedModel: mockSetImageGenerationSelectedModel,
 	}
 

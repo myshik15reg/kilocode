@@ -14,6 +14,7 @@ import type { HybridSearchResult } from "../neo4j/interfaces"
  */
 export class CodeIndexSearchService {
 	private hybridSearchService: HybridSearchService | null = null
+	private rerankAvailability?: { enabled: boolean; configured: boolean; modelId?: string; baseUrl?: string }
 
 	constructor(
 		private readonly configManager: CodeIndexConfigManager,
@@ -26,9 +27,21 @@ export class CodeIndexSearchService {
 			this.hybridSearchService = new HybridSearchService(
 				this.embedder,
 				this.vectorStore,
+				undefined,
+				this.configManager.currentRerankConfig,
 			)
+			this.rerankAvailability = this.hybridSearchService.getRerankAvailability()
 		}
 	}
+
+	// kilocode_change start
+	public updateRerankConfig(rerankConfig?: CodeIndexConfigManager["currentRerankConfig"]): void {
+		if (this.hybridSearchService) {
+			this.hybridSearchService.updateRerankConfig(rerankConfig)
+			this.rerankAvailability = this.hybridSearchService.getRerankAvailability()
+		}
+	}
+	// kilocode_change end
 
 	/**
 	 * Searches the code index for relevant content.
@@ -179,4 +192,17 @@ export class CodeIndexSearchService {
 		}
 		return await this.hybridSearchService.isAvailable()
 	}
+
+	// kilocode_change start
+	public getRerankAvailability():
+		| {
+				enabled: boolean
+				configured: boolean
+				modelId?: string
+				baseUrl?: string
+		  }
+		| undefined {
+		return this.rerankAvailability
+	}
+	// kilocode_change end
 }

@@ -8,12 +8,16 @@ import * as fileUtils from "../../../utils/fs"
 import { formatResponse } from "../../prompts/responses"
 import { EXPERIMENT_IDS } from "../../../shared/experiments"
 import { OpenRouterHandler } from "../../../api/providers/openrouter"
+import { generateImageWithProvider } from "../../../api/providers/utils/image-generation"
 
 // Mock dependencies
 vi.mock("fs/promises")
 vi.mock("../../../utils/pathUtils")
 vi.mock("../../../utils/fs")
 vi.mock("../../../utils/safeWriteJson")
+vi.mock("../../../api/providers/utils/image-generation", () => ({
+	generateImageWithProvider: vi.fn(),
+}))
 // IMPORTANT: Provide a manual mock so other modules (e.g. `kilocode-openrouter.ts`) can
 // safely `extends OpenRouterHandler` during module evaluation.
 vi.mock("../../../api/providers/openrouter", () => {
@@ -219,6 +223,53 @@ describe("generateImageTool", () => {
 						: "/test/workspace/test-image.png"
 				expect(imageData.imagePath).toBe(expectedPath)
 			}
+		})
+	})
+
+	describe("litellm provider", () => {
+		it("should generate an image via LiteLLM", async () => {
+			mockCline.providerRef.deref().getState.mockResolvedValue({
+				experiments: {
+					[EXPERIMENT_IDS.IMAGE_GENERATION]: true,
+				},
+				imageGenerationProvider: "litellm",
+				litellmImageApiKey: "litellm-key",
+				litellmImageBaseUrl: "https://litellm.example.com/v1",
+			})
+
+			vi.mocked(generateImageWithProvider).mockResolvedValue({
+				success: true,
+				imageData: "data:image/png;base64,ZmFrZQ==",
+				imageFormat: "png",
+			})
+
+			const completeBlock: ToolUse = {
+				type: "tool_use",
+				name: "generate_image",
+				params: {
+					prompt: "Generate a test image",
+					path: "test-image.png",
+				},
+				partial: false,
+			}
+
+			await generateImageTool.handle(mockCline as Task, completeBlock as ToolUse<"generate_image">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			expect(generateImageWithProvider).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseURL: "https://litellm.example.com/v1",
+					authToken: "litellm-key",
+					model: "gemini-3-pro-image",
+					prompt: "Generate a test image",
+				}),
+			)
+			expect(mockPushToolResult).toHaveBeenCalled()
 		})
 	})
 

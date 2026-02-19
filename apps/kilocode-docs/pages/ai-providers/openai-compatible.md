@@ -20,11 +20,7 @@ The key to using an OpenAI-compatible provider is to configure two main settings
 2.  **API Key:** This is the secret key you obtain from the provider.
 3.  **Model ID:** This is the model name of the specific model.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/openai-compatible.md
-You'll find these settings in the AlfaCode assistant settings panel (click the <Codicon name="gear" /> icon):
-=======
-You'll find these settings in the Kilo Code settings panel (click the {% codicon name="gear" /%} icon):
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/openai-compatible.md
+You'll find these settings in the AlfaCode assistant settings panel (click the {% codicon name="gear" /%} icon):
 
 - **API Provider:** Select "OpenAI Compatible".
 - **Base URL:** Enter the base URL provided by your chosen provider. **This is crucial.**
@@ -64,7 +60,6 @@ This enhancement allows you to:
 
 **Note:** When using full endpoint URLs, ensure the URL points to the correct chat completions endpoint for your provider.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/openai-compatible.md
 ## Supported Models (for OpenAI Native Endpoint)
 
 While this provider type allows connecting to various endpoints, if you are connecting directly to the official OpenAI API (or an endpoint mirroring it exactly), AlfaCode assistant recognizes the following model IDs based on the `openAiNativeModels` definition in its source code:
@@ -81,8 +76,6 @@ While this provider type allows connecting to various endpoints, if you are conn
 
 **Note:** If you are using a different OpenAI-compatible provider (like Together AI, Anyscale, etc.), the available model IDs will vary. Always refer to your specific provider's documentation for their supported model names.
 
-=======
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/openai-compatible.md
 ## Troubleshooting
 
 - **"Invalid API Key":** Double-check that you've entered the API key correctly.

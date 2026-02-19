@@ -1,14 +1,10 @@
 {
-<<<<<<< HEAD
 	"greeting": "AlfaCode assistant สามารถทำอะไรให้คุณได้บ้าง?",
-=======
-	"greeting": "Kilo Code สามารถทำอะไรให้คุณได้บ้าง?",
 	"costs": {
 		"totalWithSubtasks": "ค่าใช้จ่ายรวม (รวมงานย่อย): ${{cost}}",
 		"total": "ค่าใช้จ่ายรวม: ${{cost}}",
 		"includesSubtasks": "รวมค่าใช้จ่ายงานย่อย"
 	},
->>>>>>> origin/main
 	"task": {
 		"title": "งาน",
 		"seeMore": "ดูเพิ่มเติม",

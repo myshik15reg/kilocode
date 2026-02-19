@@ -54,13 +54,12 @@ import { SettingsSyncService } from "./services/settings-sync/SettingsSyncServic
 import { ManagedIndexer } from "./services/code-index/managed/ManagedIndexer" // kilocode_change
 import { flushModels, getModels, initializeModelCacheRefresh, refreshModels } from "./api/providers/fetchers/modelCache"
 import { kilo_initializeSessionManager } from "./shared/kilocode/cli-sessions/extension/session-manager-utils" // kilocode_change
-<<<<<<< HEAD
 import { ensureWorkflowAiAssetsInstalled } from "./services/alfa-code/WorkflowAssetsInstaller" // kilocode_change
+import { ensureMemoryBankInitialized } from "./services/alfa-code/MemoryBankService" // kilocode_change
 import { refreshWorkflowToggles } from "./core/context/instructions/workflows" // kilocode_change
 import { getWorkspacePath } from "./utils/path" // kilocode_change
-=======
 import { fetchKilocodeNotificationsOnStartup } from "./core/kilocode/webview/webviewMessageHandlerUtils" // kilocode_change
->>>>>>> origin/main
+import { getGlobalRooDirectory } from "./services/roo-config" // kilocode_change
 
 // kilocode_change start
 async function findKilocodeTokenFromAnyProfile(provider: ClineProvider): Promise<string | undefined> {
@@ -225,13 +224,44 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// kilocode_change start: Install WorkFlowAI assets bundle
 	try {
-		const installResult = await ensureWorkflowAiAssetsInstalled({
-			context,
-			extensionPath: context.extensionPath,
-			log: (message) => outputChannel.appendLine(message),
-		})
+		const workflowAssetsPathOverride =
+			vscode.workspace.getConfiguration(Package.name).get<string>("workflowAssetsPath", "") ?? ""
+		const embeddedAssetsRoot = vscode.Uri.joinPath(context.extensionUri, "WorkFlowAI").fsPath
+		const customModesFilePath = await provider.customModesManager.getCustomModesFilePath()
+		const globalKiloDir = getGlobalRooDirectory()
+		const globalCustomModesFilePath = path.join(globalKiloDir, "custom_modes.yaml")
 
-		if (installResult.didInstall) {
+		let installResult: { didInstall: boolean } | null = null
+		try {
+			installResult = await ensureWorkflowAiAssetsInstalled({
+				context,
+				embeddedAssetsRoot,
+				overrideAssetsRoot: workflowAssetsPathOverride,
+				customModesFilePaths: [customModesFilePath, globalCustomModesFilePath],
+				log: (message) => outputChannel.appendLine(message),
+			})
+		} catch (error) {
+			outputChannel.appendLine(
+				`[WorkFlowAI] Failed to install bundled assets: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+
+		// Best-effort auto-init for project Memory Bank (creates .kilocode/memory-bank from global templates).
+		// Must not throw or block activation.
+		try {
+			const workspaceFolders = vscode.workspace.workspaceFolders ?? []
+			for (const folder of workspaceFolders) {
+				await ensureMemoryBankInitialized({
+					projectRoot: folder.uri.fsPath,
+					globalKiloDir,
+					log: (message) => outputChannel.appendLine(message),
+				})
+			}
+		} catch {
+			// Ignore: Memory Bank initialization is a best-effort convenience.
+		}
+
+		if (installResult?.didInstall) {
 			const workspacePath = getWorkspacePath()
 			if (workspacePath) {
 				await refreshWorkflowToggles(context, workspacePath)
@@ -240,6 +270,10 @@ export async function activate(context: vscode.ExtensionContext) {
 			await provider.getSkillsManager()?.discoverSkills()
 			await provider.postRulesDataToWebview()
 			await provider.postSkillsDataToWebview()
+
+			// Refresh custom modes & overall state so WorkFlowAI modes become visible without restart.
+			await provider.customModesManager.getCustomModes()
+			await provider.postStateToWebview()
 		}
 	} catch (error) {
 		outputChannel.appendLine(

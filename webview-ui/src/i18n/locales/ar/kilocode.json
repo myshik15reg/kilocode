@@ -1,14 +1,8 @@
 {
 	"welcome": {
-<<<<<<< HEAD
 		"greeting": "مرحبًا بك في AlfaCode assistant!",
 		"introText1": "AlfaCode assistant وكيل برمجة مدعوم بالذكاء ومفتوح المصدر ومجاني.",
 		"introText2": "يعمل مع أحدث نماذج الذكاء الاصطناعي مثل Claude Sonnet 4.5 وGemini 2.5 Pro وGPT-5 وأكثر من 450 نموذج آخر.",
-=======
-		"greeting": "مرحبًا بك في Kilo Code!",
-		"introText1": "Kilo Code وكيل برمجة مدعوم بالذكاء ومفتوح المصدر ومجاني.",
-		"introText2": "يعمل مع أحدث نماذج الذكاء الاصطناعي مثل Claude Opus 4.5 وGemini 3 Pro وGPT-5.2 وأكثر من 450 نموذج آخر.",
->>>>>>> origin/main
 		"introText3": "أنشئ حسابًا مجانيًا واحصل على 20 دولارًا كرصيد إضافي عند إضافة رصيد لأول مرة.",
 		"ctaButton": "ابدأ الآن",
 		"manualModeButton": "استخدم مفتاح API الخاص بك",
@@ -17,13 +11,9 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "شحن الرصيد",
-<<<<<<< HEAD
 		"lowBalance": "رصيدك في AlfaCode assistant منخفض",
-		"newOrganization": "تستخدم Kilo للعمل؟"
-=======
-		"lowBalance": "رصيدك في Kilo Code منخفض",
+		"newOrganization": "تستخدم AlfaCode assistant للعمل؟",
 		"switchToFreeModel": "التبديل إلى نموذج مجاني بدلاً من ذلك"
->>>>>>> origin/main
 	},
 	"memoryWarning": {
 		"message": "استخدام الذاكرة عند {{percentage}}%. يرجى إعادة تشغيل بيئة التطوير لمنع التعطل."
@@ -56,19 +46,12 @@
 			"scannerMaxBatchRetriesDescription": "الحد الأقصى لعدد المرات التي يتم فيها إعادة محاولة دفعة فاشلة أثناء فحص الدليل. القيم الأعلى تزيد من المرونة ضد الأخطاء المؤقتة لكنها قد تبطئ الفهرسة إذا استمرت الأخطاء. القيم الأقل تفشل بشكل أسرع لكنها قد تتخطى المحتوى عند حدوث مشاكل مؤقتة."
 		},
 		"provider": {
-<<<<<<< HEAD
 			"account": "حساب AlfaCode assistant",
 			"apiKey": "مفتاح AlfaCode assistant API",
 			"login": "سجّل دخولك في AlfaCode assistant",
 			"logout": "تسجيل الخروج من AlfaCode assistant",
-			"automaticFetch": "أحدث النماذج متاحة تلقائيًا في AlfaCode assistant. إذا لم تكن متأكدًا من النموذج الذي تريد اختياره، يعمل AlfaCode assistant بشكل أفضل مع النماذج الموصى بها المدرجة في الأعلى <strong>بخط عريض</strong>.",
-=======
-			"account": "حساب Kilo Code",
-			"apiKey": "مفتاح Kilo Code API",
-			"login": "سجّل دخولك في Kilo Code",
-			"logout": "تسجيل الخروج من Kilo Code",
 			"loginForPremiumModels": "سجّل دخولك للوصول إلى النماذج والميزات المميزة",
->>>>>>> origin/main
+			"automaticFetch": "أحدث النماذج متاحة تلقائيًا في AlfaCode assistant. إذا لم تكن متأكدًا من النموذج الذي تريد اختياره، يعمل AlfaCode assistant بشكل أفضل مع النماذج الموصى بها المدرجة في الأعلى <strong>بخط عريض</strong>.",
 			"providerRouting": {
 				"title": "توجيه المزود",
 				"managedByOrganization": "إدارة توجيه المزود على مستوى المؤسسة",

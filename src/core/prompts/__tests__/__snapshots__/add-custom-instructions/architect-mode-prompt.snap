@@ -523,9 +523,6 @@ When using `new_task`, provide:
 ## Project Context (Memory Bank)
 [MB: NEW PROJECT] - Memory Bank directory exists, but context.md is missing.
 
-Initialize with: /init-memory-bank
-
-
 ====
 
 SYSTEM INFORMATION

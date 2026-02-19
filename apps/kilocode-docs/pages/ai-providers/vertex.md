@@ -18,7 +18,6 @@ AlfaCode assistant supports accessing models through Google Cloud Platform's Ver
     2.  Authenticate using: `gcloud auth application-default login`
 - **Service Account Key (Alternative):** Alternatively, you can authenticate using a Google Cloud Service Account key file. You'll need to generate this key in your GCP project. See the [Google Cloud documentation on creating service account keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/vertex.md
 ## Supported Models
 
 AlfaCode assistant supports the following models through Vertex AI (based on source code):
@@ -49,12 +48,7 @@ Refer to the [Google Cloud documentation on Vertex AI Models](https://cloud.goog
 
 ## Configuration in AlfaCode assistant
 
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-## Configuration in Kilo Code
-
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/vertex.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "GCP Vertex AI" from the "API Provider" dropdown.
 3.  **Configure Authentication:**
     - **If using Application Default Credentials (ADC):** No further action is needed here. ADC will be used automatically if configured correctly (see Prerequisites).

@@ -12,10 +12,12 @@ import { t } from "../../i18n"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { getReadablePath } from "../../utils/path"
+import { fileExistsAtPath } from "../../utils/fs"
 import { countFileLines } from "../../integrations/misc/line-counter"
 import { readLines } from "../../integrations/misc/read-lines"
 import { extractTextFromFile, addLineNumbers, getSupportedBinaryFormats } from "../../integrations/misc/extract-text"
 import { parseSourceCodeDefinitionsForFile } from "../../services/tree-sitter"
+import { getGlobalRooDirectory } from "../../services/roo-config"
 import { parseXml } from "../../utils/xml"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import type { ToolUse } from "../../shared/tools"
@@ -38,12 +40,246 @@ interface FileResult {
 	content?: string
 	error?: string
 	notice?: string
+	resolvedPath?: string
+	resolvedFromGlobal?: boolean
 	lineRanges?: LineRange[]
 	xmlContent?: string
 	nativeContent?: string
 	imageDataUrl?: string
 	feedbackText?: string
 	feedbackImages?: any[]
+}
+
+type GlobalRooPrefix = ".kilocode" | ".roo"
+
+function escapeXml(value: string): string {
+	return value.replace(/[<>&\"]/g, (ch) => {
+		switch (ch) {
+			case "<":
+				return "&lt;"
+			case ">":
+				return "&gt;"
+			case "&":
+				return "&amp;"
+			case '"':
+				return "&quot;"
+			default:
+				return ch
+		}
+	})
+}
+
+function parseRequestedGlobalRooRelPath(rawRelPath: string): { prefix: GlobalRooPrefix; subPath: string } | null {
+	// SECURITY: Never accept null bytes
+	if (rawRelPath.includes("\0")) return null
+
+	// Normalize separators for prefix detection and traversal checks
+	const forward = rawRelPath.replace(/\\/g, "/")
+	const segments = forward.split("/")
+	// SECURITY: Do not allow traversal attempts in the requested path
+	if (segments.some((seg) => seg === "..")) return null
+
+	const normalized = path.posix.normalize(forward)
+
+	const prefix: GlobalRooPrefix | null =
+		normalized === ".kilocode" || normalized.startsWith(".kilocode/")
+			? ".kilocode"
+			: normalized === ".roo" || normalized.startsWith(".roo/")
+				? ".roo"
+				: null
+	if (!prefix) return null
+
+	const subPath = normalized === prefix ? "" : normalized.slice(prefix.length + 1)
+	// SECURITY: Prevent absolute / drive-rooted subpaths (Windows + POSIX)
+	if (path.posix.isAbsolute(subPath) || path.win32.isAbsolute(subPath)) return null
+
+	// kilocode_change: `.kilocode/memory-bank/*` (and legacy `.roo/memory-bank/*`) MUST NOT fallback to global.
+	// This directory is project context and may contain sensitive, project-specific information.
+	const firstSubPathSegment = subPath.split("/")[0]
+	if (firstSubPathSegment === "memory-bank") return null
+
+	return { prefix, subPath }
+}
+
+function resolveGlobalRooFilePath(rawRelPath: string): string | null {
+	const parsed = parseRequestedGlobalRooRelPath(rawRelPath)
+	if (!parsed) return null
+
+	const globalDir = getGlobalRooDirectory()
+	const globalDirResolved = path.resolve(globalDir)
+
+	// `.kilocode/<subpath>` and `.roo/<subpath>` both map to `<globalKiloDir>/<subpath>`
+	const candidate = path.resolve(globalDirResolved, parsed.subPath)
+
+	// SECURITY: Ensure the resolved path is still inside globalDir
+	if (candidate !== globalDirResolved && !candidate.startsWith(globalDirResolved + path.sep)) {
+		return null
+	}
+
+	return candidate
+}
+
+// kilocode_change: Allow global fallback for protocol *templates only*.
+// Workspace `.protocols/*` MUST NOT be resolved from global, except:
+// - `.protocols/README.md`
+// - `.protocols/index.md`
+function resolveGlobalProtocolTemplatePath(rawRelPath: string): string | null {
+	// SECURITY: Never accept null bytes
+	if (rawRelPath.includes("\0")) return null
+
+	// Normalize separators and prevent traversal.
+	const forward = rawRelPath.replace(/\\/g, "/")
+	const segments = forward.split("/")
+	if (segments.some((seg) => seg === "..")) return null
+
+	const normalized = path.posix.normalize(forward)
+	if (normalized !== ".protocols/README.md" && normalized !== ".protocols/index.md") return null
+
+	const filename = path.posix.basename(normalized)
+	const globalDir = getGlobalRooDirectory()
+	const globalDirResolved = path.resolve(globalDir)
+	const candidate = path.resolve(globalDirResolved, "workflowai", "templates", "protocols", filename)
+
+	// SECURITY: Ensure the resolved path is still inside globalDir
+	if (candidate !== globalDirResolved && !candidate.startsWith(globalDirResolved + path.sep)) {
+		return null
+	}
+
+	return candidate
+}
+
+function appendXmlNotice(xmlContent: string, notice: string): string {
+	const idx = xmlContent.lastIndexOf("</file>")
+	if (idx === -1) return xmlContent
+	return `${xmlContent.slice(0, idx)}<notice>${escapeXml(notice)}</notice>${xmlContent.slice(idx)}`
+}
+
+function isMemoryBankRelPath(relPath: string): boolean {
+	const forward = relPath.replace(/\\/g, "/")
+	return (
+		forward === ".kilocode/memory-bank" ||
+		forward.startsWith(".kilocode/memory-bank/") ||
+		forward === ".roo/memory-bank" ||
+		forward.startsWith(".roo/memory-bank/")
+	)
+}
+
+function isEnoentLikeError(error: unknown): boolean {
+	if (!error || typeof error !== "object") return false
+
+	const maybeCode = (error as { code?: unknown }).code
+	if (maybeCode === "ENOENT") return true
+
+	const maybeMessage = (error as { message?: unknown }).message
+	if (typeof maybeMessage !== "string") return false
+
+	const msg = maybeMessage.toLowerCase()
+	return msg.includes("enoent") || msg.includes("no such file") || msg.includes("not found")
+}
+
+const MEMORY_BANK_TEMPLATE_FILES = [
+	"index.md",
+	"brief.md",
+	"product.md",
+	"architecture.md",
+	"tech.md",
+	"context.md",
+] as const
+
+const PROTOCOLS_TEMPLATE_FILES = ["README.md", "index.md"] as const
+
+function isLegacyRooMemoryBankRelPath(relPath: string): boolean {
+	const forward = relPath.replace(/\\/g, "/")
+	return forward === ".roo/memory-bank" || forward.startsWith(".roo/memory-bank/")
+}
+
+async function copyMissingTemplateFiles(options: {
+	templateDir: string
+	destDir: string
+	filenames: readonly string[]
+}): Promise<void> {
+	for (const filename of options.filenames) {
+		const src = path.join(options.templateDir, filename)
+		const dest = path.join(options.destDir, filename)
+
+		try {
+			if (await fileExistsAtPath(dest)) continue
+			if (!(await fileExistsAtPath(src))) continue
+			await fs.copyFile(src, dest)
+		} catch {
+			// Best-effort: never throw.
+			return
+		}
+	}
+}
+
+async function bestEffortScaffoldMemoryBankAndProtocols(projectRoot: string, relPath: string): Promise<void> {
+	// Best-effort scaffold for consuming project: create missing workspace files
+	// from global templates, without overwriting.
+	const globalKiloDir = getGlobalRooDirectory()
+	const templatesRoot = path.resolve(globalKiloDir, "workflowai", "templates")
+	const memoryBankTemplateDir = path.join(templatesRoot, "memory-bank")
+	const protocolsTemplateDir = path.join(templatesRoot, "protocols")
+
+	try {
+		// Memory Bank
+		if (await fileExistsAtPath(memoryBankTemplateDir)) {
+			const destMemoryBankDirs = [path.join(projectRoot, ".kilocode", "memory-bank")]
+			if (isLegacyRooMemoryBankRelPath(relPath)) {
+				// Support legacy `.roo/memory-bank/*` reads by scaffolding the same templates there.
+				destMemoryBankDirs.push(path.join(projectRoot, ".roo", "memory-bank"))
+			}
+
+			for (const destDir of destMemoryBankDirs) {
+				try {
+					await fs.mkdir(destDir, { recursive: true })
+				} catch {
+					// No permissions / read-only workspace.
+					// Best-effort: keep going (still try protocols scaffold).
+					continue
+				}
+
+				await copyMissingTemplateFiles({
+					templateDir: memoryBankTemplateDir,
+					destDir,
+					filenames: MEMORY_BANK_TEMPLATE_FILES,
+				})
+			}
+		}
+
+		// .protocols
+		if (await fileExistsAtPath(protocolsTemplateDir)) {
+			const destProtocolsDir = path.join(projectRoot, ".protocols")
+			try {
+				await fs.mkdir(destProtocolsDir, { recursive: true })
+			} catch {
+				return
+			}
+
+			await copyMissingTemplateFiles({
+				templateDir: protocolsTemplateDir,
+				destDir: destProtocolsDir,
+				filenames: PROTOCOLS_TEMPLATE_FILES,
+			})
+		}
+	} catch {
+		// Best-effort: never throw.
+	}
+}
+
+function getMissingMemoryBankGuidance(relPath: string, error: unknown): string | null {
+	if (!isMemoryBankRelPath(relPath)) return null
+	if (!isEnoentLikeError(error)) return null
+
+	const globalKiloDir = getGlobalRooDirectory()
+	const templateDir = path.resolve(globalKiloDir, "workflowai", "templates", "memory-bank")
+
+	return [
+		"Похоже, в этом проекте отсутствует Memory Bank.",
+		"Создайте Memory Bank в проекте: .kilocode/memory-bank/",
+		`Шаблоны можно скопировать из: ${templateDir}`,
+		"Затем перезагрузите VS Code (Reload Window), чтобы автоинициализация попробовала создать файлы снова.",
+	].join("\n")
 }
 
 export class ReadFileTool extends BaseTool<"read_file"> {
@@ -157,7 +393,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 			for (const fileResult of fileResults) {
 				const relPath = fileResult.path
-				const fullPath = path.resolve(task.cwd, relPath)
+				const workspacePath = path.resolve(task.cwd, relPath)
 
 				if (fileResult.lineRanges) {
 					let hasRangeError = false
@@ -204,6 +440,29 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						continue
 					}
 
+					// kilocode_change: Global fallback resolution.
+					// Rules:
+					// 1) Workspace file always takes precedence.
+					// 2) Allow `.kilocode/*` and legacy `.roo/*` fallback to global *except* `memory-bank/*`.
+					// 3) Allow `.protocols/{README.md,index.md}` fallback to global protocol templates.
+					let resolvedPath = workspacePath
+					let resolvedFromGlobal = false
+
+					const protocolTemplateCandidatePath = resolveGlobalProtocolTemplatePath(relPath)
+					const globalCandidatePath = protocolTemplateCandidatePath ?? resolveGlobalRooFilePath(relPath)
+					if (globalCandidatePath) {
+						const workspaceExists = await fileExistsAtPath(workspacePath)
+						if (!workspaceExists) {
+							const globalExists = await fileExistsAtPath(globalCandidatePath)
+							if (globalExists) {
+								resolvedPath = globalCandidatePath
+								resolvedFromGlobal = true
+							}
+						}
+					}
+					fileResult.resolvedPath = resolvedPath
+					fileResult.resolvedFromGlobal = resolvedFromGlobal
+
 					filesToApprove.push(fileResult)
 				}
 			}
@@ -213,7 +472,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 				const batchFiles = filesToApprove.map((fileResult) => {
 					const relPath = fileResult.path
-					const fullPath = path.resolve(task.cwd, relPath)
+					const fullPath = fileResult.resolvedPath ?? path.resolve(task.cwd, relPath)
 					const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
 
 					let lineSnippet = ""
@@ -295,7 +554,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			} else if (filesToApprove.length === 1) {
 				const fileResult = filesToApprove[0]
 				const relPath = fileResult.path
-				const fullPath = path.resolve(task.cwd, relPath)
+				const fullPath = fileResult.resolvedPath ?? path.resolve(task.cwd, relPath)
 				const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
 				const { maxReadFileLine = 500 /*kilocode_change*/ } = (await task.providerRef.deref()?.getState()) ?? {}
 
@@ -345,15 +604,31 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				maxTotalImageSize = DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
 			} = state ?? {}
 
+			let didAttemptMemoryBankScaffold = false
+
 			for (const fileResult of fileResults) {
 				if (fileResult.status !== "approved") continue
 
 				const relPath = fileResult.path
-				const fullPath = path.resolve(task.cwd, relPath)
+				const fullPath = fileResult.resolvedPath ?? path.resolve(task.cwd, relPath)
+				const fileContextPath = fileResult.resolvedFromGlobal ? fullPath : relPath
 
 				try {
 					// Check if the path is a directory before attempting to read it
-					const stats = await fs.stat(fullPath)
+					let stats: Awaited<ReturnType<typeof fs.stat>>
+					try {
+						stats = await fs.stat(fullPath)
+					} catch (error) {
+						if (isMemoryBankRelPath(relPath) && isEnoentLikeError(error) && !didAttemptMemoryBankScaffold) {
+							didAttemptMemoryBankScaffold = true
+							// FIX: init-memory-bank-autoscaffold (TestAnalyzer)
+							// Root cause: read_file returns ENOENT for missing Memory Bank instead of bootstrapping from templates.
+							await bestEffortScaffoldMemoryBankAndProtocols(task.cwd, relPath)
+							stats = await fs.stat(fullPath) // Retry once
+						} else {
+							throw error
+						}
+					}
 					if (stats.isDirectory()) {
 						const errorMsg = `Cannot read '${relPath}' because it is a directory. To view the contents of a directory, use the list_files tool instead.`
 						updateFileResult(relPath, {
@@ -383,7 +658,10 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 								)
 
 								if (!validationResult.isValid) {
-									await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+									await task.fileContextTracker.trackFileContext(
+										fileContextPath,
+										"read_tool" as RecordSource,
+									)
 									updateFileResult(relPath, {
 										xmlContent: `<file><path>${relPath}</path>\n<notice>${validationResult.notice}</notice>\n</file>`,
 										nativeContent: `File: ${relPath}\nNote: ${validationResult.notice}`,
@@ -393,7 +671,10 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 								const imageResult = await processImageFile(fullPath)
 								imageMemoryTracker.addMemoryUsage(imageResult.sizeInMB)
-								await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+								await task.fileContextTracker.trackFileContext(
+									fileContextPath,
+									"read_tool" as RecordSource,
+								)
 
 								updateFileResult(relPath, {
 									xmlContent: `<file><path>${relPath}</path>\n<notice>${imageResult.notice}</notice>\n</file>`,
@@ -423,7 +704,10 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 								const lineCount = lines.length
 								const lineRangeAttr = lineCount > 0 ? ` lines="1-${lineCount}"` : ""
 
-								await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+								await task.fileContextTracker.trackFileContext(
+									fileContextPath,
+									"read_tool" as RecordSource,
+								)
 
 								updateFileResult(relPath, {
 									xmlContent:
@@ -603,14 +887,16 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						}
 					}
 
-					await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+					await task.fileContextTracker.trackFileContext(fileContextPath, "read_tool" as RecordSource)
 
 					updateFileResult(relPath, {
 						xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}</file>`,
 						nativeContent: `File: ${relPath}\n${nativeInfo}`,
 					})
 				} catch (error) {
-					const errorMsg = error instanceof Error ? error.message : String(error)
+					const baseErrorMsg = error instanceof Error ? error.message : String(error)
+					const guidance = getMissingMemoryBankGuidance(relPath, error)
+					const errorMsg = guidance ? `${baseErrorMsg}\n\n${guidance}` : baseErrorMsg
 					updateFileResult(relPath, {
 						status: "error",
 						error: `Error reading file: ${errorMsg}`,
@@ -618,6 +904,20 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						nativeContent: `File: ${relPath}\nError: Error reading file: ${errorMsg}`,
 					})
 					await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
+				}
+			}
+
+			// Add a notice for any files resolved from the global Kilo Code directory.
+			for (const fileResult of fileResults) {
+				if (!fileResult.resolvedFromGlobal || !fileResult.resolvedPath) continue
+				if (fileResult.status === "denied" || fileResult.status === "blocked") continue
+
+				const globalNotice = `Resolved from global Kilo Code directory: ${fileResult.resolvedPath}`
+				if (fileResult.nativeContent && !fileResult.nativeContent.includes(globalNotice)) {
+					fileResult.nativeContent = `${fileResult.nativeContent}\nNote: ${globalNotice}`
+				}
+				if (fileResult.xmlContent && !fileResult.xmlContent.includes(globalNotice)) {
+					fileResult.xmlContent = appendXmlNotice(fileResult.xmlContent, globalNotice)
 				}
 			}
 

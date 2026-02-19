@@ -1,14 +1,8 @@
 {
 	"welcome": {
-<<<<<<< HEAD
 		"greeting": "Welkom bij AlfaCode assistant!",
-		"introText1": "AlfaCode assistant is een gratis AI coding agent.",
+		"introText1": "AlfaCode assistant is een gratis, open source AI coding agent.",
 		"introText2": "Het werkt met de nieuwste AI modellen zoals Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5, en meer dan 450 andere.",
-=======
-		"greeting": "Welkom bij Kilo Code!",
-		"introText1": "Kilo Code is een gratis, open source AI coding agent.",
-		"introText2": "Het werkt met de nieuwste AI modellen zoals Claude Opus 4.5, Gemini 3 Pro, GPT-5.2, en meer dan 450 andere.",
->>>>>>> origin/main
 		"introText3": "Maak een gratis account aan en krijg $20 bonuskrediet bij je eerste opwaardering.",
 		"ctaButton": "Aan de slag",
 		"manualModeButton": "Gebruik je eigen API-sleutel",
@@ -17,13 +11,9 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "Krediet toevoegen",
-<<<<<<< HEAD
 		"lowBalance": "Uw AlfaCode assistant-saldo is laag",
-		"newOrganization": "Gebruik je Kilo voor werk?"
-=======
-		"lowBalance": "Je Kilo Code-saldo is laag",
+		"newOrganization": "Gebruik je AlfaCode assistant voor werk?",
 		"switchToFreeModel": "Schakel over naar een gratis model"
->>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "Vorige",
@@ -54,19 +44,12 @@
 			"skills": "Skills"
 		},
 		"provider": {
-<<<<<<< HEAD
 			"account": "AlfaCode assistant Account",
 			"apiKey": "AlfaCode assistant API-sleutel",
 			"login": "Inloggen bij AlfaCode assistant",
 			"logout": "Uitloggen bij AlfaCode assistant",
-			"automaticFetch": "De nieuwste modellen zijn automatisch beschikbaar in AlfaCode assistant. Als je niet zeker weet welk model je moet kiezen, werkt AlfaCode assistant het beste met de aanbevolen modellen die bovenaan in <strong>vetgedrukte tekst</strong> staan.",
-=======
-			"account": "Kilo Code Account",
-			"apiKey": "Kilo Code API-sleutel",
-			"login": "Inloggen bij Kilo Code",
-			"logout": "Uitloggen bij Kilo Code",
 			"loginForPremiumModels": "Log in voor toegang tot premium modellen en functies",
->>>>>>> origin/main
+			"automaticFetch": "De nieuwste modellen zijn automatisch beschikbaar in AlfaCode assistant. Als je niet zeker weet welk model je moet kiezen, werkt AlfaCode assistant het beste met de aanbevolen modellen die bovenaan in <strong>vetgedrukte tekst</strong> staan.",
 			"providerRouting": {
 				"title": "Provider Routing",
 				"managedByOrganization": "Beheer Provider Routing op organisatieniveau",

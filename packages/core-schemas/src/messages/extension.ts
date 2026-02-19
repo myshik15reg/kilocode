@@ -50,6 +50,10 @@ export const extensionStateSchema = z.object({
 	organizationAllowList: organizationAllowListSchema.optional(),
 	routerModels: z.unknown().optional(), // RouterModels
 	appendSystemPrompt: z.string().optional(), // Custom text to append to system prompt (CLI only)
+	// kilocode_change start: LiteLLM image generation settings
+	litellmImageApiKey: z.string().optional(),
+	litellmImageBaseUrl: z.string().optional(),
+	// kilocode_change end
 })
 
 // Inferred types

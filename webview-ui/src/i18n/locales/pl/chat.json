@@ -370,12 +370,8 @@
 	},
 	"browser": {
 		"session": "Sesja przeglądarki",
-<<<<<<< HEAD
-		"rooWantsToUse": "AlfaCode assistant chce użyć przeglądarki",
-=======
 		"active": "Aktywna",
-		"rooWantsToUse": "Kilo Code chce użyć przeglądarki",
->>>>>>> origin/main
+		"rooWantsToUse": "AlfaCode assistant chce użyć przeglądarki",
 		"consoleLogs": "Logi konsoli",
 		"noNewLogs": "(Brak nowych logów)",
 		"screenshot": "Zrzut ekranu przeglądarki",

@@ -7,6 +7,7 @@
 ## Компоненты
 
 ### TreeSitterParserManager
+
 Централизованный менеджер для загрузки и кэширования парсеров.
 
 ```typescript
@@ -17,6 +18,7 @@ const tree = await manager.parse("typescript", code)
 ```
 
 ### BaseExtractor
+
 Базовый класс для Tree-sitter экстракторов с общей инициализацией и утилитами.
 
 ```typescript
@@ -30,6 +32,7 @@ class CustomExtractor extends BaseExtractor {
 ```
 
 ### TreeSitterGraphExtractor
+
 Унифицированный экстрактор графа, который:
 
 - парсит код через TreeSitterParserManager
@@ -56,10 +59,19 @@ const result = await extractor.extract(code, "file.ts")
 
 Для `onec` графовый запрос берется из `onecQueries.full` (base + graph), для остальных языков — базовый query.
 
+## Грамматика 1С и WASM
+
+- Исходники грамматики: [`tree-sitter-grammars/`](../tree-sitter-grammars/README.md)
+- Бинарь для `web-tree-sitter`: `tree-sitter-onec.wasm`
+- По умолчанию [`TreeSitterParserManager`](../src/services/tree-sitter/parser-manager.ts) загружает WASM по имени `tree-sitter-<languageId>.wasm` (например, `tree-sitter-onec.wasm`). При необходимости путь можно передать в `initialize(wasmPath)`.
+- Ожидаемое размещение в пакете расширения (`src/`): `src/dist/tree-sitter-onec.wasm` (рядом с другими `tree-sitter-*.wasm`).
+
 ## Извлекаемые сущности и связи
 
 ### Entities
+
 Экстрактор создает:
+
 - `file`
 - `function` (включая method/constructor/async)
 - `class`
@@ -69,12 +81,14 @@ const result = await extractor.extract(code, "file.ts")
 - `variable` / `const` / `property`
 
 ### Relationships
+
 - `defines` — файл определяет сущность
 - `calls` — вызовы функций (если query содержит call captures)
 
 ## Нормализация языков
 
 Примеры нормализации:
+
 - `bsl`, `os`, `1c` → `onec`
 - `js`, `jsx`, `json` → `javascript`
 - `ejs`, `erb` → `embedded_template`

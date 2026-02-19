@@ -20,11 +20,7 @@ AlfaCode assistant includes _experimental_ support for the [VS Code Language Mod
 
 ## Configuration
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/vscode-lm.md
-1.  **Open AlfaCode assistant Settings:** Click the gear icon (<Codicon name="gear" />) in the AlfaCode assistant panel.
-=======
-1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/vscode-lm.md
+1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
 2.  **Select Provider:** Choose "VS Code LM API" from the "API Provider" dropdown.
 3.  **Select Model:** The "Language Model" dropdown will (eventually) list available models. The format is `vendor/family`. For example, if you have Copilot, you might see options like:
     - `copilot - claude-3.5-sonnet`

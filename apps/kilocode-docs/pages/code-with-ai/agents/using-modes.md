@@ -14,14 +14,7 @@ Modes in AlfaCode assistant are specialized personas that tailor the assistant's
 - **Focused interactions:** Receive responses optimized for your current activity
 - **Workflow optimization:** Seamlessly transition between planning, implementing, debugging, and learning
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/basic-usage/using-modes.md
-<YouTubeEmbed
-  url="https://youtu.be/cS4vQfX528w"
-  caption="Explaining the different modes in AlfaCode assistant"
-/>
-=======
-{% youtube url="https://youtu.be/cS4vQfX528w" caption="Explaining the different modes in Kilo Code" /%}
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/agents/using-modes.md
+{% youtube url="https://youtu.be/cS4vQfX528w" caption="Explaining the different modes in AlfaCode assistant" /%}
 
 ## Switching Between Modes
 
@@ -45,11 +38,7 @@ Four ways to switch modes:
 
 4. **Accept suggestions:** Click on mode switch suggestions that AlfaCode assistant offers when appropriate
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/basic-usage/using-modes.md
-<img src="/docs/img/modes/modes-2.png" alt="Accepting a mode switch suggestion from AlfaCode assistant" width="400" />
-=======
-    {% image src="/docs/img/modes/modes-2.png" alt="Accepting a mode switch suggestion from Kilo Code" width="400" /%}
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/agents/using-modes.md
+    {% image src="/docs/img/modes/modes-2.png" alt="Accepting a mode switch suggestion from AlfaCode assistant" width="400" /%}
 
 ## Built-in Modes
 
@@ -109,7 +98,7 @@ Four ways to switch modes:
 
 ## Custom Modes
 
-Create your own specialized assistants by defining tool access, file permissions, and behavior instructions. Custom modes help enforce team standards or create purpose-specific assistants. See [Custom Modes documentation](/docs/features/custom-modes) for setup instructions.
+Create your own specialized assistants by defining tool access, file permissions, and behavior instructions. Custom modes help enforce team standards or create purpose-specific assistants. See [Custom Modes documentation](/docs/customize/custom-modes) for setup instructions.
 
 <!--
 EXISTING PAGES TO MIGRATE:

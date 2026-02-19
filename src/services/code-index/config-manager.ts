@@ -2,7 +2,14 @@ import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
 import { CodeIndexConfig, PreviousConfigSnapshot } from "./interfaces/config"
-import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS } from "./constants"
+import {
+	DEFAULT_SEARCH_MIN_SCORE,
+	DEFAULT_MAX_SEARCH_RESULTS,
+	DEFAULT_RERANK_CANDIDATE_LIMIT,
+	DEFAULT_RERANK_TOP_K,
+	DEFAULT_RERANK_TIMEOUT_MS,
+	DEFAULT_RERANK_MODEL_ID,
+} from "./constants"
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../shared/embeddingModels"
 
 /**
@@ -35,12 +42,22 @@ export class CodeIndexConfigManager {
 	// kilocode_change start
 	private embeddingBatchSize?: number
 	private scannerMaxBatchRetries?: number
+	private embedderRequestsPerMinute?: number
 	// kilocode_change end
 	private neo4jEnabled: boolean = false
 	private neo4jUri?: string
 	private neo4jUsername?: string
 	private neo4jPassword?: string
 	private neo4jDatabase?: string = "neo4j"
+	// kilocode_change start
+	private rerankEnabled?: boolean
+	private rerankBaseUrl?: string
+	private rerankModelId?: string
+	private rerankTimeoutMs?: number
+	private rerankCandidateLimit?: number
+	private rerankTopK?: number
+	private rerankApiKey?: string
+	// kilocode_change end
 
 	// kilocode_change start: Kilo org indexing props
 	private _kiloOrgProps: {
@@ -53,6 +70,13 @@ export class CodeIndexConfigManager {
 	constructor(private readonly contextProxy: ContextProxy) {
 		// Initialize with current configuration to avoid false restart triggers
 		this._loadAndSetConfiguration()
+	}
+
+	private async syncVectorStoreNameFromWorkspaceState(): Promise<void> {
+		this.vectorStoreName = (await this.contextProxy.getWorkspaceState("codebaseIndexVectorStoreName")) as
+			| string
+			| undefined
+		this.vectorStoreNameWasLoaded = !!(this.vectorStoreName && this.vectorStoreName.trim() !== "")
 	}
 
 	// kilocode_change start: Kilo org indexing methods
@@ -109,8 +133,17 @@ export class CodeIndexConfigManager {
 			codebaseIndexSearchMinScore: undefined,
 			codebaseIndexSearchMaxResults: undefined,
 			// kilocode_change start
+			codebaseIndexRerankEnabled: undefined,
+			codebaseIndexRerankBaseUrl: undefined,
+			codebaseIndexRerankModelId: undefined,
+			codebaseIndexRerankTimeoutMs: undefined,
+			codebaseIndexRerankCandidateLimit: undefined,
+			codebaseIndexRerankTopK: undefined,
+			// kilocode_change end
+			// kilocode_change start
 			codebaseIndexEmbeddingBatchSize: undefined,
 			codebaseIndexScannerMaxBatchRetries: undefined,
+			codebaseIndexEmbedderRequestsPerMinute: undefined,
 			// kilocode_change end
 			codebaseIndexBedrockRegion: "us-east-1",
 			codebaseIndexBedrockProfile: "",
@@ -127,8 +160,17 @@ export class CodeIndexConfigManager {
 			codebaseIndexSearchMinScore,
 			codebaseIndexSearchMaxResults,
 			// kilocode_change start
+			codebaseIndexRerankEnabled,
+			codebaseIndexRerankBaseUrl,
+			codebaseIndexRerankModelId,
+			codebaseIndexRerankTimeoutMs,
+			codebaseIndexRerankCandidateLimit,
+			codebaseIndexRerankTopK,
+			// kilocode_change end
+			// kilocode_change start
 			codebaseIndexEmbeddingBatchSize,
 			codebaseIndexScannerMaxBatchRetries,
+			codebaseIndexEmbedderRequestsPerMinute,
 			// kilocode_change end
 		} = codebaseIndexConfig
 		// kilocode_change
@@ -145,6 +187,9 @@ export class CodeIndexConfigManager {
 		const bedrockRegion = codebaseIndexConfig.codebaseIndexBedrockRegion ?? "us-east-1"
 		const bedrockProfile = codebaseIndexConfig.codebaseIndexBedrockProfile ?? ""
 		const openRouterApiKey = this.contextProxy?.getSecret("codebaseIndexOpenRouterApiKey") ?? ""
+		// kilocode_change start
+		const rerankApiKey = this.contextProxy?.getSecret("codebaseIndexRerankApiKey") ?? ""
+		// kilocode_change end
 		const openRouterSpecificProvider = codebaseIndexConfig.codebaseIndexOpenRouterSpecificProvider ?? ""
 
 		// Neo4j configuration
@@ -172,8 +217,18 @@ export class CodeIndexConfigManager {
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
 		// kilocode_change start
+		this.rerankEnabled = codebaseIndexRerankEnabled
+		this.rerankBaseUrl = codebaseIndexRerankBaseUrl
+		this.rerankModelId = codebaseIndexRerankModelId
+		this.rerankTimeoutMs = codebaseIndexRerankTimeoutMs
+		this.rerankCandidateLimit = codebaseIndexRerankCandidateLimit
+		this.rerankTopK = codebaseIndexRerankTopK
+		this.rerankApiKey = rerankApiKey
+		// kilocode_change end
+		// kilocode_change start
 		this.embeddingBatchSize = codebaseIndexEmbeddingBatchSize
 		this.scannerMaxBatchRetries = codebaseIndexScannerMaxBatchRetries
+		this.embedderRequestsPerMinute = codebaseIndexEmbedderRequestsPerMinute
 		// kilocode_change end
 
 		// Validate and set model dimension
@@ -263,6 +318,8 @@ export class CodeIndexConfigManager {
 		}
 		requiresRestart: boolean
 	}> {
+		await this.syncVectorStoreNameFromWorkspaceState()
+
 		// Capture the ACTUAL previous state before loading new configuration
 		const previousConfigSnapshot: PreviousConfigSnapshot = {
 			enabled: this.codebaseIndexEnabled,
@@ -288,49 +345,25 @@ export class CodeIndexConfigManager {
 			openRouterSpecificProvider: this.openRouterOptions?.specificProvider ?? "",
 			qdrantUrl: this.qdrantUrl ?? "",
 			qdrantApiKey: this.qdrantApiKey ?? "",
+			// kilocode_change start
+			rerankBaseUrl: this.rerankBaseUrl ?? "",
+			rerankApiKey: this.rerankApiKey ?? "",
+			rerankModelId: this.rerankModelId ?? "",
+			rerankTimeoutMs: this.rerankTimeoutMs,
+			rerankCandidateLimit: this.rerankCandidateLimit,
+			rerankTopK: this.rerankTopK,
+			rerankEnabled: this.rerankEnabled ?? false,
+			// kilocode_change end
 		}
 
 		// Refresh secrets from VSCode storage to ensure we have the latest values
 		await this.contextProxy.refreshSecrets()
 
-		// Load vectorStoreName from workspaceState (async operation)
-		this.vectorStoreName = (await this.contextProxy.getWorkspaceState("codebaseIndexVectorStoreName")) as string | undefined
+		// Load latest vectorStoreName from workspaceState (async operation)
+		await this.syncVectorStoreNameFromWorkspaceState()
 
-		// Track if vectorStoreName was loaded from workspaceState
-		this.vectorStoreNameWasLoaded = !!(this.vectorStoreName && this.vectorStoreName.trim() !== "")
-
-		// Migration logic: Generate default vectorStoreName if missing
-		if (!this.vectorStoreName || this.vectorStoreName.trim() === "") {
-			// Try to get workspace folder name from vscode API
-			// Use safe access that doesn't fail in test environment
-			let workspaceName: string | undefined
-			try {
-				const vscode = require("vscode")
-				workspaceName = vscode.workspace.workspaceFolders?.[0]?.name
-			} catch (error) {
-				// In test environment, vscode module may not be available
-				// Use a default value instead of failing
-				workspaceName = undefined
-			}
-			
-			// Generate default value: workspace-name-vectors or codebase-index-vectors
-			const defaultVectorStoreName = workspaceName
-				? `${workspaceName}-vectors`
-				: "codebase-index-vectors"
-			
-			this.vectorStoreName = defaultVectorStoreName
-			
-			// Save the generated default value to workspaceState for future use
-			await this.contextProxy.updateWorkspaceState("codebaseIndexVectorStoreName", defaultVectorStoreName)
-			
-			// Update the flag to indicate that a value was generated (not loaded from existing state)
-			this.vectorStoreNameWasLoaded = false
-			
-			console.log(`[CodeIndexConfigManager] Migration: Generated default vectorStoreName: ${defaultVectorStoreName}`)
-		} else {
-			// vectorStoreName already exists in workspaceState, use it as-is
-			// Don't overwrite with a generated value
-		}
+		// Do not auto-generate vectorStoreName.
+		// Missing/empty values must remain empty and be handled by isConfigured().
 
 		// Load new configuration from storage and update instance variables
 		this._loadAndSetConfiguration()
@@ -370,6 +403,11 @@ export class CodeIndexConfigManager {
 			return true
 		}
 		// kilocode_change end
+
+		const hasVectorStoreName = (this.vectorStoreName?.trim().length ?? 0) > 0
+		if (!hasVectorStoreName) {
+			return false
+		}
 
 		if (this.embedderProvider === "openai") {
 			const openAiKey = this.openAiOptions?.openAiNativeApiKey
@@ -453,6 +491,11 @@ export class CodeIndexConfigManager {
 		const prevOpenRouterSpecificProvider = prev?.openRouterSpecificProvider ?? ""
 		const prevQdrantUrl = prev?.qdrantUrl ?? ""
 		const prevQdrantApiKey = prev?.qdrantApiKey ?? ""
+		// kilocode_change start
+		const prevRerankBaseUrl = prev?.rerankBaseUrl ?? ""
+		const prevRerankApiKey = prev?.rerankApiKey ?? ""
+		const prevRerankModelId = prev?.rerankModelId ?? ""
+		// kilocode_change end
 		// kilocode_change - start
 		const prevVectorStoreProvider = prev?.vectorStoreProvider ?? "qdrant"
 		const prevLocalDbPath = prev?.lancedbVectorStoreDirectory ?? ""
@@ -511,6 +554,11 @@ export class CodeIndexConfigManager {
 		const currentOpenRouterSpecificProvider = this.openRouterOptions?.specificProvider ?? ""
 		const currentQdrantUrl = this.qdrantUrl ?? ""
 		const currentQdrantApiKey = this.qdrantApiKey ?? ""
+		// kilocode_change start
+		const currentRerankBaseUrl = this.rerankBaseUrl ?? ""
+		const currentRerankApiKey = this.rerankApiKey ?? ""
+		const currentRerankModelId = this.rerankModelId ?? ""
+		// kilocode_change end
 
 		if (prevOpenAiKey !== currentOpenAiKey) {
 			return true
@@ -561,6 +609,16 @@ export class CodeIndexConfigManager {
 			return true
 		}
 
+		// kilocode_change start
+		if (
+			prevRerankBaseUrl !== currentRerankBaseUrl ||
+			prevRerankApiKey !== currentRerankApiKey ||
+			prevRerankModelId !== currentRerankModelId
+		) {
+			return true
+		}
+		// kilocode_change end
+
 		// Vector dimension changes (still important for compatibility)
 		if (this._hasVectorDimensionChanged(prevProvider, prev?.modelId)) {
 			return true
@@ -599,6 +657,8 @@ export class CodeIndexConfigManager {
 	 * Gets the current configuration state.
 	 */
 	public getConfig(): CodeIndexConfig {
+		const rerankAvailability = this.currentRerankConfig
+		const isRerankConfigured = Boolean(rerankAvailability.baseUrl && rerankAvailability.modelId)
 		return {
 			isConfigured: this.isConfigured(),
 			embedderProvider: this.embedderProvider,
@@ -622,8 +682,19 @@ export class CodeIndexConfigManager {
 			searchMinScore: this.currentSearchMinScore,
 			searchMaxResults: this.currentSearchMaxResults,
 			// kilocode_change start
+			rerankEnabled: this.rerankEnabled,
+			rerankBaseUrl: this.rerankBaseUrl,
+			rerankModelId: this.rerankModelId,
+			rerankTimeoutMs: this.rerankTimeoutMs,
+			rerankCandidateLimit: this.rerankCandidateLimit,
+			rerankTopK: this.rerankTopK,
+			rerankApiKey: this.rerankApiKey,
+			rerankAvailable: this.rerankEnabled !== false && isRerankConfigured,
+			// kilocode_change end
+			// kilocode_change start
 			embeddingBatchSize: this.currentEmbeddingBatchSize,
 			scannerMaxBatchRetries: this.currentScannerMaxBatchRetries,
+			embedderRequestsPerMinute: this.currentEmbedderRequestsPerMinute,
 			// kilocode_change end
 		}
 	}
@@ -708,6 +779,28 @@ export class CodeIndexConfigManager {
 	}
 
 	// kilocode_change start
+	public get currentRerankConfig(): {
+		enabled?: boolean
+		baseUrl?: string
+		modelId?: string
+		timeoutMs?: number
+		candidateLimit?: number
+		topK?: number
+		apiKey?: string
+	} {
+		return {
+			enabled: this.rerankEnabled,
+			baseUrl: this.rerankBaseUrl,
+			modelId: this.rerankModelId ?? DEFAULT_RERANK_MODEL_ID,
+			timeoutMs: this.rerankTimeoutMs ?? DEFAULT_RERANK_TIMEOUT_MS,
+			candidateLimit: this.rerankCandidateLimit ?? DEFAULT_RERANK_CANDIDATE_LIMIT,
+			topK: this.rerankTopK ?? DEFAULT_RERANK_TOP_K,
+			apiKey: this.rerankApiKey,
+		}
+	}
+	// kilocode_change end
+
+	// kilocode_change start
 	/**
 	 * Gets the configured embedding batch size.
 	 * Returns user setting if configured, otherwise returns undefined (will use default from constants).
@@ -722,6 +815,25 @@ export class CodeIndexConfigManager {
 	 */
 	public get currentScannerMaxBatchRetries(): number | undefined {
 		return this.scannerMaxBatchRetries
+	}
+
+	/**
+	 * Gets the configured embedder requests per minute (RPM).
+	 * Returns user setting if configured, otherwise returns undefined (will use default from constants).
+	 */
+	public get currentEmbedderRequestsPerMinute(): number | undefined {
+		// Prefer reading from global state to allow immediate runtime updates after UI save.
+		// This avoids needing to recreate services just to change RPM.
+		const maybeConfig = this.contextProxy?.getGlobalState("codebaseIndexConfig")
+
+		if (typeof maybeConfig === "object" && maybeConfig !== null) {
+			const config = maybeConfig as { codebaseIndexEmbedderRequestsPerMinute?: unknown }
+			if (typeof config.codebaseIndexEmbedderRequestsPerMinute === "number") {
+				return config.codebaseIndexEmbedderRequestsPerMinute
+			}
+		}
+
+		return this.embedderRequestsPerMinute
 	}
 	// kilocode_change end
 

@@ -4,6 +4,7 @@ import type { Mock } from "vitest"
 
 import * as path from "path"
 import * as fs from "fs/promises"
+import * as os from "os"
 
 import * as yaml from "yaml"
 import * as vscode from "vscode"
@@ -13,6 +14,7 @@ import type { ModeConfig } from "@roo-code/types"
 import { fileExistsAtPath } from "../../../utils/fs"
 import { getWorkspacePath, arePathsEqual } from "../../../utils/path"
 import { GlobalFileNames } from "../../../shared/globalFileNames"
+import { logger } from "../../../utils/logging"
 
 import { CustomModesManager } from "../CustomModesManager"
 import { getProjectRooDirectoryForCwd } from "../../../services/roo-config" // kilocode_change
@@ -39,6 +41,15 @@ vi.mock("fs/promises", () => ({
 
 vi.mock("../../../utils/fs")
 vi.mock("../../../utils/path")
+
+vi.mock("../../../utils/logging", () => ({
+	logger: {
+		info: vi.fn(),
+		debug: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+	},
+}))
 
 describe("CustomModesManager", () => {
 	let manager: CustomModesManager
@@ -165,6 +176,42 @@ describe("CustomModesManager", () => {
 
 			expect(modes).toHaveLength(1)
 			expect(modes[0].slug).toBe("mode1")
+		})
+
+		it("should include WorkFlowAI managed modes with the lowest precedence", async () => {
+			const settingsModes = [
+				{ slug: "override-me", name: "Global Override", roleDefinition: "Role", groups: ["read"] },
+			]
+			const managedModes = [
+				{ slug: "override-me", name: "Managed Mode", roleDefinition: "Managed", groups: ["read"] },
+				{ slug: "managed-only", name: "Managed Only", roleDefinition: "Managed", groups: ["read"] },
+			]
+
+			const managedModesPath = path.join(
+				path.join(os.homedir(), ".kilocode"),
+				"workflowai",
+				"managed_custom_modes.yaml",
+			)
+
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => {
+				return p === mockSettingsPath || p === managedModesPath
+			})
+			;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+				if (p === mockSettingsPath) {
+					return yaml.stringify({ customModes: settingsModes })
+				}
+				if (p === managedModesPath) {
+					return yaml.stringify({ customModes: managedModes })
+				}
+				throw new Error("File not found")
+			})
+
+			const modes = await manager.getCustomModes()
+
+			// Global overrides managed when slugs overlap.
+			expect(modes.map((m) => m.slug)).toEqual(["override-me", "managed-only"])
+			const override = modes.find((m) => m.slug === "override-me")
+			expect(override?.name).toBe("Global Override")
 		})
 
 		it("should handle invalid YAML in .kilocodemodes", async () => {
@@ -715,6 +762,104 @@ describe("CustomModesManager", () => {
 				process.env.NODE_ENV = originalNodeEnv
 			}
 		})
+
+		it("watches .kilocodemodes file for changes (handleRoomodesChange)", async () => {
+			const configPath = path.join(mockStoragePath, "settings", GlobalFileNames.customModes)
+			const roomodesPath = path.join(mockWorkspacePath, ".kilocodemodes")
+
+			// Make sure we can find both settings and roomodes files.
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => {
+				return p === configPath || p === roomodesPath
+			})
+			;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+				if (p === configPath) {
+					return yaml.stringify({
+						customModes: [{ slug: "g", name: "G", roleDefinition: "g", groups: ["read"] }],
+					})
+				}
+				if (p === roomodesPath) {
+					return yaml.stringify({
+						customModes: [{ slug: "p", name: "P", roleDefinition: "p", groups: ["read"] }],
+					})
+				}
+				throw new Error("File not found")
+			})
+			;(mockContext.globalState.get as Mock).mockResolvedValue([])
+
+			const settingsWatcher = {
+				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+				onDidCreate: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+				onDidDelete: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+				dispose: vi.fn(),
+			}
+			const roomodesWatcher = {
+				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+				onDidCreate: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+				onDidDelete: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+				dispose: vi.fn(),
+			}
+
+			const createFileSystemWatcherMock = vi.fn().mockImplementation((watchPath: string) => {
+				if (path.normalize(watchPath) === path.normalize(configPath)) return settingsWatcher
+				if (path.normalize(watchPath) === path.normalize(roomodesPath)) return roomodesWatcher
+				return settingsWatcher
+			})
+			;(vscode.workspace as any).createFileSystemWatcher = createFileSystemWatcherMock
+
+			const originalNodeEnv = process.env.NODE_ENV
+			process.env.NODE_ENV = "development"
+			try {
+				const testManager = new CustomModesManager(mockContext, mockOnUpdate)
+				await new Promise((resolve) => setTimeout(resolve, 10))
+
+				const onChangeCall = roomodesWatcher.onDidChange.mock.calls[0]
+				expect(onChangeCall).toBeDefined()
+				const [onChangeCallback] = onChangeCall
+
+				await onChangeCallback()
+
+				expect(fs.readFile).toHaveBeenCalledWith(configPath, "utf-8")
+				expect(fs.readFile).toHaveBeenCalledWith(roomodesPath, "utf-8")
+				expect(mockContext.globalState.update).toHaveBeenCalledWith(
+					"customModes",
+					expect.arrayContaining([
+						expect.objectContaining({ slug: "p", source: "project" }),
+						expect.objectContaining({ slug: "g", source: "global" }),
+					]),
+				)
+				expect(mockOnUpdate).toHaveBeenCalled()
+
+				testManager.dispose()
+			} finally {
+				process.env.NODE_ENV = originalNodeEnv
+			}
+		})
+	})
+
+	describe("resetCustomModes", () => {
+		it("resets global custom modes file and clears global state", async () => {
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === mockSettingsPath)
+			;(fs.readFile as Mock).mockResolvedValue(
+				yaml.stringify({ customModes: [{ slug: "m", name: "M", roleDefinition: "r", groups: ["read"] }] }),
+			)
+			;(fs.writeFile as Mock).mockResolvedValue(undefined)
+
+			await manager.resetCustomModes()
+
+			expect(fs.writeFile).toHaveBeenCalledWith(mockSettingsPath, expect.stringContaining("customModes"))
+			expect(mockContext.globalState.update).toHaveBeenCalledWith("customModes", [])
+			expect(mockOnUpdate).toHaveBeenCalled()
+		})
+
+		it("shows error when reset fails", async () => {
+			const mockShowError = vi.fn()
+			;(vscode.window.showErrorMessage as Mock) = mockShowError
+			;(fs.writeFile as Mock).mockRejectedValue(new Error("Disk full"))
+
+			await manager.resetCustomModes()
+
+			expect(mockShowError).toHaveBeenCalledWith("customModes.errors.resetFailed")
+		})
 	})
 
 	describe("deleteCustomMode", () => {
@@ -1098,6 +1243,46 @@ describe("CustomModesManager", () => {
 				expect(writtenFiles.some((p) => path.isAbsolute(p) && !p.startsWith(mockWorkspacePath))).toBe(false)
 			})
 
+			it("rejects POSIX-absolute rule file paths via the resolved-path base directory check", async () => {
+				const posixAbsoluteYaml = yaml.stringify({
+					customModes: [
+						{
+							slug: "test-mode",
+							name: "Test Mode",
+							roleDefinition: "Test Role",
+							groups: ["read"],
+							rulesFiles: [
+								{
+									relativePath: "/abs/path/escape.txt",
+									content: "malicious",
+								},
+							],
+						},
+					],
+				})
+
+				const writtenPaths: string[] = []
+				;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+					if (p === mockSettingsPath) {
+						return yaml.stringify({ customModes: [] })
+					}
+					throw new Error("File not found")
+				})
+				;(fs.rm as Mock).mockResolvedValue(undefined)
+				;(fs.mkdir as Mock).mockResolvedValue(undefined)
+				;(fs.writeFile as Mock).mockImplementation(async (p: string) => {
+					writtenPaths.push(p)
+					return Promise.resolve()
+				})
+
+				const result = await manager.importModeWithRules(posixAbsoluteYaml)
+				expect(result.success).toBe(true)
+				// If the resolved-path base directory check fires, the rules file should NOT be written.
+				// (There will still be writes to the .kilocodemodes file.)
+				const nonModesWrites = writtenPaths.filter((p) => !p.includes(".kilocodemodes"))
+				expect(nonModesWrites.some((p) => p.includes("escape.txt"))).toBe(false)
+			})
+
 			it("should handle malformed YAML gracefully", async () => {
 				const malformedYaml = `
 	customModes:
@@ -1237,6 +1422,38 @@ describe("CustomModesManager", () => {
 				// Verify file contents
 				const newRulePath = Object.keys(writtenFiles).find((p) => p.includes("new-rule.md"))
 				expect(writtenFiles[newRulePath!]).toBe("New rule content")
+			})
+
+			it("logs overwrite when importing a mode that already exists", async () => {
+				const importYaml = yaml.stringify({
+					customModes: [
+						{
+							slug: "existing-mode",
+							name: "Existing Mode",
+							roleDefinition: "Existing Role",
+							groups: ["read"],
+						},
+					],
+				})
+
+				// Pretend the mode already exists in global settings.
+				;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+					if (p === mockSettingsPath) {
+						return yaml.stringify({
+							customModes: [
+								{ slug: "existing-mode", name: "Old", roleDefinition: "Old", groups: ["read"] },
+							],
+						})
+					}
+					throw new Error("File not found")
+				})
+				;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === mockSettingsPath)
+				;(fs.writeFile as Mock).mockResolvedValue(undefined)
+
+				const result = await manager.importModeWithRules(importYaml)
+
+				expect(result.success).toBe(true)
+				expect(vi.mocked(logger.info)).toHaveBeenCalledWith("Overwriting existing mode: existing-mode")
 			})
 		})
 	})
@@ -1758,6 +1975,1002 @@ describe("CustomModesManager", () => {
 
 			// Ensure no backslashes in the entire exported YAML
 			expect(result.yaml).not.toContain("\\")
+		})
+	})
+
+	describe("Coverage gaps (targeted)", () => {
+		it("loadModesFromFile logs unexpected errors when not alreadyHandled", async () => {
+			const anyManager = manager as any
+			const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+			;(fs.readFile as Mock).mockRejectedValueOnce(new Error("boom"))
+			const result = await anyManager.loadModesFromFile("/any/path.yaml")
+			expect(result).toEqual([])
+			expect(consoleSpy).toHaveBeenCalled()
+			consoleSpy.mockRestore()
+		})
+
+		it("parseYamlSafely returns empty object when YAML parses to null", () => {
+			const anyManager = manager as any
+			const parsed = anyManager.parseYamlSafely("null", mockSettingsPath)
+			expect(parsed).toEqual({})
+		})
+
+		it("loadModesFromFile catch avoids logging when error.alreadyHandled=true", async () => {
+			const anyManager = manager as any
+			const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+			;(fs.readFile as Mock).mockRejectedValueOnce({ alreadyHandled: true })
+			const result = await anyManager.loadModesFromFile("/any/path.yaml")
+			expect(result).toEqual([])
+			expect(consoleSpy).not.toHaveBeenCalled()
+			consoleSpy.mockRestore()
+		})
+
+		it("handleSettingsChange covers roomodesPath missing branch", async () => {
+			const originalNodeEnv = process.env.NODE_ENV
+			process.env.NODE_ENV = "test"
+			const originalFolders = (vscode.workspace as any).workspaceFolders
+			try {
+				let settingsOnChange: undefined | (() => Promise<void>)
+				const settingsWatcher = {
+					onDidChange: vi.fn((cb: any) => {
+						settingsOnChange = cb
+						return { dispose: vi.fn() }
+					}),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				;(vscode.workspace as any).createFileSystemWatcher = vi.fn().mockReturnValue(settingsWatcher)
+				;(vscode.workspace as any).workspaceFolders = []
+				;(fs.readFile as Mock).mockResolvedValueOnce(
+					yaml.stringify({
+						customModes: [{ slug: "m", name: "M", roleDefinition: "R", groups: ["read"] }],
+					}),
+				)
+				;(fileExistsAtPath as Mock).mockResolvedValue(false)
+				;(mockContext.globalState.get as Mock).mockResolvedValue([])
+
+				const testManager = new CustomModesManager(mockContext, mockOnUpdate)
+				process.env.NODE_ENV = "development"
+				await (testManager as any).watchCustomModesFiles()
+				expect(settingsOnChange).toBeDefined()
+
+				await settingsOnChange!()
+				expect(mockContext.globalState.update).toHaveBeenCalledWith(
+					"customModes",
+					expect.arrayContaining([expect.objectContaining({ slug: "m" })]),
+				)
+				testManager.dispose()
+			} finally {
+				process.env.NODE_ENV = originalNodeEnv
+				;(vscode.workspace as any).workspaceFolders = originalFolders
+			}
+		})
+
+		it("deleteCustomMode covers roomodesPath missing branch", async () => {
+			const originalFolders = (vscode.workspace as any).workspaceFolders
+			;(vscode.workspace as any).workspaceFolders = []
+			try {
+				const slug = "global-only"
+				;(fs.readFile as Mock).mockResolvedValueOnce(
+					yaml.stringify({
+						customModes: [{ slug, name: "G", roleDefinition: "R", groups: ["read"], source: "global" }],
+					}),
+				)
+				;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === mockSettingsPath)
+				;(fs.writeFile as Mock).mockResolvedValue(undefined)
+				;(fs.rm as Mock).mockResolvedValue(undefined)
+
+				await manager.deleteCustomMode(slug)
+				// Should not attempt to write to .kilocodemodes when no workspace is available.
+				expect((fs.writeFile as Mock).mock.calls.some((c) => String(c[0]).includes(".kilocodemodes"))).toBe(
+					false,
+				)
+			} finally {
+				;(vscode.workspace as any).workspaceFolders = originalFolders
+			}
+		})
+
+		it("checkRulesDirectoryHasContent covers roomodesData?.customModes fallback branch", async () => {
+			const anyManager = manager as any
+			anyManager.cachedModes = []
+			anyManager.cachedAt = Date.now()
+			;(getWorkspacePath as Mock).mockReturnValue(mockWorkspacePath)
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === mockRoomodes)
+			;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+				if (p === mockRoomodes) return "{}"
+				throw new Error("File not found")
+			})
+
+			const result = await manager.checkRulesDirectoryHasContent("missing-mode")
+			expect(result).toBe(false)
+		})
+
+		it("exportModeWithRules covers roomodesData?.customModes fallback branch", async () => {
+			vi.spyOn(manager, "getCustomModes").mockResolvedValueOnce([])
+			;(getWorkspacePath as Mock).mockReturnValue(mockWorkspacePath)
+			const roomodesPath = path.join(mockWorkspacePath, ".kilocodemodes")
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === roomodesPath)
+			;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+				if (p === roomodesPath) return "{}"
+				throw new Error("File not found")
+			})
+			;(fs.stat as Mock).mockRejectedValue(new Error("no rules dir"))
+
+			const result = await manager.exportModeWithRules("code")
+			expect(result.success).toBe(true)
+		})
+		it("covers early-return paths in processWriteQueue", async () => {
+			const anyManager = manager as any
+
+			anyManager.isWriting = true
+			anyManager.writeQueue = [async () => undefined]
+			await anyManager.processWriteQueue()
+
+			anyManager.isWriting = false
+			anyManager.writeQueue = []
+			await anyManager.processWriteQueue()
+		})
+
+		it("cleans problematic/invisible characters deterministically", () => {
+			const anyManager = manager as any
+			const input = `a\u00A0b\u200Bc\u200Cd\u200De\u2018f\u2019\u201Cg\u201Dh\u2014i\u2212j`
+			const output = anyManager.cleanInvisibleCharacters(input)
+
+			// NBSP => space
+			expect(output).toContain("a b")
+			// Zero-width chars removed
+			expect(output).not.toContain("\u200B")
+			expect(output).not.toContain("\u200C")
+			expect(output).not.toContain("\u200D")
+			// Smart quotes normalized
+			expect(output).toContain("'")
+			expect(output).toContain('"')
+			// Dashes normalized
+			expect(output).toContain("-")
+		})
+
+		it("watchCustomModesFiles returns early when NODE_ENV=test", async () => {
+			const originalNodeEnv = process.env.NODE_ENV
+			process.env.NODE_ENV = "test"
+			try {
+				const createWatcherMock = vi.fn()
+				;(vscode.workspace as any).createFileSystemWatcher = createWatcherMock
+
+				const testManager = new CustomModesManager(mockContext, mockOnUpdate)
+				await (testManager as any).watchCustomModesFiles()
+
+				expect(createWatcherMock).not.toHaveBeenCalled()
+				testManager.dispose()
+			} finally {
+				process.env.NODE_ENV = originalNodeEnv
+			}
+		})
+
+		it("handleSettingsChange shows invalid format when parseYamlSafely throws", async () => {
+			const originalNodeEnv = process.env.NODE_ENV
+			process.env.NODE_ENV = "test"
+			const originalFolders = (vscode.workspace as any).workspaceFolders
+			try {
+				let settingsOnChange: undefined | (() => Promise<void>)
+				const settingsWatcher = {
+					onDidChange: vi.fn((cb: any) => {
+						settingsOnChange = cb
+						return { dispose: vi.fn() }
+					}),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				;(vscode.workspace as any).createFileSystemWatcher = vi.fn().mockReturnValue(settingsWatcher)
+				;(vscode.workspace as any).workspaceFolders = []
+
+				const testManager = new CustomModesManager(mockContext, mockOnUpdate)
+
+				process.env.NODE_ENV = "development"
+				await (testManager as any).watchCustomModesFiles()
+				expect(settingsOnChange).toBeDefined()
+				;(fs.readFile as Mock).mockResolvedValueOnce(yaml.stringify({ customModes: [] }))
+				;(testManager as any).parseYamlSafely = () => {
+					throw new Error("boom")
+				}
+
+				await settingsOnChange!()
+				expect(vscode.window.showErrorMessage).toHaveBeenCalled()
+				testManager.dispose()
+			} finally {
+				process.env.NODE_ENV = originalNodeEnv
+				;(vscode.workspace as any).workspaceFolders = originalFolders
+			}
+		})
+
+		it("handleSettingsChange shows invalid format when schema validation fails", async () => {
+			const originalNodeEnv = process.env.NODE_ENV
+			process.env.NODE_ENV = "test"
+			const originalFolders = (vscode.workspace as any).workspaceFolders
+			try {
+				let settingsOnChange: undefined | (() => Promise<void>)
+				const settingsWatcher = {
+					onDidChange: vi.fn((cb: any) => {
+						settingsOnChange = cb
+						return { dispose: vi.fn() }
+					}),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				;(vscode.workspace as any).createFileSystemWatcher = vi.fn().mockReturnValue(settingsWatcher)
+				;(vscode.workspace as any).workspaceFolders = []
+
+				const testManager = new CustomModesManager(mockContext, mockOnUpdate)
+
+				process.env.NODE_ENV = "development"
+				await (testManager as any).watchCustomModesFiles()
+				expect(settingsOnChange).toBeDefined()
+
+				// invalid mode entries => schema validation failure
+				;(fs.readFile as Mock).mockResolvedValueOnce(yaml.stringify({ customModes: [{ slug: "bad" }] }))
+
+				await settingsOnChange!()
+				expect(vscode.window.showErrorMessage).toHaveBeenCalled()
+				testManager.dispose()
+			} finally {
+				process.env.NODE_ENV = originalNodeEnv
+				;(vscode.workspace as any).workspaceFolders = originalFolders
+			}
+		})
+
+		it("handleSettingsChange merges managed modes when managed file exists", async () => {
+			const originalNodeEnv = process.env.NODE_ENV
+			process.env.NODE_ENV = "test"
+			try {
+				let settingsOnChange: undefined | (() => Promise<void>)
+				const settingsWatcher = {
+					onDidChange: vi.fn((cb: any) => {
+						settingsOnChange = cb
+						return { dispose: vi.fn() }
+					}),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				const roomodesWatcher = {
+					onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				;(vscode.workspace as any).createFileSystemWatcher = vi.fn().mockImplementation((watchPath: string) => {
+					if (path.normalize(watchPath) === path.normalize(mockRoomodes)) return roomodesWatcher
+					return settingsWatcher
+				})
+
+				const managedModesPath = path.join(os.homedir(), ".kilocode", "workflowai", "managed_custom_modes.yaml")
+				;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => {
+					return p === mockSettingsPath || p === mockRoomodes || p === managedModesPath
+				})
+				;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+					if (p === mockSettingsPath) return yaml.stringify({ customModes: [] })
+					if (p === managedModesPath) {
+						return yaml.stringify({
+							customModes: [{ slug: "managed-only", name: "M", roleDefinition: "R", groups: ["read"] }],
+						})
+					}
+					throw new Error("File not found")
+				})
+
+				const testManager = new CustomModesManager(mockContext, mockOnUpdate)
+				process.env.NODE_ENV = "development"
+				await (testManager as any).watchCustomModesFiles()
+				expect(settingsOnChange).toBeDefined()
+
+				await settingsOnChange!()
+
+				expect(mockContext.globalState.update).toHaveBeenCalledWith(
+					"customModes",
+					expect.arrayContaining([expect.objectContaining({ slug: "managed-only" })]),
+				)
+				testManager.dispose()
+			} finally {
+				process.env.NODE_ENV = originalNodeEnv
+			}
+		})
+
+		it("handleSettingsChange outer catch is exercised when read fails", async () => {
+			const originalNodeEnv = process.env.NODE_ENV
+			process.env.NODE_ENV = "test"
+			try {
+				let settingsOnChange: undefined | (() => Promise<void>)
+				const settingsWatcher = {
+					onDidChange: vi.fn((cb: any) => {
+						settingsOnChange = cb
+						return { dispose: vi.fn() }
+					}),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				const roomodesWatcher = {
+					onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				;(vscode.workspace as any).createFileSystemWatcher = vi.fn().mockImplementation((watchPath: string) => {
+					if (path.normalize(watchPath) === path.normalize(mockRoomodes)) return roomodesWatcher
+					return settingsWatcher
+				})
+				const testManager = new CustomModesManager(mockContext, mockOnUpdate)
+
+				process.env.NODE_ENV = "development"
+				await (testManager as any).watchCustomModesFiles()
+				expect(settingsOnChange).toBeDefined()
+
+				const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+				;(fs.readFile as Mock).mockRejectedValueOnce(new Error("read failed"))
+				await settingsOnChange!()
+				expect(consoleSpy).toHaveBeenCalled()
+				consoleSpy.mockRestore()
+				testManager.dispose()
+			} finally {
+				process.env.NODE_ENV = originalNodeEnv
+			}
+		})
+
+		it("handleRoomodesChange includes managed modes when managed file exists", async () => {
+			const originalNodeEnv = process.env.NODE_ENV
+			process.env.NODE_ENV = "test"
+			try {
+				let roomodesOnChange: undefined | (() => Promise<void>)
+				const settingsWatcher = {
+					onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				const roomodesWatcher = {
+					onDidChange: vi.fn((cb: any) => {
+						roomodesOnChange = cb
+						return { dispose: vi.fn() }
+					}),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+
+				const managedModesPath = path.join(os.homedir(), ".kilocode", "workflowai", "managed_custom_modes.yaml")
+				;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => {
+					return p === mockSettingsPath || p === mockRoomodes || p === managedModesPath
+				})
+				;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+					if (p === mockSettingsPath) return yaml.stringify({ customModes: [] })
+					if (p === mockRoomodes) return yaml.stringify({ customModes: [] })
+					if (p === managedModesPath) {
+						return yaml.stringify({
+							customModes: [{ slug: "managed-only", name: "M", roleDefinition: "R", groups: ["read"] }],
+						})
+					}
+					throw new Error("File not found")
+				})
+				;(vscode.workspace as any).createFileSystemWatcher = vi.fn().mockImplementation((watchPath: string) => {
+					if (path.normalize(watchPath) === path.normalize(mockRoomodes)) return roomodesWatcher
+					return settingsWatcher
+				})
+
+				const testManager = new CustomModesManager(mockContext, mockOnUpdate)
+				process.env.NODE_ENV = "development"
+				await (testManager as any).watchCustomModesFiles()
+				expect(roomodesOnChange).toBeDefined()
+
+				await roomodesOnChange!()
+				expect(mockContext.globalState.update).toHaveBeenCalledWith(
+					"customModes",
+					expect.arrayContaining([expect.objectContaining({ slug: "managed-only" })]),
+				)
+				testManager.dispose()
+			} finally {
+				process.env.NODE_ENV = originalNodeEnv
+			}
+		})
+
+		it("handleRoomodesChange outer catch is exercised when loadModesFromFile throws", async () => {
+			const originalNodeEnv = process.env.NODE_ENV
+			process.env.NODE_ENV = "test"
+			try {
+				let roomodesOnChange: undefined | (() => Promise<void>)
+				const settingsWatcher = {
+					onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				const roomodesWatcher = {
+					onDidChange: vi.fn((cb: any) => {
+						roomodesOnChange = cb
+						return { dispose: vi.fn() }
+					}),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				;(vscode.workspace as any).createFileSystemWatcher = vi.fn().mockReturnValue(roomodesWatcher)
+
+				const testManager = new CustomModesManager(mockContext, mockOnUpdate)
+				;(testManager as any).loadModesFromFile = vi.fn().mockRejectedValue(new Error("boom"))
+
+				process.env.NODE_ENV = "development"
+				await (testManager as any).watchCustomModesFiles()
+				expect(roomodesOnChange).toBeDefined()
+
+				const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+				await roomodesOnChange!()
+				expect(consoleSpy).toHaveBeenCalled()
+				consoleSpy.mockRestore()
+				testManager.dispose()
+			} finally {
+				process.env.NODE_ENV = originalNodeEnv
+			}
+		})
+
+		it("roomodes onDidDelete refresh path is covered", async () => {
+			const originalNodeEnv = process.env.NODE_ENV
+			process.env.NODE_ENV = "test"
+			try {
+				let roomodesOnDelete: undefined | (() => Promise<void>)
+				const settingsWatcher = {
+					onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				const roomodesWatcher = {
+					onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn((cb: any) => {
+						roomodesOnDelete = cb
+						return { dispose: vi.fn() }
+					}),
+					dispose: vi.fn(),
+				}
+				const managedModesPath = path.join(os.homedir(), ".kilocode", "workflowai", "managed_custom_modes.yaml")
+				;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => {
+					return p === mockSettingsPath || p === mockRoomodes || p === managedModesPath
+				})
+				;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+					if (p === mockSettingsPath) {
+						return yaml.stringify({
+							customModes: [{ slug: "g", name: "G", roleDefinition: "r", groups: ["read"] }],
+						})
+					}
+					if (p === managedModesPath) {
+						return yaml.stringify({
+							customModes: [{ slug: "managed", name: "M", roleDefinition: "r", groups: ["read"] }],
+						})
+					}
+					throw new Error("File not found")
+				})
+				;(vscode.workspace as any).createFileSystemWatcher = vi.fn().mockImplementation((watchPath: string) => {
+					if (path.normalize(watchPath) === path.normalize(mockRoomodes)) return roomodesWatcher
+					return settingsWatcher
+				})
+
+				const testManager = new CustomModesManager(mockContext, mockOnUpdate)
+				process.env.NODE_ENV = "development"
+				await (testManager as any).watchCustomModesFiles()
+				expect(roomodesOnDelete).toBeDefined()
+
+				await roomodesOnDelete!()
+				expect(mockContext.globalState.update).toHaveBeenCalledWith(
+					"customModes",
+					expect.arrayContaining([
+						expect.objectContaining({ slug: "g" }),
+						expect.objectContaining({ slug: "managed" }),
+					]),
+				)
+				testManager.dispose()
+			} finally {
+				process.env.NODE_ENV = originalNodeEnv
+			}
+		})
+
+		it("updateCustomMode rejects invalid configs with a user-visible error", async () => {
+			const invalidMode = {
+				slug: "bad",
+				name: "Bad",
+				// roleDefinition missing
+				groups: ["read"],
+				source: "global",
+			} as unknown as ModeConfig
+
+			await expect(manager.updateCustomMode("bad", invalidMode)).rejects.toBeDefined()
+			expect(vscode.window.showErrorMessage).toHaveBeenCalled()
+		})
+
+		it("updateCustomMode for project mode fails when no workspace folders exist", async () => {
+			const originalFolders = (vscode.workspace as any).workspaceFolders
+			;(vscode.workspace as any).workspaceFolders = []
+			try {
+				const projectMode: ModeConfig = {
+					slug: "p",
+					name: "P",
+					roleDefinition: "R",
+					groups: ["read"],
+					source: "project",
+				}
+				await expect(manager.updateCustomMode("p", projectMode)).rejects.toBeDefined()
+			} finally {
+				;(vscode.workspace as any).workspaceFolders = originalFolders
+			}
+		})
+
+		it("updateCustomMode catch path is exercised when write fails", async () => {
+			;(fs.writeFile as Mock).mockRejectedValueOnce("disk full")
+			const mode: ModeConfig = {
+				slug: "mode1",
+				name: "Mode 1",
+				roleDefinition: "Role",
+				groups: ["read"],
+				source: "global",
+			}
+			await expect(manager.updateCustomMode("mode1", mode)).rejects.toBeDefined()
+			expect(vscode.window.showErrorMessage).toHaveBeenCalled()
+		})
+
+		it("updateModesInFile uses fallback settings when parseYamlSafely throws", async () => {
+			const anyManager = manager as any
+			anyManager.parseYamlSafely = () => {
+				throw new Error("boom")
+			}
+			;(fs.readFile as Mock).mockResolvedValueOnce("{}")
+			;(fs.writeFile as Mock).mockResolvedValueOnce(undefined)
+
+			const mode: ModeConfig = {
+				slug: "m",
+				name: "M",
+				roleDefinition: "R",
+				groups: ["read"],
+				source: "global",
+			}
+			await manager.updateCustomMode("m", mode)
+		})
+
+		it("updateModesInFile normalizes non-object YAML parse results", async () => {
+			const anyManager = manager as any
+			anyManager.parseYamlSafely = () => "not-an-object"
+			;(fs.readFile as Mock).mockResolvedValueOnce("not-an-object")
+			;(fs.writeFile as Mock).mockResolvedValueOnce(undefined)
+
+			const mode: ModeConfig = {
+				slug: "m2",
+				name: "M2",
+				roleDefinition: "R",
+				groups: ["read"],
+				source: "global",
+			}
+			await manager.updateCustomMode("m2", mode)
+		})
+
+		it("deleteCustomMode deletes from both project and global when mode exists in both", async () => {
+			const slug = "both"
+			;(fileExistsAtPath as Mock).mockImplementation(
+				async (p: string) => p === mockSettingsPath || p === mockRoomodes,
+			)
+			;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+				if (p === mockSettingsPath) {
+					return yaml.stringify({
+						customModes: [{ slug, name: "G", roleDefinition: "R", groups: ["read"] }],
+					})
+				}
+				if (p === mockRoomodes) {
+					return yaml.stringify({
+						customModes: [{ slug, name: "P", roleDefinition: "R", groups: ["read"] }],
+					})
+				}
+				throw new Error("File not found")
+			})
+			;(fs.writeFile as Mock).mockResolvedValue(undefined)
+			;(fs.rm as Mock).mockResolvedValue(undefined)
+
+			await manager.deleteCustomMode(slug)
+
+			// updateModesInFile should have been invoked for both files
+			expect(
+				(fs.writeFile as Mock).mock.calls.some((c) => path.normalize(c[0]) === path.normalize(mockRoomodes)),
+			).toBe(true)
+			expect(
+				(fs.writeFile as Mock).mock.calls.some(
+					(c) => path.normalize(c[0]) === path.normalize(mockSettingsPath),
+				),
+			).toBe(true)
+		})
+
+		it("deleteRulesFolder returns early for project scope when workspacePath is missing", async () => {
+			const anyManager = manager as any
+			;(getWorkspacePath as Mock).mockReturnValueOnce(null)
+			await anyManager.deleteRulesFolder("p", { slug: "p", source: "project" } as any, false)
+		})
+
+		it("deleteRulesFolder warns when removal fails (marketplace + custom modes)", async () => {
+			const anyManager = manager as any
+			;(vscode.window as any).showWarningMessage = vi.fn()
+
+			// Global scope (simpler to control)
+			const rulesFolder = path.join(os.homedir(), ".kilocode", "rules-x")
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === rulesFolder)
+			;(fs.rm as Mock).mockRejectedValueOnce(new Error("permission denied"))
+			await anyManager.deleteRulesFolder("x", { slug: "x", source: "global" } as any, false)
+			expect((vscode.window as any).showWarningMessage).toHaveBeenCalled()
+			;(fs.rm as Mock).mockRejectedValueOnce(new Error("permission denied"))
+			await anyManager.deleteRulesFolder("x", { slug: "x", source: "global" } as any, true)
+			expect((vscode.window as any).showWarningMessage).toHaveBeenCalled()
+		})
+
+		it("deleteRulesFolder outer catch is exercised when fileExistsAtPath throws", async () => {
+			const anyManager = manager as any
+			;(fileExistsAtPath as Mock).mockRejectedValueOnce(new Error("boom"))
+			await anyManager.deleteRulesFolder("x", { slug: "x", source: "global" } as any, false)
+			expect(vi.mocked(logger.error)).toHaveBeenCalled()
+		})
+
+		it("resetCustomModes catch path uses non-Error thrown values", async () => {
+			;(fs.writeFile as Mock).mockRejectedValueOnce("disk full")
+			await manager.resetCustomModes()
+			expect(vscode.window.showErrorMessage).toHaveBeenCalled()
+		})
+
+		it("checkRulesDirectoryHasContent covers workspace-missing + read errors", async () => {
+			const anyManager = manager as any
+
+			// workspace missing (mode not found anywhere) - avoid consuming the mock in getWorkspaceRoomodes
+			anyManager.cachedModes = []
+			anyManager.cachedAt = Date.now()
+			;(getWorkspacePath as Mock).mockReturnValueOnce(null)
+			const noWorkspace = await manager.checkRulesDirectoryHasContent("missing")
+			expect(noWorkspace).toBe(false)
+
+			// workspace present but roomodes read fails => false
+			;(getWorkspacePath as Mock).mockReturnValue(mockWorkspacePath)
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === mockRoomodes)
+			;(fs.readFile as Mock).mockRejectedValueOnce(new Error("cannot read"))
+			const readFails = await manager.checkRulesDirectoryHasContent("missing")
+			expect(readFails).toBe(false)
+
+			// mode exists (project) but workspace missing when resolving rules dir
+			anyManager.cachedModes = [
+				{ slug: "proj", name: "P", roleDefinition: "R", groups: ["read"], source: "project" },
+			]
+			anyManager.cachedAt = Date.now()
+			;(getWorkspacePath as Mock).mockReturnValueOnce(null)
+			const noWorkspaceForRules = await manager.checkRulesDirectoryHasContent("proj")
+			expect(noWorkspaceForRules).toBe(false)
+		})
+
+		it("checkRulesDirectoryHasContent covers non-directory, readdir error, and outer catch", async () => {
+			const anyManager = manager as any
+			anyManager.cachedModes = [
+				{ slug: "proj", name: "P", roleDefinition: "R", groups: ["read"], source: "project" },
+			]
+			anyManager.cachedAt = Date.now()
+			;(getWorkspacePath as Mock).mockReturnValue(mockWorkspacePath)
+
+			// not a directory
+			;(fs.stat as Mock).mockResolvedValueOnce({ isDirectory: () => false })
+			const notDir = await manager.checkRulesDirectoryHasContent("proj")
+			expect(notDir).toBe(false)
+
+			// readdir throws
+			;(fs.stat as Mock).mockResolvedValueOnce({ isDirectory: () => true })
+			;(fs.readdir as Mock).mockRejectedValueOnce(new Error("nope"))
+			const readdirFails = await manager.checkRulesDirectoryHasContent("proj")
+			expect(readdirFails).toBe(false)
+
+			// outer catch
+			;(manager as any).getCustomModes = vi.fn().mockRejectedValueOnce(new Error("boom"))
+			const outerCatch = await manager.checkRulesDirectoryHasContent("proj")
+			expect(outerCatch).toBe(false)
+			expect(vi.mocked(logger.error)).toHaveBeenCalled()
+		})
+
+		it("exportModeWithRules covers customPrompts merge and catch", async () => {
+			// customPrompts merge
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === mockRoomodes)
+			;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+				if (p === mockRoomodes) {
+					return yaml.stringify({
+						customModes: [{ slug: "test-mode", name: "Test Mode", roleDefinition: "R", groups: ["read"] }],
+					})
+				}
+				throw new Error("File not found")
+			})
+			;(fs.stat as Mock).mockRejectedValue(new Error("no rules dir"))
+
+			const result = await manager.exportModeWithRules("test-mode", {
+				roleDefinition: "NEW ROLE",
+				description: "DESC",
+				whenToUse: "WHEN",
+				customInstructions: "INSTR",
+			})
+			expect(result.success).toBe(true)
+			expect(result.yaml).toContain("NEW ROLE")
+			expect(result.yaml).toContain("DESC")
+
+			// catch path
+			vi.spyOn(manager, "getCustomModes").mockRejectedValueOnce(new Error("boom"))
+			const fail = await manager.exportModeWithRules("test-mode")
+			expect(fail.success).toBe(false)
+			expect(vi.mocked(logger.error)).toHaveBeenCalled()
+		})
+
+		it("importModeWithRules covers parseError catch and outer catch", async () => {
+			const malformed = `
+			customModes:
+			  - slug: x
+			    name: X
+			    roleDefinition: R
+			    groups: [read
+			`
+			const parseErrorResult = await manager.importModeWithRules(malformed)
+			expect(parseErrorResult.success).toBe(false)
+			expect(parseErrorResult.error).toContain("Invalid YAML format")
+
+			// outer catch: make updateCustomMode throw
+			vi.spyOn(manager, "updateCustomMode").mockRejectedValueOnce(new Error("update failed"))
+			const okYaml = yaml.stringify({
+				customModes: [{ slug: "x", name: "X", roleDefinition: "R", groups: ["read"] }],
+			})
+			const outerCatchResult = await manager.importModeWithRules(okYaml)
+			expect(outerCatchResult.success).toBe(false)
+			expect(vi.mocked(logger.error)).toHaveBeenCalled()
+		})
+
+		it("importModeWithRules exercises importRulesFiles global path + rm catch", async () => {
+			const importYaml = yaml.stringify({
+				customModes: [
+					{
+						slug: "global-import",
+						name: "Global Import",
+						roleDefinition: "R",
+						groups: ["read"],
+						rulesFiles: [{ relativePath: "sub/rule.md", content: "RULE" }],
+					},
+				],
+			})
+
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === mockSettingsPath)
+			;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+				if (p === mockSettingsPath) return yaml.stringify({ customModes: [] })
+				throw new Error("File not found")
+			})
+			;(fs.rm as Mock).mockRejectedValueOnce(new Error("not found"))
+			;(fs.mkdir as Mock).mockResolvedValue(undefined)
+			;(fs.writeFile as Mock).mockResolvedValue(undefined)
+
+			const result = await manager.importModeWithRules(importYaml, "global")
+			expect(result.success).toBe(true)
+		})
+
+		it("roomodes onDidDelete covers managedModesPath missing (false branch)", async () => {
+			const originalNodeEnv = process.env.NODE_ENV
+			process.env.NODE_ENV = "test"
+			try {
+				let roomodesOnDelete: undefined | (() => Promise<void>)
+				const settingsWatcher = {
+					onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				const roomodesWatcher = {
+					onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn((cb: any) => {
+						roomodesOnDelete = cb
+						return { dispose: vi.fn() }
+					}),
+					dispose: vi.fn(),
+				}
+				const managedModesPath = path.join(os.homedir(), ".kilocode", "workflowai", "managed_custom_modes.yaml")
+				;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => {
+					return p === mockSettingsPath || p === mockRoomodes // managed file does NOT exist
+				})
+				;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+					if (p === mockSettingsPath) {
+						return yaml.stringify({
+							customModes: [{ slug: "g", name: "G", roleDefinition: "r", groups: ["read"] }],
+						})
+					}
+					if (p === managedModesPath) {
+						throw new Error("File not found")
+					}
+					throw new Error("File not found")
+				})
+				;(vscode.workspace as any).createFileSystemWatcher = vi.fn().mockImplementation((watchPath: string) => {
+					if (path.normalize(watchPath) === path.normalize(mockRoomodes)) return roomodesWatcher
+					return settingsWatcher
+				})
+
+				const testManager = new CustomModesManager(mockContext, mockOnUpdate)
+				process.env.NODE_ENV = "development"
+				await (testManager as any).watchCustomModesFiles()
+				expect(roomodesOnDelete).toBeDefined()
+
+				await roomodesOnDelete!()
+				expect(mockContext.globalState.update).toHaveBeenCalledWith(
+					"customModes",
+					expect.arrayContaining([expect.objectContaining({ slug: "g" })]),
+				)
+				testManager.dispose()
+			} finally {
+				process.env.NODE_ENV = originalNodeEnv
+			}
+		})
+
+		it("roomodes onDidDelete catch branch is exercised when load fails", async () => {
+			const originalNodeEnv = process.env.NODE_ENV
+			process.env.NODE_ENV = "test"
+			try {
+				let roomodesOnDelete: undefined | (() => Promise<void>)
+				const settingsWatcher = {
+					onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+					dispose: vi.fn(),
+				}
+				const roomodesWatcher = {
+					onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+					onDidDelete: vi.fn((cb: any) => {
+						roomodesOnDelete = cb
+						return { dispose: vi.fn() }
+					}),
+					dispose: vi.fn(),
+				}
+				;(vscode.workspace as any).createFileSystemWatcher = vi.fn().mockImplementation((watchPath: string) => {
+					if (path.normalize(watchPath) === path.normalize(mockRoomodes)) return roomodesWatcher
+					return settingsWatcher
+				})
+
+				const testManager = new CustomModesManager(mockContext, mockOnUpdate)
+				;(testManager as any).loadModesFromFile = vi.fn().mockRejectedValue(new Error("boom"))
+
+				process.env.NODE_ENV = "development"
+				await (testManager as any).watchCustomModesFiles()
+				expect(roomodesOnDelete).toBeDefined()
+
+				const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+				await roomodesOnDelete!()
+				expect(consoleSpy).toHaveBeenCalled()
+				consoleSpy.mockRestore()
+				testManager.dispose()
+			} finally {
+				process.env.NODE_ENV = originalNodeEnv
+			}
+		})
+
+		it("deleteRulesFolder logs success when removal succeeds", async () => {
+			const anyManager = manager as any
+			const rulesFolder = path.join(os.homedir(), ".kilocode", "rules-y")
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === rulesFolder)
+			;(fs.rm as Mock).mockResolvedValueOnce(undefined)
+			await anyManager.deleteRulesFolder("y", { slug: "y", source: "global" } as any, false)
+			expect(vi.mocked(logger.info)).toHaveBeenCalled()
+		})
+
+		it("deleteCustomMode catch path covers non-Error thrown values", async () => {
+			;(manager as any).updateModesInFile = vi.fn().mockImplementation(async () => {
+				throw "boom"
+			})
+			// Ensure the mode exists so delete proceeds into queueWrite
+			;(fs.readFile as Mock).mockResolvedValueOnce(
+				yaml.stringify({ customModes: [{ slug: "x", name: "X", roleDefinition: "R", groups: ["read"] }] }),
+			)
+			await manager.deleteCustomMode("x")
+			expect(vscode.window.showErrorMessage).toHaveBeenCalled()
+		})
+
+		it("checkRulesDirectoryHasContent outer catch covers non-Error thrown values", async () => {
+			;(manager as any).getCustomModes = vi.fn().mockRejectedValueOnce("boom")
+			const result = await manager.checkRulesDirectoryHasContent("x")
+			expect(result).toBe(false)
+		})
+
+		it("exportModeWithRules reads .kilocodemodes when not present in merged modes", async () => {
+			const originalFolders = (vscode.workspace as any).workspaceFolders
+			;(vscode.workspace as any).workspaceFolders = []
+			try {
+				;(getWorkspacePath as Mock).mockReturnValue(mockWorkspacePath)
+				const roomodesPath = path.join(mockWorkspacePath, ".kilocodemodes")
+				;(fileExistsAtPath as Mock).mockImplementation(
+					async (p: string) => p === mockSettingsPath || p === roomodesPath,
+				)
+				;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+					if (p === mockSettingsPath) return yaml.stringify({ customModes: [] })
+					if (p === roomodesPath) {
+						return yaml.stringify({
+							customModes: [
+								{ slug: "fallback", name: "Fallback", roleDefinition: "R", groups: ["read"] },
+							],
+						})
+					}
+					throw new Error("File not found")
+				})
+				;(fs.stat as Mock).mockRejectedValue(new Error("no rules dir"))
+
+				const result = await manager.exportModeWithRules("fallback")
+				expect(result.success).toBe(true)
+				expect(result.yaml).toContain("Fallback")
+			} finally {
+				;(vscode.workspace as any).workspaceFolders = originalFolders
+			}
+		})
+
+		it("exportModeWithRules ignores roomodes read errors and falls back to built-in", async () => {
+			const originalFolders = (vscode.workspace as any).workspaceFolders
+			;(vscode.workspace as any).workspaceFolders = []
+			try {
+				;(getWorkspacePath as Mock).mockReturnValue(mockWorkspacePath)
+				const roomodesPath = path.join(mockWorkspacePath, ".kilocodemodes")
+				;(fileExistsAtPath as Mock).mockImplementation(
+					async (p: string) => p === mockSettingsPath || p === roomodesPath,
+				)
+				;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+					if (p === mockSettingsPath) return yaml.stringify({ customModes: [] })
+					if (p === roomodesPath) throw new Error("permission denied")
+					throw new Error("File not found")
+				})
+				;(fs.stat as Mock).mockRejectedValue(new Error("no rules dir"))
+
+				const result = await manager.exportModeWithRules("code")
+				expect(result.success).toBe(true)
+			} finally {
+				;(vscode.workspace as any).workspaceFolders = originalFolders
+			}
+		})
+
+		it("exportModeWithRules returns No workspace found for project-ish modes", async () => {
+			vi.spyOn(manager, "getCustomModes").mockResolvedValueOnce([
+				{ slug: "proj", name: "P", roleDefinition: "R", groups: ["read"], source: "project" } as any,
+			])
+			;(getWorkspacePath as Mock).mockReturnValue(null)
+			const result = await manager.exportModeWithRules("proj")
+			expect(result.success).toBe(false)
+			expect(result.error).toBe("No workspace found")
+			;(getWorkspacePath as Mock).mockReturnValue(mockWorkspacePath)
+		})
+
+		it("importRulesFiles covers expectedBasePath already ending with path.sep", async () => {
+			const anyManager = manager as any
+			;(fs.rm as Mock).mockResolvedValueOnce(undefined)
+			;(fs.mkdir as Mock).mockResolvedValue(undefined)
+			;(fs.writeFile as Mock).mockResolvedValue(undefined)
+
+			await anyManager.importRulesFiles(
+				{ slug: "sep/" } as any,
+				[{ relativePath: "rule.md", content: "RULE" }],
+				"global",
+			)
+		})
+
+		it("exportModeWithRules catch path covers non-Error thrown values", async () => {
+			;(manager as any).getCustomModes = vi.fn().mockRejectedValueOnce("boom")
+			const result = await manager.exportModeWithRules("x")
+			expect(result.success).toBe(false)
+		})
+
+		it("importModeWithRules catch path covers non-Error thrown values", async () => {
+			vi.spyOn(manager, "updateCustomMode").mockRejectedValueOnce("boom" as any)
+			const okYaml = yaml.stringify({
+				customModes: [{ slug: "x", name: "X", roleDefinition: "R", groups: ["read"] }],
+			})
+			const result = await manager.importModeWithRules(okYaml)
+			expect(result.success).toBe(false)
+		})
+
+		it("deleteRulesFolder outer catch covers non-Error thrown values", async () => {
+			const anyManager = manager as any
+			;(fileExistsAtPath as Mock).mockRejectedValueOnce("boom")
+			await anyManager.deleteRulesFolder("x", { slug: "x" } as any, false)
+			expect(vi.mocked(logger.error)).toHaveBeenCalled()
 		})
 	})
 })

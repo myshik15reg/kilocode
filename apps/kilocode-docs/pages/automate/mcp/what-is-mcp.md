@@ -43,14 +43,7 @@ MCP provides a standardized way for AI systems to interact with external tools a
 
 Ready to dig deeper? Check out these guides:
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/mcp/what-is-mcp.md
-- [MCP Overview](/features/mcp/overview) - A quick glance at the MCP documentation structure
-- [Using MCP in AlfaCode assistant](/features/mcp/using-mcp-in-kilo-code) - Get started with MCP in AlfaCode assistant, including creating simple servers
-- [MCP vs API](/features/mcp/mcp-vs-api) - Technical advantages compared to traditional APIs
-- [STDIO & SSE Transports](/features/mcp/server-transports) - Local vs. hosted deployment models
-=======
-- [MCP Overview](/docs/features/mcp/overview) - A quick glance at the MCP documentation structure
-- [Using MCP in Kilo Code](/docs/features/mcp/using-mcp-in-kilo-code) - Get started with MCP in Kilo Code, including creating simple servers
-- [MCP vs API](/docs/features/mcp/mcp-vs-api) - Technical advantages compared to traditional APIs
-- [STDIO & SSE Transports](/docs/features/mcp/server-transports) - Local vs. hosted deployment models
->>>>>>> origin/main:apps/kilocode-docs/pages/automate/mcp/what-is-mcp.md
+- [MCP Overview](/docs/automate/mcp/overview) - A quick glance at the MCP documentation structure
+- [Using MCP in AlfaCode assistant](/docs/automate/mcp/using-in-kilo-code) - Get started with MCP in AlfaCode assistant, including creating simple servers
+- [MCP vs API](/docs/automate/mcp/mcp-vs-api) - Technical advantages compared to traditional APIs
+- [STDIO & SSE Transports](/docs/automate/mcp/server-transports) - Local vs. hosted deployment models

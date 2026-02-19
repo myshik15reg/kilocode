@@ -11,8 +11,9 @@
 **Версия:** 0.1.0 (Phase 1 - Базовая структура)
 
 На данный момент реализована базовая структура проекта с минимальной грамматикой:
+
 - ✅ Распознавание процедур без параметров
-- ✅ Распознавание функций без параметров  
+- ✅ Распознавание функций без параметров
 - ✅ Поддержка комментариев (`//`)
 - ✅ Идентификаторы с поддержкой кириллицы
 - ✅ Case-insensitive ключевые слова
@@ -23,9 +24,9 @@
 - npm или yarn
 - Tree-sitter CLI (устанавливается автоматически как dev-зависимость)
 - **C/C++ компилятор** (для запуска тестов):
-  - Windows: Visual Studio Build Tools или MinGW
-  - macOS: Xcode Command Line Tools
-  - Linux: gcc/g++
+    - Windows: Visual Studio Build Tools или MinGW
+    - macOS: Xcode Command Line Tools
+    - Linux: gcc/g++
 
 ## Установка
 
@@ -105,22 +106,25 @@ tree-sitter-grammars/
 
 ## Спецификация
 
-Детальная спецификация грамматики находится в файле `docs/tree-sitter-onec-grammar-spec.md`.
+Детальная спецификация грамматики находится в файле [`docs/tree-sitter-onec-grammar-spec.md`](../docs/tree-sitter-onec-grammar-spec.md).
 
 ## Roadmap
 
 ### Phase 1 (Текущая фаза) ✅
+
 - [x] Базовая структура проекта
 - [x] Процедуры и функции (без параметров)
 - [x] Комментарии
 
 ### Phase 2 (Планируется)
+
 - [ ] Параметры процедур и функций
 - [ ] Директивы препроцессора
 - [ ] Переменные и константы
 - [ ] Базовые типы данных
 
 ### Phase 3 (Планируется)
+
 - [ ] Выражения и операторы
 - [ ] Управляющие конструкции
 - [ ] Обработка ошибок
@@ -146,7 +150,7 @@ tree-sitter-grammars/
 
 Проект находится в активной разработке. Если вы хотите внести вклад:
 
-1. Изучите спецификацию в `docs/tree-sitter-onec-grammar-spec.md`
+1. Изучите спецификацию в [`docs/tree-sitter-onec-grammar-spec.md`](../docs/tree-sitter-onec-grammar-spec.md)
 2. Создайте issue для обсуждения изменений
 3. Создайте pull request с описанием изменений
 
@@ -165,12 +169,13 @@ Kilocode Team
 Подробные инструкции по компиляции грамматики в WASM модуль см. в [WASM Compilation Guide](docs/WASM_COMPILATION.md).
 
 Краткая версия:
+
 ```bash
 cd tree-sitter-grammars
 npm install
 npm run generate
 tree-sitter build-wasm
-cp tree-sitter-onec.wasm ../dist/tree-sitter-onec.wasm
+cp tree-sitter-onec.wasm ../src/dist/tree-sitter-onec.wasm
 ```
 
 ### 2. Использование TreeSitterGraphExtractor
@@ -178,15 +183,12 @@ cp tree-sitter-onec.wasm ../dist/tree-sitter-onec.wasm
 TreeSitterGraphExtractor - общий экстрактор графа, используемый для всех языков.
 
 ```typescript
-import { TreeSitterGraphExtractor } from '../src/services/neo4j/extractors/tree-sitter-graph-extractor'
-import { getGraphQueryForLanguage } from '../src/services/tree-sitter/languageParser'
+import { TreeSitterGraphExtractor } from "../src/services/neo4j/extractors/tree-sitter-graph-extractor"
+import { getGraphQueryForLanguage } from "../src/services/tree-sitter/languageParser"
 
-const languageId = 'onec'
-const extractor = new TreeSitterGraphExtractor(
-	languageId,
-	getGraphQueryForLanguage(languageId) ?? '',
-)
-await extractor.initialize('dist/tree-sitter-onec.wasm')
+const languageId = "onec"
+const extractor = new TreeSitterGraphExtractor(languageId, getGraphQueryForLanguage(languageId) ?? "")
+await extractor.initialize("../src/dist/tree-sitter-onec.wasm")
 
 const code = `
 Функция Пример()
@@ -194,7 +196,7 @@ const code = `
 КонецФункции
 `
 
-const { entities, relationships } = await extractor.extract(code, 'test.bsl')
+const { entities, relationships } = await extractor.extract(code, "test.bsl")
 console.log(entities)
 console.log(relationships)
 ```

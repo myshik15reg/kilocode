@@ -16,7 +16,7 @@
 ### До миграции
 
 ```typescript
-import Parser from 'web-tree-sitter'
+import Parser from "web-tree-sitter"
 
 class MyExtractor {
 	private parser: Parser | null = null
@@ -39,12 +39,12 @@ class MyExtractor {
 ### После миграции
 
 ```typescript
-import { BaseExtractor } from '../tree-sitter/base-extractor'
-import { getGraphQueryForLanguage } from '../tree-sitter/languageParser'
+import { BaseExtractor } from "../tree-sitter/base-extractor"
+import { getGraphQueryForLanguage } from "../tree-sitter/languageParser"
 
 class MyExtractor extends BaseExtractor {
 	constructor() {
-		super('mylanguage')
+		super("mylanguage")
 	}
 
 	async initialize(wasmPath?: string) {
@@ -54,7 +54,7 @@ class MyExtractor extends BaseExtractor {
 	async extract(code: string, filePath: string) {
 		this.checkInitialized()
 		const tree = await this.parseCode(code)
-		const query = getGraphQueryForLanguage('mylanguage') ?? ''
+		const query = getGraphQueryForLanguage("mylanguage") ?? ""
 		const captures = this.executeQuery(tree, query)
 		return this.processCaptures(captures)
 	}
@@ -105,7 +105,7 @@ export const mylanguageGraphQuery = `
 export const mylanguageQueries = {
 	base: mylanguageBaseQuery,
 	graph: mylanguageGraphQuery,
-	full: mylanguageBaseQuery + '\n' + mylanguageGraphQuery,
+	full: mylanguageBaseQuery + "\n" + mylanguageGraphQuery,
 }
 
 export default mylanguageBaseQuery
@@ -115,7 +115,9 @@ export default mylanguageBaseQuery
 
 ### Шаг 1: Добавить WASM файл
 
-Поместите `tree-sitter-mylanguage.wasm` в соответствующую директорию.
+Поместите `tree-sitter-mylanguage.wasm` в директорию, откуда Kilocode загружает WASM парсеры.
+
+Для этого репозитория исходная точка — пакет расширения [`src/`](../src/package.json), а WASM-файлы лежат в `src/dist/` (например, `src/dist/tree-sitter-typescript.wasm`).
 
 ### Шаг 2: Создать queries
 
@@ -127,7 +129,7 @@ export default mylanguageBaseQuery
 
 ```typescript
 const EXTENSION_LANGUAGE_MAP = {
-	myext: { languageId: 'mylanguage', parserKey: 'myext', query: mylanguageQuery },
+	myext: { languageId: "mylanguage", parserKey: "myext", query: mylanguageQuery },
 	// ...
 }
 ```
@@ -137,13 +139,10 @@ const EXTENSION_LANGUAGE_MAP = {
 Если нужен Neo4j граф, используйте общий экстрактор:
 
 ```typescript
-import { TreeSitterGraphExtractor } from '../neo4j/extractors/tree-sitter-graph-extractor'
-import { getGraphQueryForLanguage } from '../tree-sitter/languageParser'
+import { TreeSitterGraphExtractor } from "../neo4j/extractors/tree-sitter-graph-extractor"
+import { getGraphQueryForLanguage } from "../tree-sitter/languageParser"
 
-const extractor = new TreeSitterGraphExtractor(
-	'mylanguage',
-	getGraphQueryForLanguage('mylanguage') ?? '',
-)
+const extractor = new TreeSitterGraphExtractor("mylanguage", getGraphQueryForLanguage("mylanguage") ?? "")
 await extractor.initialize()
 ```
 
@@ -152,7 +151,7 @@ await extractor.initialize()
 В [`src/services/tree-sitter/index.ts`](../src/services/tree-sitter/index.ts):
 
 ```typescript
-export { mylanguageQueries } from './queries/mylanguage'
+export { mylanguageQueries } from "./queries/mylanguage"
 ```
 
 ## Тестирование
@@ -160,14 +159,14 @@ export { mylanguageQueries } from './queries/mylanguage'
 ### Unit-тесты для queries
 
 ```typescript
-describe('mylanguage queries', () => {
-	it('should extract functions', async () => {
+describe("mylanguage queries", () => {
+	it("should extract functions", async () => {
 		const manager = getParserManager()
-		const parser = await manager.getParser('mylanguage')
+		const parser = await manager.getParser("mylanguage")
 		const tree = parser.parse(code)
 		const captures = executeQuery(tree, mylanguageQueries.base)
 
-		expect(captures).toContainEqual(expect.objectContaining({ name: 'definition.function' }))
+		expect(captures).toContainEqual(expect.objectContaining({ name: "definition.function" }))
 	})
 })
 ```
@@ -175,19 +174,16 @@ describe('mylanguage queries', () => {
 ### Интеграционные тесты
 
 ```typescript
-describe('mylanguage integration', () => {
-	it('should share parsers between components', async () => {
+describe("mylanguage integration", () => {
+	it("should share parsers between components", async () => {
 		// Imports omitted for brevity:
 		// TreeSitterGraphExtractor, getGraphQueryForLanguage
-		const searchParser = await loadRequiredLanguageParsers(['test.myext'])
-		const extractor = new TreeSitterGraphExtractor(
-			'mylanguage',
-			getGraphQueryForLanguage('mylanguage') ?? '',
-		)
+		const searchParser = await loadRequiredLanguageParsers(["test.myext"])
+		const extractor = new TreeSitterGraphExtractor("mylanguage", getGraphQueryForLanguage("mylanguage") ?? "")
 		await extractor.initialize()
 
 		const manager = getParserManager()
-		const directParser = await manager.getParser('mylanguage')
+		const directParser = await manager.getParser("mylanguage")
 
 		expect(searchParser.myext.parser).toBe(directParser)
 	})
@@ -198,25 +194,25 @@ describe('mylanguage integration', () => {
 
 1. **Всегда используйте TreeSitterParserManager**
 
-   - Не создавайте Parser напрямую
-   - Доверьтесь централизованному кэшированию
+    - Не создавайте Parser напрямую
+    - Доверьтесь централизованному кэшированию
 
 2. **Предпочитайте queries императивному обходу**
 
-   - Queries более декларативны
-   - Легче поддерживать
-   - Можно переиспользовать
+    - Queries более декларативны
+    - Легче поддерживать
+    - Можно переиспользовать
 
 3. **Наследуйтесь от BaseExtractor**
 
-   - Получаете инициализацию бесплатно
-   - Унифицированный API
-   - Автоматическая валидация
+    - Получаете инициализацию бесплатно
+    - Унифицированный API
+    - Автоматическая валидация
 
 4. **Создавайте двухуровневые queries**
-   - Base для поиска
-   - Graph для relationships
-   - Избегайте дублирования
+    - Base для поиска
+    - Graph для relationships
+    - Избегайте дублирования
 
 ## Troubleshooting
 
@@ -226,13 +222,14 @@ describe('mylanguage integration', () => {
 
 ```typescript
 // ❌ Плохо - разные пути
-await manager.getParser('onec', '/path1/tree-sitter-onec.wasm')
-await manager.getParser('onec', '/path2/tree-sitter-onec.wasm')
+await manager.getParser("onec", "/path1/tree-sitter-onec.wasm")
+await manager.getParser("onec", "/path2/tree-sitter-onec.wasm")
 
 // ✅ Хорошо - один путь
-const wasmPath = path.join(__dirname, 'tree-sitter-onec.wasm')
-await manager.getParser('onec', wasmPath)
-await manager.getParser('onec', wasmPath) // Вернёт кэшированный
+const wasmPath = path.join(process.cwd(), "dist", "tree-sitter-onec.wasm")
+// ^ в dev-репозитории это соответствует `src/dist/tree-sitter-onec.wasm` при запуске из пакета `src/`
+await manager.getParser("onec", wasmPath)
+await manager.getParser("onec", wasmPath) // Вернёт кэшированный
 ```
 
 ### Проблема: Разные результаты в поиске и графе
@@ -242,7 +239,7 @@ await manager.getParser('onec', wasmPath) // Вернёт кэшированны
 ```typescript
 // queries/mylanguage.ts
 export const mylanguageBaseQuery = `...` // Общая база
-export const mylanguageGraphQuery = mylanguageBaseQuery + '\n' + `...` // Расширение для графа
+export const mylanguageGraphQuery = mylanguageBaseQuery + "\n" + `...` // Расширение для графа
 ```
 
 ### Проблема: Extractor not initialized
@@ -260,11 +257,11 @@ const result = await extractor.extract(code, filePath)
 ### Пример 1: Простой экстрактор
 
 ```typescript
-import { BaseExtractor } from '../tree-sitter/base-extractor'
+import { BaseExtractor } from "../tree-sitter/base-extractor"
 
 export class SimpleExtractor extends BaseExtractor {
 	constructor() {
-		super('javascript')
+		super("javascript")
 	}
 
 	async extract(code: string, filePath: string) {
@@ -272,9 +269,9 @@ export class SimpleExtractor extends BaseExtractor {
 		const tree = await this.parseCode(code)
 
 		// Простое извлечение без queries
-		const functions = tree.rootNode.descendantsOfType('function_declaration')
+		const functions = tree.rootNode.descendantsOfType("function_declaration")
 		return functions.map((f) => ({
-			name: f.childForFieldName('name')?.text,
+			name: f.childForFieldName("name")?.text,
 			line: f.startPosition.row + 1,
 		}))
 	}
@@ -284,27 +281,27 @@ export class SimpleExtractor extends BaseExtractor {
 ### Пример 2: Query-based экстрактор
 
 ```typescript
-import { BaseExtractor } from '../tree-sitter/base-extractor'
-import { getGraphQueryForLanguage } from '../tree-sitter/languageParser'
+import { BaseExtractor } from "../tree-sitter/base-extractor"
+import { getGraphQueryForLanguage } from "../tree-sitter/languageParser"
 
 export class JavaScriptExtractor extends BaseExtractor {
 	constructor() {
-		super('javascript')
+		super("javascript")
 	}
 
 	async extract(code: string, filePath: string) {
 		this.checkInitialized()
 		const tree = await this.parseCode(code)
-		const query = getGraphQueryForLanguage('javascript') ?? ''
+		const query = getGraphQueryForLanguage("javascript") ?? ""
 		const captures = this.executeQuery(tree, query)
 
 		const entities = []
 		const relationships = []
 
 		for (const capture of captures) {
-			if (capture.name === 'function.declaration') {
+			if (capture.name === "function.declaration") {
 				entities.push({
-					type: 'function',
+					type: "function",
 					name: capture.node.text,
 					line: capture.node.startPosition.row + 1,
 				})
@@ -323,7 +320,7 @@ export class JavaScriptExtractor extends BaseExtractor {
 async function oldParse(code: string) {
 	await Parser.init()
 	const parser = new Parser()
-	const language = await Parser.Language.load('tree-sitter-python.wasm')
+	const language = await Parser.Language.load("tree-sitter-python.wasm")
 	parser.setLanguage(language)
 	return parser.parse(code)
 }
@@ -331,7 +328,7 @@ async function oldParse(code: string) {
 // После миграции
 async function newParse(code: string) {
 	const manager = getParserManager()
-	return await manager.parse('python', code, 'tree-sitter-python.wasm')
+	return await manager.parse("python", code, "tree-sitter-python.wasm")
 }
 ```
 

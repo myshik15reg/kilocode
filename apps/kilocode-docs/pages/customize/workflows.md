@@ -1,19 +1,13 @@
 ---
 title: "Workflows"
-description: "Create automated workflows with Kilo Code"
+description: "Create automated workflows with AlfaCode assistant"
 ---
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/agent-behavior/workflows.mdx
-Workflows automate repetitive tasks by defining step-by-step instructions for AlfaCode assistant to execute. Invoke any workflow by typing `/[workflow-name.md]` in the chat.
-
-<img src="/docs/img/slash-commands/workflows.png" alt="Workflows tab in AlfaCode assistant" width="600" />
-=======
 # Workflows
 
-Workflows automate repetitive tasks by defining step-by-step instructions for Kilo Code to execute. Invoke any workflow by typing `/[workflow-name.md]` in the chat.
+Workflows automate repetitive tasks by defining step-by-step instructions for AlfaCode assistant to execute. Invoke any workflow by typing `/[workflow-name.md]` in the chat.
 
-{% image src="/docs/img/slash-commands/workflows.png" alt="Workflows tab in Kilo Code" width="600" caption="Workflows tab in Kilo Code" /%}
->>>>>>> origin/main:apps/kilocode-docs/pages/customize/workflows.md
+{% image src="/docs/img/slash-commands/workflows.png" alt="Workflows tab in AlfaCode assistant" width="600" caption="Workflows tab in AlfaCode assistant" /%}
 
 ## Creating Workflows
 
@@ -32,10 +26,10 @@ Workflows are markdown files stored in `.kilocode/workflows/`:
 
 Workflows can leverage:
 
-- [Built-in tools](/docs/features/tools/tool-use-overview): [`read_file()`](/docs/features/tools/read-file), [`search_files()`](/docs/features/tools/search-files), [`execute_command()`](/docs/features/tools/execute-command)
+- [Built-in tools](/docs/automate/tools): [`read_file()`](/docs/automate/tools/read-file), [`search_files()`](/docs/automate/tools/search-files), [`execute_command()`](/docs/automate/tools/execute-command)
 - CLI tools: `gh`, `docker`, `npm`, custom scripts
-- [MCP integrations](/docs/features/mcp/overview): Slack, databases, APIs
-- [Mode switching](/docs/basic-usage/using-modes): [`new_task()`](/docs/features/tools/new-task) for specialized contexts
+- [MCP integrations](/docs/automate/mcp/overview): Slack, databases, APIs
+- [Mode switching](/docs/code-with-ai/agents/using-modes): [`new_task()`](/docs/automate/tools/new-task) for specialized contexts
 
 ## Common Workflow Patterns
 

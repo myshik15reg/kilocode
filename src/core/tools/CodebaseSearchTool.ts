@@ -38,6 +38,7 @@ export class CodebaseSearchTool extends BaseTool<"codebase_search"> {
 	async execute(params: CodebaseSearchParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 		let { query, path: directoryPrefix } = params // kilocode_change: const=>let
+		const normalizedQuery = typeof query === "string" ? query.trim() : ""
 
 		const workspacePath = task.cwd && task.cwd.trim() !== "" ? task.cwd : getWorkspacePath()
 
@@ -46,12 +47,21 @@ export class CodebaseSearchTool extends BaseTool<"codebase_search"> {
 			return
 		}
 
-		if (!query) {
+		if (!normalizedQuery) {
+			// FIX: codebase_search-missing-query (TestAnalyzer)
+			// Root cause: model sometimes sends empty `{}` tool arguments; previous behavior emitted user-visible "Retrying..." loops
 			task.consecutiveMistakeCount++
 			task.didToolFailInCurrentTurn = true
-			pushToolResult(await task.sayAndCreateMissingParamError("codebase_search", "query"))
+			pushToolResult(
+				formatResponse.toolError(
+					`Invalid arguments for codebase_search: missing or empty required parameter "query". Do NOT retry with {}. Retry with JSON arguments like: { "query": "<what you need to find>", "path": null }. If you don't know what to search for, ask the user a clarifying question instead of calling codebase_search with an empty query.`,
+					toolProtocol,
+				),
+			)
 			return
 		}
+
+		query = normalizedQuery
 
 		// kilocode_change start
 		// we don't always get relative path here

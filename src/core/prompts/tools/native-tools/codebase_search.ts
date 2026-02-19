@@ -36,7 +36,9 @@ export default {
 					description: PATH_PARAMETER_DESCRIPTION,
 				},
 			},
-			required: ["query", "path"],
+			// FIX: codebase_search-missing-query (TestAnalyzer)
+			// Root cause: schema drift marked `path` as required, which increases odds of malformed tool calls (e.g. `{}`)
+			required: ["query"],
 			additionalProperties: false,
 		},
 	},

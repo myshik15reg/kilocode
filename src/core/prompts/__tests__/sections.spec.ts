@@ -10,12 +10,8 @@ vi.mock("../../../services/code-index/managed/ManagedIndexer", () => ({
 
 import { addCustomInstructions } from "../sections/custom-instructions"
 import { getCapabilitiesSection } from "../sections/capabilities"
-<<<<<<< HEAD
-import { getRulesSection } from "../sections/rules"
-import { getAlfaCode1CSection } from "../sections/alfa-code-1c" // kilocode_change
-=======
 import { getRulesSection, getCommandChainOperator } from "../sections/rules"
->>>>>>> origin/main
+import { getAlfaCode1CSection } from "../sections/alfa-code-1c" // kilocode_change
 import { McpHub } from "../../../services/mcp/McpHub"
 import * as shellUtils from "../../../utils/shell"
 
@@ -131,7 +127,6 @@ describe("getRulesSection", () => {
 	})
 })
 
-<<<<<<< HEAD
 // kilocode_change start
 describe("getAlfaCode1CSection", () => {
 	it("returns empty string when author is not provided", () => {
@@ -142,13 +137,22 @@ describe("getAlfaCode1CSection", () => {
 	it("includes author value and templates when author is provided", () => {
 		const result = getAlfaCode1CSection("Ivanov I.I.")
 		expect(result).toContain("ALFACODE 1C CHANGE ANNOTATIONS")
-		expect(result).toContain("Ivanov I.I.")
+		expect(result).toContain("АвторИзменений = значение из поля «Автор изменений»")
+		expect(result).toContain('alfaCodeChangeAuthor): "Ivanov I.I."')
+		expect(result).toContain("// + Альфа-Лизинг. Ivanov I.I.")
+		expect(result).toContain("// - Альфа-Лизинг. Ivanov I.I.")
+		expect(result).toContain("Ivanov I.I. / <?")
 		expect(result).toContain("dd MMMM yyyy HH:mm")
 		expect(result).toContain("dd.MM.yyyy")
 	})
+
+	it("trims author value before inserting into templates", () => {
+		const result = getAlfaCode1CSection("  Ivanov I.I.  ")
+		expect(result).toContain('alfaCodeChangeAuthor): "Ivanov I.I."')
+		expect(result).toContain("// + Альфа-Лизинг. Ivanov I.I.")
+	})
 })
 // kilocode_change end
-=======
 describe("getCommandChainOperator", () => {
 	it("returns && for bash shell", () => {
 		vi.spyOn(shellUtils, "getShell").mockReturnValue("/bin/bash")
@@ -262,4 +266,3 @@ describe("getRulesSection shell-aware command chaining", () => {
 		expect(result).not.toContain("Note: Using")
 	})
 })
->>>>>>> origin/main

@@ -117,6 +117,72 @@ describe("QdrantVectorStore", () => {
 		})
 	})
 
+	describe("collection name resolution", () => {
+		beforeEach(() => {
+			vitest.clearAllMocks()
+
+			// Mock QdrantClient constructor
+			;(QdrantClient as any).mockImplementation(() => mockQdrantClientInstance)
+
+			// Mock crypto.createHash
+			;(createHash as any).mockReturnValue(mockCreateHashInstance)
+			mockCreateHashInstance.update.mockReturnValue(mockCreateHashInstance)
+			mockCreateHashInstance.digest.mockReturnValue(mockHashedPath)
+		})
+
+		it("should use trimmed vectorStoreName when valid", () => {
+			const vectorStoreWithName = new QdrantVectorStore(
+				mockWorkspacePath,
+				mockQdrantUrl,
+				mockVectorSize,
+				mockApiKey,
+				"  custom_collection-1  ",
+			)
+
+			expect((vectorStoreWithName as any).collectionName).toBe("custom_collection-1")
+			expect(createHash).not.toHaveBeenCalled()
+		})
+
+		it("should fall back to hash when vectorStoreName has invalid characters", () => {
+			const vectorStoreWithInvalidName = new QdrantVectorStore(
+				mockWorkspacePath,
+				mockQdrantUrl,
+				mockVectorSize,
+				mockApiKey,
+				"invalid name",
+			)
+
+			expect((vectorStoreWithInvalidName as any).collectionName).toBe(expectedCollectionName)
+			expect(createHash).toHaveBeenCalledWith("sha256")
+		})
+
+		it("should fall back to hash when vectorStoreName is whitespace-only", () => {
+			const vectorStoreWithWhitespaceName = new QdrantVectorStore(
+				mockWorkspacePath,
+				mockQdrantUrl,
+				mockVectorSize,
+				mockApiKey,
+				"   ",
+			)
+
+			expect((vectorStoreWithWhitespaceName as any).collectionName).toBe(expectedCollectionName)
+			expect(createHash).toHaveBeenCalledWith("sha256")
+		})
+
+		it("should fall back to hash when vectorStoreName exceeds max length", () => {
+			const vectorStoreWithLongName = new QdrantVectorStore(
+				mockWorkspacePath,
+				mockQdrantUrl,
+				mockVectorSize,
+				mockApiKey,
+				"a".repeat(256),
+			)
+
+			expect((vectorStoreWithLongName as any).collectionName).toBe(expectedCollectionName)
+			expect(createHash).toHaveBeenCalledWith("sha256")
+		})
+	})
+
 	describe("URL Parsing and Explicit Port Handling", () => {
 		describe("HTTPS URL handling", () => {
 			it("should use explicit port 443 for HTTPS URLs without port (fixes the main bug)", () => {

@@ -41,15 +41,10 @@
 		"ui": "Uživatelské rozhraní",
 		"experimental": "Experimentální",
 		"language": "Jazyk",
-<<<<<<< HEAD
 		"about": "O AlfaCode assistant",
-		"autoPurge": "Automatické čištění"
-=======
-		"about": "O Kilo Code",
 		"autoPurge": "Automatické čištění",
 		"agentBehaviour": "Chování agenta",
 		"ghost": "Automatické dokončování"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -160,6 +155,12 @@
 		"searchMinScoreResetTooltip": "Obnovit na výchozí hodnotu (0.4)",
 		"searchMaxResultsLabel": "Maximální počet výsledků vyhledávání",
 		"searchMaxResultsDescription": "Maximální počet výsledků vyhledávání, které se vrátí při dotazování indexu kódové báze. Vyšší hodnoty poskytují více kontextu, ale mohou zahrnovat méně relevantní výsledky.",
+		"rerankSectionLabel": "Reranker",
+		"rerankEnableLabel": "Povolit reranker",
+		"rerankEnableDescription": "Znovu seřadí kandidáty z Qdrant pomocí cross-encoderu před rozšířením grafu. Při nedostupnosti se vrátí k sémantickému pořadí.",
+		"rerankCandidateLimitLabel": "Limit kandidátů pro reranking",
+		"rerankTopKLabel": "Top-K po rerankingu",
+		"rerankTimeoutMsLabel": "Timeout rerankingu (ms)",
 		"resetToDefault": "Obnovit na výchozí",
 		"startIndexingButton": "Spustit indexování",
 		"clearIndexDataButton": "Vymazat data indexu",
@@ -208,7 +209,10 @@
 		},
 		"optional": "volitelné",
 		"cancelling": "Probíhá rušení...",
-		"cancelIndexingButton": "Zrušit indexování"
+		"cancelIndexingButton": "Zrušit indexování",
+		"neo4j": {
+			"enableDescription": "Povolí grafové vyhledávání a analýzu dopadů v kódu pomocí Neo4j. Funguje s Qdrant pro hybridní sémantické + grafové vyhledávání."
+		}
 	},
 	"autoApproval": {
 		"title": "Automatické schválení",

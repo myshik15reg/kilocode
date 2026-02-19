@@ -169,5 +169,9 @@ export interface ExtensionState {
 	followupAutoApproveTimeoutMs?: number
 	alwaysAllowUpdateTodoList?: boolean
 	maxConcurrentFileReads?: number
+	// kilocode_change start: LiteLLM image generation settings
+	litellmImageApiKey?: string
+	litellmImageBaseUrl?: string
+	// kilocode_change end
 	[key: string]: unknown
 }

@@ -370,12 +370,8 @@
 	},
 	"browser": {
 		"session": "Sesión del navegador",
-<<<<<<< HEAD
-		"rooWantsToUse": "AlfaCode assistant quiere usar el navegador",
-=======
 		"active": "Activo",
-		"rooWantsToUse": "Kilo Code quiere usar el navegador",
->>>>>>> origin/main
+		"rooWantsToUse": "AlfaCode assistant quiere usar el navegador",
 		"consoleLogs": "Registros de la consola",
 		"noNewLogs": "(No hay nuevos registros)",
 		"screenshot": "Captura de pantalla del navegador",

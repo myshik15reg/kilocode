@@ -57,3 +57,45 @@ Alfa supports code analysis and manipulation for multiple programming languages:
 
 For details on building and developing the extension, see [DEVELOPMENT.md](/DEVELOPMENT.md)
 
+## WorkFlowAI
+
+WorkFlowAI workflow pack встроен в `.vsix` и устанавливается вместе с расширением.
+
+- **Где лежит в `.vsix`:** каталог pack `extension/WorkFlowAI/` и manifest `extension/WorkFlowAI/.kilocode/embedded-pack.manifest.json` (поле `fingerprint`).
+- **Fingerprint:** значение `fingerprint` (sha256) из manifest. Если manifest отсутствует — fingerprint вычисляется на лету.
+- **Когда срабатывает авто-обновление:** при активации расширения fingerprint выбранного источника сравнивается с сохранённым. Если fingerprint изменился (или сменился источник) — выполняется **managed reconcile**.
+- **Политика обновления (managed reconcile):** overwrite/replace файлов + удаление stale путей в управляемых локациях.
+- **Backup:** перед перезаписью/удалением создаётся backup в `~/.kilocode/workflowai/backups/<timestamp>/<prev-id>/...` (по умолчанию хранится 5 последних слоёв).
+- **Modes:** definitions из [`.kilocodemodes`](WorkFlowAI/.kilocodemodes:1) устанавливаются в managed файл `~/.kilocode/workflowai/managed_custom_modes.yaml` и подхватываются [`CustomModesManager`](src/core/config/CustomModesManager.ts:54) как источник modes с самым низким приоритетом.
+- **Override pack:** настройка [`alfa-code-assistant.workflowAssetsPath`](src/package.json:551):
+    - пусто / не задано → используется embedded pack из VSIX;
+    - валидный абсолютный путь (или `~`) → используется внешний pack (он тоже обновляется по fingerprint);
+    - путь невалиден → fallback на embedded pack + диагностический лог.
+- **Важно:** embedded-путь резолвится через [`context.extensionUri`](src/extension.ts:228) (без workspace absolute paths).
+
+### Быстрая проверка (VSIX → диск)
+
+1. Проверить, что в `.vsix` действительно попала новая версия pack и fingerprint:
+
+```bash
+unzip -p <path-to.vsix> extension/WorkFlowAI/.kilocode/embedded-pack.manifest.json | jq -r .fingerprint
+```
+
+Если `jq` недоступен:
+
+```bash
+unzip -p <path-to.vsix> extension/WorkFlowAI/.kilocode/embedded-pack.manifest.json \
+  | python -c 'import json,sys; print(json.load(sys.stdin)["fingerprint"])'
+```
+
+2. После обновления/активации расширения проверить, что reconcile отработал:
+
+```bash
+# backup должен появиться при смене fingerprint
+ls -lt ~/.kilocode/workflowai/backups | head
+
+# managed modes файл должен отражать текущее содержимое pack
+sed -n '1,60p' ~/.kilocode/workflowai/managed_custom_modes.yaml
+```
+
+Подробности по содержимому pack: [docs/workflowai/README.md](docs/workflowai/README.md).

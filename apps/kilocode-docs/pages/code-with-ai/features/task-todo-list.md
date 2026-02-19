@@ -9,11 +9,7 @@ description: "Track and manage tasks with AI-generated todo lists"
 
 **Why it matters**: Complex workflows have lots of moving parts. Without structure, it's easy to miss steps, duplicate work, or forget what comes next.
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/basic-usage/task-todo-list.md
-<img src="/docs/img/task-todo-list/task-todo-list-1.png" alt="Task Todo List overview showing interactive checklist in AlfaCode assistant" width="500" />
-=======
-{% image src="/docs/img/task-todo-list/task-todo-list-1.png" alt="Task Todo List overview showing interactive checklist in Kilo Code" width="500" /%}
->>>>>>> origin/main:apps/kilocode-docs/pages/code-with-ai/features/task-todo-list.md
+{% image src="/docs/img/task-todo-list/task-todo-list-1.png" alt="Task Todo List overview showing interactive checklist in AlfaCode assistant" width="500" /%}
 
 ## How to trigger todo lists
 
@@ -28,7 +24,7 @@ description: "Track and manage tasks with AI-generated todo lists"
 - Ask Kilo to "use the [update_todo_list tool](/docs/features/tools/update-todo-list)"
 - Say "create a todo list"
 
-**The bottom line**: Kilo decides what goes in the list, but you can provide feedback during approval dialogs.
+**The bottom line**: AlfaCode assistant decides what goes in the list, but you can provide feedback during approval dialogs.
 
 ---
 
@@ -36,7 +32,7 @@ description: "Track and manage tasks with AI-generated todo lists"
 
 **Before**: You juggled task steps in your head or scattered notes, constantly wondering "what's next?"
 
-**Now**: Kilo creates structured checklists that update automatically as work progresses. You see exactly where you are and what's coming up.
+**Now**: AlfaCode assistant creates structured checklists that update automatically as work progresses. You see exactly where you are and what's coming up.
 
 ---
 

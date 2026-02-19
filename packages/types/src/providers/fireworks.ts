@@ -19,21 +19,6 @@ export type FireworksModelId =
 export const fireworksDefaultModelId: FireworksModelId = "accounts/fireworks/models/kimi-k2-instruct-0905"
 
 export const fireworksModels = {
-<<<<<<< HEAD
-	// kilocode_change start
-	"accounts/fireworks/models/kimi-k2-thinking": {
-		maxTokens: 4096,
-		contextWindow: 262144,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.6,
-		outputPrice: 2.5,
-		description:
-			"Kimi K2 Thinking is the latest, most capable version of the thinking model. Starting with Kimi K2, we built it as a thinking agent that reasons step-by-step while dynamically invoking tools.",
-	},
-	// kilocode_change end
-=======
->>>>>>> origin/main
 	"accounts/fireworks/models/kimi-k2-instruct-0905": {
 		maxTokens: 16384,
 		contextWindow: 262144,

@@ -5,6 +5,8 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { parseMarkdown } from "./markdownParser"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
 import { QueryCapture } from "web-tree-sitter"
+import { getDefinitionSupportedExtensions, resolveFileTypeByPath } from "../file-types/file-type-registry"
+import { parseXml } from "../../utils/xml"
 
 const METHOD_CAPTURE = ["definition.method", "definition.method.start"] // kilocode_change
 
@@ -38,77 +40,7 @@ function shouldSkipMinLines(lineCount: number, capture: QueryCapture, language: 
 }
 // kilocode_change end
 
-const extensions = [
-	"tla",
-	"js",
-	"jsx",
-	"ts",
-	"vue",
-	"tsx",
-	"py",
-	// Rust
-	"rs",
-	"go",
-	// C
-	"c",
-	"h",
-	// C++
-	"cpp",
-	"hpp",
-	// C#
-	"cs",
-	// Ruby
-	"rb",
-	"java",
-	"php",
-	"swift",
-	// Solidity
-	"sol",
-	// Kotlin
-	"kt",
-	"kts",
-	// Elixir
-	"ex",
-	"exs",
-	// Elisp
-	"el",
-	// HTML
-	"html",
-	"htm",
-	// Markdown
-	"md",
-	"markdown",
-	// JSON
-	"json",
-	// CSS
-	"css",
-	// SystemRDL
-	"rdl",
-	// OCaml
-	"ml",
-	"mli",
-	// Lua
-	"lua",
-	// Scala
-	"scala",
-	// TOML
-	"toml",
-	// Zig
-	"zig",
-	// Elm
-	"elm",
-	// Embedded Template
-	"ejs",
-	"erb",
-	// Visual Basic .NET
-	"vb",
-	// 1C:Enterprise
-	"bsl",
-	"mdo",
-	"xdto",
-	"form",
-	"mxlx",
-].map((e) => `.${e}`)
+const extensions = getDefinitionSupportedExtensions()
 
 export { extensions }
 
@@ -155,15 +87,123 @@ export async function parseSourceCodeDefinitionsForFile(
 	}
 
 	// For other file types, load parser and use tree-sitter
-	const languageParsers = await loadRequiredLanguageParsers([filePath])
+	const fileType = resolveFileTypeByPath(filePath)
+	if (!fileType || fileType.contentKind === "skip") {
+		return undefined
+	}
 
-	// Parse the file if we have a parser for it
-	const definitions = await parseFile(filePath, languageParsers, rooIgnoreController)
-	if (definitions) {
-		return `# ${path.basename(filePath)}\n${definitions}`
+	// Check if we have permission to access this file
+	if (rooIgnoreController && !rooIgnoreController.validateAccess(filePath)) {
+		return undefined
+	}
+
+	// Read file content once for both tree-sitter and fallbacks.
+	const fileContent = await fs.readFile(filePath, "utf8")
+	const lines = fileContent.split("\n")
+
+	const fallbackDefinitions = buildFallbackDefinitions(fileType.contentKind, lines)
+
+	if (fileType.contentKind === "treeSitter") {
+		try {
+			const languageParsers = await loadRequiredLanguageParsers([filePath])
+			const definitions = await parseFile(filePath, languageParsers, rooIgnoreController)
+			if (definitions) {
+				return `# ${path.basename(filePath)}\n${definitions}`
+			}
+		} catch {
+			// Graceful fallback: missing WASM, parser errors, etc.
+		}
+	}
+
+	if (fallbackDefinitions) {
+		return `# ${path.basename(filePath)}\n${fallbackDefinitions}`
 	}
 
 	return undefined
+}
+
+function buildFallbackDefinitions(contentKind: string, lines: string[]): string | null {
+	if (contentKind === "xml") {
+		// Best-effort validate; parsing errors should not crash definitions.
+		try {
+			parseXml(lines.join("\n"))
+		} catch {
+			// ignore
+		}
+		return extractXmlLikeDefinitions(lines)
+	}
+
+	if (contentKind === "plainText") {
+		return extractPlainTextDefinitions(lines)
+	}
+
+	if (contentKind === "treeSitter") {
+		// Tree-sitter fallbacks (e.g. missing WASM)
+		return extractPlainTextDefinitions(lines)
+	}
+
+	return null
+}
+
+function extractPlainTextDefinitions(lines: string[]): string | null {
+	const results: string[] = []
+	const max = 50
+
+	const add = (lineIdx: number) => {
+		const line = lines[lineIdx]
+		if (!line) return
+		results.push(`${lineIdx + 1}--${lineIdx + 1} | ${line}`)
+	}
+
+	for (let i = 0; i < lines.length && results.length < max; i++) {
+		const line = lines[i] ?? ""
+		const trimmed = line.trim()
+		if (!trimmed) continue
+
+		// 1C:Enterprise BSL (RU + EN keywords)
+		if (/^(процедура|функция|procedure|function)\b/i.test(trimmed)) {
+			add(i)
+			continue
+		}
+
+		// Generic section headers
+		if (/^={3,}$/.test(trimmed) || /^-{3,}$/.test(trimmed) || /^\[.+\]$/.test(trimmed)) {
+			add(i)
+			continue
+		}
+
+		// First non-empty line is still useful context
+		if (results.length === 0) {
+			add(i)
+		}
+	}
+
+	return results.length > 0 ? results.join("\n") : null
+}
+
+function extractXmlLikeDefinitions(lines: string[]): string | null {
+	const results: string[] = []
+	const seenTags = new Set<string>()
+	const max = 50
+
+	for (let i = 0; i < lines.length && results.length < max; i++) {
+		const raw = lines[i] ?? ""
+		const trimmed = raw.trim()
+		if (!trimmed) continue
+		if (trimmed.startsWith("<?xml")) continue
+		if (trimmed.startsWith("<!--")) continue
+		if (trimmed.startsWith("</")) continue
+
+		const match = trimmed.match(/^<([A-Za-z_][\w:.-]*)\b/)
+		if (!match) continue
+		const tag = match[1]
+		if (!tag || seenTags.has(tag)) continue
+		seenTags.add(tag)
+		results.push(`${i + 1}--${i + 1} | ${raw}`)
+	}
+
+	if (results.length > 0) return results.join("\n")
+	return extractPlainTextDefinitions(lines)
 }
 
 /*
@@ -326,7 +366,7 @@ async function parseFile(
 	// Check if we have a parser for this file type
 	const { parser, query } = languageParsers[extLang] || {}
 	if (!parser || !query) {
-		return `Unsupported file type: ${filePath}`
+		return null
 	}
 
 	try {
@@ -349,6 +389,6 @@ async function parseFile(
 }
 
 // Экспорт новой инфраструктуры унификации
-export { TreeSitterParserManager, getParserManager } from './parser-manager'
-export { BaseExtractor } from './base-extractor'
-export { onecQueries } from './queries/onec'
+export { TreeSitterParserManager, getParserManager } from "./parser-manager"
+export { BaseExtractor } from "./base-extractor"
+export { onecQueries } from "./queries/onec"

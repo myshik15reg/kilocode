@@ -196,8 +196,4 @@ Some scenarios benefit from a hybrid approach:
 
 ## Configuring Transports in AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/features/mcp/server-transports.md
-For detailed information on configuring STDIO and SSE transports in AlfaCode assistant, including example configurations, see the [Understanding Transport Types](/features/mcp/using-mcp-in-kilo-code#understanding-transport-types) section in the Using MCP in AlfaCode assistant guide.
-=======
-For detailed information on configuring STDIO and SSE transports in Kilo Code, including example configurations, see the [Understanding Transport Types](/docs/features/mcp/using-mcp-in-kilo-code#understanding-transport-types) section in the Using MCP in Kilo Code guide.
->>>>>>> origin/main:apps/kilocode-docs/pages/automate/mcp/server-transports.md
+For detailed information on configuring STDIO and SSE transports in AlfaCode assistant, including example configurations, see the [Understanding Transport Types](/docs/automate/mcp/using-in-kilo-code#understanding-transport-types) section in the Using MCP in AlfaCode assistant guide.

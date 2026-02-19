@@ -292,6 +292,28 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			// This should not throw an error
 			await expect(manager.handleSettingsChange()).resolves.not.toThrow()
 		})
+
+		it("should run Neo4j catch-up when Neo4j is enabled and no restart is required", async () => {
+			const mockConfigManager = {
+				loadConfiguration: vi.fn().mockResolvedValue({ requiresRestart: false }),
+				isFeatureConfigured: true,
+				isFeatureEnabled: true,
+				isNeo4jEnabled: true,
+				currentRerankConfig: {},
+			}
+			;(manager as any)._configManager = mockConfigManager
+
+			const syncNeo4jWithCurrentIndex = vi.fn().mockResolvedValue(undefined)
+			;(manager as any)._orchestrator = { syncNeo4jWithCurrentIndex }
+			;(manager as any)._searchService = { updateRerankConfig: vi.fn() }
+
+			vi.spyOn(manager, "isFeatureEnabled", "get").mockReturnValue(true)
+			vi.spyOn(manager, "isFeatureConfigured", "get").mockReturnValue(true)
+
+			await manager.handleSettingsChange()
+
+			expect(syncNeo4jWithCurrentIndex).toHaveBeenCalledTimes(1)
+		})
 	})
 
 	describe("embedder validation integration", () => {

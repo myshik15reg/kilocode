@@ -4,11 +4,7 @@ sidebar_label: ChatGPT Plus/Pro
 
 # Using ChatGPT Subscriptions With AlfaCode assistant
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/providers/openai-chatgpt-plus-pro.md
-1. Open AlfaCode assistant settings (click the gear icon <Codicon name="gear" /> in the AlfaCode assistant panel).
-=======
-1. Open Kilo Code settings (click the gear icon {% codicon name="gear" /%} in the Kilo Code panel).
->>>>>>> origin/main:apps/kilocode-docs/pages/ai-providers/openai-chatgpt-plus-pro.md
+1. Open AlfaCode assistant settings (click the gear icon {% codicon name="gear" /%} in the AlfaCode assistant panel).
 2. In **API Provider**, select **OpenAI – ChatGPT Plus/Pro**.
 3. Click **Sign in to OpenAI Codex**.
 4. Finish the sign-in flow in your browser.

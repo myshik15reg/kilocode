@@ -41,15 +41,10 @@
 		"ui": "UI",
 		"experimental": "Eksperymentalne",
 		"language": "Język",
-<<<<<<< HEAD
 		"about": "O AlfaCode assistant",
-		"autoPurge": "Auto-czyszczenie"
-=======
-		"about": "O Kilo Code",
 		"autoPurge": "Auto-czyszczenie",
 		"agentBehaviour": "Zachowanie agenta",
 		"ghost": "Autouzupełnianie"
->>>>>>> origin/main
 	},
 	"about": {
 		"bugReport": {
@@ -192,9 +187,18 @@
 		"searchMinScoreResetTooltip": "Zresetuj do wartości domyślnej (0.4)",
 		"searchMaxResultsLabel": "Maksymalna liczba wyników wyszukiwania",
 		"searchMaxResultsDescription": "Maksymalna liczba wyników wyszukiwania zwracanych podczas zapytania do indeksu bazy kodu. Wyższe wartości zapewniają więcej kontekstu, ale mogą zawierać mniej istotne wyniki.",
+		"rerankSectionLabel": "Reranker",
+		"rerankEnableLabel": "Włącz reranker",
+		"rerankEnableDescription": "Ponownie porządkuje kandydatów z Qdrant przy użyciu cross-encodera przed rozszerzeniem grafu. W razie niedostępności wraca do kolejności semantycznej.",
+		"rerankCandidateLimitLabel": "Limit kandydatów do rerankingu",
+		"rerankTopKLabel": "Top-K po rerankingu",
+		"rerankTimeoutMsLabel": "Limit czasu rerankingu (ms)",
 		"resetToDefault": "Przywróć domyślne",
 		"cancelling": "Anulowanie...",
-		"cancelIndexingButton": "Anuluj indeksowanie"
+		"cancelIndexingButton": "Anuluj indeksowanie",
+		"neo4j": {
+			"enableDescription": "Włącza wyszukiwanie grafowe i analizę wpływu z Neo4j. Działa z Qdrant dla hybrydowego wyszukiwania semantycznego + grafowego."
+		}
 	},
 	"autoApprove": {
 		"toggleShortcut": "Możesz skonfigurować globalny skrót dla tego ustawienia <SettingsLink>w preferencjach swojego IDE</SettingsLink>.",

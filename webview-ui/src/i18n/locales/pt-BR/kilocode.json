@@ -1,14 +1,8 @@
 {
 	"welcome": {
-<<<<<<< HEAD
 		"greeting": "Bem-vindo ao AlfaCode assistant!",
 		"introText1": "AlfaCode assistant é um agente de codificação AI gratuito e de código aberto.",
 		"introText2": "Funciona com os mais recentes modelos de IA como Claude Sonnet 4.5, Gemini 2.5 Pro, GPT-5, e mais de 450 outros.",
-=======
-		"greeting": "Bem-vindo ao Kilo Code!",
-		"introText1": "Kilo Code é um agente de codificação AI gratuito e de código aberto.",
-		"introText2": "Funciona com os mais recentes modelos de IA como Claude Opus 4.5, Gemini 3 Pro, GPT-5.2, e mais de 450 outros.",
->>>>>>> origin/main
 		"introText3": "Crie uma conta gratuita e receba $20 em créditos bônus ao recarregar pela primeira vez.",
 		"ctaButton": "Começar",
 		"manualModeButton": "Use sua própria chave de API",
@@ -17,13 +11,9 @@
 	},
 	"lowCreditWarning": {
 		"addCredit": "Adicionar crédito",
-<<<<<<< HEAD
 		"lowBalance": "Seu saldo do AlfaCode assistant está baixo",
-		"newOrganization": "Usando o Kilo para trabalho?"
-=======
-		"lowBalance": "Seu saldo do Kilo Code está baixo",
+		"newOrganization": "Usando o AlfaCode assistant para trabalho?",
 		"switchToFreeModel": "Mudar para um modelo gratuito"
->>>>>>> origin/main
 	},
 	"pagination": {
 		"previous": "Anterior",
@@ -54,19 +44,12 @@
 			"skills": "Habilidades"
 		},
 		"provider": {
-<<<<<<< HEAD
 			"account": "Conta AlfaCode assistant",
 			"apiKey": "Chave de API do AlfaCode assistant",
 			"login": "Entrar no AlfaCode assistant",
 			"logout": "Sair do AlfaCode assistant",
-			"automaticFetch": "Os modelos mais recentes estão automaticamente disponíveis no AlfaCode assistant. Se você não tem certeza de qual modelo escolher, o AlfaCode assistant funciona melhor com os modelos recomendados listados no topo em <strong>negrito</strong>.",
-=======
-			"account": "Conta Kilo Code",
-			"apiKey": "Chave de API do Kilo Code",
-			"login": "Entrar no Kilo Code",
-			"logout": "Sair do Kilo Code",
 			"loginForPremiumModels": "Faça login para acessar modelos e recursos premium",
->>>>>>> origin/main
+			"automaticFetch": "Os modelos mais recentes estão automaticamente disponíveis no AlfaCode assistant. Se você não tem certeza de qual modelo escolher, o AlfaCode assistant funciona melhor com os modelos recomendados listados no topo em <strong>negrito</strong>.",
 			"providerRouting": {
 				"title": "Roteamento de Provedor",
 				"managedByOrganization": "Gerenciar roteamento de provedor em nível de organização",

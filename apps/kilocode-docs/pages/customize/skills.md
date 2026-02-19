@@ -1,6 +1,6 @@
 ---
 title: "Skills"
-description: "Extend Kilo Code capabilities with skills"
+description: "Extend AlfaCode assistant capabilities with skills"
 ---
 
 # Skills
@@ -323,14 +323,10 @@ Have you created a skill that others might find useful? Share it with the commun
 - If your skill includes bundled resources (scripts, templates), ensure they are well-documented
 - Follow the [contribution guidelines](https://github.com/Kilo-Org/kilo-marketplace/blob/main/CONTRIBUTING.md) in the marketplace repository
 
-<<<<<<< HEAD:apps/kilocode-docs/docs/agent-behavior/skills.md
-For more details on contributing to AlfaCode assistant, see the [Contributing Guide](/contributing).
-=======
-For more details on contributing to Kilo Code, see the [Contributing Guide](/docs/contributing).
->>>>>>> origin/main:apps/kilocode-docs/pages/customize/skills.md
+For more details on contributing to AlfaCode assistant, see the [Contributing Guide](/docs/contributing).
 
 ## Related
 
-- [Custom Modes](/docs/agent-behavior/custom-modes) - Create custom modes that can use specific skills
-- [Custom Instructions](/docs/agent-behavior/custom-instructions) - Global instructions vs. skill-based instructions
-- [Custom Rules](/docs/agent-behavior/custom-rules) - Project-level rules complementing skills
+- [Custom Modes](/docs/customize/custom-modes) - Create custom modes that can use specific skills
+- [Custom Instructions](/docs/customize/custom-instructions) - Global instructions vs. skill-based instructions
+- [Custom Rules](/docs/customize/custom-rules) - Project-level rules complementing skills
