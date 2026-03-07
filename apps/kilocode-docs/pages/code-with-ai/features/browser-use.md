@@ -1,23 +1,23 @@
 ---
 title: "Browser Use"
-description: "Use AlfaCode assistant to interact with web browsers"
+description: "Using Kilo Code to interact with web browsers"
 ---
 
 # Browser Use
 
-AlfaCode assistant provides sophisticated browser automation capabilities that let you interact with websites directly from VS Code. This feature enables testing web applications, automating browser tasks, and capturing screenshots without leaving your development environment.
+Kilo Code provides sophisticated browser automation capabilities that let you interact with websites directly from VS Code. This feature enables testing web applications, automating browser tasks, and capturing screenshots without leaving your development environment.
 
 {% callout type="info" title="Model Support Required" %}
-Browser Use within AlfaCode assistant requires an advanced agentic model and has been tested with Claude Sonnet 3.5, 3.7, and 4.
+Browser Use within Kilo Code requires the use and advanced agentic model, and has only been tested with Claude Sonnet 3.5, 3.7, and 4
 {% /callout %}
 
 ## How Browser Use Works
 
-By default, AlfaCode assistant uses a built-in browser that:
+By default, Kilo Code uses a built-in browser that:
 
-- Launches automatically when you ask AlfaCode assistant to visit a website
+- Launches automatically when you ask Kilo to visit a website
 - Captures screenshots of web pages
-- Allows AlfaCode assistant to interact with web elements
+- Allows Kilo to interact with web elements
 - Runs invisibly in the background
 
 All of this happens directly within VS Code, with no setup required.
@@ -26,10 +26,10 @@ All of this happens directly within VS Code, with no setup required.
 
 A typical browser interaction follows this pattern:
 
-1. Ask AlfaCode assistant to visit a website
-2. AlfaCode assistant launches the browser and shows you a screenshot
+1. Ask Kilo to visit a website
+2. Kilo launches the browser and shows you a screenshot
 3. Request additional actions (clicking, typing, scrolling)
-4. AlfaCode assistant closes the browser when finished
+4. Kilo closes the browser when finished
 
 For example:
 
@@ -45,7 +45,7 @@ Can you check if my website at https://kilocode.ai is displaying correctly?
 Browse http://localhost:3000, scroll down to the bottom of the page and check if the footer information is displaying correctly.
 ```
 
-{% image src="/docs/features/KiloCodeBrowser.png" alt="Browser use example" width="300" /%}
+{% image src="/docs/img/browser-use/KiloCodeBrowser.png" alt="Browser use example" width="300" /%}
 
 ## How Browser Actions Work
 
@@ -81,7 +81,7 @@ Key characteristics:
 
 ### Accessing Settings
 
-To change Browser / Computer Use settings in AlfaCode assistant:
+To change Browser / Computer Use settings in Kilo:
 
 1. Open Settings by clicking the gear icon {% codicon name="gear" /%} → Browser / Computer Use
 
@@ -89,7 +89,7 @@ To change Browser / Computer Use settings in AlfaCode assistant:
 
 ### Enable/Disable Browser Use
 
-**Purpose**: Master toggle that enables AlfaCode assistant to interact with websites using a Puppeteer-controlled browser.
+**Purpose**: Master toggle that enables Kilo to interact with websites using a Puppeteer-controlled browser.
 
 To change this setting:
 
@@ -99,7 +99,7 @@ To change this setting:
 
 ### Viewport Size
 
-**Purpose**: Determines the resolution of the browser session AlfaCode assistant uses.
+**Purpose**: Determines the resolution of the browser session Kilo Code uses.
 
 **Tradeoff**: Higher values provide a larger viewport but increase token usage.
 

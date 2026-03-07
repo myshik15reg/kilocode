@@ -5,9 +5,9 @@ description: "Deploy your applications with Kilo Code"
 
 # Deploy
 
-Kilo Deploy lets you ship **Next.js** and **static sites** directly from AlfaCode assistant, with:
+Kilo Deploy lets you ship **Next.js** and **static sites** directly from Kilo Code, with:
 
-- **One-click deployment** from the AlfaCode assistant dashboard
+- **One-click deployment** from the Kilo Code dashboard
 - **No manual configuration** — deployment settings are generated for you
 - **Deployment history** with logs and build details
 - **Automatic rebuilds** on every GitHub push
@@ -31,7 +31,7 @@ Kilo Deploy lets you ship **Next.js** and **static sites** directly from AlfaCod
 Enable the **GitHub Integration** before deploying:
 
 1. Go to **Integrations → GitHub**
-2. Click **Configure** and follow the prompts to connect GitHub to AlfaCode assistant
+2. Click **Configure** and follow the prompts to connect GitHub to Kilo Code
 
 ---
 
@@ -52,7 +52,7 @@ Enable the **GitHub Integration** before deploying:
 
 ### 3. Click **Deploy**
 
-AlfaCode assistant will:
+Kilo Code will:
 
 - Build your project
 - Upload artifacts

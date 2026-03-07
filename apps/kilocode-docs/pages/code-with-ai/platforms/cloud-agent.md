@@ -1,15 +1,15 @@
 ---
 title: "Cloud Agent"
-description: "Use AlfaCode assistant in the browser"
+description: "Using Kilo Code in the browser"
 ---
 
 # {% $markdoc.frontmatter.title %}
 
-Cloud Agents let you run AlfaCode assistant in the cloud from any device, without relying on your local machine. They provide a remote development environment that can read and modify your GitHub repositories, run commands, and auto-commit changes as work progresses.
+Cloud Agents let you run Kilo Code in the cloud from any device, without relying on your local machine. They provide a remote development environment that can read and modify your GitHub and GitLab repositories, run commands, and auto-commit changes as work progresses.
 
 ## What Cloud Agents Enable
 
-- Run AlfaCode assistant remotely from a browser
+- Run Kilo Code remotely from a browser
 - Auto-create branches and push work continuously
 - Use env vars + startup commands to shape the workspace
 - Work from anywhere while keeping your repo in sync
@@ -25,20 +25,21 @@ Before using Cloud Agents:
 
 - **Compute is free during limited beta**
     - Please provide any feedback in our Cloud Agents beta Discord channel: [Kilo Discord](https://kilo.ai/discord)
-- **AlfaCode assistant credits are still used** when the agent performs work (model usage, operations, etc.).
+- **Kilo Code credits are still used** when the agent performs work (model usage, operations, etc.).
 
 ## How to Use
 
 1. **Connect your GitHub or GitLab account** in the [Integrations](https://app.kilo.ai/integrations) tab of your personal or organization dashboard.
 2. **Select a repository** to use as your workspace.
 3. **Add environment variables** (secrets supported) and set optional startup commands.
-4. **Start chatting with AlfaCode assistant.**
+4. **Start chatting with Kilo Code.**
 
 Your work is always pushed to GitHub, ensuring nothing is lost.
 
 ## How Cloud Agents Work
 
 - Each user receives an **isolated Linux container** with common dev tools preinstalled (Node.js, git, gh CLI, glab CLI, etc.).
+- Python is not included in the base image, but `apt` is available so you can install it or other packages as needed.
 - All Cloud Agent chats share a **single container instance**, while each session gets its own workspace directory.
 - When a session begins:
 
@@ -98,10 +99,10 @@ Global skills (`~/.kilocode/skills/`) are not available in Cloud Agents since th
 
 Cloud Agents are great for:
 
-- **Remote debugging** using AlfaCode assistant debug mode
+- **Remote debugging** using Kilo Code debug mode
 - **Exploration of unfamiliar codebases** without touching your local machine
 - **Architect-mode brainstorming** while on the go
-- **Automated refactors or tech debt cleanup** driven by AlfaCode assistant
+- **Automated refactors or tech debt cleanup** driven by Kilo Code
 - **Offloading CI-like tasks**, experiments, or batch updates
 
 ## Webhook Triggers
@@ -160,7 +161,7 @@ Care should be taken when deciding to use webhooks as they are susceptible to pr
 - Each message can run for **up to 15 minutes**.
   Break large tasks into smaller steps; use a `plan.md` or `todo.md` file to keep scope clear.
 - **Context is persistent across messages.**
-  AlfaCode assistant remembers previous turns within the same session.
+  Kilo Code remembers previous turns within the same session.
 - **Auto/YOLO mode is always on.**
   The agent will modify code without prompting for confirmation.
 - **Sessions are restorable locally** and local sessions can be resumed in Cloud Agent.

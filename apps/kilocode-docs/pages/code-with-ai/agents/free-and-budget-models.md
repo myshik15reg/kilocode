@@ -5,13 +5,19 @@ description: Learn how to use Kilo Code effectively while minimizing or eliminat
 
 # Free and Budget Models
 
-**Why this matters:** AI model costs can add up quickly during development. This guide shows you how to use AlfaCode assistant effectively while minimizing or eliminating costs through free models, budget-friendly alternatives, and smart usage strategies.
+**Why this matters:** AI model costs can add up quickly during development. This guide shows you how to use Kilo Code effectively while minimizing or eliminating costs through free models, budget-friendly alternatives, and smart usage strategies.
 
 ## Completely Free Options
 
-### Grok Code Fast 1
+### Kilo Gateway Free Models
 
-This frontier AI model is 100% free in AlfaCode assistant for a limited time. [See the blog post for more details](https://blog.kilo.ai/p/grok-code-fast-get-this-frontier-ai-model-free).
+From time to time, Kilo works with AI inference providers to offer free models. These are available through the Kilo Gateway. Currently, we are offering these free models:
+
+- **MiniMax M2.1 (free)** - A capable model from MiniMax with strong general-purpose performance.
+- **Z.AI: GLM 4.7 (free)** - Latest variant of the GLM family, purpose-built for agent-centric applications.
+- **MoonshotAI: Kimi K2.5 (free)** - Optimized for agentic capabilities, including advanced tool use, reasoning, and code synthesis.
+- **Giga Potato (free)** - A stealth release model that is free in its evaluation period.
+- **Arcee AI: Trinity Large Preview (free)** - A preview model from Arcee AI with strong capabilities.
 
 ### OpenRouter Free Tier Models
 
@@ -21,13 +27,13 @@ OpenRouter offers several models with generous free tiers. **Note:** You'll need
 
 1. Create a free [OpenRouter account](https://openrouter.ai)
 2. Get your API key from the dashboard
-3. Configure AlfaCode assistant with the OpenRouter provider
+3. Configure Kilo Code with the OpenRouter provider
 
 **Available free models:**
 
 - **Qwen3 Coder (free)** - Optimized for agentic coding tasks such as function calling, tool use, and long-context reasoning over repositories.
 - **Z.AI: GLM 4.5 Air (free)** - Lightweight variant of the GLM-4.5 family, purpose-built for agent-centric applications.
-- **DeepSeek: R1 0528 (free)** - Performance on par with OpenAI o1, with fully visible reasoning tokens.
+- **DeepSeek: R1 0528 (free)** - Performance on par with OpenAI o1, but open-sourced and with fully open reasoning tokens.
 - **MoonshotAI: Kimi K2 (free)** - Optimized for agentic capabilities, including advanced tool use, reasoning, and code synthesis.
 
 ## Cost-Effective Premium Models
@@ -96,11 +102,11 @@ When you need more capability than free models provide, these options deliver ex
 @src/components/UserProfile.tsx:45-67
 ```
 
-**Use Memory Bank effectively:**
+**Reuse context effectively:**
 
-- Store project context once in [Memory Bank](/docs/advanced-usage/memory-bank)
+- Keep key project notes in your repository (e.g., a AGENTS.md or docs folder)
 - Reduces need to re-explain project details
-- Saves 200-500 tokens per conversation
+- Saves tokens per conversation
 
 **Strategic file mentions:**
 
@@ -117,7 +123,7 @@ When you need more capability than free models provide, these options deliver ex
 
 **Use API Configuration Profiles:**
 
-- Set up [multiple profiles](/docs/features/api-configuration-profiles) for different cost tiers
+- Set up [multiple profiles](/docs/ai-providers) for different cost tiers
 - Quick switching between free, budget, and premium models
 - Match model capability to task complexity
 
@@ -125,9 +131,9 @@ When you need more capability than free models provide, these options deliver ex
 
 **Use appropriate modes to limit expensive operations:**
 
-- **[Ask Mode](/docs/basic-usage/using-modes#ask-mode):** Information gathering without code changes
-- **[Architect Mode](/docs/basic-usage/using-modes#architect-mode):** Planning without expensive file operations
-- **[Debug Mode](/docs/basic-usage/using-modes#debug-mode):** Focused troubleshooting
+- **[Ask Mode](/docs/code-with-ai/agents/using-modes#ask-mode):** Information gathering without code changes
+- **[Architect Mode](/docs/code-with-ai/agents/using-modes#architect-mode):** Planning without expensive file operations
+- **[Debug Mode](/docs/code-with-ai/agents/using-modes#debug-mode):** Focused troubleshooting
 
 **Custom modes for budget control:**
 
@@ -214,14 +220,14 @@ When you need more capability than free models provide, these options deliver ex
 **Set spending limits:**
 
 - Use provider billing alerts
-- Configure [rate limits](/docs/advanced-usage/rate-limits-costs) to control usage
+- Configure [provider rate limits](/docs/ai-providers) to control usage
 - Set daily/monthly budgets
 
 ### Cost-Saving Tips
 
 **Reduce system prompt size:**
 
-- [Disable MCP](/docs/features/mcp/using-mcp-in-kilo-code) if not using external tools
+- [Disable MCP](/docs/automate/mcp/using-in-kilo-code) if not using external tools
 - Use focused custom modes
 - Minimize unnecessary context
 
@@ -242,7 +248,7 @@ When you need more capability than free models provide, these options deliver ex
 ### Quick Setup Guide
 
 1. **Create OpenRouter account** for free models
-2. **Configure multiple providers** in AlfaCode assistant
+2. **Configure multiple providers** in Kilo Code
 3. **Set up API Configuration Profiles** for easy switching
 4. **Escalate to budget models** when needed
 5. **Reserve premium models** for complex work

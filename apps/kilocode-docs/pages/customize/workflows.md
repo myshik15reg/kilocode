@@ -1,13 +1,13 @@
 ---
 title: "Workflows"
-description: "Create automated workflows with AlfaCode assistant"
+description: "Create automated workflows with Kilo Code"
 ---
 
 # Workflows
 
-Workflows automate repetitive tasks by defining step-by-step instructions for AlfaCode assistant to execute. Invoke any workflow by typing `/[workflow-name.md]` in the chat.
+Workflows automate repetitive tasks by defining step-by-step instructions for Kilo Code to execute. Invoke any workflow by typing `/[workflow-name.md]` in the chat.
 
-{% image src="/docs/img/slash-commands/workflows.png" alt="Workflows tab in AlfaCode assistant" width="600" caption="Workflows tab in AlfaCode assistant" /%}
+{% image src="/docs/img/slash-commands/workflows.png" alt="Workflows tab in Kilo Code" width="600" caption="Workflows tab in Kilo Code" /%}
 
 ## Creating Workflows
 
@@ -26,10 +26,10 @@ Workflows are markdown files stored in `.kilocode/workflows/`:
 
 Workflows can leverage:
 
-- [Built-in tools](/docs/automate/tools): [`read_file()`](/docs/automate/tools/read-file), [`search_files()`](/docs/automate/tools/search-files), [`execute_command()`](/docs/automate/tools/execute-command)
+- [Built-in tools](/docs/features/tools/tool-use-overview): [`read_file()`](/docs/features/tools/read-file), [`search_files()`](/docs/features/tools/search-files), [`execute_command()`](/docs/features/tools/execute-command)
 - CLI tools: `gh`, `docker`, `npm`, custom scripts
 - [MCP integrations](/docs/automate/mcp/overview): Slack, databases, APIs
-- [Mode switching](/docs/code-with-ai/agents/using-modes): [`new_task()`](/docs/automate/tools/new-task) for specialized contexts
+- [Mode switching](/docs/code-with-ai/agents/using-modes): [`new_task()`](/docs/features/tools/new-task) for specialized contexts
 
 ## Common Workflow Patterns
 
@@ -85,7 +85,7 @@ Parameters needed (ask if not provided):
 - Reviewers to assign
 ```
 
-Now you can trigger this workflow by typing `/submit-pr.md` in the chat. AlfaCode assistant will:
+Now you can trigger this workflow by typing `/submit-pr.md` in the chat. Kilo Code will:
 
 - Scan your code for common issues before committing
 - Run your test suite to catch problems early

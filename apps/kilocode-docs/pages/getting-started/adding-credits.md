@@ -13,11 +13,11 @@ Once you've used any initial free Kilo Credits, you can easily add more:
 
 These options are available to purchase from your [personal profile page](https://app.kilo.ai/profile).
 
-You can also use subscriptions or credits you may have purchased directly with an AI provider by adding your keys on the [Bring your own Key (BYOK)](https://app.kilo.ai/byok) settings screen. For setup details and supported providers, see [Bring Your Own Key (BYOK)](/docs/basic-usage/byok). If your provider is not yet supported, you can also [directly connect your provider](/docs/getting-started/connecting-api-provider.md) in the extension and CLI.
+You can also use subscriptions or credits you may have purchased directly with an AI provider by adding your keys on the [Bring your own Key (BYOK)](https://app.kilo.ai/byok) settings screen. For setup details and supported providers, see [AI Providers documentation](/docs/ai-providers). If your provider is not yet supported, you can also [directly connect your provider](/docs/getting-started/setup-authentication) in the extension and CLI.
 
 ## Transparent Pricing
 
-At AlfaCode assistant, we believe in complete pricing transparency:
+At Kilo Code, we believe in complete pricing transparency:
 
 - Our pricing matches the model provider's API rates exactly
 - We don't take any commission or markup.
@@ -27,11 +27,11 @@ At AlfaCode assistant, we believe in complete pricing transparency:
 
 ## Future Plans
 
-We're continuously working to improve AlfaCode assistant and expand our offerings:
+We're continuously working to improve Kilo Code and expand our offerings:
 
 - Additional LLM providers will be added in the future
 - More payment options and other plans are under development
 
 {% callout type="tip" title="Need Help?" %}
-If you have any questions about pricing or tokens, please reach out to our [support team](mailto:hi@kilo.ai) or ask in our <a href={DISCORD_URL} target='_blank'>Discord community</a>.
+If you have any questions about pricing or tokens, please reach out to our [support team](mailto:hi@kilo.ai) or ask in our [Discord community](https://kilo.ai/discord).
 {% /callout %}

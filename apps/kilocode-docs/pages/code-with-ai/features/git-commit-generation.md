@@ -5,7 +5,7 @@ description: "Automatically generate meaningful git commit messages"
 
 # Generate Commit Messages
 
-Generate descriptive commit messages automatically based on your staged git changes. AlfaCode assistant analyzes your staged files and creates conventional commit messages that follow best practices.
+Generate descriptive commit messages automatically based on your staged git changes. Kilo Code analyzes your staged files and creates conventional commit messages that follow best practices.
 
 {% callout type="info" %}
 This feature only analyzes **staged changes**. Make sure to stage your files using `git add` or via `VS Code` interface before generating commit messages.
@@ -24,7 +24,7 @@ The git commit message generator:
 ### Generating a Commit Message
 
 1. Stage your changes using `git add` or the VS Code git interface
-2. In the VS Code Source Control panel, look for the `AlfaCode assistant` logo next to the commit message field
+2. In the VS Code Source Control panel, look for the `Kilo Code` logo next to the commit message field)
 3. Click the logo to generate a commit message
 
 The generated message will appear in the commit message field, ready for you to review and modify if needed.
@@ -78,7 +78,7 @@ You can configure which API profile to use for commit message generation:
 2. Select a specific profile or use the currently selected one
 
 {% callout type="tip" %}
-Consider creating a dedicated [API configuration profile](/docs/features/api-configuration-profiles) with a faster, more cost-effective model specifically for commit message generation.
+Consider creating a dedicated [API configuration profile](/docs/ai-providers) with a faster, more cost-effective model specifically for commit message generation.
 {% /callout %}
 
 ## Best Practices
@@ -158,5 +158,5 @@ The feature integrates with VS Code's built-in git functionality. If you encount
 
 ## Related Features
 
-- [API Configuration Profiles](/docs/features/api-configuration-profiles) - Use different models for commit generation
-- [Settings Management](/docs/getting-started/settings) - Manage all your AlfaCode assistant preferences
+- [API Configuration Profiles](/docs/ai-providers) - Use different models for commit generation
+- [Settings Management](/docs/getting-started/settings) - Manage all your Kilo Code preferences

@@ -1,13 +1,13 @@
 ---
-title: "AlfaCode assistant CLI"
-description: "Use AlfaCode assistant from the command line"
+title: "Kilo CLI"
+description: "Using Kilo Code from the command line"
 ---
 
-# AlfaCode assistant CLI
+# Kilo CLI
 
 Orchestrate agents from your terminal. Plan, debug, and code fast with keyboard-first navigation on the command line.
 
-The AlfaCode assistant CLI uses the same underlying technology that powers the IDE extensions, so you can expect the same workflow to handle agentic coding tasks from start to finish.
+The Kilo Code CLI uses the same underlying technology that powers the IDE extensions, so you can expect the same workflow to handle agentic coding tasks from start to finish.
 
 ## Install
 
@@ -33,14 +33,14 @@ to start the CLI and begin a new task with your preferred model and relevant mod
 
 ## Update
 
-Upgrade the AlfaCode assistant CLI package:
+Upgrade the Kilo CLI package:
 
 `npm update -g @kilocode/cli`
 
-## What you can do with AlfaCode assistant CLI
+## What you can do with Kilo Code CLI
 
 - **Plan and execute code changes without leaving your terminal.** Use your command line to make edits to your project without opening your IDE.
-- **Switch between hundreds of LLMs without constraints.** Other CLI tools only work with one model or curate opinionated lists. With AlfaCode assistant, you can switch models without booting up another tool.
+- **Switch between hundreds of LLMs without constraints.** Other CLI tools only work with one model or curate opinionated lists. With Kilo, you can switch models without booting up another tool.
 - **Choose the right mode for the task in your workflow.** Select between Architect, Ask, Debug, Orchestrator, or custom agent modes.
 - **Automate tasks.** Get AI assistance writing shell scripts for tasks like renaming all of the files in a folder or transforming sizes for a set of images.
 - **Extend capabilities with skills.** Add domain expertise and repeatable workflows through [Agent Skills](#skills).
@@ -62,30 +62,32 @@ Upgrade the AlfaCode assistant CLI package:
 
 ### CLI commands
 
-| Command               | Description                                                      | Example                        |
-| --------------------- | ---------------------------------------------------------------- | ------------------------------ |
-| `kilocode`            | Start interactive                                                |                                |
-| `/mode`               | Switch between modes (architect, code, debug, ask, orchestrator) | `/mode orchestrator`           |
-| `/model`              | Learn about available models and switch between them             |                                |
-| `/model list`         | List available models                                            |                                |
-| `/model info`         | Prints description for a specific model by name                  | `/model info z-ai/glm-4.5v`    |
-| `/model select`       | Select and switch to a new model                                 |                                |
-| `/checkpoint list`    | List all available checkpoints                                   |                                |
-| `/checkpoint restore` | Revert to a specific checkpoint (destructive action)             | `/checkpoint restore 41db173a` |
-| `/tasks`              | View task history                                                |                                |
-| `/tasks search`       | Search tasks by query                                            | `/tasks search bug fix`        |
-| `/tasks select`       | Switch to a specific task                                        | `/tasks select abc123`         |
-| `/tasks page`         | Go to a specific page                                            | `/tasks page 2`                |
-| `/tasks next`         | Go to next page of task history                                  |                                |
-| `/tasks prev`         | Go to previous page of task history                              |                                |
-| `/tasks sort`         | Change sort order                                                | `/tasks sort most-expensive`   |
-| `/tasks filter`       | Filter tasks                                                     | `/tasks filter favorites`      |
-| `/teams`              | List all organizations you can switch into                       |                                |
-| `/teams select`       | Switch to a different organization                               |                                |
-| `/config`             | Open configuration editor (same as `kilocode config`)            |                                |
-| `/new`                | Start a new task with the agent with a clean slate               |                                |
-| `/help`               | List available commands and how to use them                      |                                |
-| `/exit`               | Exit the CLI                                                     |                                |
+| Command                     | Description                                                      | Example                        |
+| --------------------------- | ---------------------------------------------------------------- | ------------------------------ |
+| `kilocode`                  | Start interactive                                                |                                |
+| `/mode`                     | Switch between modes (architect, code, debug, ask, orchestrator) | `/mode orchestrator`           |
+| `/model`                    | Learn about available models and switch between them             |                                |
+| `/model list`               | List available models                                            |                                |
+| `/model info`               | Prints description for a specific model by name                  | `/model info z-ai/glm-4.5v`    |
+| `/model select`             | Select and switch to a new model                                 |                                |
+| `/checkpoint list`          | List all available checkpoints                                   |                                |
+| `/checkpoint restore`       | Revert to a specific checkpoint (destructive action)             | `/checkpoint restore 41db173a` |
+| `/tasks`                    | View task history                                                |                                |
+| `/tasks search`             | Search tasks by query                                            | `/tasks search bug fix`        |
+| `/tasks select`             | Switch to a specific task                                        | `/tasks select abc123`         |
+| `/tasks page`               | Go to a specific page                                            | `/tasks page 2`                |
+| `/tasks next`               | Go to next page of task history                                  |                                |
+| `/tasks prev`               | Go to previous page of task history                              |                                |
+| `/tasks sort`               | Change sort order                                                | `/tasks sort most-expensive`   |
+| `/tasks filter`             | Filter tasks                                                     | `/tasks filter favorites`      |
+| `/teams`                    | List all organizations you can switch into                       |                                |
+| `/teams select`             | Switch to a different organization                               |                                |
+| `/config`                   | Open configuration editor (same as `kilocode config`)            |                                |
+| `/new`                      | Start a new task with the agent with a clean slate               |                                |
+| `/local-review`             | Review current branch changes vs base branch                     |                                |
+| `/local-review-uncommitted` | Review uncommitted changes (staged + unstaged)                   |                                |
+| `/help`                     | List available commands and how to use them                      |                                |
+| `/exit`                     | Exit the CLI                                                     |                                |
 
 ## Skills
 
@@ -284,7 +286,7 @@ Project-specific commands override global commands with the same name, allowing 
 
 ## Checkpoint Management
 
-AlfaCode assistant automatically creates checkpoints as you work, allowing you to revert to previous states in your project's history.
+Kilo Code automatically creates checkpoints as you work, allowing you to revert to previous states in your project's history.
 
 ### Viewing Checkpoints
 
@@ -308,7 +310,7 @@ Revert to a specific checkpoint using the full git hash:
 /checkpoint restore 00d185d5020969752bc9ae40823b9d6a723696e2
 ```
 
-:::danger Warning
+{% callout type="danger" title="Warning" %}
 Checkpoint restoration is a **destructive action**:
 
 - Performs a git hard reset (all uncommitted changes will be lost)
@@ -316,9 +318,20 @@ Checkpoint restoration is a **destructive action**:
 - Cannot be undone
 
 Make sure you've committed or backed up any work you want to keep before restoring.
-:::
+{% /callout %}
 
 **Aliases:** `/cp` can be used as a shorthand for `/checkpoint`
+
+## Local Code Reviews
+
+Review your code locally before pushing — catch issues early without waiting for PR reviews. Local code reviews give you AI-powered feedback on your changes without creating a public pull request.
+
+### Commands
+
+| Command                     | Description                                    |
+| --------------------------- | ---------------------------------------------- |
+| `/local-review`             | Review current branch changes vs base branch   |
+| `/local-review-uncommitted` | Review uncommitted changes (staged + unstaged) |
 
 ## Task History
 
@@ -408,13 +421,13 @@ You can reference the [Provider Configuration Guide](https://github.com/Kilo-Org
 
 to complete configuration with an interactive workflow on the command line.
 
-:::tip
+{% callout type="tip" %}
 You can also use the `/config` slash command during an interactive session, which is equivalent to running `kilocode config`.
-:::
+{% /callout %}
 
 ## Parallel mode
 
-Parallel mode allows multiple AlfaCode assistant instances to work in parallel on the same directory, without conflicts. You can spawn as many AlfaCode assistant instances as you need! Once finished, changes will be available on a separate git branch.
+Parallel mode allows multiple Kilo Code instances to work in parallel on the same directory, without conflicts. You can spawn as many Kilo Code instances as you need! Once finished, changes will be available on a separate git branch.
 
 ```bash
 # Prerequisite: must be within a valid git repository
@@ -434,7 +447,7 @@ kilocode --parallel --auto "improve abc"
 
 ## Auto-approval settings
 
-Auto-approval allows the AlfaCode assistant CLI to perform operations without first requiring user confirmation. These settings can either be built up over time in interactive mode, or by editing your config file using `kilocode config` or editing the file directly at `~/.kilocode/config.json`.
+Auto-approval allows the Kilo Code CLI to perform operations without first requiring user confirmation. These settings can either be built up over time in interactive mode, or by editing your config file using `kilocode config` or editing the file directly at `~/.kilocode/config.json`.
 
 ### Default auto-approval settings
 
@@ -529,9 +542,9 @@ The `execute.allowed` and `execute.denied` lists support hierarchical pattern ma
 
 ## Interactive Mode
 
-Interactive mode is the default mode when running AlfaCode assistant without the `--auto` flag, designed to work interactively with a user through the console.
+Interactive mode is the default mode when running Kilo Code without the `--auto` flag, designed to work interactively with a user through the console.
 
-In interactive mode AlfaCode assistant will request approval for operations which have not been auto-approved, allowing the user to review and approve operations before they are executed, and optionally add them to the auto-approval list.
+In interactive mode Kilo Code will request approval for operations which have not been auto-approved, allowing the user to review and approve operations before they are executed, and optionally add them to the auto-approval list.
 
 ### Interactive Command Approval
 
@@ -556,7 +569,7 @@ This allows you to progressively build your auto-approval rules without manually
 
 ## Autonomous mode (Non-Interactive)
 
-Autonomous mode allows AlfaCode assistant to run in automated environments like CI/CD pipelines without requiring user interaction.
+Autonomous mode allows Kilo Code to run in automated environments like CI/CD pipelines without requiring user interaction.
 
 ```bash
 # Run in autonomous mode with a prompt
@@ -583,7 +596,7 @@ When running in Autonomous mode (`--auto` flag):
 
 ### JSON Output Mode
 
-Use the `--json` flag with `--auto` to get structured JSON output instead of the default terminal UI. This is useful for programmatic integration and parsing of AlfaCode assistant responses.
+Use the `--json` flag with `--auto` to get structured JSON output instead of the default terminal UI. This is useful for programmatic integration and parsing of Kilo Code responses.
 
 ```bash
 # Standard autonomous mode with terminal UI
@@ -624,7 +637,7 @@ This instructs the AI to proceed without user input.
 
 ```yaml
 # GitHub Actions example
-- name: Run AlfaCode assistant
+- name: Run Kilo Code
   run: |
       echo "Implement the new feature" | kilocode --auto --timeout 600
 ```

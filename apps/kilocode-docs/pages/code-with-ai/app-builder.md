@@ -23,14 +23,14 @@ Kilo's **App Builder** lets you create end-to-end applications through natural l
 
 Before using App Builder:
 
-- **Active AlfaCode assistant account**  
+- **Active Kilo Code account**  
   Sign up or log in at [app.kilo.ai](https://app.kilo.ai)
 
 ---
 
 ## Cost
 
-- You pay only for the AI model usage via AlfaCode assistant credits
+- You pay only for the AI model usage via Kilo Code credits
 - Credit consumption varies based on app complexity and number of iterations
 - Deployment hosting is included during limited launch period
 

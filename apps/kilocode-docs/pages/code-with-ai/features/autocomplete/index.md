@@ -5,7 +5,7 @@ description: "AI-powered code autocompletion in Kilo Code"
 
 # Autocomplete
 
-AlfaCode assistant's autocomplete feature provides intelligent code suggestions and completions while you're typing, helping you write code faster and more efficiently. It offers both automatic and manual triggering options.
+Kilo Code's autocomplete feature provides intelligent code suggestions and completions while you're typing, helping you write code faster and more efficiently. It offers both automatic and manual triggering options.
 
 ## How Autocomplete Works
 
@@ -22,7 +22,7 @@ Autocomplete analyzes your code context and provides:
 
 #### Auto-trigger suggestions
 
-When enabled, AlfaCode assistant automatically shows inline suggestions when you pause typing. This provides a seamless coding experience where suggestions appear naturally as you work.
+When enabled, Kilo Code automatically shows inline suggestions when you pause typing. This provides a seamless coding experience where suggestions appear naturally as you work.
 
 - **Auto Trigger Delay**: Configure the delay (in seconds) before suggestions appear after you stop typing
 - Default is 3 seconds, but this can be adjusted up or down
@@ -34,7 +34,7 @@ For more control over when suggestions appear:
 
 1. Position your cursor where you need assistance
 2. Press `Cmd+L` (Mac) or `Ctrl+L` (Windows/Linux)
-3. AlfaCode assistant analyzes the surrounding context
+3. Kilo Code analyzes the surrounding context
 4. Receive immediate improvements or completions
 
 This is ideal for:
@@ -50,7 +50,7 @@ You can customize this keyboard shortcut as well in your VS Code settings.
 
 #### Enable Chat Autocomplete
 
-When enabled, AlfaCode assistant will suggest completions as you type in the chat input. Press Tab to accept suggestions.
+When enabled, Kilo Code will suggest completions as you type in the chat input. Press Tab to accept suggestions.
 
 ## Provider and Model Selection
 
@@ -58,10 +58,10 @@ Autocomplete currently uses **Codestral** (by Mistral AI) as the underlying mode
 
 ### How the Provider is Chosen
 
-AlfaCode assistant automatically selects a provider for autocomplete in the following priority order:
+Kilo Code automatically selects a provider for autocomplete in the following priority order:
 
 - **Mistral** (using `codestral-latest`)
-- **AlfaCode assistant** (using `mistralai/codestral-2508`)
+- **Kilo Code** (using `mistralai/codestral-2508`)
 - **OpenRouter** (using `mistralai/codestral-2508`)
 - **Requesty** (using `mistral/codestral-latest`)
 - **Bedrock** (using `mistral.codestral-2508-v1:0`)
@@ -76,7 +76,7 @@ AlfaCode assistant automatically selects a provider for autocomplete in the foll
 
 ## Disable Rival Autocomplete
 
-We recommend disabling rival autocompletes to optimize your experience with AlfaCode assistant. To disable GitHub Copilot autocomplete in VSCode, go to **Settings** and navigate to **GitHub** > **Copilot: Advanced** (or search for 'copilot').
+We recommend disabling rival autocompletes to optimize your experience with Kilo Code. To disable GitHub Copilot autocomplete in VSCode, go to **Settings** and navigate to **GitHub** > **Copilot: Advanced** (or search for 'copilot').
 
 Then, toggle to 'disabled':
 
@@ -95,6 +95,18 @@ If using Cursor, go to **Settings** > **Cursor Settings** > **Tab**, and toggle 
 5. **Configure providers wisely**: Consider using faster, cheaper models for autocomplete while keeping more powerful models for chat
 
 ## Tips
+
+{% callout type="tip" %}
+**When to use chat vs autocomplete:** Use chat for multi-file changes, refactoring, or when you need to explain intent. Use autocomplete for quick, localized edits where the context is already clear from surrounding code.
+{% /callout %}
+
+{% callout type="tip" %}
+**Steer autocomplete with comments:** Write a comment describing what you want before triggering autocomplete, or type a function signature—autocomplete will fill in the implementation.
+{% /callout %}
+
+{% callout type="tip" %}
+**Treat suggestions as drafts:** Accept autocomplete suggestions quickly, then refine. It's often faster to fix a 90% correct suggestion than to craft the perfect prompt.
+{% /callout %}
 
 - Autocomplete works best with clear, well-structured code
 - Comments above functions help autocomplete understand intent

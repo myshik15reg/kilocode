@@ -9,7 +9,7 @@ description: "Track and manage tasks with AI-generated todo lists"
 
 **Why it matters**: Complex workflows have lots of moving parts. Without structure, it's easy to miss steps, duplicate work, or forget what comes next.
 
-{% image src="/docs/img/task-todo-list/task-todo-list-1.png" alt="Task Todo List overview showing interactive checklist in AlfaCode assistant" width="500" /%}
+{% image src="/docs/img/task-todo-list/task-todo-list-1.png" alt="Task Todo List overview showing interactive checklist in Kilo Code" width="500" /%}
 
 ## How to trigger todo lists
 
@@ -24,7 +24,19 @@ description: "Track and manage tasks with AI-generated todo lists"
 - Ask Kilo to "use the [update_todo_list tool](/docs/features/tools/update-todo-list)"
 - Say "create a todo list"
 
-**The bottom line**: AlfaCode assistant decides what goes in the list, but you can provide feedback during approval dialogs.
+**The bottom line**: Kilo decides what goes in the list, but you can provide feedback during approval dialogs.
+
+---
+
+## How todo lists are updated
+
+Todo lists are managed with the [`update_todo_list` tool](/docs/features/tools/update-todo-list). Each time Kilo updates the list, it replaces the entire checklist with the latest view of the task.
+
+Kilo updates the list when:
+
+- New steps are discovered
+- Items are completed or reprioritized
+- You explicitly ask for a todo list
 
 ---
 
@@ -32,7 +44,7 @@ description: "Track and manage tasks with AI-generated todo lists"
 
 **Before**: You juggled task steps in your head or scattered notes, constantly wondering "what's next?"
 
-**Now**: AlfaCode assistant creates structured checklists that update automatically as work progresses. You see exactly where you are and what's coming up.
+**Now**: Kilo creates structured checklists that update automatically as work progresses. You see exactly where you are and what's coming up.
 
 ---
 
@@ -42,6 +54,8 @@ description: "Track and manage tasks with AI-generated todo lists"
 Quick progress overview with your next important item
 
 {% image src="/docs/img/task-todo-list/task-header.png" alt="Task header summary showing todo list progress" width="500" /%}
+
+Click the task header summary to expand the full list inline and jump to the current item.
 
 **2. Interactive Tool Block**
 Full todo interface in chat where you can:
@@ -55,23 +69,27 @@ Background "REMINDERS" table that keeps Kilo informed about current progress
 
 ## Task status decoded
 
-**Pending** → Empty checkbox (not started)
+**Pending** -> Empty checkbox (not started)
 
 {% image src="/docs/img/task-todo-list/not-started.png" alt="Pending todo item with empty checkbox" width="300" /%}
 
 ---
 
-**In Progress** → Yellow dot (currently working)
+**In Progress** -> Yellow dot (currently working)
 
 {% image src="/docs/img/task-todo-list/in-progress.png" alt="In progress todo item with yellow dot indicator" width="300" /%}
 
 ---
 
-**Completed** → Green checkmark (finished)
+**Completed** -> Green checkmark (finished)
 
 {% image src="/docs/img/task-todo-list/complete.png" alt="Completed todo item with green checkmark" width="300" /%}
 
 ---
+
+## Editing todo lists
+
+When Kilo proposes a todo list update, you can edit the list before approving. Use the "Edit" button in the tool block to update item text, add or remove steps, or adjust status. Once approved, Kilo continues with the updated list.
 
 ## Common questions
 
@@ -85,6 +103,10 @@ Kilo typically skips todo lists for simple tasks. The overhead isn't worth it.
 Design choice. Kilo maintains authority over task management to ensure consistent progress tracking. You provide input, Kilo executes.
 
 ---
+
+## Settings
+
+You can disable todo lists in Settings -> Advanced -> **Enable todo list tool**. When disabled, Kilo won't create or update todo lists, and the REMINDERS table won't appear in Environment Details.
 
 {% callout type="tip" title="Pro tip: Auto-approval" %}
 **What it does**: Automatically approves todo list updates without confirmation prompts.

@@ -1,6 +1,6 @@
-# AlfaCode assistant Docs
+# Full Next.js example
 
-This app contains the AlfaCode assistant documentation website, built using Markdoc and Next.js.
+This is a full-featured boilerplate for a creating a documentation website using Markdoc and Next.js.
 
 <img width="2032" alt="image" src="https://user-images.githubusercontent.com/62121649/174916143-16f18270-0463-402c-8b48-33c627ea7a7e.png">
 
@@ -37,3 +37,19 @@ The quickest way to deploy your own version of this boilerplate is by deploying 
 ### Deploy to Netlify
 
 [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/markdoc/next.js-starter)
+
+## Contributing
+
+When making documentation _only_ changes, use branch names prefixed with `docs/`:
+
+```bash
+git checkout -b docs/your-change-description
+```
+
+Examples:
+
+- `docs/add-mcp-tutorial`
+- `docs/fix-installation-steps`
+- `docs/update-api-reference`
+
+For full contribution guidelines, see the [Contributing Guide](https://kilo.ai/docs/contributing).

@@ -5,7 +5,7 @@ description: "Understanding and using different modes in Kilo Code"
 
 # Using Modes
 
-Modes in AlfaCode assistant are specialized personas that tailor the assistant's behavior to your current task. Each mode offers different capabilities, expertise, and access levels to help you accomplish specific goals.
+Modes in Kilo Code are specialized personas that tailor the assistant's behavior to your current task. Each mode offers different capabilities, expertise, and access levels to help you accomplish specific goals.
 
 ## Why Use Different Modes?
 
@@ -14,7 +14,7 @@ Modes in AlfaCode assistant are specialized personas that tailor the assistant's
 - **Focused interactions:** Receive responses optimized for your current activity
 - **Workflow optimization:** Seamlessly transition between planning, implementing, debugging, and learning
 
-{% youtube url="https://youtu.be/cS4vQfX528w" caption="Explaining the different modes in AlfaCode assistant" /%}
+{% youtube url="https://youtu.be/cS4vQfX528w" caption="Explaining the different modes in Kilo Code" /%}
 
 ## Switching Between Modes
 
@@ -36,9 +36,9 @@ Four ways to switch modes:
     | Windows          | Ctrl + . |
     | Linux            | Ctrl + . |
 
-4. **Accept suggestions:** Click on mode switch suggestions that AlfaCode assistant offers when appropriate
+4. **Accept suggestions:** Click on mode switch suggestions that Kilo Code offers when appropriate
 
-    {% image src="/docs/img/modes/modes-2.png" alt="Accepting a mode switch suggestion from AlfaCode assistant" width="400" /%}
+    {% image src="/docs/img/modes/modes-2.png" alt="Accepting a mode switch suggestion from Kilo Code" width="400" /%}
 
 ## Built-in Modes
 
@@ -77,6 +77,10 @@ Four ways to switch modes:
 | **Tool Access**      | Full access to all tool groups: `read`, `edit`, `browser`, `command`, `mcp`         |
 | **Ideal For**        | Tracking down bugs, diagnosing errors, and resolving complex issues                 |
 | **Special Features** | Uses a methodical approach of analyzing, narrowing possibilities, and fixing issues |
+
+{% callout type="tip" %}
+**Keep debugging separate from main tasks:** When using Debug mode, ask Kilo to "start a new task in Debug mode with all of the necessary context needed to figure out X" so that the debugging process uses its own context window and doesn't pollute the main task.
+{% /callout %}
 
 ### Orchestrator Mode
 

@@ -2,7 +2,7 @@
 sidebar_label: OVHcloud AI Endpoints
 ---
 
-# Using OVHcloud AI Endpoints with AlfaCode assistant
+# Using OVHcloud AI Endpoints with Kilo Code
 
 OVHcloud is a French leading Cloud provider in Europe with data sovereignty and privacy.
 
@@ -22,15 +22,9 @@ You can report any bugs or feedbacks by chatting with us in our [Discord server]
 2.  **Navigate to Public Cloud:** Go to the Public Cloud section, and create a new project. Navigate to AI Endpoints in the _AI & Machine Learning_ section.
 3.  **Create a Key:** Click to _API keys_ and create a new key.
 
-## Supported Models
+## Configuration in Kilo Code
 
-AlfaCode assistant will automatically fetch our models from our API. It will be up-to-date.
-
-You can browse our [catalog](https://endpoints.ai.cloud.ovh.net/catalog) to see a detail of all our models.
-
-## Configuration in AlfaCode assistant
-
-1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
+1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
 2.  **Select Provider:** Choose "OVHcloud AI Endpoints" from the "API Provider" dropdown.
 3.  **Enter API Key:** Paste your AI Endpoints API key into the "OVHcloud AI Endpoints API Key" field.
 4.  **Select Model:** Choose your desired model from the "Model" dropdown.

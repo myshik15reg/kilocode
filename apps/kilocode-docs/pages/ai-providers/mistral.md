@@ -2,9 +2,9 @@
 sidebar_label: Mistral AI
 ---
 
-# Using Mistral AI With AlfaCode assistant
+# Using Mistral AI With Kilo Code
 
-AlfaCode assistant supports accessing models through the Mistral AI API, including both standard Mistral models and the code-specialized Codestral model.
+Kilo Code supports accessing models through the Mistral AI API, including both standard Mistral models and the code-specialized Codestral model.
 
 **Website:** [https://mistral.ai/](https://mistral.ai/)
 
@@ -15,28 +15,9 @@ AlfaCode assistant supports accessing models through the Mistral AI API, includi
     - [La Plateforme API Key](https://console.mistral.ai/api-keys/) and/or
     - [Codestral API Key](https://console.mistral.ai/codestral)
 
-## Supported Models
+## Configuration in Kilo Code
 
-AlfaCode assistant supports the following Mistral models:
-
-| Model ID             | Model Default Temperature | Function Calling | Vision / Image support |
-| -------------------- | ------------------------- | ---------------- | ---------------------- |
-| codestral-latest     | 0.3                       | ✅               | ❌                     |
-| devstral             | 0.3                       | ✅               | ❌                     |
-| mistral-large-latest | 0.7                       | ✅               | ❌                     |
-| ministral-8b-latest  | 0.3                       | ✅               | ❌                     |
-| ministral-3b-latest  | 0.3                       | ✅               | ❌                     |
-| mistral-small-latest | 0.3                       | ✅               | ❌                     |
-| pixtral-large-latest | 0.7                       | ✅               | ✅                     |
-
-The default model temperature in AlfaCode assistant is 0.0, so you should consider experimenting with [temperature adjustments](/docs/code-with-ai/agents/model-selection)!
-
-**Note:** Model availability and specifications may change.
-Refer to the [Mistral AI documentation](https://docs.mistral.ai/api/) and [Mistral Model Overview](https://docs.mistral.ai/getting-started/models/models_overview/) for the latest information.
-
-## Configuration in AlfaCode assistant
-
-1.  **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
+1.  **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
 2.  **Select Provider:** Choose "Mistral" from the "API Provider" dropdown.
 3.  **Enter API Key:** Paste your Mistral API key into the "Mistral API Key" field if you're using a `mistral` model. If you intend to use `codestral-latest`, see the "Codestral" section below.
 4.  **Select Model:** Choose your desired model from the "Model" dropdown.

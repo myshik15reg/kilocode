@@ -13,7 +13,7 @@ This will allow us to track which projects are used for every LLM call in the `m
 
 ## System Design
 
-!![System Design](/docs/img/track-repo-url-system-design.png)
+![System Design](/docs/img/track-repo-url-system-design.png)
 
 ### Example config
 
@@ -21,7 +21,7 @@ This will allow us to track which projects are used for every LLM call in the `m
 {
 	// Example configuration for project settings
 	"project": {
-		// AlfaCode assistant project ID
+		// Kilo Code project ID
 		"id": "my-project",
 	},
 }

@@ -1,15 +1,15 @@
 ---
 title: "Contributing"
-description: "Contribute to AlfaCode assistant"
+description: "Contribute to Kilo Code"
 ---
 
 # Contributing Overview
 
-AlfaCode assistant is a community project that welcomes contributions from developers of all skill levels. This guide will help you get started with contributing to AlfaCode assistant, whether you're fixing bugs, adding features, improving documentation, or sharing custom modes.
+Kilo Code is an open-source project that welcomes contributions from developers of all skill levels. This guide will help you get started with contributing to Kilo Code, whether you're fixing bugs, adding features, improving documentation, or sharing custom modes.
 
 ## Ways to Contribute
 
-There are many ways to contribute to AlfaCode assistant:
+There are many ways to contribute to Kilo Code:
 
 1. **Code Contributions**: Implement new features or fix bugs
 2. **Documentation**: Improve existing docs or create new guides
@@ -24,7 +24,7 @@ Setting Up the Development Environment is described in details on the [Developme
 
 ## Understanding the Architecture
 
-Before diving into the code, we recommend reviewing the [Architecture Overview](/docs/contributing/architecture) to understand how the different components of AlfaCode assistant fit together.
+Before diving into the code, we recommend reviewing the [Architecture Overview](/docs/contributing/architecture) to understand how the different components of Kilo Code fit together.
 
 ## Development Workflow
 
@@ -32,9 +32,13 @@ Before diving into the code, we recommend reviewing the [Architecture Overview](
 
 - Create a new branch for each feature or bugfix
 - Use descriptive branch names (e.g., `feature/new-tool-support` or `fix/browser-action-bug`)
+- **For documentation only changes**: Use the `docs/` prefix (e.g., `docs/improve-mcp-guide`)
 
 ```bash
 git checkout -b your-branch-name
+
+# For documentation changes:
+git checkout -b docs/your-change-description
 ```
 
 ### Coding Standards
@@ -66,7 +70,7 @@ git checkout -b your-branch-name
     git push origin your-branch-name
     ```
 
-2. Go to the [AlfaCode assistant repository](https://github.com/Kilo-Org/kilocode)
+2. Go to the [Kilo Code repository](https://github.com/Kilo-Org/kilocode)
 
 3. Click "New Pull Request" and select "compare across forks"
 
@@ -80,7 +84,7 @@ git checkout -b your-branch-name
 
 ## Contributing to the Kilo Marketplace
 
-The [Kilo Marketplace](https://github.com/Kilo-Org/kilo-marketplace) is a community-driven repository of agent tooling that extends AlfaCode assistant's capabilities. You can contribute:
+The [Kilo Marketplace](https://github.com/Kilo-Org/kilo-marketplace) is a community-driven repository of agent tooling that extends Kilo Code's capabilities. You can contribute:
 
 - **Skills**: Modular workflows and domain expertise that teach agents how to perform specific tasks
 - **MCP Servers**: Standardized integrations that connect agents to external tools and services
@@ -106,7 +110,7 @@ Documentation improvements are highly valued contributions:
 
     - Use clear, concise language
     - Include examples where appropriate
-    - Use absolute paths starting from `/docs/` for internal links
+    - Use absolute paths starting from `/docs/` for internal links (except within the same directory)
     - Don't include `.md` extensions in links
 
 2. Test your documentation changes by running the docs site locally:
@@ -121,7 +125,7 @@ Documentation improvements are highly valued contributions:
 
 ## Community Guidelines
 
-When participating in the AlfaCode assistant community:
+When participating in the Kilo Code community:
 
 - Be respectful and inclusive
 - Provide constructive feedback
@@ -134,14 +138,14 @@ If you need help with your contribution:
 
 - Join our [Discord community](https://kilo.ai/discord) for real-time support
 - Ask questions on [GitHub Discussions](https://github.com/Kilo-Org/kilocode/discussions)
-- Visit our [Reddit community](https://www.reddit.com/r/AlfaCodeAssistant)
+- Visit our [Reddit community](https://www.reddit.com/r/KiloCode)
 
 ## Recognition
 
-All contributors are valued members of the AlfaCode assistant community. Contributors are recognized in:
+All contributors are valued members of the Kilo Code community. Contributors are recognized in:
 
 - Release notes
 - The project's README
 - The contributors list on GitHub
 
-Thank you for contributing to AlfaCode assistant and helping make AI-powered coding assistance better for everyone!
+Thank you for contributing to Kilo Code and helping make AI-powered coding assistance better for everyone!

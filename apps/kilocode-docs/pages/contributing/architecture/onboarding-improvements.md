@@ -3,6 +3,8 @@ title: "Onboarding Improvements"
 description: "Onboarding and engagement improvements architecture"
 ---
 
+# Onboarding Improvements
+
 # Overview
 
 New users get minimal onboarding with generic prompts and no feature guidance. This causes poor engagement and users miss key capabilities. Existing users lack visibility into new features.
@@ -57,7 +59,7 @@ Each card will have:
 
 ## In-App Tutorial Flow
 
-Users aren't guided through AlfaCode assistant's modes or key features. The existing tab-based tutorial is easily dismissed, causing users to miss critical functionality.
+Users aren't guided through Kilo Code's modes or key features. The existing tab-based tutorial is easily dismissed, causing users to miss critical functionality.
 
 Replace the tab-based tutorial with an in-app experience using specific highlighting flows to guide users through core functionality.
 
@@ -92,13 +94,13 @@ Step 5: Starter Prompts
 
 ## Kilo Provider Settings UI Improvements
 
-The "Set API Key" button is at the bottom of settings, making AlfaCode assistant setup hard to discover and complete.
+The "Set API Key" button is at the bottom of settings, making Kilo Code setup hard to discover and complete.
 
 **Improvements:**
 
 - Move "Set API Key" button next to API key input field
 - Rearrange layout for better flow
-- Make AlfaCode assistant provider setup prominent
+- Make Kilo Code provider setup prominent
 - Reduce setup friction
 
 ## Analytics Integration
@@ -143,4 +145,4 @@ Re-engage inactive users by highlighting new features and improvements. Acts as 
 - Progressive disclosure of advanced features over time
 - Personalized onboarding flows based on user role (frontend dev, backend dev, DevOps)
 - AI-powered prompt suggestions based on actual project code patterns
-- Integration with AlfaCode assistant teams for company/repo-personalized onboarding
+- Integration with Kilo Code teams for company/repo-personalized onboarding

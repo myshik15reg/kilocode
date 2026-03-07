@@ -5,11 +5,11 @@ description: Learn how Kilo Code's tools automate your development workflow
 
 # How Tools Work
 
-AlfaCode assistant uses tools to interact with your code and environment. These specialized helpers perform specific actions like reading files, making edits, running commands, or searching your codebase. Tools provide automation for common development tasks without requiring manual execution.
+Kilo Code uses tools to interact with your code and environment. These specialized helpers perform specific actions like reading files, making edits, running commands, or searching your codebase. Tools provide automation for common development tasks without requiring manual execution.
 
 ## Tool Workflow
 
-Describe what you want to accomplish in natural language, and AlfaCode assistant will:
+Describe what you want to accomplish in natural language, and Kilo Code will:
 
 1. Select the appropriate tool based on your request
 2. Present the tool with its parameters for your review
@@ -30,13 +30,13 @@ Describe what you want to accomplish in natural language, and AlfaCode assistant
 
 Here's how a typical tool interaction works:
 
-<img src="/docs/img/how-tools-work/how-tools-work.png" alt="Tool approval interface showing Save and Reject buttons along with Auto-approve checkbox" width="600" />
-
-_The tool approval interface shows Save/Reject buttons and Auto-approve options._
+{% callout type="info" title="Tool Approval UI" %}
+When a tool is proposed, you'll see Save and Reject buttons along with an optional Auto-approve checkbox for trusted operations.
+{% /callout %}
 
 **User:** Create a file named `greeting.js` that logs a greeting message
 
-**AlfaCode assistant:** (Proposes the `write_to_file` tool as shown in the image above)
+**Kilo Code:** (Proposes the `write_to_file` tool as shown in the image above)
 
 ```xml
 <write_to_file>
@@ -54,7 +54,7 @@ greet('World');
 
 **User:** (Clicks "Save" in the interface)
 
-**AlfaCode assistant:** (Confirms file creation)
+**Kilo Code:** (Confirms file creation)
 
 ## Tool Safety and Approval
 

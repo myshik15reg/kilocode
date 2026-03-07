@@ -1,34 +1,33 @@
 ---
-title: "Using MCP in AlfaCode assistant"
-sidebar_label: "Using MCP in AlfaCode assistant"
-description: "How to configure and use MCP servers in AlfaCode assistant"
+title: "Using MCP in Kilo Code"
+description: "How to use MCP servers in Kilo Code"
 ---
 
-# Using MCP in AlfaCode assistant
+# Using MCP in Kilo Code
 
-Model Context Protocol (MCP) extends AlfaCode assistant's capabilities by connecting to external tools and services. This guide covers everything you need to know about using MCP with AlfaCode assistant.
+Model Context Protocol (MCP) extends Kilo Code's capabilities by connecting to external tools and services. This guide covers everything you need to know about using MCP with Kilo Code.
 
-{% youtube url="https://youtu.be/6O9RQoQRX8A" caption="Demonstrating MCP installation in AlfaCode assistant" /%}
+{% youtube url="https://youtu.be/6O9RQoQRX8A" caption="Demostrating MCP installation in Kilo Code" /%}
 
 ## Configuring MCP Servers
 
 MCP server configurations can be managed at two levels:
 
 1.  **Global Configuration**: Stored in the `mcp_settings.json` file, accessible via VS Code settings (see below). These settings apply across all your workspaces unless overridden by a project-level configuration.
-2.  **Project-level Configuration**: Defined in a `.kilocode/mcp.json` file within your project's root directory. This allows you to set up project-specific servers and share configurations with your team by committing the file to version control. AlfaCode assistant automatically detects and loads this file if it exists.
+2.  **Project-level Configuration**: Defined in a `.kilocode/mcp.json` file within your project's root directory. This allows you to set up project-specific servers and share configurations with your team by committing the file to version control. Kilo Code automatically detects and loads this file if it exists.
 
 **Precedence**: If a server name exists in both global and project configurations, the **project-level configuration takes precedence**.
 
 ### Editing MCP Settings Files
 
-You can edit both global and project-level MCP configuration files directly from the AlfaCode assistant settings.
+You can edit both global and project-level MCP configuration files directly from the Kilo Code settings.
 
-1. Click the {% codicon name="gear" /%} icon in the top navigation of the AlfaCode assistant pane to open `Settings`.
+1. Click the {% codicon name="gear" /%} icon in the top navigation of the Kilo Code pane to open `Settings`.
 2. Click the `Agent Behaviour` tab on the left side
 3. Select the `MCP Servers` sub-tab
 4. Click the appropriate button:
     - **`Edit Global MCP`**: Opens the global `mcp_settings.json` file.
-    - **`Edit Project MCP`**: Opens the project-specific `.kilocode/mcp.json` file. If this file doesn't exist, AlfaCode assistant will create it for you.
+    - **`Edit Project MCP`**: Opens the project-specific `.kilocode/mcp.json` file. If this file doesn't exist, Kilo Code will create it for you.
 
 {% image src="/docs/img/using-mcp-in-kilo-code/mcp-installed-config.png" alt="Edit Global MCP and Edit Project MCP buttons" width="600" caption="Edit Global MCP and Edit Project MCP buttons" /%}
 
@@ -50,7 +49,7 @@ Both files use a JSON format with a `mcpServers` object containing named server 
 }
 ```
 
-_Example of MCP Server config in AlfaCode assistant (STDIO Transport)_
+_Example of MCP Server config in Kilo Code (STDIO Transport)_
 
 ### Understanding Transport Types
 
@@ -66,7 +65,7 @@ Used for local servers running on your machine:
 - Simpler setup (no HTTP server needed)
 - Runs as a child process on your machine
 
-For more in-depth information about how STDIO transport works, see [STDIO Transport](/docs/automate/mcp/server-transports#stdio-transport).
+For more in-depth information about how STDIO transport works, see [STDIO Transport](server-transports#stdio-transport).
 
 STDIO configuration example:
 
@@ -125,7 +124,7 @@ Used for remote servers accessed over HTTP/HTTPS:
 - Requires network access
 - Allows centralized deployment and management
 
-For more in-depth information about how SSE transport works, see [SSE Transport](/docs/automate/mcp/server-transports#sse-transport).
+For more in-depth information about how SSE transport works, see [SSE Transport](server-transports#sse-transport).
 
 SSE configuration example:
 
@@ -177,24 +176,24 @@ MCP tool auto-approval works on a per-tool basis and is disabled by default. To 
 
 {% image src="/docs/img/using-mcp-in-kilo-code/using-mcp-in-kilo-code-7.png" alt="Always allow checkbox for MCP tools" width="120" caption="Always allow checkbox for MCP tools" /%}
 
-When enabled, AlfaCode assistant will automatically approve this specific tool without prompting. Note that the global "Use MCP servers" setting takes precedence - if it's disabled, no MCP tools will be auto-approved.
+When enabled, Kilo Code will automatically approve this specific tool without prompting. Note that the global "Use MCP servers" setting takes precedence - if it's disabled, no MCP tools will be auto-approved.
 
 ## Finding and Installing MCP Servers
 
-AlfaCode assistant does not come with any pre-installed MCP servers. You'll need to find and install them separately.
+Kilo Code does not come with any pre-installed MCP servers. You'll need to find and install them separately.
 
 - **Community Repositories:** Check for community-maintained lists of MCP servers on GitHub
-- **Ask AlfaCode assistant:** You can ask AlfaCode assistant to help you find or even create MCP servers
-- **Build Your Own:** Create custom MCP servers using the SDK to extend AlfaCode assistant with your own tools
+- **Ask Kilo Code:** You can ask Kilo Code to help you find or even create MCP servers
+- **Build Your Own:** Create custom MCP servers using the SDK to extend Kilo Code with your own tools
 
 For full SDK documentation, visit the [MCP GitHub repository](https://github.com/modelcontextprotocol/).
 
 ## Using MCP Tools in Your Workflow
 
-After configuring an MCP server, AlfaCode assistant will automatically detect available tools and resources. To use them:
+After configuring an MCP server, Kilo Code will automatically detect available tools and resources. To use them:
 
-1. Type your request in the AlfaCode assistant chat interface
-2. AlfaCode assistant will identify when an MCP tool can help with your task
+1. Type your request in the Kilo Code chat interface
+2. Kilo Code will identify when an MCP tool can help with your task
 3. Approve the tool use when prompted (or use auto-approval)
 
 Example: "Analyze the performance of my API" might use an MCP tool that tests API endpoints.
@@ -207,6 +206,10 @@ Common issues and solutions:
 - **Permission Errors:** Ensure proper API keys and credentials are configured in your `mcp_settings.json` (for global settings) or `.kilocode/mcp.json` (for project settings).
 - **Tool Not Available:** Confirm the server is properly implementing the tool and it's not disabled in settings
 - **Slow Performance:** Try adjusting the network timeout value for the specific MCP server
+
+{% callout type="tip" %}
+**Reduce system prompt size:** If you're not using MCP, turn it off in Settings > Agent Behaviour > MCP Servers to significantly cut down the size of the system prompt and improve performance.
+{% /callout %}
 
 ## Platform-Specific MCP Configuration Examples
 

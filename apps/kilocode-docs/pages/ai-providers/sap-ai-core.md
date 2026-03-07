@@ -2,9 +2,9 @@
 sidebar_label: SAP AI Core
 ---
 
-# Using SAP AI Core With AlfaCode assistant
+# Using SAP AI Core With Kilo Code
 
-AlfaCode assistant supports accessing models through SAP AI Core, a service in the SAP Business Technology Platform that lets you efficiently run AI scenarios in a standardized, scalable, and hyperscaler-agnostic manner.
+Kilo Code supports accessing models through SAP AI Core, a service in the SAP Business Technology Platform that lets you efficiently run AI scenarios in a standardized, scalable, and hyperscaler-agnostic manner.
 
 **Website:** [https://help.sap.com/docs/sap-ai-core](https://help.sap.com/docs/sap-ai-core)
 
@@ -17,7 +17,7 @@ AlfaCode assistant supports accessing models through SAP AI Core, a service in t
 
 ## Getting Credentials
 
-To use SAP AI Core with AlfaCode assistant, you'll need to create a service key for your SAP AI Core service instance:
+To use SAP AI Core with Kilo Code, you'll need to create a service key for your SAP AI Core service instance:
 
 1. **In SAP BTP Cockpit:**
 
@@ -54,7 +54,7 @@ SAP AI Core provider supports two operating modes:
 
 ## Model Requirements
 
-AlfaCode assistant applies the following filters when fetching models:
+Kilo Code applies the following filters when fetching models:
 
 - **Streaming:** Models must support streaming
 - **Capabilities:** Models must support text generation
@@ -76,9 +76,9 @@ AlfaCode assistant applies the following filters when fetching models:
 
 The exact list of available models depends on your SAP AI Core configuration and active model offerings.
 
-## Configuration in AlfaCode assistant
+## Configuration in Kilo Code
 
-1. **Open AlfaCode assistant Settings:** Click the gear icon ({% codicon name="gear" /%}) in the AlfaCode assistant panel.
+1. **Open Kilo Code Settings:** Click the gear icon ({% codicon name="gear" /%}) in the Kilo Code panel.
 2. **Select Provider:** Choose "SAP AI Core" from the "API Provider" dropdown.
 3. **Enter Credentials:**
     - **Client ID:** Enter your SAP AI Core OAuth2 client ID
@@ -143,7 +143,7 @@ To get started with SAP AI Core:
 
 1. Set up your SAP BTP account and access SAP AI Core service
 2. Create a service instance and generate a service key
-3. Configure AlfaCode assistant with your credentials
+3. Configure Kilo Code with your credentials
 4. Choose between Foundation Models or Orchestration mode based on your needs
 5. Select an appropriate model and start coding
 

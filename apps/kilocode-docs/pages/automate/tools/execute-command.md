@@ -1,6 +1,6 @@
 # execute_command
 
-The `execute_command` tool runs CLI commands on the user's system. It allows AlfaCode assistant to perform system operations, install dependencies, build projects, start servers, and execute other terminal-based tasks needed to accomplish user objectives.
+The `execute_command` tool runs CLI commands on the user's system. It allows Kilo Code to perform system operations, install dependencies, build projects, start servers, and execute other terminal-based tasks needed to accomplish user objectives.
 
 ## Parameters
 
@@ -113,12 +113,12 @@ The tool uses a sophisticated terminal management system:
 
 ## Examples When Used
 
-- When setting up a new project, AlfaCode assistant runs initialization commands like `npm init -y` followed by installing dependencies.
-- When building a web application, AlfaCode assistant executes build commands like `npm run build` to compile assets.
-- When deploying code, AlfaCode assistant runs git commands to commit and push changes to a repository.
-- When troubleshooting, AlfaCode assistant executes diagnostic commands to gather system information.
-- When starting a development server, AlfaCode assistant launches the appropriate server command (e.g., `npm start`).
-- When running tests, AlfaCode assistant executes the test runner command for the project's testing framework.
+- When setting up a new project, Kilo Code runs initialization commands like `npm init -y` followed by installing dependencies.
+- When building a web application, Kilo Code executes build commands like `npm run build` to compile assets.
+- When deploying code, Kilo Code runs git commands to commit and push changes to a repository.
+- When troubleshooting, Kilo Code executes diagnostic commands to gather system information.
+- When starting a development server, Kilo Code launches the appropriate server command (e.g., `npm start`).
+- When running tests, Kilo Code executes the test runner command for the project's testing framework.
 
 ## Usage Examples
 

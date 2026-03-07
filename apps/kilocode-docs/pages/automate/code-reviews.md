@@ -27,11 +27,11 @@ Before enabling Code Reviews:
 - **Compute and review time are free during limited beta**
     - Feedback is welcome in the Code Reviews beta Discord channel:
         - [Kilo Discord](https://discord.gg/hZnd57qN)
-- **AlfaCode assistant credits are still used** when the agent performs model reasoning during a review.
+- **Kilo Code credits are still used** when the agent performs model reasoning during a review.
 
 ## How to Use
 
-1. Go to the **Review Agent** section in your AlfaCode assistant [personal](https://app.kilo.ai/profile) or [Organization](https://app.kilo.ai/organizations) dashboard.
+1. Go to the **Review Agent** section in your Kilo Code [personal](https://app.kilo.ai/profile) or [Organization](https://app.kilo.ai/organizations) dashboard.
 2. Toggle **Enable AI Code Review** to automatically review PRs on open/update.
 3. Choose an **AI Model** (e.g., Grok Code Fast 1).
 4. Select a **Review Style**:
@@ -53,9 +53,20 @@ Once configured, the Review Agent will run automatically on PR events.
 
 ## Local Code Reviews
 
-Code Reviewer is also available locally via the new Review Mode. Simply select 'Review' from the mode dropdown after making local changes, and click 'Send' for AI-powered feedback and suggestions. This is valuable for developers who want to review their code before pushing a pull request to their team publicly, or for developers who want reviews and don't need to ship a pull request to GitHub.
+Code Reviewer is also available locally. This is valuable for developers who want to review their code before pushing a pull request to their team publicly, or for developers who want reviews and don't need to ship a pull request to GitHub.
+
+### VS Code
+
+Select 'Review' from the mode dropdown after making local changes, and click 'Send' for AI-powered feedback and suggestions.
 
 ![VS Code interface showing Review option in mode dropdown](/docs/img/code-reviewer/review-mode.png "Review Mode")
+
+### CLI
+
+The CLI provides two commands for local code reviews:
+
+- **`/local-review`** — Review all changes on your current branch vs the base branch
+- **`/local-review-uncommitted`** — Review uncommitted changes (staged + unstaged)
 
 ## How Code Reviews Work
 

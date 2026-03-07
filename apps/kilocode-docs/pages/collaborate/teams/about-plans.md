@@ -5,15 +5,15 @@ description: "Overview of Kilo Code plans and pricing"
 
 # About Plans
 
-AlfaCode assistant accelerates development with AI-driven code generation and task automation. You can use AlfaCode assistant as an extension in VS Code or JetBrains IDEs.
+Kilo Code accelerates development with AI-driven code generation and task automation. You can use Kilo Code as an open source extension in VS Code or JetBrains IDEs.
 
 Organizations adopting AI accelerated coding at scale often want a better way to monitor, manage, and collaborate on their AI-drive practices.
 
-AlfaCode assistant's paid plans, Teams and Enterprise, are the solution for these organizations.
+Kilo Code's paid plans, Teams and Enterprise, are the solution for these organizations.
 
 {% callout type="note" %}
 
-Purchases of AlfaCode assistant's paid plans are separate from model provider credits.
+Purchases of Kilo Code's paid plans are separate from model provider credits.
 
 No credits are included with a Teams or Enterprise plan purchase.
 

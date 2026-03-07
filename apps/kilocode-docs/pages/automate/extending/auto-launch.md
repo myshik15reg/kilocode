@@ -5,7 +5,7 @@ description: "Configure automatic agent launching"
 
 # Auto-Launch Configuration
 
-Auto-Launch Configuration allows you to automatically start a AlfaCode assistant task when opening a workspace, with support for specific profiles and modes. This was originally developed as an internal test feature, but we decided to expose it to users in case anyone finds it useful!
+Auto-Launch Configuration allows you to automatically start a Kilo Code task when opening a workspace, with support for specific profiles and modes. This was originally developed as an internal test feature, but we decided to expose it to users in case anyone finds it useful!
 
 {% callout type="info" %}
 Auto-Launch Configuration is particularly useful for testing the same prompt against multiple models or project directories.
@@ -13,7 +13,7 @@ Auto-Launch Configuration is particularly useful for testing the same prompt aga
 
 ## How It Works
 
-When you open a workspace in VS Code, AlfaCode assistant automatically checks for a launch configuration JSON file. If found, it:
+When you open a workspace in VS Code, Kilo Code automatically checks for a launch configuration JSON file. If found, it:
 
 - Switches to the specified provider profile (if provided)
 - Changes to the specified mode (if provided)
@@ -45,15 +45,15 @@ This happens seamlessly in the background, requiring no manual intervention.
 
 #### Optional Fields
 
-- **`profile`** (string): Name of an existing [API Configuration Profile](/docs/features/api-configuration-profiles) to use for this task. Must exactly match a profile name from your settings.
+- **`profile`** (string): Name of an existing [API Configuration Profile](/docs/ai-providers) to use for this task. Must exactly match a profile name from your settings.
 
-- **`mode`** (string): The AlfaCode assistant mode to use for this task. Available modes:
+- **`mode`** (string): The Kilo Code mode to use for this task. Available modes:
     - `"code"` - General-purpose coding tasks
     - `"architect"` - Planning and technical design
     - `"ask"` - Questions and explanations
     - `"debug"` - Problem diagnosis and troubleshooting
     - `"test"` - Testing-focused workflows
-    - Custom mode slugs (if you have [custom modes](/docs/agent-behavior/custom-modes))
+    - Custom mode slugs (if you have [custom modes](/docs/customize/custom-modes))
 
 ## Example Configurations
 
@@ -128,7 +128,7 @@ This file should be at the root of your workspace (the same level as your main p
 
 ## Behavior and Timing
 
-- Auto-launch triggers approximately 500ms after AlfaCode assistant extension activation
+- Auto-launch triggers approximately 500ms after Kilo Code extension activation
 - The sidebar automatically receives focus before the task launches
 - Profile switching happens before mode switching (if both are specified)
 - The task launches after all configuration changes are applied
@@ -147,7 +147,7 @@ This file should be at the root of your workspace (the same level as your main p
 
 1. Verify the profile name exactly matches one from your settings
 2. Profile names are case-sensitive and must match exactly (including emojis)
-3. Check that the profile exists in your [API Configuration Profiles](/docs/features/api-configuration-profiles)
+3. Check that the profile exists in your [API Configuration Profiles](/docs/ai-providers)
 
 ### Mode Not Switching
 

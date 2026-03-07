@@ -1,16 +1,16 @@
 ---
-sidebar_label: AlfaCode assistant Provider
+sidebar_label: Kilo Code Provider
 ---
 
-# Using AlfaCode assistant's Built-in Provider
+# Using Kilo Code's Built-in Provider
 
-AlfaCode assistant provides its own built-in API provider that gives you access to the latest frontier coding models through a simple registration process. No need to manage API keys from multiple providers - just sign up and start coding.
+Kilo Code provides its own built-in API provider that gives you access to the latest frontier coding models through a simple registration process. No need to manage API keys from multiple providers - just sign up and start coding.
 
 **Website:** [https://kilo.ai/](https://kilo.ai/)
 
 ## Getting Started
 
-When you sign up for AlfaCode assistant, you can start immediately with free models, or top up your account for the first time to get bonus credits.
+When you sign up for Kilo Code, you can start immediately with free models, or top up your account for the first time to get bonus credits.
 
 To claim your bonus credits:
 
@@ -20,20 +20,20 @@ To claim your bonus credits:
 
 ## Registration Process
 
-AlfaCode assistant offers a streamlined registration that connects you directly to frontier coding models:
+Kilo Code offers a streamlined registration that connects you directly to frontier coding models:
 
-1. **Start Registration:** Click "Try AlfaCode assistant for Free" in the extension
+1. **Start Registration:** Click "Try Kilo Code for Free" in the extension
 2. **Sign In:** Use your Google account to sign in at kilo.ai
 3. **Authorize VS Code:**
     - kilo.ai will prompt you to open Visual Studio Code
     - For web-based IDEs, you'll copy the API key manually instead
 4. **Complete Setup:** Allow VS Code to open the authorization URL when prompted
 
-<!-- <img src="/img/setting-up/signupflow.gif" alt="Sign up and registration flow with AlfaCode assistant" width="600" /> -->
+<!-- <img src="/img/setting-up/signupflow.gif" alt="Sign up and registration flow with Kilo Code" width="600" /> -->
 
 ## Supported Models
 
-AlfaCode assistant provides access to the latest frontier coding models through its built-in provider. The specific models available are automatically updated and managed by the AlfaCode assistant service, ensuring you always have access to the most capable models for coding tasks.
+Kilo Code provides access to the latest frontier coding models through its built-in provider. The specific models available are automatically updated and managed by the Kilo Code service, ensuring you always have access to the most capable models for coding tasks.
 
 ## BYOK support
 
@@ -41,17 +41,17 @@ You can also bring your own key (BYOK) to the Kilo Gateway. We currently support
 
 You can access the BYOK section of the Kilo Gateway [here](https://app.kilo.ai/byok).
 
-## Configuration in AlfaCode assistant
+## Configuration in Kilo Code
 
-Once you've completed the registration process, AlfaCode assistant is automatically configured:
+Once you've completed the registration process, Kilo Code is automatically configured:
 
-1. **Automatic Setup:** After successful registration, AlfaCode assistant is ready to use immediately
+1. **Automatic Setup:** After successful registration, Kilo Code is ready to use immediately
 2. **No API Key Management:** Your authentication is handled seamlessly through the registration process
-3. **Model Selection:** Access to frontier models is provided automatically through your AlfaCode assistant account
+3. **Model Selection:** Access to frontier models is provided automatically through your Kilo Code account
 
 ### Provider Routing
 
-AlfaCode assistant can route to many different inference providers. For personal accounts, provider routing behavior can be controlled in the API Provider settings under Provider Routing.
+Kilo Code can route to many different inference providers. For personal accounts, provider routing behavior can be controlled in the API Provider settings under Provider Routing.
 
 #### Provider Sorting
 
@@ -70,7 +70,7 @@ AlfaCode assistant can route to many different inference providers. For personal
 
 ## Connected Accounts
 
-With the AlfaCode assistant provider, if you sign up with Google you can also connect other sign in accounts - like GitHub - by:
+With the Kilo Code provider, if you sign up with Google you can also connect other sign in accounts - like GitHub - by:
 
 1. Go to your profile
 2. Select [**Connected Accounts**](https://app.kilo.ai/connected-accounts)
@@ -81,10 +81,10 @@ With the AlfaCode assistant provider, if you sign up with Google you can also co
 
 ## Tips and Notes
 
-- **Free Credits:** New users receive free credits to explore AlfaCode assistant's capabilities
+- **Free Credits:** New users receive free credits to explore Kilo Code's capabilities
 - **Identity Verification:** The temporary hold system ensures service reliability while preventing misuse
 - **Seamless Integration:** No need to manage multiple API keys or provider configurations
 - **Latest Models:** Automatic access to the most current frontier coding models
 - **Support Available:** Contact [hi@kilo.ai](mailto:hi@kilo.ai) for questions about pricing or tokens
 
-For detailed setup instructions, see [Setting up AlfaCode assistant](/docs/getting-started/setup-authentication).
+For detailed setup instructions, see [Setting up Kilo Code](/docs/getting-started/setting-up).

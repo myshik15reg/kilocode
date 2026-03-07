@@ -12,7 +12,7 @@ Using Kilo seats with an Enterprise or Teams subscription provides detailed usag
 Access your organization’s usage analytics through the **Usage Details** section in your dashboard. The analytics show comprehensive data about your team's usage of the Kilo Gateway provider.
 
 {% callout type="info" title="Usage Scope" %}
-This usage overview includes all of your usage of the Kilo Gateway provider. It does **NOT** include any usage made via the AlfaCode assistant extension to other, non-Gateway providers. You can choose which API provider to use from the extension's main settings page.
+This usage overview includes all of your usage of the Kilo Gateway provider. It does **NOT** include any usage made via the Kilo Code extension to other, non-Kilo Code providers. You can choose which API provider to use from the extension's main settings page.
 {% /callout %}
 
 ## Summary Metrics
@@ -129,12 +129,7 @@ All costs are displayed in USD with detailed precision, helping you:
 
 ## Next Steps
 
-- [Manage team billing settings](/docs/collaborate/teams/billing)
-- [Configure team roles and permissions](/docs/collaborate/teams/team-management)
-
-## Related
-
-- [Billing](/docs/collaborate/teams/billing)
-- [Team management](/docs/collaborate/teams/team-management)
+- [Manage team billing settings](/docs/plans/billing)
+- [Configure team roles and permissions](/docs/plans/team-management)
 
 The usage analytics provide the insights needed to optimize your team's AI usage while maintaining visibility into costs and activity patterns.

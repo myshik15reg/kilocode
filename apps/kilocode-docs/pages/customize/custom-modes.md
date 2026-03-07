@@ -1,15 +1,15 @@
 ---
 title: "Custom Modes"
-description: "Create and configure custom modes in AlfaCode assistant"
+description: "Create and configure custom modes in Kilo Code"
 ---
 
 # Custom Modes
 
-AlfaCode assistant allows you to create **custom modes** to tailor Kilo's behavior to specific tasks or workflows. Custom modes can be either **global** (available across all projects) or **project-specific** (defined within a single project).
+Kilo Code allows you to create **custom modes** to tailor Kilo's behavior to specific tasks or workflows. Custom modes can be either **global** (available across all projects) or **project-specific** (defined within a single project).
 
 ## Sticky Models for Efficient Workflow
 
-Each mode—including custom ones—features **Sticky Models**. This means AlfaCode assistant automatically remembers and selects the last model you used with a particular mode. This lets you assign different preferred models to different tasks without constant reconfiguration, as Kilo switches between models when you change modes.
+Each mode—including custom ones—features **Sticky Models**. This means Kilo Code automatically remembers and selects the last model you used with a particular mode. This lets you assign different preferred models to different tasks without constant reconfiguration, as Kilo switches between models when you change modes.
 
 ## Why Use Custom Modes?
 
@@ -18,9 +18,13 @@ Each mode—including custom ones—features **Sticky Models**. This means AlfaC
 - **Experimentation:** Safely experiment with different prompts and configurations without affecting other modes
 - **Team Collaboration:** Share custom modes with your team to standardize workflows
 
+{% callout type="tip" %}
+**Keep custom modes on track:** Limit the types of files that they're allowed to edit using the `fileRegex` option in the `groups` configuration. This prevents modes from accidentally modifying files outside their intended scope.
+{% /callout %}
+
 {% image src="/docs/img/custom-modes/custom-modes.png" alt="Overview of custom modes interface" width="600" caption="Overview of custom modes interface" /%}
 
-_AlfaCode assistant's interface for creating and managing custom modes._
+_Kilo Code's interface for creating and managing custom modes._
 
 ## What's Included in a Custom Mode?
 
@@ -28,13 +32,19 @@ Custom modes are defined by several key properties. Understanding these concepts
 
 | UI Field / YAML Property                       | Conceptual Description                                                                                                                                                               |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Slug** (`slug`)                              | A unique internal identifier for the mode. Used by AlfaCode assistant to reference the mode, especially for associating mode-specific instruction files.                             |
-| **Name** (`name`)                              | The display name for the mode as it appears in the AlfaCode assistant user interface. Should be human-readable and descriptive.                                                      |
+| **Slug** (`slug`)                              | A unique internal identifier for the mode. Used by Kilo Code to reference the mode, especially for associating mode-specific instruction files.                                      |
+| **Name** (`name`)                              | The display name for the mode as it appears in the Kilo Code user interface. Should be human-readable and descriptive.                                                               |
 | **Description** (`description`)                | A short, user-friendly summary of the mode's purpose displayed in the mode selector UI. Keep this concise and focused on what the mode does for the user.                            |
 | **Role Definition** (`roleDefinition`)         | Defines the core identity and expertise of the mode. This text is placed at the beginning of the system prompt and defines Kilo's personality and behavior when this mode is active. |
 | **Available Tools** (`groups`)                 | Defines the allowed toolsets and file access permissions for the mode. Corresponds to selecting which general categories of tools the mode can use.                                  |
 | **When to Use** (`whenToUse`)                  | _(Optional)_ Provides guidance for Kilo's automated decision-making, particularly for mode selection and task orchestration. Used by the Orchestrator mode for task coordination.    |
 | **Custom Instructions** (`customInstructions`) | _(Optional)_ Specific behavioral guidelines or rules for the mode. Added near the end of the system prompt to further refine Kilo's behavior.                                        |
+
+{% callout type="tip" %}
+**Power Steering for Better Mode Adherence**
+
+If you find that models aren't following your custom mode's role definition or instructions closely enough, enable the [Power Steering](/docs/getting-started/settings#power-steering) experimental feature. This reminds the model about mode details more frequently, leading to stronger adherence to your custom configurations at the cost of increased token usage.
+{% /callout %}
 
 ## Import/Export Modes
 
@@ -80,32 +90,36 @@ You can create and configure custom modes in several ways:
 
 ### 1. Ask Kilo! (Recommended)
 
-You can quickly create a basic custom mode by asking AlfaCode assistant to do it for you. For example:
+You can quickly create a basic custom mode by asking Kilo Code to do it for you. For example:
 
 ```
 Create a new mode called "Documentation Writer". It should only be able to read files and write Markdown files.
 ```
 
-AlfaCode assistant will guide you through the process, prompting for necessary information and creating the mode using the preferred YAML format.
+Kilo Code will guide you through the process, prompting for necessary information and creating the mode using the preferred YAML format.
+
+{% callout type="tip" %}
+**Create modes from job postings:** If there's a real world job posting for something you want a custom mode to do, try asking Code mode to `Create a custom mode based on the job posting at @[url]`. This can help you quickly create specialized modes with realistic role definitions.
+{% /callout %}
 
 ### 2. Using the Prompts Tab
 
-1. **Open Agent Behaviour settings:** Click the {% codicon name="gear" /%} icon to open Settings, then select the **Agent Behaviour** section and the **Modes** tab.
-2. **Create New Mode:** Click the {% codicon name="add" /%} button to the right of the Modes heading
+1. **Open Prompts Tab:** Click the <Codicon name="notebook" /> icon in the Kilo Code top menu bar
+2. **Create New Mode:** Click the <Codicon name="add" /> button to the right of the Modes heading
 3. **Fill in Fields:**
 
 {% image src="/docs/img/custom-modes/custom-modes-2.png" alt="Custom mode creation interface in the Prompts tab" width="600" caption="Custom mode creation interface in the Prompts tab" /%}
 
 _The custom mode creation interface showing fields for name, slug, description, save location, role definition, available tools, custom instructions._
 
-The interface provides fields for Name, Slug, Description, Save Location, Role Definition, When to Use (optional), Available Tools, and Custom Instructions. After filling these, click the "Create Mode" button. AlfaCode assistant will save the new mode in YAML format.
+The interface provides fields for Name, Slug, Description, Save Location, Role Definition, When to Use (optional), Available Tools, and Custom Instructions. After filling these, click the "Create Mode" button. Kilo Code will save the new mode in YAML format.
 
 ### 3. Manual Configuration (YAML & JSON)
 
-You can directly edit the configuration files to create or modify custom modes. This method offers the most control over all properties. AlfaCode assistant now supports both YAML (preferred) and JSON formats.
+You can directly edit the configuration files to create or modify custom modes. This method offers the most control over all properties. Kilo Code now supports both YAML (preferred) and JSON formats.
 
-- **Global Modes:** Edit the `custom_modes.yaml` (preferred) or `custom_modes.json` file.
-- **Project Modes:** Edit the `.kilocodemodes` file (which can be YAML or JSON) in your project root.
+- **Global Modes:** Edit the `custom_modes.yaml` (preferred) or `custom_modes.json` file. Access it via Prompts Tab > <Codicon name="gear" /> (Settings Menu icon next to "Global Prompts") > "Edit Global Modes"
+- **Project Modes:** Edit the `.kilocodemodes` file (which can be YAML or JSON) in your project root. Access it via Prompts Tab > <Codicon name="gear" /> (Settings Menu icon next to "Project Prompts") > "Edit Project Modes"
 
 These files define an array/list of custom modes.
 
@@ -170,7 +184,7 @@ customModes:
 
 ### `name`
 
-- **Purpose:** The display name shown in the AlfaCode assistant UI
+- **Purpose:** The display name shown in the Kilo Code UI
 - **Format:** Can include spaces and proper capitalization
 
 **YAML Example:** `name: 📝 Documentation Writer`
@@ -280,7 +294,7 @@ While JSON is still fully supported, new modes created via the UI or by asking K
 
 Automatic migration from `custom_modes.json` to `custom_modes.yaml` happens when:
 
-- AlfaCode assistant starts up
+- Kilo Code starts up
 - A `custom_modes.json` file exists
 - No `custom_modes.yaml` file exists yet
 
@@ -289,7 +303,7 @@ The migration process preserves the original JSON file for rollback purposes.
 ### Project Modes (`.kilocodemodes`)
 
 - No automatic startup migration occurs for project-specific files
-- AlfaCode assistant can read `.kilocodemodes` files in either YAML or JSON format
+- Kilo Code can read `.kilocodemodes` files in either YAML or JSON format
 - When editing through the UI, JSON files will be converted to YAML format
 - For manual conversion, you can ask Kilo to help reformat configurations
 
@@ -335,7 +349,7 @@ Mode configurations are applied in this order:
 
 ## Overriding Default Modes
 
-You can override AlfaCode assistant's built-in modes (like 💻 Code, 🪲 Debug, ❓ Ask, 🏗️ Architect, 🪃 Orchestrator) by creating a custom mode with the same slug.
+You can override Kilo Code's built-in modes (like 💻 Code, 🪲 Debug, ❓ Ask, 🏗️ Architect, 🪃 Orchestrator) by creating a custom mode with the same slug.
 
 ### Global Override Example
 
@@ -495,27 +509,6 @@ customModes:
 - **Colons for Key-Value Pairs:** Keys must be followed by a colon and a space (e.g., `slug: my-mode`)
 - **Hyphens for List Items:** List items start with a hyphen and a space (e.g., `- read`)
 - **Validate Your YAML:** Use online YAML validators or your editor's built-in validation
-
-## Contributing to the Marketplace
-
-Have you created a custom mode that others might find useful? Share it with the community by contributing to the [Kilo Marketplace](https://github.com/Kilo-Org/kilo-marketplace)!
-
-### How to Submit Your Mode
-
-1. **Export your mode**: Use the Export Mode button (download icon) in the Modes view to save your mode as a YAML file
-2. **Test thoroughly**: Ensure your mode works correctly across different scenarios
-3. **Fork the marketplace repository**: Visit [github.com/Kilo-Org/kilo-marketplace](https://github.com/Kilo-Org/kilo-marketplace) and create a fork
-4. **Add your mode**: Place your mode YAML file in the appropriate directory following the repository's structure
-5. **Submit a pull request**: Create a PR with a clear description of what your mode does and when it's useful
-
-### Submission Guidelines
-
-- Include a clear, descriptive name and description
-- Document any specific use cases or requirements
-- Test your mode with different AI models if possible
-- Follow the [contribution guidelines](https://github.com/Kilo-Org/kilo-marketplace/blob/main/CONTRIBUTING.md) in the marketplace repository
-
-For more details on contributing to AlfaCode assistant, see the [Contributing Guide](/docs/contributing).
 
 ## Community Gallery
 
