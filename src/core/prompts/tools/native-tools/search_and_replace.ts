@@ -1,6 +1,6 @@
 import type OpenAI from "openai"
 
-const SEARCH_AND_REPLACE_DESCRIPTION = `Apply precise, targeted modifications to an existing file using search and replace operations. This tool is for surgical edits only; provide an array of operations where each operation specifies the exact text to search for and what to replace it with. The search text must exactly match the existing content, including whitespace and indentation.`
+const SEARCH_AND_REPLACE_DESCRIPTION = `Apply precise, targeted modifications to an existing file using search and replace operations. This tool is for surgical edits only; provide an array of operations where each operation specifies the exact text to search for and what to replace it with. The search text must exactly match the existing content, including whitespace and indentation. If a recovery preview shows tagged lines like \`#HL 42:abc|...\`, you may pass those tagged lines back inside an operation's \`search\` text. Valid \`#HL\` references are resolved to the file's exact current line text before matching, and \`#HL ...|\` prefixes are stripped from replacement text.`
 
 const search_and_replace = {
 	type: "function",

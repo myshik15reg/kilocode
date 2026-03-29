@@ -24,12 +24,26 @@ export class StaticSettingsService implements SettingsService {
 			const parsedJson = JSON.parse(decodedValue)
 			return organizationSettingsSchema.parse(parsedJson)
 		} catch (error) {
-			this.log(
-				`[StaticSettingsService] failed to parse static settings: ${error instanceof Error ? error.message : String(error)}`,
-				error,
-			)
+			// kilocode_change start
+			// Logging must never block error propagation.
+			// Also: on Node.js 24 we observed `console.log` crashing while trying to
+			// inspect complex error objects (e.g. ZodError). To keep error handling
+			// robust, we log a simplified Error and avoid attaching a complex `cause`.
+			const rawErrorMessage = error instanceof Error ? error.message : String(error)
+			const safeErrorForLog = new Error(rawErrorMessage)
 
-			throw new Error("Failed to parse static settings", { cause: error })
+			try {
+				this.log(`[StaticSettingsService] failed to parse static settings: ${rawErrorMessage}`, safeErrorForLog)
+			} catch {
+				try {
+					console.warn("[StaticSettingsService] logger failed while handling parse error")
+				} catch {
+					// ignore
+				}
+			}
+
+			throw new Error("Failed to parse static settings")
+			// kilocode_change end
 		}
 	}
 

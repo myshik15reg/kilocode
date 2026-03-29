@@ -1,38 +1,35 @@
-# Repo Hygiene
+﻿# Repo Hygiene
 
-Purpose: keep the repository clean, predictable, and reviewable.
+Purpose: keep the repository predictable, reviewable, and free of stray task artifacts.
 
-## Storage Rules
-- Workflow pack docs live under `~/.kilocode/` in this template.
-- Project docs in consuming repos may live in `docs/` (optional).
-- Temporary scripts and scratch files go to `temp/`.
-- Screenshots go to `temp/screenshot/`.
-- Protocols live only in `.protocols/`.
+## Storage rules
 
-## Clean Status Checklist
-- No unrelated untracked files before a task starts.
-- No large binary files without Git LFS.
-- No scratch files at repo root.
-- `temp/` stays temporary; clean it after the task.
+| Concern             | Preferred location                   | Avoid                            |
+| ------------------- | ------------------------------------ | -------------------------------- |
+| workflow docs       | `.kilocode/`                         | random root-level markdown dumps |
+| protocols           | `.protocols/`                        | `.kilocode/`                     |
+| temporary artifacts | `temp/` or task-local artifact paths | repo root clutter                |
+| screenshots         | `temp/screenshot/`                   | root folder screenshots          |
 
-## File Naming
-- Protocols: `.protocols/YYYY-MM-DD-name/`.
-- Markdown in `~/.kilocode/`: lowercase, `kebab-case` (`some-doc.md`) to avoid case-sensitivity issues.
-- Docs (in consuming repos): clear, lowercase, hyphenated.
-- Screenshots: `temp/screenshot/YYYY-MM-DD-short-name.png`.
-- PowerShell scripts: `scripts/workflowai-<action>.ps1` (kebab-case).
+## Hygiene rules
 
-### Allowed Exceptions
-- `AGENTS.md` (project entrypoint)
-- `README.md` (repo entrypoint)
-- `SKILL.md` (skill convention)
-- `.clinerules`, `.kilocodemodes`, `.gitignore` (tool conventions)
+1. Keep task workspaces inside `.protocols/YYYY-MM-DD-name/`.
+2. Keep long-lived project context in `.kilocode/memory-bank/`.
+3. Do not store local IDE or machine-specific files unless the repo explicitly requires them.
+4. Prefer markdown or plain-text documentation over opaque binary office files.
+5. Remove stale scratch files before closure when they are not part of the intended deliverable.
 
-## Daily Hygiene
-- Check `git status` before and after changes.
-- Delete stale worktrees and temp artifacts.
-- Keep internal links up to date.
+## Naming conventions
 
-## Local-only Artifacts (must not be tracked)
-- IDE/workspace: `*.code-workspace`, `.vscode/`, `.idea/`
-- AI tool configs: `.claude/` and similar
+| Item                  | Convention                           |
+| --------------------- | ------------------------------------ |
+| Protocol folder       | `.protocols/YYYY-MM-DD-name/`        |
+| Markdown docs         | lowercase kebab-case where practical |
+| Temporary screenshots | dated descriptive filenames          |
+
+## Review checklist
+
+- no unrelated scratch files in the diff
+- no live protocol content committed into template packs
+- no duplicated source-of-truth docs created without need
+- no machine-specific clutter added accidentally

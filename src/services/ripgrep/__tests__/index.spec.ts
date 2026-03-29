@@ -1,11 +1,20 @@
 // npx vitest run src/services/ripgrep/__tests__/index.spec.ts
 
 import * as path from "path" // kilocode_change
-import { getBinPath, truncateLine } from "../index" // kilocode_change
+import * as childProcess from "child_process" // kilocode_change
+import { getBinPath, regexSearchFiles, truncateLine } from "../index" // kilocode_change
 import { fileExistsAtPath } from "../../../utils/fs" // kilocode_change
 // kilocode_change start
+vi.mock("child_process", () => ({
+	spawn: vi.fn(),
+}))
 vi.mock("../../../utils/fs", () => ({
 	fileExistsAtPath: vi.fn(),
+}))
+vi.mock("vscode", () => ({
+	env: {
+		appRoot: "/mock/app/root",
+	},
 }))
 // kilocode_change end
 describe("Ripgrep line truncation", () => {
@@ -57,6 +66,7 @@ describe("Ripgrep line truncation", () => {
 // kilocode_change start
 describe("getBinPath", () => {
 	const mockFileExists = fileExistsAtPath as ReturnType<typeof vi.fn>
+	const mockSpawn = childProcess.spawn as ReturnType<typeof vi.fn>
 	const isWindows = process.platform.startsWith("win")
 	const binName = isWindows ? "rg.exe" : "rg"
 
@@ -138,6 +148,30 @@ describe("getBinPath", () => {
 
 		// Should return traditional path when it exists
 		expect(result).toBe(traditionalPath)
+	})
+
+	it("should decode split UTF-8 stderr chunks before returning no results", async () => {
+		mockFileExists.mockResolvedValue("/mock/path/to/rg" as any)
+		const { PassThrough } = await import("stream")
+		const stdout = new PassThrough()
+		const stderr = new PassThrough()
+
+		mockSpawn.mockReturnValue({
+			stdout,
+			stderr,
+			on: vi.fn(),
+			kill: vi.fn(() => {
+				stdout.end()
+			}),
+		} as any)
+
+		const resultPromise = regexSearchFiles("/cwd", "/search", "TODO")
+		stderr.write(new Uint8Array([0xd0]))
+		stderr.write(new Uint8Array([0x96]))
+		stderr.end()
+		stdout.end()
+
+		await expect(resultPromise).resolves.toBe("No results found")
 	})
 })
 // kilocode_change end

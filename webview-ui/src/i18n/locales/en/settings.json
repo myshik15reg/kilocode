@@ -47,6 +47,8 @@
 		"ghost": "Autocomplete"
 	},
 	"about": {
+		"version": "Version: {{version}}",
+		"versionWithSha": "Version: {{version}} ({{sha}})",
 		"bugReport": {
 			"label": "Found a bug?",
 			"link": "Report on GitHub"
@@ -62,7 +64,7 @@
 		"contact": {
 			"label": "Need to talk to us? Write"
 		},
-		"community": "Want tips or to just hang out with other AlfaCode assistant users? Join <redditLink>reddit.com/r/kilocode</redditLink> or <discordLink>kilo.ai/discord</discordLink>",
+		"community": "Want tips or to just hang out with other AlfaCode assistant users? Join <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> or <discordLink>alfacode.ai/discord</discordLink>",
 		"contactAndCommunity": "Contact & Community",
 		"manageSettings": "Manage Settings",
 		"debugMode": {
@@ -400,6 +402,28 @@
 				"minutes": "{{minutes}}m limit"
 			}
 		},
+		"claudeCodeRateLimits": {
+			"title": "Usage Limits",
+			"loading": "Loading rate limits...",
+			"loadError": "Failed to load rate limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "resets in {{time}}",
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"fiveHour": "5-hour",
+				"weekly": "Weekly"
+			},
+			"limitLabel": "Limit: {{limit}}"
+		},
 		"useCustomBaseUrl": "Use custom base URL",
 		"useReasoning": "Enable reasoning",
 		"useHostHeader": "Use custom Host header",
@@ -458,9 +482,6 @@
 		"getZaiApiKey": "Get Z AI API Key",
 		"zaiEntrypoint": "Z AI Entrypoint",
 		"zaiEntrypointDescription": "Please select the appropriate API entrypoint based on your location. If you are in China, choose open.bigmodel.cn. Otherwise, choose api.z.ai.",
-		"minimaxApiKey": "MiniMax API Key",
-		"getMiniMaxApiKey": "Get MiniMax API Key",
-		"minimaxBaseUrl": "MiniMax Entrypoint",
 		"geminiApiKey": "Gemini API Key",
 		"getGroqApiKey": "Get Groq API Key",
 		"groqApiKey": "Groq API Key",
@@ -608,8 +629,8 @@
 			"instructions": "During use, a dialog box will pop up and the current message will be copied to the clipboard automatically. You need to paste these to web versions of AI (such as ChatGPT or Claude), then copy the AI's reply back to the dialog box and click the confirm button."
 		},
 		"roo": {
-			"authenticatedMessage": "Securely authenticated through your Roo Code Cloud account.",
-			"connectButton": "Connect to Roo Code Cloud"
+			"authenticatedMessage": "Securely authenticated through your AlfaCode assistant Cloud account.",
+			"connectButton": "Connect to AlfaCode assistant Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -670,7 +691,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Error & Repetition Limit",
-			"description": "Number of consecutive errors or repeated actions before showing 'Kilo is having trouble' dialog. Set to 0 to disable this safety mechanism (it will never trigger).",
+			"description": "Number of consecutive errors or repeated actions before showing the 'AlfaCode assistant is having trouble' dialog. Set to 0 to disable this safety mechanism (it will never trigger).",
 			"unlimitedDescription": "Unlimited retries enabled (auto-proceed). The dialog will never appear.",
 			"warning": "⚠️ Setting to 0 allows unlimited retries which may consume significant API usage"
 		},
@@ -696,7 +717,9 @@
 			"description": "Optional path to your Claude Code CLI. Defaults to 'claude' if not set.",
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Max Output Tokens",
-			"maxTokensDescription": "Maximum number of output tokens for Claude Code responses. Default is 8000."
+			"maxTokensDescription": "Maximum number of output tokens for Claude Code responses. Default is 8000.",
+			"signInButton": "Sign in to Claude Code",
+			"signOutButton": "Sign Out"
 		},
 		"qwenCode": {
 			"oauthPath": "OAuth Credentials Path (optional)",
@@ -934,11 +957,11 @@
 		},
 		"outputLineLimit": {
 			"label": "Terminal output limit",
-			"description": "Keeps the first and last lines and drops the middle to stay under the limit. Lower to save tokens; raise to give Kilo more middle detail. Kilo sees a placeholder where the content is skipped.<0>Learn more</0>"
+			"description": "Keeps the first and last lines and drops the middle to stay under the limit. Lower to save tokens; raise to give AlfaCode assistant more middle detail. AlfaCode assistant sees a placeholder where the content is skipped.<0>Learn more</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Terminal character limit",
-			"description": "Overrides the line limit to prevent memory issues by enforcing a hard cap on output size. If exceeded, keeps the beginning and end and shows a placeholder to Kilo where content is skipped. <0>Learn more</0>"
+			"description": "Overrides the line limit to prevent memory issues by enforcing a hard cap on output size. If exceeded, keeps the beginning and end and shows a placeholder to AlfaCode assistant where content is skipped. <0>Learn more</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal shell integration timeout",
@@ -946,7 +969,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Use Inline Terminal (recommended)",
-			"description": "Run commands in the Inline Terminal (chat) to bypass shell profiles/integration for faster, more reliable runs. When disabled Kilo uses the VS Code terminal with your shell profile, prompts, and plugins. <0>Learn more</0>"
+			"description": "Run commands in the Inline Terminal (chat) to bypass shell profiles/integration for faster, more reliable runs. When disabled, AlfaCode assistant uses the VS Code terminal with your shell profile, prompts, and plugins. <0>Learn more</0>"
 		},
 		"commandDelay": {
 			"label": "Terminal command delay",
@@ -1054,7 +1077,7 @@
 		},
 		"MORPH_FAST_APPLY": {
 			"name": "Enable Fast Apply",
-			"description": "When enabled, AlfaCode assistant can edit files using Fast Apply with specialized models optimized for code modifications. Requires the Kilo Gateway Provider, OpenRouter, or a Morph API key.",
+			"description": "When enabled, AlfaCode assistant can edit files using Fast Apply with specialized models optimized for code modifications. Requires AlfaCode Gateway, OpenRouter, or a Morph API key.",
 			"apiProvider": "API Provider",
 			"apiProviderList": {
 				"current": "Current"
@@ -1114,7 +1137,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Enable custom tools",
-			"description": "When enabled, Kilo can load and use custom TypeScript/JavaScript tools from your project's .kilocode/tools directory or ~/.kilocode/tools for global tools. Note: these tools will automatically be auto-approved.",
+			"description": "When enabled, AlfaCode assistant can load and use custom TypeScript/JavaScript tools from your project's .kilocode/tools directory or ~/.kilocode/tools for global tools. Note: these tools will automatically be auto-approved.",
 			"toolsHeader": "Available Custom Tools",
 			"noTools": "No custom tools loaded. Add .ts or .js files to your project's .kilocode/tools directory or ~/.kilocode/tools for global tools.",
 			"refreshButton": "Refresh",
@@ -1166,8 +1189,8 @@
 		"allModels": "All models"
 	},
 	"footer": {
-		"feedback": "If you have any questions or feedback, feel free to open an issue at <githubLink>github.com/Kilo-Org/kilocode</githubLink> or join <redditLink>reddit.com/r/kilocode</redditLink> or <discordLink>kilo.ai/discord</discordLink>.",
-		"support": "For financial questions, please contact Customer Support at <supportLink>https://kilo.ai/support</supportLink>",
+		"feedback": "If you have any questions or feedback, feel free to open an issue at <githubLink>github.com/Alfa-Org/alfacode</githubLink> or join <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> or <discordLink>alfacode.ai/discord</discordLink>.",
+		"support": "For financial questions, please contact Customer Support at <supportLink>https://alfacode.ai/support</supportLink>",
 		"telemetry": {
 			"label": "Allow error and usage reporting",
 			"description": "Help improve AlfaCode assistant by sending usage data and error reports. No code, prompts, or personal information is ever sent. See our privacy policy for more details."

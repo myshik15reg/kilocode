@@ -50,6 +50,16 @@ interface FileResult {
 	feedbackImages?: any[]
 }
 
+const VERY_LARGE_FILE_SIZE_BYTES = 2 * 1024 * 1024 // kilocode_change
+const VERY_LONG_SINGLE_LINE_BYTES = 64 * 1024 // kilocode_change
+
+type LargeFileRisk = "very_large_file" | "very_long_single_line" // kilocode_change
+
+interface LargeFilePreview {
+	xmlContent: string
+	nativeContent: string
+}
+
 type GlobalRooPrefix = ".kilocode" | ".roo"
 
 function escapeXml(value: string): string {
@@ -176,6 +186,91 @@ function isEnoentLikeError(error: unknown): boolean {
 	const msg = maybeMessage.toLowerCase()
 	return msg.includes("enoent") || msg.includes("no such file") || msg.includes("not found")
 }
+
+async function inspectLargeFileRisk(fullPath: string, fileSizeBytes: number): Promise<LargeFileRisk | null> {
+	// kilocode_change start
+	if (fileSizeBytes > VERY_LARGE_FILE_SIZE_BYTES) {
+		return "very_large_file"
+	}
+
+	if (fileSizeBytes <= VERY_LONG_SINGLE_LINE_BYTES) {
+		return null
+	}
+
+	let fileHandle: Awaited<ReturnType<typeof fs.open>> | undefined
+	try {
+		fileHandle = await fs.open(fullPath, "r")
+		const probeSize = Math.min(fileSizeBytes, VERY_LONG_SINGLE_LINE_BYTES)
+		const probeBuffer = Buffer.alloc(probeSize)
+		const { bytesRead } = await fileHandle.read(probeBuffer, 0, probeSize, 0)
+		const probeText = probeBuffer.subarray(0, bytesRead).toString("utf8")
+		if (bytesRead >= VERY_LONG_SINGLE_LINE_BYTES && !probeText.includes("\n") && !probeText.includes("\r")) {
+			return "very_long_single_line"
+		}
+
+		return null
+	} finally {
+		await fileHandle?.close().catch(() => undefined)
+	}
+	// kilocode_change end
+}
+
+function buildLargeFileNotice(relPath: string, risk: LargeFileRisk, fileSizeBytes: number): string {
+	// kilocode_change start
+	const fileSizeMb = (fileSizeBytes / (1024 * 1024)).toFixed(fileSizeBytes >= 1024 * 1024 ? 1 : 2)
+	if (risk === "very_long_single_line") {
+		return `Skipped reading ${relPath} because it appears to be a very large single-line or minified file (${fileSizeMb} MB). Sending the whole line would likely overflow context. Use search tools or external inspection, or enable very large reads if you must continue.`
+	}
+
+	return `Skipped reading ${relPath} because it is very large (${fileSizeMb} MB). Read a narrower line_range or enable very large reads to bypass this safety guard.`
+	// kilocode_change end
+}
+
+// kilocode_change start
+function buildLargeFilePreviewNotice(relPath: string, risk: LargeFileRisk, fileSizeBytes: number): string {
+	const fileSizeMb = (fileSizeBytes / (1024 * 1024)).toFixed(fileSizeBytes >= 1024 * 1024 ? 1 : 2)
+	if (risk === "very_long_single_line") {
+		return `Showing a bounded preview for ${relPath} because it appears to be a very large single-line or minified file (${fileSizeMb} MB). Full ingestion is skipped to avoid context overflow. Use search tools, a targeted byte/line window, or enable very large reads if you must inspect more.`
+	}
+
+	return `Showing a bounded preview for ${relPath} because it is very large (${fileSizeMb} MB). Full ingestion is skipped to protect context budget. Use line_range for a narrower section or enable very large reads to bypass this safety guard.`
+}
+
+async function buildLargeFilePreview(
+	fullPath: string,
+	relPath: string,
+	risk: LargeFileRisk,
+	fileSizeBytes: number,
+): Promise<LargeFilePreview> {
+	if (risk === "very_long_single_line") {
+		let fileHandle: Awaited<ReturnType<typeof fs.open>> | undefined
+		try {
+			fileHandle = await fs.open(fullPath, "r")
+			const previewBytes = Math.min(fileSizeBytes, 4096)
+			const previewBuffer = Buffer.alloc(previewBytes)
+			const { bytesRead } = await fileHandle.read(previewBuffer, 0, previewBytes, 0)
+			const previewText = previewBuffer.subarray(0, bytesRead).toString("utf8")
+			const numberedPreview = addLineNumbers(previewText || "", 1)
+			const notice = buildLargeFilePreviewNotice(relPath, risk, fileSizeBytes)
+
+			return {
+				xmlContent: `<file><path>${relPath}</path>\n<content lines="1-1">\n${numberedPreview}</content>\n<notice>${notice}</notice>\n</file>`,
+				nativeContent: `File: ${relPath}\nLine 1 (truncated preview):\n${numberedPreview}\n\nNote: ${notice}`,
+			}
+		} finally {
+			await fileHandle?.close().catch(() => undefined)
+		}
+	}
+
+	const previewLineCount = 200
+	const previewContent = addLineNumbers(await readLines(fullPath, previewLineCount - 1, 0))
+	const notice = buildLargeFilePreviewNotice(relPath, risk, fileSizeBytes)
+	return {
+		xmlContent: `<file><path>${relPath}</path>\n<content lines="1-${previewLineCount}">\n${previewContent}</content>\n<notice>${notice}</notice>\n</file>`,
+		nativeContent: `File: ${relPath}\nLines 1-${previewLineCount}:\n${previewContent}\n\nNote: ${notice}`,
+	}
+}
+// kilocode_change end
 
 const MEMORY_BANK_TEMPLATE_FILES = [
 	"index.md",
@@ -602,6 +697,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				maxReadFileLine = 500 /*kilocode_change*/,
 				maxImageFileSize = DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
 				maxTotalImageSize = DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
+				allowVeryLargeReads = false,
 			} = state ?? {}
 
 			let didAttemptMemoryBankScaffold = false
@@ -641,7 +737,29 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						continue
 					}
 
-					const [totalLines, isBinary] = await Promise.all([countFileLines(fullPath), isBinaryFile(fullPath)])
+					const isBinary = await isBinaryFile(fullPath)
+
+					// kilocode_change start
+					const hasLineRanges = Boolean(fileResult.lineRanges && fileResult.lineRanges.length > 0)
+					const fileSizeBytes =
+						typeof stats.size === "number" && Number.isFinite(stats.size) ? stats.size : null
+					if (!isBinary && !allowVeryLargeReads && fileSizeBytes !== null) {
+						const largeFileRisk = await inspectLargeFileRisk(fullPath, fileSizeBytes)
+						if (
+							largeFileRisk === "very_long_single_line" ||
+							(largeFileRisk === "very_large_file" && !hasLineRanges)
+						) {
+							const preview = await buildLargeFilePreview(fullPath, relPath, largeFileRisk, fileSizeBytes)
+							updateFileResult(relPath, {
+								xmlContent: preview.xmlContent,
+								nativeContent: preview.nativeContent,
+							})
+							continue
+						}
+					}
+					// kilocode_change end
+
+					const totalLines = isBinary ? 0 : await countFileLines(fullPath)
 
 					if (isBinary) {
 						const fileExtension = path.extname(relPath).toLowerCase()
@@ -907,12 +1025,13 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				}
 			}
 
-			// Add a notice for any files resolved from the global Kilo Code directory.
+			// kilocode_change start
+			// Add a notice for any files resolved from the global AlfaCode assistant directory.
 			for (const fileResult of fileResults) {
 				if (!fileResult.resolvedFromGlobal || !fileResult.resolvedPath) continue
 				if (fileResult.status === "denied" || fileResult.status === "blocked") continue
 
-				const globalNotice = `Resolved from global Kilo Code directory: ${fileResult.resolvedPath}`
+				const globalNotice = `Resolved from global AlfaCode assistant directory: ${fileResult.resolvedPath}`
 				if (fileResult.nativeContent && !fileResult.nativeContent.includes(globalNotice)) {
 					fileResult.nativeContent = `${fileResult.nativeContent}\nNote: ${globalNotice}`
 				}
@@ -920,6 +1039,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					fileResult.xmlContent = appendXmlNotice(fileResult.xmlContent, globalNotice)
 				}
 			}
+			// kilocode_change end
 
 			// Check if any files had errors or were blocked and mark the turn as failed
 			const hasErrors = fileResults.some((result) => result.status === "error" || result.status === "blocked")

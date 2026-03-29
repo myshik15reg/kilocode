@@ -1,124 +1,55 @@
----
+﻿---
 name: testing-detailed
-description: Complete testing guide - TDD methodology, coverage requirements (100%), test pyramid, AAA pattern, mocking strategies, and quality gates.
+description: Detailed testing guidance for choosing the right test depth, keeping tests deterministic, and aligning verification with repository quality policy.
 ---
 
-# Testing Rules (Detailed)
+# Testing Guidance
 
-## Обязательные требования
+Use this skill when planning or implementing verification work.
 
-### Coverage Requirements (ABSOLUTE)
+## Core principles
 
-| Метрика | Требование | Блокирует |
-|---------|-----------|-----------|
-| **Lines** | 100% | Merge + Build |
-| **Branches** | 100% | Merge + Build |
-| **Functions** | 100% | Merge + Build |
+1. Choose the smallest test that proves the required behavior.
+2. Keep tests deterministic and focused.
+3. Protect behavior that matters, not incidental implementation details.
+4. Let repository policy define exact coverage and quality thresholds.
 
-**Zero Tolerance:** Код без 100% coverage = reject.
+## Test levels
 
-### Test Pyramid
+| Level       | Use when                                           |
+| ----------- | -------------------------------------------------- |
+| Unit        | one function, class, or local behavior needs proof |
+| Integration | multiple components or boundaries interact         |
+| End-to-end  | a critical user or system flow must be verified    |
 
-```
-      /\
-     /  \    E2E (few)           <- Critical user flows
-    /----\
-   /      \  Integration (some)  <- Component interactions
-  /--------\
- /          \ Unit (majority)    <- Functions, classes
-/____________\
-```
+## TDD loop
 
-## TDD Cycle
+1. Write or define the failing expectation.
+2. Make the smallest change that satisfies it.
+3. Refactor while keeping verification green.
 
-```
-1. RED    - Написать падающий тест
-2. GREEN  - Минимальный код для прохождения
-3. REFACTOR - Улучшить при зелёных тестах
-```
+## Good test qualities
 
-**Запрещено:** Писать код без предварительного теста.
+- deterministic
+- isolated where appropriate
+- readable
+- scoped to one clear behavior
+- fast enough for their intended role
 
-## AAA Pattern
+## Mocking guidance
 
-```javascript
-test('should calculate total with discount', () => {
-    // Arrange - подготовка
-    const items = [{ price: 100 }, { price: 200 }];
-    const discount = 0.1;
+Mock unstable or external boundaries when the test does not need the real dependency.
+Do not mock away the behavior you are actually trying to prove.
 
-    // Act - действие
-    const total = calculateTotal(items, discount);
+## Selection rules
 
-    // Assert - проверка
-    expect(total).toBe(270);
-});
-```
+- prefer unit tests for localized logic
+- prefer integration tests for contracts and wiring
+- reserve E2E for critical flows and cross-boundary confidence
+- avoid inflating a small change into a broad expensive test suite unless risk justifies it
 
-## Именование тестов
+## Related sources
 
-**Формат:** `should [expected behavior] when [condition]`
-
-```javascript
-// ✅ ХОРОШО
-test('should return empty array when input is null')
-test('should throw error when user not found')
-
-// ❌ ПЛОХО
-test('test1')
-test('it works')
-```
-
-## Unit Tests
-
-### Что тестировать:
-- ✅ Публичные методы/функции
-- ✅ Граничные случаи (edge cases)
-- ✅ Обработка ошибок
-- ✅ Бизнес-логика
-- ❌ Private methods
-- ❌ External libraries
-
-### Требования:
-- **Быстрые:** < 100ms per test
-- **Изолированные:** Нет зависимостей между тестами
-- **Deterministic:** Одинаковый результат
-- **Focused:** Один тест = одно поведение
-
-## Mocking Strategy
-
-**Мокать:**
-- External APIs
-- Database calls
-- File system
-- Time/Random
-
-**НЕ мокать:**
-- Бизнес-логику
-- Утилиты
-- В integration тестах
-
-## Integration Tests
-
-- Тестируют взаимодействие компонентов
-- Используют real dependencies где возможно
-- Проверяют data flow между слоями
-
-## E2E Tests
-
-- Critical user journeys
-- Happy path + key error scenarios
-- Медленные, запускать в CI
-
-## Quality Gates
-
-```bash
-# Pre-commit (обязательно)
-npm test -- --coverage
-# Coverage < 100% = commit rejected
-
-# CI Pipeline
-npm run lint        # 0 errors, 0 warnings
-npm run test:unit   # 100% coverage
-npm run test:e2e    # Critical paths
-```
+- Testing rules wrapper: [`../../rules/testing-rules.md`](../../rules/testing-rules.md:1)
+- Quality gates: [`../../rules/quality-gates.md`](../../rules/quality-gates.md:1)
+- Quality enforcement workflow: [`../../workflows/quality-enforcement.md`](../../workflows/quality-enforcement.md:1)

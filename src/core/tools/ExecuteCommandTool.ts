@@ -1,4 +1,4 @@
-import fs from "fs/promises"
+﻿import fs from "fs/promises"
 import * as path from "path"
 import * as vscode from "vscode"
 
@@ -25,6 +25,8 @@ interface ExecuteCommandParams {
 	command: string
 	cwd?: string
 }
+
+const DEFAULT_COMMAND_HARD_TIMEOUT_MS = 5 * 60 * 1000
 
 export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 	readonly name = "execute_command" as const
@@ -158,6 +160,7 @@ export type ExecuteCommandOptions = {
 	terminalOutputLineLimit?: number
 	terminalOutputCharacterLimit?: number
 	commandExecutionTimeout?: number
+	hardTimeoutMs?: number
 }
 
 export async function executeCommandInTerminal(
@@ -170,6 +173,7 @@ export async function executeCommandInTerminal(
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 		commandExecutionTimeout = 0,
+		hardTimeoutMs = DEFAULT_COMMAND_HARD_TIMEOUT_MS,
 	}: ExecuteCommandOptions,
 ): Promise<[boolean, ToolResponse]> {
 	// Convert milliseconds back to seconds for display purposes.
@@ -274,17 +278,21 @@ export async function executeCommandInTerminal(
 	const process = terminal.runCommand(command, callbacks)
 	task.terminalProcess = process
 
-	// Implement command execution timeout (skip if timeout is 0).
-	if (commandExecutionTimeout > 0) {
+	const effectiveTimeoutMs =
+		commandExecutionTimeout > 0 ? Math.min(commandExecutionTimeout, hardTimeoutMs) : hardTimeoutMs
+
+	if (effectiveTimeoutMs > 0) {
 		let timeoutId: NodeJS.Timeout | undefined
 		let isTimedOut = false
+		const timedOutByUserSetting = commandExecutionTimeout > 0 && effectiveTimeoutMs === commandExecutionTimeout
+		const timeoutSecondsForMessage = effectiveTimeoutMs / 1000
 
 		const timeoutPromise = new Promise<void>((_, reject) => {
 			timeoutId = setTimeout(() => {
 				isTimedOut = true
 				task.terminalProcess?.abort()
-				reject(new Error(`Command execution timed out after ${commandExecutionTimeout}ms`))
-			}, commandExecutionTimeout)
+				reject(new Error(`Command execution timed out after ${effectiveTimeoutMs}ms`))
+			}, effectiveTimeoutMs)
 		})
 
 		try {
@@ -293,13 +301,15 @@ export async function executeCommandInTerminal(
 			if (isTimedOut) {
 				const status: CommandExecutionStatus = { executionId, status: "timeout" }
 				provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
-				await task.say("error", t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }))
+				await task.say("error", t("common:errors:command_timeout", { seconds: timeoutSecondsForMessage }))
 				task.didToolFailInCurrentTurn = true
 				task.terminalProcess = undefined
 
 				return [
 					false,
-					`The command was terminated after exceeding a user-configured ${commandExecutionTimeoutSeconds}s timeout. Do not try to re-run the command.`,
+					timedOutByUserSetting
+						? `The command was terminated after exceeding a user-configured ${timeoutSecondsForMessage}s timeout. Do not try to re-run the command.`
+						: `The command was terminated after exceeding a protective ${timeoutSecondsForMessage}s hard timeout to avoid hanging the workflow. Consider rerunning with a narrower command or adding the command prefix to the timeout allowlist if long execution is expected.`,
 				]
 			}
 			throw error

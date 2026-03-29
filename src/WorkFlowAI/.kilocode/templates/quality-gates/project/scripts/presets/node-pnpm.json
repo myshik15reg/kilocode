@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "description": "Preset for Node.js repos (pnpm).",
+  "steps": [
+    { "name": "Install", "command": "pnpm", "args": ["install", "--frozen-lockfile"] },
+    { "name": "Guardrails", "command": "pwsh", "args": ["-File", "./scripts/workflowai-guardrails.ps1", "-ProjectPath", ".", "-CheckKiloCodeChangeMarkers"] },
+    { "name": "Lint", "command": "pnpm", "args": ["run", "lint"] },
+    { "name": "Typecheck", "command": "pnpm", "args": ["run", "typecheck"] },
+    { "name": "Tests+Coverage", "command": "pnpm", "args": ["run", "test:coverage"] }
+  ]
+}

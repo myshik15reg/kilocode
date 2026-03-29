@@ -190,7 +190,7 @@ export const ImageGenerationSettings = ({
 							onChange={(e: any) => handleProviderChange(e.target.value)}
 							className="w-full">
 							<VSCodeOption value="kilocode" className="py-2 px-3">
-								Kilo Gateway
+								AlfaCode Gateway
 							</VSCodeOption>
 							<VSCodeOption value="litellm" className="py-2 px-3">
 								LiteLLM
@@ -218,7 +218,7 @@ export const ImageGenerationSettings = ({
 								}}
 								className="w-full">
 								<VSCodeOption className="py-2 px-3" value="kilocode">
-									AlfaCode assistant
+									AlfaCode
 								</VSCodeOption>
 								<VSCodeOption className="py-2 px-3" value="openrouter">
 									OpenRouter

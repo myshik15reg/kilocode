@@ -36,6 +36,7 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 		success: boolean
 		message: string
 		version?: string
+		databaseCreated?: boolean
 	} | null>(null)
 
 	// Request password status on mount
@@ -125,6 +126,10 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 			{/* Neo4j Connection Settings */}
 			{enabled && (
 				<div className="space-y-4 mt-4">
+					<div className="rounded-md bg-vscode-editor-inactiveSelectionBackground/40 px-3 py-2 text-xs text-vscode-descriptionForeground">
+						{t("settings:codeIndex.neo4j.autoCreateHint")}
+					</div>
+
 					{/* URI */}
 					<div className="space-y-2">
 						<label className="text-sm font-medium">{t("settings:codeIndex.neo4j.uriLabel")}</label>
@@ -197,19 +202,24 @@ export const Neo4jSettings: React.FC<Neo4jSettingsProps> = ({
 					{/* Connection Test Result */}
 					{connectionTestResult && (
 						<div
-							className={`mt-2 p-3 rounded border ${
+							className={`mt-2 rounded-md px-3 py-2 ${
 								connectionTestResult.success
-									? "border-green-500 bg-green-50 dark:bg-green-900/20"
-									: "border-red-500 bg-red-50 dark:bg-red-900/20"
+									? "bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300"
+									: "bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300"
 							}`}>
 							<div className="flex items-start gap-2">
 								{connectionTestResult.success ? (
-									<CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+									<CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0" />
 								) : (
-									<XCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+									<XCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
 								)}
 								<div className="flex-1">
 									<p className="text-sm font-medium">{connectionTestResult.message}</p>
+									{connectionTestResult.success && connectionTestResult.databaseCreated && (
+										<p className="mt-1 text-xs text-vscode-descriptionForeground">
+											{t("settings:codeIndex.neo4j.databaseCreatedHint")}
+										</p>
+									)}
 									{connectionTestResult.version && (
 										<p className="text-xs text-vscode-descriptionForeground mt-1">
 											{t("settings:codeIndex.neo4j.version", {

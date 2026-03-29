@@ -184,6 +184,371 @@ describe("mode-validator", () => {
 			)
 		})
 
+		it("throws error for web_search when required query is missing/empty", () => {
+			expect(() => validateToolUse("web_search" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for web_search: missing or empty required parameter "query"/,
+			)
+			expect(() => validateToolUse("web_search" as any, codeMode, [], undefined, { query: "   " })).toThrow(
+				/Invalid arguments for web_search: missing or empty required parameter "query"/,
+			)
+		})
+
+		it("throws error for read_file when neither legacy path nor valid files are provided", () => {
+			expect(() => validateToolUse("read_file" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for read_file: provide either a non-empty legacy "path" or a non-empty "files" array/,
+			)
+			expect(() => validateToolUse("read_file" as any, codeMode, [], undefined, { path: "   " })).toThrow(
+				/Invalid arguments for read_file: provide either a non-empty legacy "path" or a non-empty "files" array/,
+			)
+			expect(() => validateToolUse("read_file" as any, codeMode, [], undefined, { files: [] })).toThrow(
+				/Invalid arguments for read_file: provide either a non-empty legacy "path" or a non-empty "files" array/,
+			)
+			expect(() =>
+				validateToolUse("read_file" as any, codeMode, [], undefined, { files: [{ path: "   " }] }),
+			).toThrow(
+				/Invalid arguments for read_file: provide either a non-empty legacy "path" or a non-empty "files" array/,
+			)
+			expect(() =>
+				validateToolUse("read_file" as any, codeMode, [], undefined, { path: "src/file.ts" }),
+			).not.toThrow()
+			expect(() =>
+				validateToolUse("read_file" as any, codeMode, [], undefined, { files: [{ path: "src/file.ts" }] }),
+			).not.toThrow()
+		})
+
+		it("throws error for search_and_replace when path or operations are invalid", () => {
+			expect(() =>
+				validateToolUse("search_and_replace" as any, codeMode, [], undefined, {}, undefined, [
+					"search_and_replace",
+				]),
+			).toThrow(/Invalid arguments for search_and_replace: missing or empty required parameter "path"/)
+			expect(() =>
+				validateToolUse(
+					"search_and_replace" as any,
+					codeMode,
+					[],
+					undefined,
+					{ path: "src/file.ts" },
+					undefined,
+					["search_and_replace"],
+				),
+			).toThrow(/Invalid arguments for search_and_replace: missing or empty required parameter "operations"/)
+			expect(() =>
+				validateToolUse(
+					"search_and_replace" as any,
+					codeMode,
+					[],
+					undefined,
+					{ path: "src/file.ts", operations: [] },
+					undefined,
+					["search_and_replace"],
+				),
+			).toThrow(/Invalid arguments for search_and_replace: missing or empty required parameter "operations"/)
+			expect(() =>
+				validateToolUse(
+					"search_and_replace" as any,
+					codeMode,
+					[],
+					undefined,
+					{
+						path: "src/file.ts",
+						operations: [{ search: "   ", replace: "new" }],
+					},
+					undefined,
+					["search_and_replace"],
+				),
+			).toThrow(
+				/Invalid arguments for search_and_replace: every operation must include a non-empty string "search" and a string "replace"/,
+			)
+		})
+
+		it("throws error for search_replace when file_path or strings are invalid", () => {
+			expect(() =>
+				validateToolUse("search_replace" as any, codeMode, [], undefined, {}, undefined, ["search_replace"]),
+			).toThrow(/Invalid arguments for search_replace: missing or empty required parameter "file_path"/)
+			expect(() =>
+				validateToolUse(
+					"search_replace" as any,
+					codeMode,
+					[],
+					undefined,
+					{ file_path: "src/file.ts" },
+					undefined,
+					["search_replace"],
+				),
+			).toThrow(/Invalid arguments for search_replace: missing or empty required parameter "old_string"/)
+			expect(() =>
+				validateToolUse(
+					"search_replace" as any,
+					codeMode,
+					[],
+					undefined,
+					{ file_path: "src/file.ts", old_string: "old" },
+					undefined,
+					["search_replace"],
+				),
+			).toThrow(/Invalid arguments for search_replace: missing required parameter "new_string"/)
+		})
+
+		it("throws error for edit_file when file_path or strings are invalid", () => {
+			expect(() => validateToolUse("edit_file" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for edit_file: missing or empty required parameter "file_path"/,
+			)
+			expect(() =>
+				validateToolUse("edit_file" as any, codeMode, [], undefined, {
+					file_path: "src/file.ts",
+					new_string: "new",
+				}),
+			).toThrow(/Invalid arguments for edit_file: missing required parameter "old_string"/)
+			expect(() =>
+				validateToolUse("edit_file" as any, codeMode, [], undefined, {
+					file_path: "src/file.ts",
+					old_string: "old",
+				}),
+			).toThrow(/Invalid arguments for edit_file: missing required parameter "new_string"/)
+			expect(() =>
+				validateToolUse("edit_file" as any, codeMode, [], undefined, {
+					file_path: "src/file.ts",
+					old_string: "",
+					new_string: "content",
+				}),
+			).not.toThrow()
+			expect(() =>
+				validateToolUse("edit_file" as any, codeMode, [], undefined, {
+					file_path: "src/file.ts",
+					old_string: "old",
+					new_string: "",
+				}),
+			).not.toThrow()
+		})
+
+		it("throws error for attempt_completion when result is missing or empty", () => {
+			expect(() => validateToolUse("attempt_completion" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for attempt_completion: missing or empty required parameter "result"/,
+			)
+			expect(() =>
+				validateToolUse("attempt_completion" as any, codeMode, [], undefined, { result: "   " }),
+			).toThrow(/Invalid arguments for attempt_completion: missing or empty required parameter "result"/)
+			expect(() =>
+				validateToolUse("attempt_completion" as any, codeMode, [], undefined, { result: "Task done" }),
+			).not.toThrow()
+		})
+
+		it("throws error for ask_followup_question when question or suggestions are invalid", () => {
+			expect(() => validateToolUse("ask_followup_question" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for ask_followup_question: missing or empty required parameter "question"/,
+			)
+			expect(() =>
+				validateToolUse("ask_followup_question" as any, codeMode, [], undefined, {
+					question: "Need more info",
+				}),
+			).toThrow(/Invalid arguments for ask_followup_question: missing or empty required parameter "follow_up"/)
+			expect(() =>
+				validateToolUse("ask_followup_question" as any, codeMode, [], undefined, {
+					question: "   ",
+					follow_up: [{ text: "Yes", mode: null }],
+				}),
+			).toThrow(/Invalid arguments for ask_followup_question: missing or empty required parameter "question"/)
+			expect(() =>
+				validateToolUse("ask_followup_question" as any, codeMode, [], undefined, {
+					question: "Need more info",
+					follow_up: [{ text: "   ", mode: null }],
+				}),
+			).toThrow(
+				/Invalid arguments for ask_followup_question: each follow_up item must include a non-empty string "text"/,
+			)
+			expect(() =>
+				validateToolUse("ask_followup_question" as any, codeMode, [], undefined, {
+					question: "Need more info",
+					follow_up: [{ text: "Yes", mode: 1 }],
+				}),
+			).toThrow(
+				/Invalid arguments for ask_followup_question: each follow_up item must include a non-empty string "text"/,
+			)
+			expect(() =>
+				validateToolUse("ask_followup_question" as any, codeMode, [], undefined, {
+					question: "Need more info",
+					follow_up: [{ text: "Yes", mode: null }],
+				}),
+			).not.toThrow()
+		})
+
+		it("throws error for fetch_instructions when task is missing or empty", () => {
+			expect(() => validateToolUse("fetch_instructions" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for fetch_instructions: missing or empty required parameter "task"/,
+			)
+			expect(() =>
+				validateToolUse("fetch_instructions" as any, codeMode, [], undefined, { task: "   " }),
+			).toThrow(/Invalid arguments for fetch_instructions: missing or empty required parameter "task"/)
+			expect(() =>
+				validateToolUse("fetch_instructions" as any, codeMode, [], undefined, { task: "workflow init" }),
+			).not.toThrow()
+		})
+
+		it("throws error for run_slash_command when command is missing or empty", () => {
+			expect(() => validateToolUse("run_slash_command" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for run_slash_command: missing or empty required parameter "command"/,
+			)
+			expect(() =>
+				validateToolUse("run_slash_command" as any, codeMode, [], undefined, { command: "   " }),
+			).toThrow(/Invalid arguments for run_slash_command: missing or empty required parameter "command"/)
+			expect(() =>
+				validateToolUse("run_slash_command" as any, codeMode, [], undefined, { command: "init-protocol" }),
+			).not.toThrow()
+		})
+
+		it("throws error for generate_image when prompt or path are invalid", () => {
+			expect(() => validateToolUse("generate_image" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for generate_image: missing or empty required parameter "prompt"/,
+			)
+			expect(() =>
+				validateToolUse("generate_image" as any, codeMode, [], undefined, { prompt: "draw cat" }),
+			).toThrow(/Invalid arguments for generate_image: missing or empty required parameter "path"/)
+			expect(() =>
+				validateToolUse("generate_image" as any, codeMode, [], undefined, { prompt: "   ", path: "img.png" }),
+			).toThrow(/Invalid arguments for generate_image: missing or empty required parameter "prompt"/)
+			expect(() =>
+				validateToolUse("generate_image" as any, codeMode, [], undefined, { prompt: "draw cat", path: "   " }),
+			).toThrow(/Invalid arguments for generate_image: missing or empty required parameter "path"/)
+			expect(() =>
+				validateToolUse("generate_image" as any, codeMode, [], undefined, {
+					prompt: "draw cat",
+					path: "images/cat.png",
+				}),
+			).not.toThrow()
+		})
+
+		it("throws error for access_mcp_resource when server_name or uri are invalid", () => {
+			expect(() => validateToolUse("access_mcp_resource" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for access_mcp_resource: missing or empty required parameter "server_name"/,
+			)
+			expect(() =>
+				validateToolUse("access_mcp_resource" as any, codeMode, [], undefined, { server_name: "context7" }),
+			).toThrow(/Invalid arguments for access_mcp_resource: missing or empty required parameter "uri"/)
+			expect(() =>
+				validateToolUse("access_mcp_resource" as any, codeMode, [], undefined, {
+					server_name: "   ",
+					uri: "resource://x",
+				}),
+			).toThrow(/Invalid arguments for access_mcp_resource: missing or empty required parameter "server_name"/)
+			expect(() =>
+				validateToolUse("access_mcp_resource" as any, codeMode, [], undefined, {
+					server_name: "context7",
+					uri: "   ",
+				}),
+			).toThrow(/Invalid arguments for access_mcp_resource: missing or empty required parameter "uri"/)
+			expect(() =>
+				validateToolUse("access_mcp_resource" as any, codeMode, [], undefined, {
+					server_name: "context7",
+					uri: "resource://x",
+				}),
+			).not.toThrow()
+		})
+
+		it("throws error for use_mcp_tool when server_name, tool_name, or arguments are invalid", () => {
+			expect(() => validateToolUse("use_mcp_tool" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for use_mcp_tool: missing or empty required parameter "server_name"/,
+			)
+			expect(() =>
+				validateToolUse("use_mcp_tool" as any, codeMode, [], undefined, { server_name: "context7" }),
+			).toThrow(/Invalid arguments for use_mcp_tool: missing or empty required parameter "tool_name"/)
+			expect(() =>
+				validateToolUse("use_mcp_tool" as any, codeMode, [], undefined, {
+					server_name: "   ",
+					tool_name: "resolve",
+				}),
+			).toThrow(/Invalid arguments for use_mcp_tool: missing or empty required parameter "server_name"/)
+			expect(() =>
+				validateToolUse("use_mcp_tool" as any, codeMode, [], undefined, {
+					server_name: "context7",
+					tool_name: "   ",
+				}),
+			).toThrow(/Invalid arguments for use_mcp_tool: missing or empty required parameter "tool_name"/)
+			expect(() =>
+				validateToolUse("use_mcp_tool" as any, codeMode, [], undefined, {
+					server_name: "context7",
+					tool_name: "resolve",
+					arguments: [],
+				}),
+			).toThrow(
+				/Invalid arguments for use_mcp_tool: optional parameter "arguments" must be a JSON object or JSON string payload/,
+			)
+			expect(() =>
+				validateToolUse("use_mcp_tool" as any, codeMode, [], undefined, {
+					server_name: "context7",
+					tool_name: "resolve",
+					arguments: { id: 1 },
+				}),
+			).not.toThrow()
+			expect(() =>
+				validateToolUse("use_mcp_tool" as any, codeMode, [], undefined, {
+					server_name: "context7",
+					tool_name: "resolve",
+					arguments: '{"id":1}',
+				}),
+			).not.toThrow()
+		})
+		it("throws error for execute_command when command is missing or empty", () => {
+			expect(() => validateToolUse("execute_command" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for execute_command: missing or empty required parameter "command"/,
+			)
+			expect(() =>
+				validateToolUse("execute_command" as any, codeMode, [], undefined, { command: "   " }),
+			).toThrow(/Invalid arguments for execute_command: missing or empty required parameter "command"/)
+		})
+
+		it("throws error for apply_patch when patch is missing or empty", () => {
+			expect(() =>
+				validateToolUse("apply_patch" as any, codeMode, [], undefined, {}, undefined, ["apply_patch"]),
+			).toThrow(/Invalid arguments for apply_patch: missing or empty required parameter "patch"/)
+			expect(() =>
+				validateToolUse("apply_patch" as any, codeMode, [], undefined, { patch: "   " }, undefined, [
+					"apply_patch",
+				]),
+			).toThrow(/Invalid arguments for apply_patch: missing or empty required parameter "patch"/)
+		})
+
+		it("throws error for apply_diff when path or diff are invalid", () => {
+			expect(() => validateToolUse("apply_diff" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for apply_diff: missing or empty required parameter "path"/,
+			)
+			expect(() =>
+				validateToolUse("apply_diff" as any, codeMode, [], undefined, { path: "src/file.ts" }),
+			).toThrow(/Invalid arguments for apply_diff: missing or empty required parameter "diff"/)
+			expect(() =>
+				validateToolUse("apply_diff" as any, codeMode, [], undefined, { path: "   ", diff: "patch" }),
+			).toThrow(/Invalid arguments for apply_diff: missing or empty required parameter "path"/)
+			expect(() =>
+				validateToolUse("apply_diff" as any, codeMode, [], undefined, { path: "src/file.ts", diff: "   " }),
+			).toThrow(/Invalid arguments for apply_diff: missing or empty required parameter "diff"/)
+			expect(() =>
+				validateToolUse("apply_diff" as any, codeMode, [], undefined, {
+					path: "src/file.ts",
+					diff: "@@ -1 +1 @@",
+				}),
+			).not.toThrow()
+		})
+
+		it("throws error for write_to_file when path or content are invalid", () => {
+			expect(() => validateToolUse("write_to_file" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for write_to_file: missing or empty required parameter "path"/,
+			)
+			expect(() =>
+				validateToolUse("write_to_file" as any, codeMode, [], undefined, { path: "src/file.ts" }),
+			).toThrow(/Invalid arguments for write_to_file: missing required parameter "content"/)
+			expect(() =>
+				validateToolUse("write_to_file" as any, codeMode, [], undefined, { path: "   ", content: "hello" }),
+			).toThrow(/Invalid arguments for write_to_file: missing or empty required parameter "path"/)
+			expect(() =>
+				validateToolUse("write_to_file" as any, codeMode, [], undefined, {
+					path: "src/file.ts",
+					content: "hello",
+				}),
+			).not.toThrow()
+			expect(() =>
+				validateToolUse("write_to_file" as any, codeMode, [], undefined, { path: "src/file.ts", content: "" }),
+			).not.toThrow()
+		})
 		it("throws error for disallowed tools in architect mode", () => {
 			// execute_command is a valid tool but not allowed in architect mode
 			expect(() => validateToolUse("execute_command", "architect", [])).toThrow(
@@ -192,7 +557,9 @@ describe("mode-validator", () => {
 		})
 
 		it("does not throw for allowed tools in architect mode", () => {
-			expect(() => validateToolUse("read_file", "architect", [])).not.toThrow()
+			expect(() =>
+				validateToolUse("read_file", "architect", [], undefined, { path: "src/file.ts" }),
+			).not.toThrow()
 		})
 
 		it("throws error when tool requirement is not met", () => {
@@ -204,11 +571,15 @@ describe("mode-validator", () => {
 
 		it("does not throw when tool requirement is met", () => {
 			const requirements = { apply_diff: true }
-			expect(() => validateToolUse("apply_diff", codeMode, [], requirements)).not.toThrow()
+			expect(() =>
+				validateToolUse("apply_diff", codeMode, [], requirements, { path: "src/file.ts", diff: "@@ -1 +1 @@" }),
+			).not.toThrow()
 		})
 
 		it("handles undefined requirements gracefully", () => {
-			expect(() => validateToolUse("apply_diff", codeMode, [], undefined)).not.toThrow()
+			expect(() =>
+				validateToolUse("apply_diff", codeMode, [], undefined, { path: "src/file.ts", diff: "@@ -1 +1 @@" }),
+			).not.toThrow()
 		})
 	})
 })

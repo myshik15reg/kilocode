@@ -1,18 +1,29 @@
-# Skills (навыки)
+# Skills
 
-Skills - это переиспользуемые, узкие, ориентированные на задачу инструкции для агента. Каждый skill живёт в своей папке и содержит файл `SKILL.md`.
+Skills are reusable, task-focused instruction packs for agents.
 
-## Доступные навыки
-- [`cli-master/`](cli-master/) - безопасная и эффективная работа с CLI
-- [`code-review/`](code-review/) - систематическое code review и контроль качества
-- [`devcontainer-kilocode/`](devcontainer-kilocode/) - настройка devcontainer с bind mounts для KiloCode
-- [`git-workflow/`](git-workflow/) - git-процесс (ветки/коммиты/PR)
-- [`performance-optimization/`](performance-optimization/) - поиск и устранение узких мест производительности
-- [`project-tests/`](project-tests/) - запуск/добавление тестов и рост покрытия
-- [`translation/`](translation/) - i18n/локализация (безопасность ключей и плейсхолдеров)
-- [`security-audit/`](security-audit/) - аудит безопасности и чеклист OWASP
+## Core skills
 
-## Как использовать
-1. Перед задачей посмотри список: `~/.kilocode/skills/`.
-2. Открой нужный `SKILL.md` и следуй шагам.
-3. Если подходящего skill нет - используй `~/.kilocode/workflows/create-new-skill.md`.
+| Skill                                                              | Purpose                                |
+| ------------------------------------------------------------------ | -------------------------------------- |
+| [`mode-selection/`](mode-selection/)                               | choose the correct mode for a task     |
+| [`orchestrator-guide/`](orchestrator-guide/)                       | route and delegate safely              |
+| [`agents-guide/`](agents-guide/)                                   | work with specialist agents            |
+| [`roles-guide/`](roles-guide/)                                     | understand role boundaries             |
+| [`tool-access/`](tool-access/)                                     | understand tool permissions and limits |
+| [`quality-gates/`](quality-gates/)                                 | apply delivery and verification gates  |
+| [`testing-detailed/`](testing-detailed/)                           | testing and TDD guidance               |
+| [`git-workflow/`](git-workflow/)                                   | branch, commit, and PR discipline      |
+| [`mcp-usage/`](mcp-usage/)                                         | use MCP servers effectively            |
+| [`fix-broken-links/`](fix-broken-links/)                           | validate and fix Memory Bank links     |
+| [`effort-estimation-human-hours/`](effort-estimation-human-hours/) | estimate engineering effort            |
+
+## Domain skills
+
+Use specialist domain skills only when the task clearly matches that area.
+
+## Rule of thumb
+
+- Prefer the narrowest suitable skill.
+- If a skill is not clearly relevant, do not load it.
+- When multiple skills overlap, choose the smallest set that covers the task.

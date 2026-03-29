@@ -1,6 +1,7 @@
 import { atom } from "jotai"
 import { atomFamily } from "jotai/utils"
 import type { TodoItem } from "@roo-code/types"
+import { getEffectiveRootTaskId, mergedSessionsAtom, topLevelGroupRootIdsAtom } from "./sessions"
 
 /**
  * Per-session todo list using atomFamily.
@@ -55,6 +56,29 @@ export const sessionTodoStatsAtomFamily = atomFamily((sessionId: string) =>
 		return computeTodoStats(todos)
 	}),
 )
+
+/**
+ * Indicates whether a root task has any todos across its sessions.
+ */
+export const rootTaskHasTodosAtom = atom((get): Record<string, boolean> => {
+	const sessions = get(mergedSessionsAtom)
+	const topLevelGroupRootIds = get(topLevelGroupRootIdsAtom)
+	const hasTodosByRootTask: Record<string, boolean> = {}
+
+	for (const session of sessions) {
+		const rootTaskId = getEffectiveRootTaskId(session, topLevelGroupRootIds)
+		if (!rootTaskId || hasTodosByRootTask[rootTaskId]) {
+			continue
+		}
+
+		const stats = get(sessionTodoStatsAtomFamily(session.sessionId))
+		if (stats.totalCount > 0) {
+			hasTodosByRootTask[rootTaskId] = true
+		}
+	}
+
+	return hasTodosByRootTask
+})
 
 /**
  * Action atom to update todos for a session.

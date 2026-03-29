@@ -1,5 +1,5 @@
 {
-	"greeting": "Selamat datang di AlfaCode assistant",
+	"greeting": "Selamat datang di AlfaCode",
 	"task": {
 		"title": "Tugas",
 		"expand": "Perluas tugas",
@@ -22,12 +22,12 @@
 		"sharePublicly": "Bagikan secara publik",
 		"sharePubliclyDescription": "Siapa pun dengan tautan dapat mengakses",
 		"connectToCloud": "Hubungkan ke Cloud",
-		"connectToCloudDescription": "Masuk ke AlfaCode assistant Cloud untuk berbagi tugas",
+		"connectToCloudDescription": "Masuk ke AlfaCode Cloud untuk berbagi tugas",
 		"sharingDisabledByOrganization": "Berbagi dinonaktifkan oleh organisasi",
 		"shareSuccessOrganization": "Tautan organisasi disalin ke clipboard",
 		"shareSuccessPublic": "Tautan publik disalin ke clipboard",
-		"openInCloud": "Buka tugas di Roo Code Cloud",
-		"openInCloudIntro": "Terus pantau atau berinteraksi dengan Roo dari mana saja. Pindai, klik atau salin untuk membuka.",
+		"openInCloud": "Buka tugas di AlfaCode Cloud",
+		"openInCloudIntro": "Terus pantau atau berinteraksi dengan AlfaCode dari mana saja. Pindai, klik atau salin untuk membuka.",
 		"openApiHistory": "Buka Riwayat API",
 		"openUiHistory": "Buka Riwayat UI"
 	},
@@ -129,7 +129,7 @@
 		"title": "Mode",
 		"marketplace": "Marketplace Mode",
 		"settings": "Pengaturan Mode",
-		"description": "Persona khusus yang menyesuaikan perilaku AlfaCode assistant.",
+		"description": "Persona khusus yang menyesuaikan perilaku AlfaCode.",
 		"searchPlaceholder": "Cari mode...",
 		"noResults": "Tidak ada hasil yang ditemukan",
 		"organizationModes": "Mode Organisasi"
@@ -158,14 +158,14 @@
 		"rateLimitWait": "Pembatasan rate",
 		"errorTitle": "Kesalahan Penyedia {{code}}",
 		"errorMessage": {
-			"docs": "Dokumentasi",
-			"goToSettings": "Pengaturan",
 			"400": "Penyedia tidak dapat memproses permintaan seperti yang dibuat. Hentikan tugas dan coba pendekatan berbeda.",
 			"401": "Tidak dapat mengautentikasi dengan penyedia. Harap periksa konfigurasi kunci API Anda.",
 			"402": "Tampaknya Anda telah kehabisan dana/kredit di akun Anda. Pergi ke penyedia Anda dan tambahkan lebih banyak untuk melanjutkan.",
 			"403": "Tidak sah. Kunci API Anda valid, tetapi penyedia menolak untuk menyelesaikan permintaan ini.",
 			"429": "Terlalu banyak permintaan. Anda dibatasi tingkat oleh penyedia. Harap tunggu sebentar sebelum panggilan API berikutnya Anda.",
 			"500": "Kesalahan server penyedia. Ada yang salah di sisi penyedia, tidak ada yang salah dengan permintaan Anda.",
+			"docs": "Dokumentasi",
+			"goToSettings": "Pengaturan",
 			"unknown": "Kesalahan API tidak diketahui, klik Detail untuk informasi lebih lanjut.",
 			"connection": "Kesalahan koneksi. Pastikan Anda memiliki koneksi internet yang berfungsi.",
 			"claudeCodeNotAuthenticated": "Anda perlu masuk untuk menggunakan Claude Code. Buka Pengaturan dan klik \"Masuk ke Claude Code\" untuk mengautentikasi."
@@ -206,52 +206,52 @@
 		}
 	},
 	"instructions": {
-		"wantsToFetch": "AlfaCode assistant ingin mengambil instruksi detail untuk membantu tugas saat ini"
+		"wantsToFetch": "AlfaCode ingin mengambil instruksi detail untuk membantu tugas saat ini"
 	},
 	"fileOperations": {
-		"wantsToRead": "AlfaCode assistant ingin membaca file ini",
-		"wantsToReadMultiple": "AlfaCode assistant ingin membaca beberapa file",
-		"wantsToReadAndXMore": "AlfaCode assistant ingin membaca file ini dan {{count}} lainnya",
-		"wantsToReadOutsideWorkspace": "AlfaCode assistant ingin membaca file ini di luar workspace",
-		"didRead": "AlfaCode assistant membaca file ini",
-		"wantsToEdit": "AlfaCode assistant ingin mengedit file ini",
-		"wantsToEditOutsideWorkspace": "AlfaCode assistant ingin mengedit file ini di luar workspace",
-		"wantsToEditProtected": "AlfaCode assistant ingin mengedit file konfigurasi yang dilindungi",
-		"wantsToApplyBatchChanges": "AlfaCode assistant ingin menerapkan perubahan ke beberapa file",
-		"wantsToGenerateImage": "AlfaCode assistant ingin menghasilkan gambar",
-		"wantsToGenerateImageOutsideWorkspace": "AlfaCode assistant ingin menghasilkan gambar di luar workspace",
-		"wantsToGenerateImageProtected": "AlfaCode assistant ingin menghasilkan gambar di lokasi yang dilindungi",
-		"didGenerateImage": "AlfaCode assistant telah menghasilkan gambar",
-		"wantsToCreate": "AlfaCode assistant ingin membuat file baru",
-		"wantsToSearchReplace": "AlfaCode assistant ingin mencari dan mengganti di file ini",
-		"didSearchReplace": "AlfaCode assistant melakukan pencarian dan penggantian pada file ini",
-		"wantsToInsert": "AlfaCode assistant ingin menyisipkan konten ke file ini",
-		"wantsToInsertWithLineNumber": "AlfaCode assistant ingin menyisipkan konten ke file ini di baris {{lineNumber}}",
-		"wantsToInsertAtEnd": "AlfaCode assistant ingin menambahkan konten ke akhir file ini",
-		"wantsToDelete": "AlfaCode assistant ingin menghapus file ini",
-		"wantsToDeleteDirectory": "AlfaCode assistant ingin menghapus direktori ini"
+		"wantsToRead": "AlfaCode ingin membaca file ini",
+		"wantsToReadMultiple": "AlfaCode ingin membaca beberapa file",
+		"wantsToReadAndXMore": "AlfaCode ingin membaca file ini dan {{count}} lainnya",
+		"wantsToReadOutsideWorkspace": "AlfaCode ingin membaca file ini di luar workspace",
+		"didRead": "AlfaCode membaca file ini",
+		"wantsToEdit": "AlfaCode ingin mengedit file ini",
+		"wantsToEditOutsideWorkspace": "AlfaCode ingin mengedit file ini di luar workspace",
+		"wantsToEditProtected": "AlfaCode ingin mengedit file konfigurasi yang dilindungi",
+		"wantsToApplyBatchChanges": "AlfaCode ingin menerapkan perubahan ke beberapa file",
+		"wantsToGenerateImage": "AlfaCode ingin menghasilkan gambar",
+		"wantsToGenerateImageOutsideWorkspace": "AlfaCode ingin menghasilkan gambar di luar workspace",
+		"wantsToGenerateImageProtected": "AlfaCode ingin menghasilkan gambar di lokasi yang dilindungi",
+		"didGenerateImage": "AlfaCode telah menghasilkan gambar",
+		"wantsToCreate": "AlfaCode ingin membuat file baru",
+		"wantsToSearchReplace": "AlfaCode ingin mencari dan mengganti di file ini",
+		"didSearchReplace": "AlfaCode melakukan pencarian dan penggantian pada file ini",
+		"wantsToInsert": "AlfaCode ingin menyisipkan konten ke file ini",
+		"wantsToInsertWithLineNumber": "AlfaCode ingin menyisipkan konten ke file ini di baris {{lineNumber}}",
+		"wantsToInsertAtEnd": "AlfaCode ingin menambahkan konten ke akhir file ini",
+		"wantsToDelete": "AlfaCode ingin menghapus file ini",
+		"wantsToDeleteDirectory": "AlfaCode ingin menghapus direktori ini"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "AlfaCode assistant ingin melihat file tingkat atas di direktori ini",
-		"didViewTopLevel": "AlfaCode assistant melihat file tingkat atas di direktori ini",
-		"wantsToViewRecursive": "AlfaCode assistant ingin melihat semua file secara rekursif di direktori ini",
-		"didViewRecursive": "AlfaCode assistant melihat semua file secara rekursif di direktori ini",
-		"wantsToViewDefinitions": "AlfaCode assistant ingin melihat nama definisi source code yang digunakan di direktori ini",
-		"didViewDefinitions": "AlfaCode assistant melihat nama definisi source code yang digunakan di direktori ini",
-		"wantsToSearch": "AlfaCode assistant ingin mencari direktori ini untuk <code>{{regex}}</code>",
-		"didSearch": "AlfaCode assistant mencari direktori ini untuk <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "AlfaCode assistant ingin mencari direktori ini (di luar workspace) untuk <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "AlfaCode assistant mencari direktori ini (di luar workspace) untuk <code>{{regex}}</code>",
-		"wantsToViewTopLevelOutsideWorkspace": "AlfaCode assistant ingin melihat file tingkat atas di direktori ini (di luar workspace)",
-		"didViewTopLevelOutsideWorkspace": "AlfaCode assistant melihat file tingkat atas di direktori ini (di luar workspace)",
-		"wantsToViewRecursiveOutsideWorkspace": "AlfaCode assistant ingin melihat semua file secara rekursif di direktori ini (di luar workspace)",
-		"didViewRecursiveOutsideWorkspace": "AlfaCode assistant melihat semua file secara rekursif di direktori ini (di luar workspace)",
-		"wantsToViewDefinitionsOutsideWorkspace": "AlfaCode assistant ingin melihat nama definisi source code yang digunakan di direktori ini (di luar workspace)",
-		"didViewDefinitionsOutsideWorkspace": "AlfaCode assistant melihat nama definisi source code yang digunakan di direktori ini (di luar workspace)"
+		"wantsToViewTopLevel": "AlfaCode ingin melihat file tingkat atas di direktori ini",
+		"didViewTopLevel": "AlfaCode melihat file tingkat atas di direktori ini",
+		"wantsToViewRecursive": "AlfaCode ingin melihat semua file secara rekursif di direktori ini",
+		"didViewRecursive": "AlfaCode melihat semua file secara rekursif di direktori ini",
+		"wantsToViewDefinitions": "AlfaCode ingin melihat nama definisi source code yang digunakan di direktori ini",
+		"didViewDefinitions": "AlfaCode melihat nama definisi source code yang digunakan di direktori ini",
+		"wantsToSearch": "AlfaCode ingin mencari direktori ini untuk <code>{{regex}}</code>",
+		"didSearch": "AlfaCode mencari direktori ini untuk <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "AlfaCode ingin mencari direktori ini (di luar workspace) untuk <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "AlfaCode mencari direktori ini (di luar workspace) untuk <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "AlfaCode ingin melihat file tingkat atas di direktori ini (di luar workspace)",
+		"didViewTopLevelOutsideWorkspace": "AlfaCode melihat file tingkat atas di direktori ini (di luar workspace)",
+		"wantsToViewRecursiveOutsideWorkspace": "AlfaCode ingin melihat semua file secara rekursif di direktori ini (di luar workspace)",
+		"didViewRecursiveOutsideWorkspace": "AlfaCode melihat semua file secara rekursif di direktori ini (di luar workspace)",
+		"wantsToViewDefinitionsOutsideWorkspace": "AlfaCode ingin melihat nama definisi source code yang digunakan di direktori ini (di luar workspace)",
+		"didViewDefinitionsOutsideWorkspace": "AlfaCode melihat nama definisi source code yang digunakan di direktori ini (di luar workspace)"
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "AlfaCode assistant ingin mencari codebase untuk <code>{{query}}</code>",
-		"wantsToSearchWithPath": "AlfaCode assistant ingin mencari codebase untuk <code>{{query}}</code> di <code>{{path}}</code>",
+		"wantsToSearch": "AlfaCode ingin mencari codebase untuk <code>{{query}}</code>",
+		"wantsToSearchWithPath": "AlfaCode ingin mencari codebase untuk <code>{{query}}</code> di <code>{{path}}</code>",
 		"didSearch_one": "Ditemukan 1 hasil",
 		"didSearch_other": "Ditemukan {{count}} hasil",
 		"resultTooltip": "Skor kemiripan: {{score}} (klik untuk membuka file)"
@@ -276,24 +276,24 @@
 	"response": "Respons",
 	"arguments": "Argumen",
 	"text": {
-		"rooSaid": "Kilo berkata"
+		"rooSaid": "AlfaCode assistant berkata"
 	},
 	"feedback": {
 		"youSaid": "Anda bilang"
 	},
 	"mcp": {
-		"wantsToUseTool": "AlfaCode assistant ingin menggunakan tool di server MCP {{serverName}}",
-		"wantsToAccessResource": "AlfaCode assistant ingin mengakses resource di server MCP {{serverName}}"
+		"wantsToUseTool": "AlfaCode ingin menggunakan tool di server MCP {{serverName}}",
+		"wantsToAccessResource": "AlfaCode ingin mengakses resource di server MCP {{serverName}}"
 	},
 	"modes": {
-		"wantsToSwitch": "AlfaCode assistant ingin beralih ke mode {{mode}}",
-		"wantsToSwitchWithReason": "AlfaCode assistant ingin beralih ke mode {{mode}} karena: {{reason}}",
-		"didSwitch": "AlfaCode assistant beralih ke mode {{mode}}",
-		"didSwitchWithReason": "AlfaCode assistant beralih ke mode {{mode}} karena: {{reason}}"
+		"wantsToSwitch": "AlfaCode ingin beralih ke mode {{mode}}",
+		"wantsToSwitchWithReason": "AlfaCode ingin beralih ke mode {{mode}} karena: {{reason}}",
+		"didSwitch": "AlfaCode beralih ke mode {{mode}}",
+		"didSwitchWithReason": "AlfaCode beralih ke mode {{mode}} karena: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "AlfaCode assistant ingin membuat subtugas baru dalam mode {{mode}}",
-		"wantsToFinish": "AlfaCode assistant ingin menyelesaikan subtugas ini",
+		"wantsToCreate": "AlfaCode ingin membuat subtugas baru dalam mode {{mode}}",
+		"wantsToFinish": "AlfaCode ingin menyelesaikan subtugas ini",
 		"newTaskContent": "Instruksi Subtugas",
 		"completionContent": "Subtugas Selesai",
 		"resultContent": "Hasil Subtugas",
@@ -301,7 +301,7 @@
 		"completionInstructions": "Subtugas selesai! Kamu bisa meninjau hasilnya dan menyarankan koreksi atau langkah selanjutnya. Jika semuanya terlihat baik, konfirmasi untuk mengembalikan hasil ke tugas induk."
 	},
 	"questions": {
-		"hasQuestion": "AlfaCode assistant punya pertanyaan"
+		"hasQuestion": "AlfaCode punya pertanyaan"
 	},
 	"taskCompleted": "Tugas Selesai",
 	"error": "Error",
@@ -315,14 +315,14 @@
 	"diffError": {
 		"title": "Edit Tidak Berhasil"
 	},
-	"troubleMessage": "AlfaCode assistant mengalami masalah...",
+	"troubleMessage": "AlfaCode mengalami masalah...",
 	"errorDetails": {
 		"link": "Detail",
 		"title": "Detail Kesalahan",
 		"copyToClipboard": "Salin ke Clipboard",
 		"copied": "Disalin!",
 		"diagnostics": "Dapatkan informasi kesalahan terperinci",
-		"proxyProvider": "Tampaknya kamu menggunakan penyedia berbasis proxy. Pastikan untuk memeriksa log-nya dan memastikan tidak menulis ulang permintaan Roo."
+		"proxyProvider": "Tampaknya kamu menggunakan penyedia berbasis proxy. Pastikan untuk memeriksa log-nya dan memastikan tidak menulis ulang permintaan AlfaCode."
 	},
 	"powershell": {
 		"issues": "Sepertinya kamu mengalami masalah Windows PowerShell, silakan lihat ini"
@@ -346,19 +346,19 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} Dirilis",
-		"support": "Dukung Roo Code dengan memberi kami bintang di <githubLink>GitHub</githubLink>.",
+		"title": "AlfaCode {{version}} Dirilis",
+		"support": "Dukung AlfaCode dengan memberi kami bintang di <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Model stealth GRATIS waktu terbatas</bold> - Code Supernova: Sekarang diupgrade dengan <bold>jendela konteks 1M token</bold>! Model coding agentik serbaguna yang mendukung input gambar, tersedia melalui Roo Code Cloud.",
+			"feature": "<bold>Model stealth GRATIS waktu terbatas</bold> - Code Supernova: Sekarang diupgrade dengan <bold>jendela konteks 1M token</bold>! Model coding agentik serbaguna yang mendukung input gambar, tersedia melalui AlfaCode Cloud.",
 			"note": "(Catatan: prompt dan completion dicatat oleh pembuat model dan digunakan untuk meningkatkan model)",
-			"connectButton": "Hubungkan ke Roo Code Cloud",
-			"selectModel": "Pilih <code>roo/code-supernova</code> dari penyedia Roo Code Cloud di Pengaturan untuk memulai.",
+			"connectButton": "Hubungkan ke AlfaCode Cloud",
+			"selectModel": "Pilih <code>roo/code-supernova</code> dari penyedia AlfaCode Cloud di Pengaturan untuk memulai.",
 			"goToSettingsButton": "Pergi ke Pengaturan"
 		},
 		"release": {
 			"heading": "Yang Baru:",
 			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro Provider ditambahkan yang memberikan akses berbasis langganan ke model Codex tanpa biaya per-token.",
-			"gpt52codexModel": "Model gpt-5.2-codex baru ditambahkan ke Roo Code Router, provider OpenAI standar, dan lebih banyak lagi.",
+			"gpt52codexModel": "Model gpt-5.2-codex baru ditambahkan ke AlfaCode Router, provider OpenAI standar, dan lebih banyak lagi.",
 			"bugFixes": "Memperbaiki kebocoran memori yang menyebabkan layar abu-abu, masalah tanda tangan pemikiran Gemini, dan peningkatan stabilitas lainnya."
 		},
 		"cloudAgents": {
@@ -386,7 +386,7 @@
 	"browser": {
 		"session": "Sesi Browser",
 		"active": "Aktif",
-		"rooWantsToUse": "AlfaCode assistant ingin menggunakan browser",
+		"rooWantsToUse": "AlfaCode ingin menggunakan browser",
 		"consoleLogs": "Log Konsol",
 		"noNewLogs": "(Tidak ada log baru)",
 		"screenshot": "Screenshot browser",
@@ -434,18 +434,18 @@
 	"profileViolationWarning": "Profil saat ini tidak kompatibel dengan pengaturan organisasi kamu",
 	"shellIntegration": {
 		"title": "Peringatan Eksekusi Perintah",
-		"description": "Perintah kamu dijalankan tanpa integrasi shell terminal VSCode. Untuk menekan peringatan ini kamu bisa menonaktifkan integrasi shell di bagian <strong>Terminal</strong> dari <settingsLink>pengaturan AlfaCode assistant</settingsLink> atau troubleshoot integrasi terminal VSCode menggunakan link di bawah.",
+		"description": "Perintah kamu dijalankan tanpa integrasi shell terminal VSCode. Untuk menekan peringatan ini kamu bisa menonaktifkan integrasi shell di bagian <strong>Terminal</strong> dari <settingsLink>pengaturan AlfaCode</settingsLink> atau troubleshoot integrasi terminal VSCode menggunakan link di bawah.",
 		"troubleshooting": "Klik di sini untuk dokumentasi integrasi shell."
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Batas Permintaan yang Disetujui Otomatis Tercapai",
-			"description": "AlfaCode assistant telah mencapai batas {{count}} permintaan API yang disetujui otomatis. Apakah Anda ingin mengatur ulang hitungan dan melanjutkan tugas?",
+			"description": "AlfaCode telah mencapai batas {{count}} permintaan API yang disetujui otomatis. Apakah Anda ingin mengatur ulang hitungan dan melanjutkan tugas?",
 			"button": "Setel Ulang dan Lanjutkan"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "Batas Biaya yang Disetujui Otomatis Tercapai",
-			"description": "AlfaCode assistant telah mencapai batas biaya yang disetujui otomatis sebesar ${{count}}. Apakah Anda ingin mengatur ulang biaya dan melanjutkan tugas?",
+			"description": "AlfaCode telah mencapai batas biaya yang disetujui otomatis sebesar ${{count}}. Apakah Anda ingin mengatur ulang biaya dan melanjutkan tugas?",
 			"button": "Setel Ulang dan Lanjutkan"
 		}
 	},
@@ -460,7 +460,7 @@
 		"ariaLabel": "Versi {{version}} - Klik untuk melihat catatan rilis"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud sedang berkembang!",
+		"title": "AlfaCode Cloud sedang berkembang!",
 		"description": "Jalankan agen jarak jauh di cloud, akses tugas Anda dari mana saja, berkolaborasi dengan orang lain, dan banyak lagi.",
 		"joinWaitlist": "Daftar untuk mendapatkan pembaruan terbaru."
 	},
@@ -501,8 +501,8 @@
 		"clickToEdit": "Klik untuk mengedit pesan"
 	},
 	"slashCommand": {
-		"wantsToRun": "AlfaCode assistant ingin menjalankan perintah slash",
-		"didRun": "AlfaCode assistant telah menjalankan perintah slash"
+		"wantsToRun": "AlfaCode ingin menjalankan perintah slash",
+		"didRun": "AlfaCode telah menjalankan perintah slash"
 	},
 	"todo": {
 		"partial": "{{completed}} dari {{total}} to-do selesai",

@@ -50,10 +50,31 @@ vi.mock("../core/task-persistence", () => ({
 }))
 
 import { attemptCompletionTool } from "../core/tools/AttemptCompletionTool"
+import { SubagentResumeService } from "../core/orchestration/subagents/SubagentResumeService"
 import { ClineProvider } from "../core/webview/ClineProvider"
 import type { Task } from "../core/task/Task"
 import { readTaskMessages } from "../core/task-persistence/taskMessages"
 import { readApiMessages, saveApiMessages, saveTaskMessages } from "../core/task-persistence"
+
+const attachResumeService = (provider: Record<string, any>) => {
+	provider.subagentResumeService = new SubagentResumeService({
+		getGlobalStoragePath: () => provider.contextProxy.globalStorageUri.fsPath,
+		getTaskWithId: (taskId) => provider.getTaskWithId(taskId),
+		updateTaskHistory: (item) => provider.updateTaskHistory(item),
+		getCurrentTask: () => provider.getCurrentTask(),
+		removeClineFromStack: () => provider.removeClineFromStack(),
+		getFocusedRootTaskId: () => provider.focusedRootTaskId,
+		restoreBackgroundStack: (rootTaskId) => provider.restoreBackgroundStack?.(rootTaskId) ?? false,
+		postStateToWebview: () => provider.postStateToWebview?.() ?? Promise.resolve(),
+		createTaskWithHistoryItem: (historyItem, options) => provider.createTaskWithHistoryItem(historyItem, options),
+		emitTaskDelegationCompleted: (parentTaskId, childTaskId, completionResultSummary) =>
+			provider.emit(RooCodeEventName.TaskDelegationCompleted, parentTaskId, childTaskId, completionResultSummary),
+		emitTaskDelegationResumed: (parentTaskId, childTaskId) =>
+			provider.emit(RooCodeEventName.TaskDelegationResumed, parentTaskId, childTaskId),
+		log: (message) => provider.log?.(message),
+	})
+	return provider
+}
 
 describe("Nested delegation resume (A → B → C)", () => {
 	beforeEach(() => {
@@ -148,7 +169,7 @@ describe("Nested delegation resume (A → B → C)", () => {
 			return Object.values(historyIndex)
 		})
 
-		const provider = {
+		const provider = attachResumeService({
 			contextProxy: { globalStorageUri: { fsPath: "/tmp" } },
 			getTaskWithId,
 			emit: emitSpy,
@@ -156,11 +177,10 @@ describe("Nested delegation resume (A → B → C)", () => {
 			removeClineFromStack,
 			createTaskWithHistoryItem,
 			updateTaskHistory,
-			// Wire through provider method so attemptCompletionTool can call it
-			reopenParentFromDelegation: vi.fn(async (params: any) => {
-				return await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, params)
-			}),
-		} as unknown as ClineProvider
+		}) as any
+		provider.reopenParentFromDelegation = vi.fn(async (params: any) => {
+			return await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, params)
+		})
 
 		// Empty histories for simplicity
 		vi.mocked(readTaskMessages).mockResolvedValue([])

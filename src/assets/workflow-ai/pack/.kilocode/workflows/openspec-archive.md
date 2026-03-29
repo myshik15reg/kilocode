@@ -1,11 +1,19 @@
-# Рабочий процесс: OpenSpec — Архивация (openspec-archive)
+﻿# Workflow: OpenSpec archive (`openspec-archive`)
 
-## Назначение
-Заархивировать завершённое изменение OpenSpec и синхронизировать дельты в `openspec/specs/` (источник правды).
+## Purpose
 
-## Шаги
-1. Убедиться, что все задачи в `openspec/changes/CHANGE_ID/tasks.md` отмечены как выполненные.
-2. Запустить `openspec archive CHANGE_ID --yes`.
-3. Если изменение затрагивает только туллинг, использовать `--skip-specs`.
-4. Запустить `openspec validate --strict`, чтобы подтвердить консистентность.
-5. При необходимости обновить протокол и Memory Bank.
+Archive a completed OpenSpec change and move accepted deltas into the long-lived spec set.
+
+## Workflow
+
+1. Confirm all items in `openspec/changes/CHANGE_ID/tasks.md` are complete.
+2. Run `openspec archive CHANGE_ID --yes`.
+3. If the change is tooling-only, use `--skip-specs` when appropriate.
+4. Run `openspec validate --strict`.
+5. Update the active protocol and Memory Bank if the archive changes project understanding.
+
+## Exit criteria
+
+- change archived
+- specs validated
+- task records updated

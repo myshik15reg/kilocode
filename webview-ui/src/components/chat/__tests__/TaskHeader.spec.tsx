@@ -1,7 +1,7 @@
 // npx vitest src/components/chat/__tests__/TaskHeader.spec.tsx
 
 import React from "react"
-import { render, screen, fireEvent } from "@/utils/test-utils"
+import { render, screen, fireEvent, within } from "@/utils/test-utils"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import type { ProviderSettings } from "@roo-code/types"
@@ -35,7 +35,7 @@ vi.mock("@vscode/webview-ui-toolkit/react", () => ({
 // Create a variable to hold the mock state
 let mockExtensionState: {
 	apiConfiguration: ProviderSettings
-	currentTaskItem: { id: string } | null
+	currentTaskItem: { id: string; delegationDepth?: number; childIds?: string[] } | null
 	clineMessages: any[]
 } = {
 	apiConfiguration: {
@@ -43,7 +43,7 @@ let mockExtensionState: {
 		apiKey: "test-api-key",
 		apiModelId: "claude-3-opus-20240229",
 	} as ProviderSettings,
-	currentTaskItem: { id: "test-task-id" },
+	currentTaskItem: { id: "test-task-id", delegationDepth: 2, childIds: ["child-1", "child-2"] },
 	clineMessages: [],
 }
 
@@ -161,6 +161,19 @@ describe("TaskHeader", () => {
 		expect(condenseButton).toBeDefined()
 		fireEvent.click(condenseButton!)
 		expect(handleCondenseContext).toHaveBeenCalledWith("test-task-id")
+	})
+
+	it("should render delegation depth and subtask count when expanded", () => {
+		renderTaskHeader()
+		fireEvent.click(screen.getByText("Test task"))
+
+		const depthRow = screen.getByText("chat:task.depth").closest("tr")
+		const subtasksRow = screen.getByText("chat:task.subtasks").closest("tr")
+
+		expect(depthRow).not.toBeNull()
+		expect(subtasksRow).not.toBeNull()
+		expect(within(depthRow!).getByText("2")).toBeInTheDocument()
+		expect(within(subtasksRow!).getByText("2")).toBeInTheDocument()
 	})
 
 	it("should disable the condense context button when buttonsDisabled is true", () => {

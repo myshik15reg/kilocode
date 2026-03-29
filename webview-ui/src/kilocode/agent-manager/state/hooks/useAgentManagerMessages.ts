@@ -17,9 +17,14 @@ import {
 	pendingSessionAtom,
 	isRefreshingRemoteSessionsAtom,
 	updateSessionModeAtom,
+	updateSessionGroupEventAtom,
+	updateSessionGroupMessageAtom,
+	updateRootTaskMessageAtom,
+	schedulerStateAtom,
 	type AgentSession,
 	type RemoteSession,
 	type PendingSession,
+	type SchedulerState,
 } from "../atoms/sessions"
 import { sendSessionEventAtom, cleanupSessionMachineAtom } from "../atoms/stateMachine"
 import type { SessionEvent } from "../sessionStateMachine"
@@ -27,6 +32,7 @@ import type { SessionEvent } from "../sessionStateMachine"
 interface AgentManagerState {
 	sessions: AgentSession[]
 	selectedId: string | null
+	scheduler?: SchedulerState
 }
 
 interface ChatMessagesMessage {
@@ -59,6 +65,37 @@ interface StateEventMessage {
 	sessionId: string
 	eventType: string
 	partial?: boolean
+}
+
+interface GroupMessageMessage {
+	type: "agentManager.groupMessage"
+	messageId: string
+	groupId: string
+	sourceSessionId: string
+	sourceLabel?: string
+	content: string
+	includeSender?: boolean
+	timestamp: number
+}
+
+interface GroupEventMessage {
+	type: "agentManager.groupEvent"
+	groupId: string
+	sessionId: string
+	eventType: "creating" | "running" | "completed" | "stopped" | "error"
+	summary?: string
+	timestamp: number
+}
+
+interface RootTaskMessageMessage {
+	type: "agentManager.rootTaskMessage"
+	messageId: string
+	rootTaskId: string
+	sourceSessionId: string
+	sourceLabel?: string
+	content: string
+	includeSender?: boolean
+	timestamp: number
 }
 
 interface BranchesMessage {
@@ -98,6 +135,9 @@ type ExtensionMessage =
 	| RemoteSessionsMessage
 	| PendingSessionMessage
 	| StateEventMessage
+	| GroupEventMessage
+	| GroupMessageMessage
+	| RootTaskMessageMessage
 	| BranchesMessage
 	| AvailableModelsMessage
 	| ModelsLoadFailedMessage
@@ -105,20 +145,12 @@ type ExtensionMessage =
 	| ModeChangedMessage
 	| { type: string; [key: string]: unknown }
 
-/**
- * Maps extension state event types to state machine events.
- */
 function mapToStateMachineEvent(eventType: string, partial?: boolean): SessionEvent | null {
 	switch (eventType) {
 		case "api_req_started":
 			return { type: "api_req_started" }
-
-		// Input-required asks
 		case "ask_followup":
-			// Followups should always transition to waiting_input (partial handling is done in the state machine).
 			return { type: "ask_followup", partial: partial ?? false }
-
-		// Approval-required asks
 		case "ask_tool":
 			return { type: "ask_tool", partial: partial ?? false }
 		case "ask_command":
@@ -127,16 +159,10 @@ function mapToStateMachineEvent(eventType: string, partial?: boolean): SessionEv
 			return { type: "ask_browser_action_launch", partial: partial ?? false }
 		case "ask_use_mcp_server":
 			return { type: "ask_use_mcp_server", partial: partial ?? false }
-
-		// Completion
 		case "ask_completion_result":
 			return { type: "ask_completion_result" }
-
-		// Paused state
 		case "ask_resume_task":
 			return { type: "ask_resume_task" }
-
-		// Error states
 		case "ask_api_req_failed":
 			return { type: "ask_api_req_failed" }
 		case "ask_mistake_limit_reached":
@@ -145,20 +171,13 @@ function mapToStateMachineEvent(eventType: string, partial?: boolean): SessionEv
 			return { type: "ask_invalid_model" }
 		case "ask_payment_required_prompt":
 			return { type: "ask_payment_required_prompt" }
-
-		// Cancellation
 		case "cancel_session":
 			return { type: "cancel_session" }
-
 		default:
 			return null
 	}
 }
 
-/**
- * Hook that listens for messages from the extension and updates Jotai state.
- * This bridges the VS Code extension IPC with the Jotai state management.
- */
 export function useAgentManagerMessages() {
 	const updateSessionMessages = useSetAtom(updateSessionMessagesAtom)
 	const updateSessionTodos = useSetAtom(updateSessionTodosAtom)
@@ -172,13 +191,18 @@ export function useAgentManagerMessages() {
 	const setStartSessionFailedCounter = useSetAtom(startSessionFailedCounterAtom)
 	const setRemoteSessions = useSetAtom(remoteSessionsAtom)
 	const setPendingSession = useSetAtom(pendingSessionAtom)
+	const setSchedulerState = useSetAtom(schedulerStateAtom)
 	const setIsRefreshingRemoteSessions = useSetAtom(isRefreshingRemoteSessionsAtom)
 	const sendSessionEvent = useSetAtom(sendSessionEventAtom)
 	const cleanupSessionMachine = useSetAtom(cleanupSessionMachineAtom)
 	const updateSessionMode = useSetAtom(updateSessionModeAtom)
+	const updateSessionGroupEvent = useSetAtom(updateSessionGroupEventAtom)
+	const updateSessionGroupMessage = useSetAtom(updateSessionGroupMessageAtom)
+	const updateRootTaskMessage = useSetAtom(updateRootTaskMessageAtom)
 	const sessionOrder = useAtomValue(sessionOrderAtom)
 	const hasInitializedSelection = useRef(false)
 	const knownSessionsRef = useRef(new Set<string>())
+	const recoverableSessionsRef = useRef(new Set<string>())
 
 	useEffect(() => {
 		function handleMessage(event: MessageEvent<ExtensionMessage>) {
@@ -188,7 +212,6 @@ export function useAgentManagerMessages() {
 				case "agentManager.chatMessages": {
 					const { sessionId, messages } = message as ChatMessagesMessage
 					updateSessionMessages({ sessionId, messages })
-					// Extract and update todos from messages
 					const todos = extractTodosFromMessages(messages)
 					updateSessionTodos({ sessionId, todos })
 					break
@@ -196,33 +219,62 @@ export function useAgentManagerMessages() {
 
 				case "agentManager.state": {
 					const { state } = message as StateMessage
+					setSchedulerState(state.scheduler ?? null)
 					for (const session of state.sessions) {
-						// Check if this is a new session we haven't seen before
 						const isNewSession = !knownSessionsRef.current.has(session.sessionId)
+						// kilocode_change start
+						const isDone = session.status === "done"
+						const isRecoverable =
+							!isDone &&
+							(session.lifecycleStatus === "paused" ||
+								session.lifecycleStatus === "recoverable" ||
+								session.recoveryState === "recoverable")
+						// kilocode_change end
+						const isRunningLike = session.status === "creating" || session.status === "running"
 						upsertSession(session)
-
-						// Send state machine events for new sessions based on status
 						if (isNewSession) {
 							knownSessionsRef.current.add(session.sessionId)
-							if (session.status === "creating" || session.status === "running") {
-								sendSessionEvent({
-									sessionId: session.sessionId,
-									event: { type: "start_session" },
-								})
+							if (isRunningLike && !isRecoverable) {
+								sendSessionEvent({ sessionId: session.sessionId, event: { type: "start_session" } })
 								sendSessionEvent({
 									sessionId: session.sessionId,
 									event: { type: "session_created", sessionId: session.sessionId },
 								})
-								// If session is already running, also send api_req_started
-								// The state machine needs both session_created AND api_req_started
-								// to transition from "creating" to "streaming"
 								if (session.status === "running") {
 									sendSessionEvent({
 										sessionId: session.sessionId,
 										event: { type: "api_req_started" },
 									})
 								}
+							} else if (isRecoverable) {
+								sendSessionEvent({ sessionId: session.sessionId, event: { type: "start_session" } })
+								sendSessionEvent({
+									sessionId: session.sessionId,
+									event: { type: "session_created", sessionId: session.sessionId },
+								})
+								sendSessionEvent({ sessionId: session.sessionId, event: { type: "api_req_started" } })
+								sendSessionEvent({ sessionId: session.sessionId, event: { type: "ask_resume_task" } })
+								recoverableSessionsRef.current.add(session.sessionId)
 							}
+						} else if (isRecoverable && !recoverableSessionsRef.current.has(session.sessionId)) {
+							sendSessionEvent({
+								sessionId: session.sessionId,
+								event: { type: "session_created", sessionId: session.sessionId },
+							})
+							sendSessionEvent({ sessionId: session.sessionId, event: { type: "api_req_started" } })
+							sendSessionEvent({ sessionId: session.sessionId, event: { type: "ask_resume_task" } })
+							recoverableSessionsRef.current.add(session.sessionId)
+							// kilocode_change start
+						} else if (
+							!isRecoverable &&
+							isRunningLike &&
+							recoverableSessionsRef.current.has(session.sessionId)
+						) {
+							sendSessionEvent({ sessionId: session.sessionId, event: { type: "api_req_started" } })
+							recoverableSessionsRef.current.delete(session.sessionId)
+							// kilocode_change end
+						} else if (!isRecoverable) {
+							recoverableSessionsRef.current.delete(session.sessionId)
 						}
 					}
 					const extensionSessionIds = new Set(state.sessions.map((s) => s.sessionId))
@@ -231,6 +283,7 @@ export function useAgentManagerMessages() {
 							removeSession(sessionId)
 							cleanupSessionMachine(sessionId)
 							knownSessionsRef.current.delete(sessionId)
+							recoverableSessionsRef.current.delete(sessionId)
 						}
 					}
 					if (!hasInitializedSelection.current && state.selectedId !== undefined) {
@@ -241,9 +294,7 @@ export function useAgentManagerMessages() {
 				}
 
 				case "agentManager.startSessionFailed": {
-					// Increment counter so components can reset their loading state
 					setStartSessionFailedCounter((c) => c + 1)
-					// Also clear pending session
 					setPendingSession(null)
 					break
 				}
@@ -263,11 +314,25 @@ export function useAgentManagerMessages() {
 
 				case "agentManager.stateEvent": {
 					const { sessionId, eventType, partial } = message as StateEventMessage
-					// Convert extension state events to state machine events
-					const event = mapToStateMachineEvent(eventType, partial)
-					if (event) {
-						sendSessionEvent({ sessionId, event })
+					const stateEvent = mapToStateMachineEvent(eventType, partial)
+					if (stateEvent) {
+						sendSessionEvent({ sessionId, event: stateEvent })
 					}
+					break
+				}
+
+				case "agentManager.groupEvent": {
+					updateSessionGroupEvent(message as GroupEventMessage)
+					break
+				}
+
+				case "agentManager.groupMessage": {
+					updateSessionGroupMessage(message as GroupMessageMessage)
+					break
+				}
+
+				case "agentManager.rootTaskMessage": {
+					updateRootTaskMessage(message as RootTaskMessageMessage)
 					break
 				}
 
@@ -318,10 +383,14 @@ export function useAgentManagerMessages() {
 		setStartSessionFailedCounter,
 		setRemoteSessions,
 		setPendingSession,
+		setSchedulerState,
 		setIsRefreshingRemoteSessions,
 		sendSessionEvent,
 		cleanupSessionMachine,
 		updateSessionMode,
+		updateSessionGroupEvent,
+		updateSessionGroupMessage,
+		updateRootTaskMessage,
 		sessionOrder,
 	])
 }

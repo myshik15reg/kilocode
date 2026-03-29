@@ -27,6 +27,7 @@ describe("syncWorkflowAiAssets", () => {
 
 		await writeFile(path.join(assetsRoot, ".kilocode", "rules", "quality.md"), "# Quality Rules")
 		await writeFile(path.join(assetsRoot, ".kilocode", "workflows", "quickstart.md"), "# Quickstart Workflow")
+		await writeFile(path.join(assetsRoot, ".kilocode", "sources", "reference.md"), "# Stable Source")
 		await writeFile(path.join(assetsRoot, ".kilocode", "QUICK.md"), "# QUICK")
 
 		const result = await syncWorkflowAiAssets({ assetsRoot, globalKiloDir })
@@ -37,6 +38,9 @@ describe("syncWorkflowAiAssets", () => {
 		)
 		await expect(fs.readFile(path.join(globalKiloDir, "workflows", "quickstart.md"), "utf8")).resolves.toContain(
 			"Quickstart Workflow",
+		)
+		await expect(fs.readFile(path.join(globalKiloDir, "sources", "reference.md"), "utf8")).resolves.toContain(
+			"Stable Source",
 		)
 		await expect(fs.readFile(path.join(globalKiloDir, "QUICK.md"), "utf8")).resolves.toContain("QUICK")
 	})
@@ -60,6 +64,99 @@ describe("syncWorkflowAiAssets", () => {
 			"Hello",
 		)
 		await expect(fs.readFile(path.join(globalKiloDir, "commands", "user-custom.md"), "utf8")).resolves.toBe("USER")
+	})
+	it("updates existing pack-managed commands while preserving user custom commands", async () => {
+		const assetsRoot = path.join(tempRoot, "assets")
+		const globalKiloDir = path.join(tempRoot, "global")
+		const backupRoot = path.join(tempRoot, "backup")
+
+		await writeFile(path.join(assetsRoot, ".kilocode", "rules", "quality.md"), "# Quality Rules")
+		await writeFile(
+			path.join(assetsRoot, ".kilocode", "commands", "init-protocol.md"),
+			"---\ndescription: init\n---\n\nNEW PACK CONTENT",
+		)
+
+		await writeFile(path.join(globalKiloDir, "commands", "init-protocol.md"), "OLD PACK CONTENT")
+		await writeFile(path.join(globalKiloDir, "commands", "user-custom.md"), "USER")
+
+		const result = await syncWorkflowAiAssets({ assetsRoot, globalKiloDir, backupRoot })
+
+		expect(result.errors).toHaveLength(0)
+		expect(result.overwrittenFiles).toBeGreaterThan(0)
+		await expect(fs.readFile(path.join(globalKiloDir, "commands", "init-protocol.md"), "utf8")).resolves.toContain(
+			"NEW PACK CONTENT",
+		)
+		await expect(fs.readFile(path.join(globalKiloDir, "commands", "user-custom.md"), "utf8")).resolves.toBe("USER")
+		await expect(fs.readFile(path.join(backupRoot, "commands", "init-protocol.md"), "utf8")).resolves.toBe(
+			"OLD PACK CONTENT",
+		)
+	})
+
+	// kilocode_change start
+	it("installs init-memory-bank command with valid frontmatter and body links", async () => {
+		const assetsRoot = path.join(tempRoot, "assets")
+		const globalKiloDir = path.join(tempRoot, "global")
+
+		const command = `---
+description: "Workflow: initialize or repair workspace Memory Bank and continue into the artifact flow"
+---
+
+Source of Truth (workflow): [\`.kilocode/workflows/init-memory-bank.md\`](.kilocode/workflows/init-memory-bank.md:1)
+
+Use this entrypoint when the workspace Memory Bank is missing, incomplete, or needs repair.
+
+Recommended flow:
+1. Initialize or repair workspace Memory Bank by [\`.kilocode/workflows/init-memory-bank.md\`](.kilocode/workflows/init-memory-bank.md:1)
+2. Read [\`.kilocode/memory-bank/index.md\`](.kilocode/memory-bank/index.md:1) and confirm \`[MB: OK]\`
+3. Prime context by [\`.kilocode/workflows/context-priming.md\`](.kilocode/workflows/context-priming.md:1)
+4. Clean the task contract by [\`.kilocode/workflows/brief-refinement.md\`](.kilocode/workflows/brief-refinement.md:1)
+`
+
+		await writeFile(path.join(assetsRoot, ".kilocode", "rules", "quality.md"), "# Quality Rules")
+		await writeFile(path.join(assetsRoot, ".kilocode", "commands", "init-memory-bank.md"), command)
+
+		const result = await syncWorkflowAiAssets({ assetsRoot, globalKiloDir })
+
+		expect(result.errors).toHaveLength(0)
+		await expect(
+			fs.readFile(path.join(globalKiloDir, "commands", "init-memory-bank.md"), "utf8"),
+		).resolves.toContain(
+			'description: "Workflow: initialize or repair workspace Memory Bank and continue into the artifact flow"',
+		)
+		await expect(
+			fs.readFile(path.join(globalKiloDir, "commands", "init-memory-bank.md"), "utf8"),
+		).resolves.toContain(".kilocode/workflows/init-memory-bank.md")
+		await expect(
+			fs.readFile(path.join(globalKiloDir, "commands", "init-memory-bank.md"), "utf8"),
+		).resolves.toContain(".kilocode/memory-bank/index.md")
+		await expect(
+			fs.readFile(path.join(globalKiloDir, "commands", "init-memory-bank.md"), "utf8"),
+		).resolves.toContain(".kilocode/workflows/brief-refinement.md")
+	})
+
+	it("installs new artifact-flow commands with valid frontmatter and workflow links", async () => {
+		const assetsRoot = path.join(tempRoot, "assets")
+		const globalKiloDir = path.join(tempRoot, "global")
+
+		await writeFile(path.join(assetsRoot, ".kilocode", "rules", "quality.md"), "# Quality Rules")
+		await writeFile(
+			path.join(assetsRoot, ".kilocode", "commands", "brief-refinement.md"),
+			`---\ndescription: "Workflow: refine a raw request into a clean reusable brief"\n---\n\nSource of Truth (workflow): [\`.kilocode/workflows/brief-refinement.md\`](.kilocode/workflows/brief-refinement.md:1)`,
+		)
+		await writeFile(
+			path.join(assetsRoot, ".kilocode", "commands", "spec-plans-generation.md"),
+			`---\ndescription: "Workflow: shape target-state Spec and implementation Plans from an approved brief"\n---\n\nSource of Truth (workflow): [\`.kilocode/workflows/spec-plans-generation.md\`](.kilocode/workflows/spec-plans-generation.md:1)`,
+		)
+
+		const result = await syncWorkflowAiAssets({ assetsRoot, globalKiloDir })
+
+		expect(result.errors).toHaveLength(0)
+		await expect(
+			fs.readFile(path.join(globalKiloDir, "commands", "brief-refinement.md"), "utf8"),
+		).resolves.toContain(".kilocode/workflows/brief-refinement.md")
+		await expect(
+			fs.readFile(path.join(globalKiloDir, "commands", "spec-plans-generation.md"), "utf8"),
+		).resolves.toContain(".kilocode/workflows/spec-plans-generation.md")
 	})
 
 	it("migrates legacy memory-bank.md command to init-memory-bank.md when it matches the known template", async () => {
@@ -95,7 +192,48 @@ Rule of thumb: read index first and confirm \`[MB: OK]\` before starting any non
 			"Memory Bank entrypoints",
 		)
 	})
+	// kilocode_change end
 
+	it("installs memory-bank as templates and does not copy it into live global root", async () => {
+		const assetsRoot = path.join(tempRoot, "assets")
+		const globalKiloDir = path.join(tempRoot, "global")
+
+		await writeFile(path.join(assetsRoot, ".kilocode", "memory-bank", "index.md"), "# Template Memory Bank")
+		await writeFile(path.join(assetsRoot, ".kilocode", "rules", "quality.md"), "# Quality")
+
+		const result = await syncWorkflowAiAssets({ assetsRoot, globalKiloDir })
+
+		expect(result.errors).toHaveLength(0)
+		await expect(
+			fs.readFile(path.join(globalKiloDir, "workflowai", "templates", "memory-bank", "index.md"), "utf8"),
+		).resolves.toBe("# Template Memory Bank")
+		await expect(fs.stat(path.join(globalKiloDir, "memory-bank", "index.md"))).rejects.toThrow()
+	})
+
+	it("installs only protocol template docs and never copies live protocol folders", async () => {
+		const assetsRoot = path.join(tempRoot, "assets")
+		const globalKiloDir = path.join(tempRoot, "global")
+
+		await writeFile(path.join(assetsRoot, ".kilocode", "rules", "quality.md"), "# Quality")
+		await writeFile(path.join(assetsRoot, ".protocols", "README.md"), "# Protocol Template Readme")
+		await writeFile(path.join(assetsRoot, ".protocols", "index.md"), "# Protocol Template Index")
+		await writeFile(path.join(assetsRoot, ".protocols", "2026-03-07-live-task", "brief.md"), "LIVE")
+
+		const result = await syncWorkflowAiAssets({ assetsRoot, globalKiloDir })
+
+		expect(result.errors).toHaveLength(0)
+		await expect(
+			fs.readFile(path.join(globalKiloDir, "workflowai", "templates", "protocols", "README.md"), "utf8"),
+		).resolves.toBe("# Protocol Template Readme")
+		await expect(
+			fs.readFile(path.join(globalKiloDir, "workflowai", "templates", "protocols", "index.md"), "utf8"),
+		).resolves.toBe("# Protocol Template Index")
+		await expect(
+			fs.stat(
+				path.join(globalKiloDir, "workflowai", "templates", "protocols", "2026-03-07-live-task", "brief.md"),
+			),
+		).rejects.toThrow()
+	})
 	it("overwrites existing destination files and deletes stale ones", async () => {
 		const assetsRoot = path.join(tempRoot, "assets")
 		const globalKiloDir = path.join(tempRoot, "global")
@@ -1439,8 +1577,7 @@ describe("ensureWorkflowAiAssetsInstalled", () => {
 	it("normalizes overrideAssetsRoot '~' to the HOME directory", async () => {
 		const embeddedRoot = path.join(tempRoot, "embedded")
 		const globalKiloDir = path.join(tempRoot, "global")
-		const originalHome = process.env.HOME
-		process.env.HOME = tempRoot
+		const homeSpy = vi.spyOn(os, "homedir").mockReturnValue(tempRoot) // kilocode_change
 
 		try {
 			// Embedded exists but override should be selected.
@@ -1464,7 +1601,7 @@ describe("ensureWorkflowAiAssetsInstalled", () => {
 			expect(result.selectedSource).toBe("override")
 			expect(path.normalize(result.selectedAssetsRoot)).toBe(path.normalize(tempRoot))
 		} finally {
-			process.env.HOME = originalHome
+			homeSpy.mockRestore()
 		}
 	})
 
@@ -1472,8 +1609,7 @@ describe("ensureWorkflowAiAssetsInstalled", () => {
 		const embeddedRoot = path.join(tempRoot, "embedded")
 		const overrideRoot = path.join(tempRoot, "override")
 		const globalKiloDir = path.join(tempRoot, "global")
-		const originalHome = process.env.HOME
-		process.env.HOME = tempRoot
+		const homeSpy = vi.spyOn(os, "homedir").mockReturnValue(tempRoot) // kilocode_change
 
 		try {
 			await writeFile(path.join(embeddedRoot, ".kilocode", "rules", "quality.md"), "# Embedded")
@@ -1494,7 +1630,7 @@ describe("ensureWorkflowAiAssetsInstalled", () => {
 			expect(result.selectedSource).toBe("override")
 			expect(path.normalize(result.selectedAssetsRoot)).toBe(path.normalize(overrideRoot))
 		} finally {
-			process.env.HOME = originalHome
+			homeSpy.mockRestore()
 		}
 	})
 

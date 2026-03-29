@@ -1,20 +1,30 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import fs from "fs"
+import os from "os" // kilocode_change
 import path from "path"
 import { createVSCodeAPIMock, Uri, WorkspaceEdit, Position, Range } from "../VSCode.js"
 
 describe("WorkspaceAPI.applyEdit", () => {
-	const tempDir = path.join(process.cwd(), "packages/agent-runtime/src/host/__tests__/__tmp__")
-	const filePath = path.join(tempDir, "apply-edit.txt")
+	// kilocode_change start
+	// Avoid coupling to `process.cwd()`. In monorepo runs (turbo/pnpm filters),
+	// package scripts often execute with `cwd` set to the package root, which would
+	// duplicate paths like `.../packages/agent-runtime/packages/agent-runtime/...`.
+	// Using a per-test temp directory also prevents cross-test interference.
+	let tempDir: string
+	let filePath: string
+	// kilocode_change end
 
 	beforeEach(() => {
-		fs.mkdirSync(tempDir, { recursive: true })
+		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "kilocode apply-edit "))
+		filePath = path.join(tempDir, "apply-edit.txt")
 		fs.writeFileSync(filePath, "alpha\n", "utf-8")
 	})
 
 	afterEach(() => {
 		try {
-			fs.rmSync(tempDir, { recursive: true, force: true })
+			if (tempDir) {
+				fs.rmSync(tempDir, { recursive: true, force: true })
+			}
 		} catch (error) {
 			// Ignore cleanup errors in tests
 		}

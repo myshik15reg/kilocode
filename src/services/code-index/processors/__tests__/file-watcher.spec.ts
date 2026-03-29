@@ -1,6 +1,7 @@
 // npx vitest services/code-index/processors/__tests__/file-watcher.spec.ts
 
 import * as vscode from "vscode"
+import { codeParser } from "../parser"
 
 import { FileWatcher } from "../file-watcher"
 
@@ -133,6 +134,25 @@ describe("FileWatcher", () => {
 			mockIgnoreInstance,
 		)
 	})
+
+	// kilocode_change start
+	describe("UTF-8 decoding", () => {
+		it("should decode VS Code FS Uint8Array file content as UTF-8 before parsing", async () => {
+			const source = 'const message = "привет café"'
+			vi.mocked(vscode.workspace.fs.readFile).mockResolvedValue(new TextEncoder().encode(source))
+			mockCacheManager.getHash.mockReturnValue(undefined)
+			vi.mocked(codeParser.parseFile).mockResolvedValue([])
+
+			const result = await fileWatcher.processFile("/mock/workspace/src/example.ts")
+
+			expect(result.status).toBe("processed_for_batching")
+			expect(codeParser.parseFile).toHaveBeenCalledWith("/mock/workspace/src/example.ts", {
+				content: source,
+				fileHash: expect.any(String),
+			})
+		})
+	})
+	// kilocode_change end
 
 	describe("file filtering", () => {
 		it("should ignore files in hidden directories on create events", async () => {

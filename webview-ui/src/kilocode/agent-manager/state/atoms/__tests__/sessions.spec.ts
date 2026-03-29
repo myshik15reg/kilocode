@@ -1,5 +1,21 @@
 import { createStore } from "jotai"
-import { versionCountAtom, generateVersionLabels, type VersionCount, MAX_VERSION_COUNT } from "../sessions"
+import {
+	MAX_VERSION_COUNT,
+	generateVersionLabels,
+	rootTaskMessagesAtom,
+	rootTaskRollupAtom,
+	schedulerStateAtom,
+	sessionGroupEventsAtom,
+	sessionGroupMessagesAtom,
+	sessionsMapAtom,
+	sessionOrderAtom,
+	subtreeRollupByGroupAtom,
+	type AgentSession,
+	type SessionGroupEvent,
+	type SessionGroupMessage,
+	type VersionCount,
+	versionCountAtom,
+} from "../sessions"
 
 describe("Agent Manager Sessions Atoms - Version Mode", () => {
 	describe("versionCountAtom", () => {
@@ -80,6 +96,233 @@ describe("Agent Manager Sessions Atoms - Version Mode", () => {
 			const labels = generateVersionLabels(longPrompt, 2)
 			expect(labels[0]).toBe(`${longPrompt} (v1)`)
 			expect(labels[1]).toBe(`${longPrompt} (v2)`)
+		})
+	})
+
+	describe("subtree rollups", () => {
+		function createGroupedSession(
+			session: Partial<AgentSession> & Pick<AgentSession, "sessionId" | "label" | "status" | "startTime">,
+		): AgentSession {
+			return {
+				sessionId: session.sessionId,
+				label: session.label,
+				prompt: session.prompt ?? "",
+				status: session.status,
+				startTime: session.startTime,
+				source: session.source ?? "local",
+				sessionGroup: session.sessionGroup,
+				rootTaskId: session.rootTaskId,
+				parentTaskId: session.parentTaskId,
+			}
+		}
+
+		it("builds subtree summary, pressure, relay, guardrail, and problem badges from one rollup", () => {
+			const store = createStore()
+			const sessions: AgentSession[] = [
+				createGroupedSession({
+					sessionId: "planner-parent",
+					label: "Planner",
+					status: "running",
+					startTime: 30,
+					rootTaskId: "root-1",
+					sessionGroup: { groupId: "group-parent", rootSessionId: "planner-parent", label: "Parent" },
+				}),
+				createGroupedSession({
+					sessionId: "worker-child-a",
+					label: "Worker A",
+					status: "error",
+					startTime: 20,
+					rootTaskId: "root-1",
+					sessionGroup: {
+						groupId: "group-child-a",
+						rootSessionId: "worker-child-a",
+						parentGroupId: "group-parent",
+						label: "Child A",
+					},
+				}),
+				createGroupedSession({
+					sessionId: "worker-child-b",
+					label: "Worker B",
+					status: "done",
+					startTime: 10,
+					rootTaskId: "root-1",
+					sessionGroup: {
+						groupId: "group-child-b",
+						rootSessionId: "worker-child-b",
+						parentGroupId: "group-parent",
+						label: "Child B",
+					},
+				}),
+			]
+
+			const groupMessages: Record<string, SessionGroupMessage> = {
+				"group-child-b": {
+					messageId: "msg-1",
+					groupId: "group-child-b",
+					sourceSessionId: "planner-parent",
+					sourceLabel: "Planner",
+					content: "Take parser branch and return delta only",
+					timestamp: 300,
+				},
+			}
+
+			const groupEvents: Record<string, SessionGroupEvent> = {
+				"group-child-a": {
+					groupId: "group-child-a",
+					sessionId: "worker-child-a",
+					eventType: "error",
+					summary: "Loop detected while retrying",
+					timestamp: 200,
+				},
+			}
+
+			store.set(sessionsMapAtom, Object.fromEntries(sessions.map((session) => [session.sessionId, session])))
+			store.set(
+				sessionOrderAtom,
+				sessions.map((session) => session.sessionId),
+			)
+			store.set(schedulerStateAtom, {
+				maxConcurrentStarts: 2,
+				activeSessionLoad: 2,
+				queuedLaunchCount: 1,
+				backpressure: false,
+				queueKeyPressure: {
+					"group-parent": 1,
+					"group-child-a": 2,
+					"group-child-b": 1,
+				},
+			})
+			store.set(sessionGroupMessagesAtom, groupMessages)
+			store.set(sessionGroupEventsAtom, groupEvents)
+
+			const rollups = store.get(subtreeRollupByGroupAtom)
+			expect(rollups["group-parent"]).toEqual({
+				descendantGroupIds: ["group-child-a", "group-child-b"],
+				summaryLabel: "subtree Branches 3 · A1 · Done 1 · Err 1",
+				pressureLabel: "subtree pressure 2 · throttled",
+				problemLabel: "subtree issues 1",
+				relayLabel: "subtree Planner -> Take parser branch",
+				guardrailLabel: "subtree guard loop",
+				problematicDescendantGroupIds: ["group-child-a"],
+			})
+		})
+
+		it("returns empty subtree badges when a group has no descendants or subtree signals", () => {
+			const store = createStore()
+			const session = createGroupedSession({
+				sessionId: "solo",
+				label: "Solo",
+				status: "running",
+				startTime: 1,
+				rootTaskId: "root-solo",
+				sessionGroup: { groupId: "group-solo", rootSessionId: "solo", label: "Solo Group" },
+			})
+
+			store.set(sessionsMapAtom, { [session.sessionId]: session })
+			store.set(sessionOrderAtom, [session.sessionId])
+
+			const rollups = store.get(subtreeRollupByGroupAtom)
+			expect(rollups["group-solo"]).toEqual({
+				descendantGroupIds: [],
+				summaryLabel: undefined,
+				pressureLabel: undefined,
+				problemLabel: undefined,
+				relayLabel: undefined,
+				guardrailLabel: undefined,
+				problematicDescendantGroupIds: [],
+			})
+		})
+
+		describe("root rollups", () => {
+			it("builds root summary, pressure, queue, relay, guardrail, and problem badges from one rollup", () => {
+				const store = createStore()
+				const sessions: AgentSession[] = [
+					createGroupedSession({
+						sessionId: "planner-root",
+						label: "Planner",
+						status: "running",
+						startTime: 30,
+						rootTaskId: "root-1",
+						sessionGroup: { groupId: "group-parent", rootSessionId: "planner-root", label: "Parent" },
+					}),
+					createGroupedSession({
+						sessionId: "worker-root",
+						label: "Worker",
+						status: "error",
+						startTime: 20,
+						rootTaskId: "root-1",
+						sessionGroup: {
+							groupId: "group-child",
+							rootSessionId: "worker-root",
+							parentGroupId: "group-parent",
+							label: "Child",
+						},
+					}),
+					createGroupedSession({
+						sessionId: "other-root",
+						label: "Other Root",
+						status: "running",
+						startTime: 10,
+						rootTaskId: "root-2",
+					}),
+				]
+
+				store.set(sessionsMapAtom, Object.fromEntries(sessions.map((session) => [session.sessionId, session])))
+				store.set(
+					sessionOrderAtom,
+					sessions.map((session) => session.sessionId),
+				)
+				store.set(schedulerStateAtom, {
+					maxConcurrentStarts: 2,
+					activeSessionLoad: 2,
+					queuedLaunchCount: 2,
+					activeRootCount: 2,
+					queuedRootLaunchCount: 2,
+					backpressure: true,
+					queueKeyPressure: {
+						"group-parent": 1,
+						"group-child": 2,
+					},
+				})
+				store.set(sessionGroupMessagesAtom, {
+					"group-child": {
+						messageId: "group-msg-1",
+						groupId: "group-child",
+						sourceSessionId: "planner-root",
+						sourceLabel: "Planner",
+						content: "Fallback relay that should be shadowed",
+						timestamp: 100,
+					},
+				})
+				store.set(rootTaskMessagesAtom, {
+					"root-1": {
+						messageId: "root-msg-1",
+						rootTaskId: "root-1",
+						sourceSessionId: "planner-root",
+						sourceLabel: "Planner",
+						content: "Return only root summary",
+						timestamp: 200,
+					},
+				})
+				store.set(sessionGroupEventsAtom, {
+					"group-child": {
+						groupId: "group-child",
+						sessionId: "worker-root",
+						eventType: "error",
+						summary: "Loop detected while retrying",
+						timestamp: 150,
+					},
+				})
+
+				expect(store.get(rootTaskRollupAtom)).toEqual({
+					summaryLabel: "Branches 2 · A1 · Err 1",
+					pressureLabel: "root pressure 2 · throttled",
+					queueLabel: "root queue 2 · active roots 2",
+					relayLabel: "root Planner -> Return only root s",
+					guardrailLabel: "root guard loop",
+					problemLabel: "root issues 1",
+				})
+			})
 		})
 	})
 })

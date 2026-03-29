@@ -11,8 +11,9 @@ describe("AlfaCode workflow section", () => {
 		const section = getAlfaCodeWorkflowSection()
 
 		expect(section).toContain("ALFACODE WORKFLOW SYSTEM")
-		expect(section).toContain("Quality Standards")
-		expect(section).toContain("Memory Bank Protocol")
+		expect(section).toContain("Core Rules")
+		expect(section).toContain("Quality Gates")
+		expect(section).toContain("Token Discipline")
 	})
 })
 

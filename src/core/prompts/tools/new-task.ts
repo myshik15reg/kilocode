@@ -6,6 +6,8 @@ import { ToolArgs } from "./types"
 const PROMPT_WITHOUT_TODOS = `## new_task
 Description: This will let you create a new task instance in the chosen mode using your provided message.
 
+Use this for meaningful decomposition, not for tiny follow-up steps. Prefer solving in the current task when the work is small, local to already-open context, or can be completed with one tool/action sequence. Prefer \`new_task\` when the work needs a different specialist mode, a clear sub-goal, or a longer independent execution path.
+
 Parameters:
 - mode: (required) The slug of the mode to start the new task in (e.g., "code", "debug", "architect").
 - message: (required) The initial user message or instructions for this new task.
@@ -28,6 +30,8 @@ Example:
  */
 const PROMPT_WITH_TODOS = `## new_task
 Description: This will let you create a new task instance in the chosen mode using your provided message and initial todo list.
+
+Use this for meaningful decomposition, not for tiny follow-up steps. Prefer solving in the current task when the work is small, local to already-open context, or can be completed with one tool/action sequence. Prefer \`new_task\` when the work needs a different specialist mode, a clear sub-goal, or a longer independent execution path.
 
 Parameters:
 - mode: (required) The slug of the mode to start the new task in (e.g., "code", "debug", "architect").

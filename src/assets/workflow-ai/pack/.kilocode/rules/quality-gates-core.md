@@ -1,20 +1,13 @@
 # Quality Gates (Core)
 
-> Полная версия: `~/.kilocode/skills/quality-gates/SKILL.md`
+Полная версия (SoT): [`quality-gates/SKILL.md`](../skills/quality-gates/SKILL.md:1).
 
-## Обязательные метрики
+## Non-negotiable metrics
 
-| Метрика | Требование | Блокирует |
-|---------|-----------|-----------|
-| Coverage (lines/branches/functions) | 100% | Merge + Build |
-| Lint (errors + warnings) | 0 | Merge + Build |
-| TDD | Red→Green→Refactor | Merge |
-| TODO | Только с тикетом: `TODO(#123)` | Merge |
-| Conventional Commits | `type(scope): msg` | Merge |
+| Metric                              | Requirement              |
+| ----------------------------------- | ------------------------ |
+| Coverage (lines/branches/functions) | 100%                     |
+| Lint (errors + warnings)            | 0                        |
+| TDD                                 | Red -> Green -> Refactor |
 
-## Краткие правила
-- Код без 100% покрытия НЕ мержится
-- Lint warnings = errors
-- Тест пишется ПЕРВЫМ (TDD)
-- Secrets в коде запрещены
-- Протокол обязателен для изменений кода
+Исключения MUST идти через waiver: [`waiver-workflow.md`](../workflows/waiver-workflow.md:1).

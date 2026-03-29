@@ -1265,7 +1265,8 @@ export const ChatRowContent = ({
 							} else {
 								// Non-HTTP-status-code error message - store full text as errorDetails
 								body = t("chat:apiRequest.errorMessage.unknown")
-								docsURL = "https://kilo.ai/support"
+								// kilocode_change: visible support link rebrand only
+								docsURL = "https://alfacode.ai/support"
 							}
 						}
 
@@ -1886,7 +1887,7 @@ export const ChatRowContent = ({
 										marginBottom: "-1.5px",
 									}}></span>
 								<span style={{ color: normalColor, fontWeight: "bold" }}>
-									KiloCode wants to create a Github issue:
+									AlfaCode assistant wants to create a GitHub issue:
 								</span>
 							</div>
 							<ReportBugPreview data={message.text || ""} />

@@ -122,6 +122,9 @@ vi.mock("../About", () => ({
 vi.mock("../PromptsSettings", () => ({
 	default: () => null,
 }))
+vi.mock("../AlfaCodeSettings", () => ({
+	AlfaCodeSettings: () => null,
+}))
 vi.mock("../SlashCommandsSettings", () => ({
 	SlashCommandsSettings: () => null,
 }))

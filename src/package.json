@@ -17,7 +17,7 @@
 		"workspace"
 	],
 	"author": {
-		"name": "Alfa Code Assistant"
+		"name": "AlfaCode assistant"
 	},
 	"repository": {
 		"type": "git",
@@ -45,7 +45,7 @@
 		"sonnet",
 		"ai",
 		"llama",
-		"Alfa Code Assistant",
+		"AlfaCode assistant",
 		"alfacode"
 	],
 	"activationEvents": [
@@ -57,13 +57,13 @@
 		"walkthroughs": [
 			{
 				"id": "kiloCodeWalkthrough",
-				"title": "5 ways Alfa Code Assistant helps you code",
+				"title": "5 ways AlfaCode assistant helps you code",
 				"description": "You now have a personal AI coding assistant.",
 				"steps": [
 					{
 						"id": "welcome",
 						"title": "Write code for you",
-						"description": "Describe what you want to build. Alfa Code Assistant will write it from scratch, generate the files, and run them for you.",
+						"description": "Describe what you want to build. AlfaCode assistant will write it from scratch, generate the files, and run them for you.",
 						"media": {
 							"markdown": "./dist/walkthrough/step1.md"
 						}
@@ -71,7 +71,7 @@
 					{
 						"id": "getting-started",
 						"title": "Understand your codebase",
-						"description": "Need clarity on how something works? Ask Alfa Code Assistant about any part of your files and get a clear explanation.",
+						"description": "Need clarity on how something works? Ask AlfaCode assistant about any part of your files and get a clear explanation.",
 						"media": {
 							"markdown": "./dist/walkthrough/step2.md"
 						},
@@ -82,7 +82,7 @@
 					{
 						"id": "modes",
 						"title": "Get things working again",
-						"description": "Stuck on an error? Alfa Code Assistant can find the issue, fix it, and get your code running.",
+						"description": "Stuck on an error? AlfaCode assistant can find the issue, fix it, and get your code running.",
 						"media": {
 							"markdown": "./dist/walkthrough/step3.md"
 						}
@@ -140,7 +140,7 @@
 			},
 			{
 				"command": "alfa-code-assistant.exportSettings",
-				"title": "Export Settings",
+				"title": "Export AlfaCode assistant settings",
 				"category": "%configuration.title%"
 			},
 			{
@@ -636,7 +636,7 @@
 		},
 		"icons": {
 			"kilo-logo": {
-				"description": "Alfa Code Assistant logo",
+				"description": "AlfaCode assistant logo",
 				"default": {
 					"fontPath": "assets/icons/kilo-icon-font.woff2",
 					"fontCharacter": "\\F101"
@@ -758,7 +758,6 @@
 		"socket.io-client": "^4.8.1",
 		"sound-play": "^1.1.0",
 		"stream-json": "^1.8.0",
-		"string-similarity": "^4.0.4",
 		"strip-ansi": "^7.1.0",
 		"strip-bom": "^5.0.0",
 		"tar-fs": "^3.1.1",
@@ -787,11 +786,9 @@
 		"@types/diff-match-patch": "^1.0.36",
 		"@types/glob": "^8.1.0",
 		"@types/jsdom": "^21.1.7",
-		"@types/json5": "^2.2.0",
 		"@types/lodash.debounce": "^4.0.9",
 		"@types/mocha": "^10.0.10",
 		"@types/node": "20.x",
-		"@types/node-cache": "^4.1.3",
 		"@types/node-ipc": "^9.2.3",
 		"@types/proper-lockfile": "^4.1.4",
 		"@types/ps-tree": "^1.1.6",

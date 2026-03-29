@@ -3,55 +3,72 @@ name: quality-gates
 description: Authoritative source for quality requirements - 100% coverage, lint rules, TDD workflow, CI/CD gates.
 ---
 
-# Quality Gates (Authoritative Source)
+# Quality Gates (SoT)
 
-## Coverage Requirements
+## Normative language
 
-| Metric | Requirement | Blocks |
-|--------|-------------|--------|
-| **Lines** | 100% | Merge + Build |
-| **Branches** | 100% | Merge + Build |
-| **Functions** | 100% | Merge + Build |
+1. MUST означает обязательное требование.
+2. MUST NOT означает запрещённое действие.
+3. SHOULD означает рекомендацию; отклонение допускается только при явной причине, зафиксированной как evidence.
+4. MAY означает опциональное действие.
 
-### Zero Tolerance
-- Code without 100% coverage CANNOT be merged
-- Build MUST fail if coverage < 100%
-- No exceptions without `waiver-workflow.md`
+Термины: [`terminology.md`](../../rules/terminology.md:1).
+Enforcement workflow: [`quality-enforcement.md`](../../workflows/quality-enforcement.md:1).
+Exceptions workflow: [`waiver-workflow.md`](../../workflows/waiver-workflow.md:1).
 
-### Excluded from Coverage
-- Generated code (proto, swagger)
-- Type definitions (.d.ts)
-- Config files (0 logic)
+## 1) Coverage
 
-## Lint Requirements
+Coverage MUST be 100%.
 
-| Requirement | Value | Blocks |
-|-------------|-------|--------|
-| Errors | 0 | Merge + Build |
-| Warnings | 0 | Merge + Build |
-| Disable rules | Forbidden | Merge |
+| Metric    | Requirement | Blocks        |
+| --------- | ----------: | ------------- |
+| Lines     |        100% | Merge + Build |
+| Branches  |        100% | Merge + Build |
+| Functions |        100% | Merge + Build |
 
-## TDD Requirements
+| Rule           | Requirement                                 |
+| -------------- | ------------------------------------------- |
+| Zero tolerance | Код с coverage < 100% MUST NOT быть смёржен |
+| Enforcement    | CI MUST fail if coverage < 100%             |
 
-| Step | Requirement |
-|------|-------------|
-| Red | Test written FIRST and fails |
-| Green | Minimal code to pass |
-| Refactor | Improve with green tests |
+### 1.1) Exclusions (only if explicitly configured)
 
-## CI/CD Pipeline
+| Exclusion type             | Allowed when                          | Notes                                        |
+| -------------------------- | ------------------------------------- | -------------------------------------------- |
+| Generated code             | code is generated and not hand-edited | exclusion MUST be documented in repo config  |
+| Type definitions (`.d.ts`) | no runtime logic                      | exclude only if tooling supports it          |
+| Config-only files          | no logic branches                     | prefer to keep configs out of coverage scope |
 
-```yaml
-# Every PR must pass:
-- lint (0 errors, 0 warnings)
-- test:unit (100% coverage)
-- test:integration
-- security-scan
-- build
-```
+## 2) Lint
 
-## Pre-commit Hooks
-```bash
-npm test -- --coverage  # Must be 100%
-npm run lint           # Must be 0 issues
-```
+Lint MUST be clean.
+
+| Metric       | Requirement | Blocks        |
+| ------------ | ----------: | ------------- |
+| Errors       |           0 | Merge + Build |
+| Warnings     |           0 | Merge + Build |
+| Rule disable |    MUST NOT | Merge         |
+
+## 3) TDD
+
+TDD MUST follow Red -> Green -> Refactor.
+
+| Step     | Requirement                              |
+| -------- | ---------------------------------------- |
+| Red      | Test MUST be written first and MUST fail |
+| Green    | Minimal change to make it pass           |
+| Refactor | Improve code with tests green            |
+
+## 4) Exceptions (waiver)
+
+1. Любое отклонение от gate MUST идти через [`waiver-workflow.md`](../../workflows/waiver-workflow.md:1).
+2. Waiver MUST быть ограничен по scope и по времени.
+
+## 5) CI templates (consuming project)
+
+Эти файлы являются шаблонами для consuming project и SHOULD использоваться через workflow [`quality-enforcement.md`](../../workflows/quality-enforcement.md:1).
+
+| Template                | Path                                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| GitHub Actions workflow | [`workflowai-quality-gates.yml`](../../templates/quality-gates/project/.github/workflows/workflowai-quality-gates.yml:1) |
+| Runner script           | [`workflowai-quality-gates.ps1`](../../templates/quality-gates/project/scripts/workflowai-quality-gates.ps1:1)           |

@@ -206,13 +206,22 @@ export class CustomModesManager {
 			const result = customModesSettingsSchema.safeParse(settings)
 
 			if (!result.success) {
-				console.error(`[CustomModesManager] Schema validation failed for ${filePath}:`, result.error)
+				// kilocode_change: avoid logging ZodError objects directly (Node util.inspect can throw in newer Node versions).
+				console.error(`[CustomModesManager] Schema validation failed for ${filePath}: ${result.error.message}`)
 
-				// Show user-friendly error for .roomodes files
-				if (filePath.endsWith(ROOMODES_FILENAME)) {
-					const issues = result.error.issues
-						.map((issue) => `• ${issue.path.join(".")}: ${issue.message}`)
-						.join("\n")
+				const baseName = path.basename(filePath)
+				// Show user-friendly error for .roomodes + global settings files
+				if (baseName === ROOMODES_FILENAME || baseName === GlobalFileNames.customModes) {
+					// kilocode_change: guard formatting to ensure we always surface schema errors to the user.
+					let issues = ""
+					try {
+						issues = result.error.issues
+							.map((issue) => `• ${issue.path.join(".")}: ${issue.message}`)
+							.join("\n")
+					} catch (formatError) {
+						const fallback = formatError instanceof Error ? formatError.message : String(formatError)
+						issues = `Failed to format schema issues: ${fallback}`
+					}
 
 					vscode.window.showErrorMessage(t("common:customModes.errors.schemaValidationError", { issues }))
 				}

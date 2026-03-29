@@ -145,7 +145,9 @@ export const importSettingsFromFile = async (
 export const exportSettings = async ({ providerSettingsManager, contextProxy }: ExportOptions) => {
 	const uri = await vscode.window.showSaveDialog({
 		filters: { JSON: ["json"] },
-		defaultUri: vscode.Uri.file(path.join(os.homedir(), "Documents", "kilo-code-settings.json")),
+		// kilocode_change start
+		defaultUri: vscode.Uri.file(path.join(os.homedir(), "Documents", "alfacode-settings.json")),
+		// kilocode_change end
 	})
 
 	if (!uri) {

@@ -8,9 +8,10 @@ import { telemetryClient } from "@/utils/TelemetryClient"
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
+import { SearchableSetting } from "./SearchableSetting"
+import { Slider } from "../ui"
 import { TaskTimeline } from "../chat/TaskTimeline"
 import { generateSampleTimelineData } from "../../utils/timeline/mockData"
-import { Slider } from "../ui"
 
 type DisplaySettingsProps = HTMLAttributes<HTMLDivElement> & {
 	showTaskTimeline?: boolean
@@ -32,12 +33,12 @@ type DisplaySettingsProps = HTMLAttributes<HTMLDivElement> & {
 
 export const DisplaySettings = ({
 	showTaskTimeline,
+	sendMessageOnEnter,
 	showTimestamps,
 	showDiffStats,
-	sendMessageOnEnter,
+	hideCostBelowThreshold,
 	setCachedStateField,
 	reasoningBlockCollapsed,
-	hideCostBelowThreshold,
 	...props
 }: DisplaySettingsProps) => {
 	const { t } = useAppTranslation()
@@ -47,7 +48,6 @@ export const DisplaySettings = ({
 	const handleReasoningBlockCollapsedChange = (value: boolean) => {
 		setCachedStateField("reasoningBlockCollapsed", value)
 
-		// Track telemetry event
 		telemetryClient.capture("ui_settings_collapse_thinking_changed", {
 			enabled: value,
 		})
@@ -74,53 +74,7 @@ export const DisplaySettings = ({
 						{t("settings:ui.collapseThinking.description")}
 					</div>
 				</div>
-				<div>
-					<VSCodeCheckbox
-						checked={showTaskTimeline}
-						onChange={(e) => {
-							setCachedStateField("showTaskTimeline", (e as any).target?.checked || false)
-						}}>
-						<span className="font-medium">{t("settings:display.taskTimeline.label")}</span>
-					</VSCodeCheckbox>
-					<div className="text-vscode-descriptionForeground text-sm mt-1">
-						{t("settings:display.taskTimeline.description")}
-					</div>
 
-					{/* Sample TaskTimeline preview */}
-					<div className="mt-3">
-						<div className="font-medium text-vscode-foreground text-xs mb-4">Preview</div>
-						<div className="opacity-60">
-							<TaskTimeline groupedMessages={sampleTimelineData} isTaskActive={false} />
-						</div>
-					</div>
-				</div>
-				{/* Show Timestamps checkbox */}
-				<div className="mt-3">
-					<VSCodeCheckbox
-						checked={showTimestamps}
-						onChange={(e: any) => {
-							setCachedStateField("showTimestamps", e.target.checked)
-						}}>
-						<span className="font-medium">{t("settings:display.showTimestamps.label")}</span>
-					</VSCodeCheckbox>
-					<div className="text-vscode-descriptionForeground text-sm mt-1">
-						{t("settings:display.showTimestamps.description")}
-					</div>
-				</div>
-				{/* Show Diff Stats checkbox */}
-				<div className="mt-3">
-					<VSCodeCheckbox
-						checked={showDiffStats}
-						onChange={(e: any) => {
-							setCachedStateField("showDiffStats", e.target.checked)
-						}}>
-						<span className="font-medium">{t("settings:display.showDiffStats.label")}</span>
-					</VSCodeCheckbox>
-					<div className="text-vscode-descriptionForeground text-sm mt-1">
-						{t("settings:display.showDiffStats.description")}
-					</div>
-				</div>
-				{/* Send Message on Enter Setting */}
 				<div className="flex flex-col gap-1">
 					<VSCodeCheckbox
 						checked={sendMessageOnEnter}
@@ -136,32 +90,76 @@ export const DisplaySettings = ({
 			</Section>
 
 			<Section>
-				<div>
-					<div className="font-medium">{t("settings:display.costThreshold.label")}</div>
+				<SearchableSetting
+					settingId="display-task-timeline"
+					section="display"
+					label={t("kilocode:settings.alfaCode.timeline.label")}>
+					<VSCodeCheckbox
+						checked={showTaskTimeline}
+						onChange={(e: any) => setCachedStateField("showTaskTimeline", e.target.checked)}
+						data-testid="display-show-task-timeline-checkbox">
+						<span className="font-medium">{t("kilocode:settings.alfaCode.timeline.label")}</span>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1">
+						{t("kilocode:settings.alfaCode.timeline.description")}
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="display-timestamps"
+					section="display"
+					label={t("settings:display.showTimestamps.label")}>
+					<VSCodeCheckbox
+						checked={showTimestamps}
+						onChange={(e: any) => setCachedStateField("showTimestamps", e.target.checked)}
+						data-testid="display-show-timestamps-checkbox">
+						<span className="font-medium">{t("settings:display.showTimestamps.label")}</span>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1">
+						{t("settings:display.showTimestamps.description")}
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="display-diff-stats"
+					section="display"
+					label={t("settings:display.showDiffStats.label")}>
+					<VSCodeCheckbox
+						checked={showDiffStats}
+						onChange={(e: any) => setCachedStateField("showDiffStats", e.target.checked)}
+						data-testid="display-show-diff-stats-checkbox">
+						<span className="font-medium">{t("settings:display.showDiffStats.label")}</span>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1">
+						{t("settings:display.showDiffStats.description")}
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="display-cost-threshold"
+					section="display"
+					label={t("settings:display.costThreshold.label")}>
+					<div className="font-medium mb-1">{t("settings:display.costThreshold.label")}</div>
+					<div className="flex items-center gap-2">
+						<Slider
+							min={0}
+							max={1}
+							step={0.01}
+							value={[hideCostBelowThreshold ?? 0]}
+							onValueChange={([value]) => setCachedStateField("hideCostBelowThreshold", value)}
+							data-testid="display-cost-threshold-slider"
+						/>
+						<span className="min-w-[60px] text-sm">${(hideCostBelowThreshold ?? 0).toFixed(2)}</span>
+					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:display.costThreshold.description")}
 					</div>
+				</SearchableSetting>
 
-					<div className="mt-3">
-						<div className="flex items-center gap-2">
-							<Slider
-								min={0}
-								max={1}
-								step={0.01}
-								value={[hideCostBelowThreshold ?? 0]}
-								onValueChange={([value]) => setCachedStateField("hideCostBelowThreshold", value)}
-								data-testid="cost-threshold-slider"
-								className="flex-1"
-							/>
-							<span className="text-sm text-vscode-foreground min-w-[60px]">
-								${(hideCostBelowThreshold ?? 0).toFixed(2)}
-							</span>
-						</div>
-						<div className="text-xs text-vscode-descriptionForeground mt-1">
-							{t("settings:display.costThreshold.currentValue", {
-								value: (hideCostBelowThreshold ?? 0).toFixed(2),
-							})}
-						</div>
+				<div>
+					<div className="font-medium">{t("settings:common.preview")}</div>
+					<div className="mt-3 opacity-60">
+						<TaskTimeline groupedMessages={sampleTimelineData} isTaskActive={false} />
 					</div>
 				</div>
 			</Section>

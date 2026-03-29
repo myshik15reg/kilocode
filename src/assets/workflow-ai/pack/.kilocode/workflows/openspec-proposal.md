@@ -1,16 +1,22 @@
-# Рабочий процесс: OpenSpec — Предложение (openspec-proposal)
+﻿# Workflow: OpenSpec proposal (`openspec-proposal`)
 
-## Назначение
-Создать и провалидировать предложение изменения OpenSpec **до** любой реализации.
+## Purpose
 
-## Шаги
-1. Прочитать `openspec/AGENTS.md` и `openspec/project.md`.
-2. Определить объём работ и выбрать уникальный `change-id` (`kebab-case`, начиная с глагола).
-3. Создать `openspec/changes/CHANGE_ID/` со структурой:
-   - `proposal.md`
-   - `tasks.md`
-   - (опционально) `design.md`
-   - delta-spec в `specs/CAPABILITY/spec.md`
-4. Убедиться, что у каждого требования есть минимум один блок `#### Scenario:`.
-5. Запустить `openspec validate CHANGE_ID --strict`.
-6. Остановиться и запросить одобрение **перед** началом реализации.
+Create and validate an OpenSpec proposal before code changes start.
+
+## Workflow
+
+1. Read `openspec/AGENTS.md` and `openspec/project.md` if they exist.
+2. Pick a unique kebab-case `CHANGE_ID`, preferably verb-led.
+3. Create `openspec/changes/CHANGE_ID/` with:
+    - `proposal.md`
+    - `tasks.md`
+    - optional `design.md`
+    - spec delta files under `specs/`
+4. Give each requirement at least one scenario if the project expects scenario-driven specs.
+5. Run `openspec validate CHANGE_ID --strict`.
+6. Stop and get approval before implementation.
+
+## Rule
+
+No implementation starts until the proposal is valid and approved.

@@ -125,6 +125,8 @@ const TaskHeader = ({
 	)
 
 	const hasTodos = todos && Array.isArray(todos) && todos.length > 0
+	const subtaskCount = currentTaskItem?.childIds?.length ?? 0
+	const delegationDepth = currentTaskItem?.delegationDepth ?? 0
 
 	return (
 		<div className="group pt-2 pb-0 px-3">
@@ -464,6 +466,22 @@ const TaskHeader = ({
 											<td className="font-light align-top">
 												{prettyBytes(currentTaskItem.size)}
 											</td>
+										</tr>
+									)}
+
+									<tr>
+										<th className="font-medium text-left align-top w-1 whitespace-nowrap pr-2 h-[20px]">
+											{t("chat:task.depth")}
+										</th>
+										<td className="font-light align-top">{delegationDepth}</td>
+									</tr>
+
+									{subtaskCount > 0 && (
+										<tr>
+											<th className="font-medium text-left align-top w-1 whitespace-nowrap pr-2 h-[20px]">
+												{t("chat:task.subtasks")}
+											</th>
+											<td className="font-light align-top">{subtaskCount}</td>
 										</tr>
 									)}
 								</tbody>

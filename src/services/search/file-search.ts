@@ -30,6 +30,11 @@ export async function executeRipgrep({
 		const rl = readline.createInterface({ input: rgProcess.stdout, crlfDelay: Infinity })
 		const fileResults: FileResult[] = []
 		const dirSet = new Set<string>() // Track unique directory paths.
+		// kilocode_change start
+		const stderrDecoder = new TextDecoder("utf-8")
+		const decodeUtf8Chunk = (chunk: string | Uint8Array) =>
+			typeof chunk === "string" ? chunk : stderrDecoder.decode(chunk, { stream: true })
+		// kilocode_change end
 
 		let count = 0
 
@@ -61,11 +66,13 @@ export async function executeRipgrep({
 
 		let errorOutput = ""
 
-		rgProcess.stderr.on("data", (data) => {
-			errorOutput += data.toString()
+		rgProcess.stderr.on("data", (data: string | Uint8Array) => {
+			// kilocode_change - decode UTF-8 as a stream to preserve multibyte characters across chunk boundaries
+			errorOutput += decodeUtf8Chunk(data)
 		})
 
 		rl.on("close", () => {
+			errorOutput += stderrDecoder.decode()
 			if (errorOutput && fileResults.length === 0) {
 				reject(new Error(`ripgrep process error: ${errorOutput}`))
 			} else {

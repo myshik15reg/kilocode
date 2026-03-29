@@ -1,25 +1,9 @@
-# Core Concepts
+# Core Concepts (wrapper)
 
-> Подробнее: `~/.kilocode/rules/concepts.md`
+Полная версия: [`concepts.md`](concepts.md:1).
 
-## Memory Bank
-Долговременный контекст проекта в `.kilocode/memory-bank/`:
-- `index.md` - навигация
-- `brief.md` - цели проекта
-- `context.md` - текущий фокус
-- **Memory First** - всегда начинай с index.md
+## Minimal corridor
 
-## Protocols
-Изолированный контекст задачи в `.protocols/YYYY-MM-DD-name/`:
-- `brief.md` - требования + DoD
-- `plan.md` - шаги реализации
-- **No Protocol, No Code** - протокол обязателен
-
-## Agents (Modes)
-Специализированные режимы:
-- Orchestrator → координация
-- Architect → планирование
-- Code → реализация
-- Reviewer → проверка качества
-
-**Делегирование:** только через `new_task`
+1. Memory Bank entry: [`memory-bank/index.md`](../memory-bank/index.md:1).
+2. Protocol process: [`protocol-new.md`](../workflows/protocol-new.md:1).
+3. Mode selection: [`mode-selection/SKILL.md`](../skills/mode-selection/SKILL.md:1).

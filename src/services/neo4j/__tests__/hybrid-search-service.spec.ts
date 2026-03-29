@@ -349,6 +349,49 @@ describe("HybridSearchService", () => {
 			expect(results[0].payload?.module).toBe("src/payload.ts")
 			expect(results[0].payload?.neo4j_id).toBe("file:src/payload.ts")
 		})
+
+		it("should keep 1C candidates competitive for rerank-enabled search", async () => {
+			mockGraphService.isInitialized.mockResolvedValue(false)
+			mockVectorStore.search = vi.fn().mockResolvedValue([
+				{
+					id: "py",
+					filePath: "src/calc.py",
+					codeChunk: "def add(a, b): return a + b",
+					startLine: 1,
+					endLine: 1,
+					score: 0.95,
+				},
+				{
+					id: "bsl",
+					filePath: "src/module.bsl",
+					codeChunk: "Функция Сумма(А, Б) Экспорт",
+					startLine: 1,
+					endLine: 1,
+					score: 0.82,
+				},
+			] as VectorStoreSearchResult[])
+			;(globalThis as { fetch?: unknown }).fetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: vi.fn().mockResolvedValue({
+					results: [
+						{ index: 0, score: 0.91 },
+						{ index: 1, score: 0.81 },
+					],
+				}),
+			})
+
+			const rerankService = new HybridSearchService(mockEmbedder, mockVectorStore, mockGraphService, {
+				enabled: true,
+				baseUrl: "https://rerank.local/v1",
+				modelId: "bge-reranker-v2",
+				topK: 2,
+			})
+
+			const searchServiceResults = await rerankService.search("1C функция сумма", { minScore: 0, maxResults: 2 })
+
+			expect(searchServiceResults[0].filePath).toBe("src/calc.py")
+			expect(searchServiceResults[1].filePath).toBe("src/module.bsl")
+		})
 	})
 
 	describe("getRelatedEntities", () => {

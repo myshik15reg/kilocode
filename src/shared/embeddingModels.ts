@@ -32,6 +32,22 @@ export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
 			scoreThreshold: 0.15,
 			queryPrefix: "Represent this query for searching relevant code: ",
 		},
+
+		// --- BGE family (common via LiteLLM / OpenAI-compatible gateways) ---
+		// NOTE: Dimensions are required to create Qdrant collections correctly.
+		// If your gateway exposes different aliases, add them here as additional keys.
+		"bge-m3": { dimension: 1024, scoreThreshold: 0.25 },
+		"bge-v2-m3": { dimension: 1024, scoreThreshold: 0.25 },
+		"BAAI/bge-m3": { dimension: 1024, scoreThreshold: 0.25 },
+		"BAAI/bge-v2-m3": { dimension: 1024, scoreThreshold: 0.25 },
+
+		// BGE v1.5 English (small/base/large) – frequently used for retrieval
+		"bge-small-en-v1.5": { dimension: 384, scoreThreshold: 0.25 },
+		"bge-base-en-v1.5": { dimension: 768, scoreThreshold: 0.25 },
+		"bge-large-en-v1.5": { dimension: 1024, scoreThreshold: 0.25 },
+		"BAAI/bge-small-en-v1.5": { dimension: 384, scoreThreshold: 0.25 },
+		"BAAI/bge-base-en-v1.5": { dimension: 768, scoreThreshold: 0.25 },
+		"BAAI/bge-large-en-v1.5": { dimension: 1024, scoreThreshold: 0.25 },
 	},
 	gemini: {
 		"text-embedding-004": { dimension: 768 },

@@ -1,36 +1,29 @@
-# AlfaFlow Project Rules (Thin Core)
+﻿# Project Rules
 
-Этот файл намеренно краткий: здесь только ссылки на первоисточники, чтобы не дублировать правила.
+Purpose: provide a thin, stable corridor to the main source-of-truth documents.
 
-## Единые источники истины
+## Entry corridor
 
-### Quality (CRITICAL)
-- `~/.kilocode/rules/quality-gates.md` — **AUTHORITATIVE**: 100% coverage, lint, TDD, security gates.
-- `~/.kilocode/rules/anti-patterns.md` — что НЕ делать и почему.
+1. Start with [`../../AGENTS.md`](../../AGENTS.md:1).
+2. Read [`../QUICK.md`](../QUICK.md:1) for startup rules.
+3. Read [`../memory-bank/index.md`](../memory-bank/index.md:1) for project context.
+4. Use [`index.md`](index.md:1) for rule navigation when needed.
 
-### Process
-- `AGENTS.md` — главный манифест: принципы, режимы, quick start.
-- `~/.kilocode/rules/testing-rules.md` — детали TDD и тестирования.
-- `~/.kilocode/rules/security-rules.md` — OWASP, security checklist.
-- `~/.kilocode/patterns/code-standards.md` — SOLID/KISS/DRY/YAGNI.
-- `~/.kilocode/rules/git-workflow-rules.md` — Conventional Commits и PR-flow.
-- `~/.kilocode/rules/roles.md` — обязанности режимов.
+## Core source of truth
 
-## Оркестрация и multi-model
-- `~/.kilocode/workflows/agent-orchestration.md` — стратегия субагентов и model tiers.
-- `~/.kilocode/patterns/orchestration/context-capsule.md` — fallback для memory-bank-limited моделей.
-- `~/.kilocode/rules/mode-delegation-example.md` — формат делегирования и CAPABILITIES.
+| Topic               | Source                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------ |
+| Terminology         | [`terminology.md`](terminology.md:1)                                                             |
+| Evidence discipline | [`evidence-rules.md`](evidence-rules.md:1)                                                       |
+| Memory Bank usage   | [`memory-bank-instructions.md`](memory-bank-instructions.md:1)                                   |
+| Agent routing       | [`agent-routing.md`](agent-routing.md:1)                                                         |
+| Handoff format      | [`../patterns/orchestration/context-handoff.md`](../patterns/orchestration/context-handoff.md:1) |
+| Mode selection      | [`../skills/mode-selection/SKILL.md`](../skills/mode-selection/SKILL.md:1)                       |
+| Quality gates       | [`quality-gates.md`](quality-gates.md:1)                                                         |
 
-## Memory Bank и протоколы
-- `.kilocode/memory-bank/index.md` — входная точка, подтверждение `[MB: OK]`.
-- `~/.kilocode/rules/memory-bank-instructions.md` — правила работы с Memory Bank.
-- `.protocols/` — работаем только в протоколах (`brief.md`, `plan.md`, `execution.md`).
+## Mandatory process rules
 
-## Skills и Patterns
-- `~/.kilocode/rules/skills-index.md` - использование skills.
-- `~/.kilocode/patterns/index.md` - каталог паттернов.
-- `~/.kilocode/patterns/design-patterns.md` - шаблоны проектирования (Observer, Factory и др.).
-- `~/.kilocode/patterns/frameworks.md` - топовые фреймворки и правила выбора.
-
-## Quick Reference
-- `~/.kilocode/workflows/quickref.md` — конденсированные чеклисты.
+1. Any task that changes the repository must have a protocol created by [`../workflows/protocol-new.md`](../workflows/protocol-new.md:1).
+2. Delegation across modes must use `new_task` plus the canonical handoff format.
+3. Keep reusable workflow docs template-safe; project-specific state belongs in the consuming workspace.
+4. Prefer the narrowest suitable specialist before falling back to broader modes.

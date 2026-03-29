@@ -1,70 +1,40 @@
-# Документация
+﻿# Workflow: documentation
 
-Процесс для обновления документации как части разработки: коротко, актуально, в репозитории, рядом с кодом.
+## Goal
 
-## Когда использовать
-- Добавили/изменили функциональность или публичный контракт (API/CLI/конфиги).
-- Приняли архитектурное решение, которое важно "помнить".
-- Нужно подготовить онбординг, операционный гайд (runbook), инструкции для команды/пользователей.
+Update documentation so it stays aligned with source-of-truth behavior and helps future work rather than creating duplicate noise.
 
-## Принципы
-- Документация как код: хранится в репозитории, ревьюится, версионируется.
-- Актуальность важнее объёма: лучше коротко и точно, чем длинно и устаревше.
-- Один источник правды: не дублируй одно и то же в нескольких местах без необходимости.
+## Use when
 
-## Входные данные (если нет - спроси)
-- Что поменялось (кратко) и для кого (пользователь/разработчик/оператор).
-- Где должна жить документация (README, docs/, ADR, inline docs).
-- Требуемый формат (markdown, схемы, примеры команд).
+- code or process changes affect user or maintainer understanding
+- a missing doc blocks safe execution or onboarding
+- a source-of-truth file needs clarification or consolidation
 
-## Шаги
+## Core rules
 
-### Шаг 1: Определить объём работ
-1. Определи аудиторию и цель (как использовать, как сопровождать, как дебажить).
-2. Составь список документов, которые нужно обновить:
-   - `README.md` (если меняется способ запуска/установка/ключевые фичи);
-   - `docs/` (если есть пользовательские/операционные гайды);
-   - ADR (если принято архитектурное решение);
-   - комментарии/докстринги (если меняются контракты функций/классов).
+1. Prefer updating existing source-of-truth docs over creating duplicates.
+2. Keep docs close to the thing they explain.
+3. Separate runtime guidance from maintainer-only notes.
+4. Do not let narrative docs contradict operational source-of-truth files.
 
-### Шаг 2: Обновить документацию
-1. Обнови нужные файлы маленькими итерациями.
-2. Добавь примеры команд и типовые сценарии.
-3. Если есть риски/ограничения - укажи явно.
+## Recommended flow
 
-### Шаг 3: Проверки
-1. Проверь, что ссылки не битые и примеры команд реалистичны.
-2. Если в проекте есть док-линтер/сборка docs - запусти.
-Пример (адаптируй под проект):
-```powershell
-npm test
-```
+| Step | Outcome                                            |
+| ---- | -------------------------------------------------- |
+| 1    | identify the audience and source-of-truth location |
+| 2    | update the smallest correct document set           |
+| 3    | remove or reduce duplication where possible        |
+| 4    | verify links and references still make sense       |
 
-### Шаг 4: Завершение
-1. Убедись, что документация согласована с фактическим поведением.
-2. Обнови `.protocols/.../plan.md` и `.protocols/.../execution.md` (протокол обязателен всегда).
-3. Если обновилась "картина проекта" - обнови Memory Bank.
+## Good outputs
 
-## Мини-шаблоны
+- shorter, clearer source-of-truth text
+- corrected links and entrypoints
+- explicit boundary between template and workspace state
+- concise maintainer notes when runtime docs should stay lean
 
-### ADR (минимально)
-```text
-# Решение ADR-XXXX: Название
+## Anti-patterns
 
-## Контекст
-...
-
-## Решение
-...
-
-## Альтернативы
-...
-
-## Последствия
-...
-```
-
-## Связанные процессы
-- Протоколы: `protocol-new.md`, `protocol-review-merge.md`
-- Гейты качества: `quality-enforcement.md`
-- Рефакторинг: `refactoring-workflow.md`
+- adding another wrapper when a source doc can be fixed directly
+- mixing historical notes into runtime startup docs
+- creating broad documentation churn during a code-only task without user value

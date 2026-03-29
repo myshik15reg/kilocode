@@ -476,21 +476,12 @@ export async function addCustomInstructions(
 	if (options.settings?.useAgentRules !== false) {
 		let agentRulesContent = await loadAllAgentRulesFiles(cwd, enableSubfolderRules)
 
-		// Fallback: if the workspace does not have AGENTS.md/AGENT.md, try the global WorkFlowAI template.
-		// This avoids prompting the model to read a non-existent workspace file in empty projects.
-		if (!agentRulesContent || !agentRulesContent.trim()) {
-			const templateAgentsPath = path.join(
-				getGlobalRooDirectory(),
-				"workflowai",
-				"templates",
-				"project-root",
-				"AGENTS.md",
-			)
-			const templateContent = await safeReadFile(templateAgentsPath)
-			if (templateContent) {
-				agentRulesContent = `# Agent Rules Standard (AGENTS.md) from ${templateAgentsPath}:\n${templateContent}`
-			}
-		}
+		// kilocode_change start
+		// Do not fall back to the global WorkFlowAI template AGENTS.md here.
+		// The system prompt already includes a compact AlfaCode workflow section,
+		// so injecting template AGENTS content again only duplicates rules and wastes tokens.
+		// Workspace-specific AGENTS files remain the only AGENTS source of truth.
+		// kilocode_change end
 
 		if (agentRulesContent && agentRulesContent.trim()) {
 			rules.push(agentRulesContent.trim())

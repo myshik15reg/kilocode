@@ -1,74 +1,40 @@
-# Миграции базы данных
+﻿# Workflow: migration
 
-Процесс для безопасных изменений схемы/данных с минимизацией даунтайма и рисков.
+## Goal
 
-## Когда использовать
-- Любые изменения схемы (таблицы/колонки/индексы/ограничения).
-- Миграции данных (backfill, нормализация, переезды).
-- Обновления ORM, которые генерируют миграции.
+Execute larger changes that cannot be treated as simple fixes or routine updates, while keeping scope, risk, and rollback visible.
 
-## Принципы
-- Backward-compatible по умолчанию: сначала добавляем, потом используем, потом удаляем.
-- Маленькие шаги, измеримые проверки.
-- План отката до запуска миграции.
-- Бэкап перед опасными изменениями.
+## Use when
 
-## Входные данные (если нет - спроси)
-- Какая СУБД и как запускаются миграции (скрипт, ORM, CI/CD).
-- Требования по даунтайму (0/минимальный/окно).
-- Размер данных и ожидаемая длительность миграции.
-- Есть ли реплика/стейджинг, можно ли тестировать на копии.
+- a major dependency or platform upgrade is required
+- structure or data contracts are changing significantly
+- multiple coordinated changes must land safely over phases
 
-## Шаги
+## Core rules
 
-### Шаг 1: Планирование
-1. Опиши изменение и риск:
-   - что меняем;
-   - какие запросы/эндпоинты затронуты;
-   - как проверить корректность.
-2. Определи стратегию:
-   - без даунтайма (двухфазно) или с окном обслуживания.
-3. Подготовь откат:
-   - как вернуть приложение на прошлую версию;
-   - можно ли откатить схему/данные (иногда "откат схемы" невозможен без бэкапа).
+1. Break the migration into explicit phases.
+2. Define compatibility and rollback expectations early.
+3. Validate incrementally instead of waiting for one final big check.
+4. Treat migrations as protocol-worthy work.
 
-### Шаг 2: Реализация миграции
-1. Сделай миграцию обратимо там, где возможно:
-   - избегай drop/rename без необходимости;
-   - большие backfill делай батчами.
-2. Если есть ORM - проверь сгенерированный SQL и при необходимости оптимизируй.
+## Recommended flow
 
-### Шаг 3: Тестирование
-1. Прогон миграции локально на тестовых данных.
-2. Прогон на staging/копии (если есть) с замерами:
-   - время;
-   - блокировки;
-   - деградация запросов.
+| Step | Outcome                                                       |
+| ---- | ------------------------------------------------------------- |
+| 1    | define migration scope and success criteria                   |
+| 2    | identify compatibility constraints and rollout risks          |
+| 3    | split the work into safe phases                               |
+| 4    | validate each phase                                           |
+| 5    | close with explicit follow-up if any temporary bridge remains |
 
-### Шаг 4: Деплой
-1. Бэкап (если требуется и уместно).
-2. Применение миграции.
-3. Деплой приложения (если миграция требует нового кода).
-4. Верификация:
-   - smoke-тесты;
-   - проверка целостности данных;
-   - мониторинг ошибок/latency.
+## Typical risks
 
-### Шаг 5: Откат (если нужно)
-1. Останови ухудшение (остановка rollout/возврат трафика).
-2. Откати приложение на стабильную версию.
-3. Если откат схемы невозможен - действуй по плану (вплоть до восстановления из бэкапа).
-4. Зафиксируй постмортем и action items.
+- hidden contract drift
+- rollout ordering issues
+- partial compatibility between old and new states
+- underestimating validation scope
 
-## Контрольный список
-- [ ] План миграции и план отката согласованы.
-- [ ] Понятно, как проверить корректность (инварианты/сверки/метрики).
-- [ ] Прогон миграции в staging/копии выполнен (или риск принят осознанно).
-- [ ] Бэкап сделан (если требуется).
-- [ ] После деплоя есть мониторинг и окно наблюдения.
+## Related flows
 
-## Связанные процессы
-- Деплой: `deployment-workflow.md`
-- Инциденты: `hotfix-emergency.md`
-- Гейты качества: `quality-enforcement.md`
-
+- dependency-driven migration: [`dependency-management.md`](dependency-management.md:1)
+- protocol lifecycle: [`protocol-new.md`](protocol-new.md:1), [`protocol-review-merge.md`](protocol-review-merge.md:1)

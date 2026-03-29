@@ -3,6 +3,8 @@
 import { getApiRequestTimeout } from "../timeout-config"
 import * as vscode from "vscode"
 
+import { Package } from "../../../../shared/package" // kilocode_change
+
 // Mock vscode
 vitest.mock("vscode", () => ({
 	workspace: {
@@ -28,7 +30,7 @@ describe("getApiRequestTimeout", () => {
 
 		const timeout = getApiRequestTimeout()
 
-		expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("kilo-code")
+		expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith(Package.name) // kilocode_change
 		expect(mockGetConfig).toHaveBeenCalledWith("apiRequestTimeout", 600)
 		expect(timeout).toBe(600000) // 600 seconds in milliseconds
 	})

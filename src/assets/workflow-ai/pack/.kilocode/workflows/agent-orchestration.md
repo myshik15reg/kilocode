@@ -1,148 +1,75 @@
-# Рабочий процесс: Оркестрация агентов (agent-orchestration)
+﻿# Workflow: agent-orchestration
 
-> Критично: WorkFlowAI использует мультиагентный подход. В Kilo Code агенты реализованы как **режимы**, описанные в `.kilocodemodes`.
->
-> Делегирование задач между агентами делай через `new_task`. Не переключай режим внутри одной задачи через `switch_mode` - создавай новую подзадачу через `new_task`. Для Codex CLI допустима роль-петля в одной сессии.
+## Goal
 
-## Цель
-Организовать сложную работу так, чтобы:
-- каждая подзадача выполнялась подходящим режимом (агентом),
-- контекст не раздувался (изоляция подзадач),
-- качество контролировалось на каждом этапе (TDD + 100% покрытие + lint без ошибок/предупреждений + безопасность),
-- решения фиксировались в протоколе.
+Coordinate complex work across multiple modes without bloating context, duplicating effort, or losing verification.
 
-## Когда использовать
-Обязательно:
-- задача включает несколько фаз (анализ -> дизайн -> реализация -> тесты -> ревью),
-- нужна разная экспертиза (архитектура/безопасность/тестирование/инфраструктура),
-- проект на нескольких языках/технологиях,
-- изменения затрагивают критичные зоны (аутентификация/авторизация, платежи, безопасность, данные).
+## Use when
 
-Не нужно:
-- тривиальный фикс в одном файле, не более 10 строк, без изменения поведения,
-- разовая правка документации,
-- локальная косметика без риска.
-Примечание: даже если оркестрация не нужна, протокол обязателен всегда.
+Use this workflow when at least one of these is true:
 
-## Шаги
+- the task spans multiple phases such as planning, implementation, testing, and review
+- the task requires different specialist modes
+- the task touches multiple subsystems with different risks
+- a single agent would need too much context to work safely
 
-### 1) Анализ задачи (orchestrator)
-Режим: `orchestrator`
+Do not use orchestration for trivial one-file or low-risk edits. In those cases, prefer [`quick-fix.md`](quick-fix.md:1) or a single specialist mode.
 
-Задача orchestrator:
-- понять цель, ограничения и риски,
-- определить, нужна ли оркестрация,
-- накидать план и список подзадач,
-- выбрать порядок (и где можно параллелить).
+## Core rules
 
-Мини-шаблон сообщения для orchestrator:
-```
-Цель: [что нужно получить]
-Контекст: [что уже есть / где смотреть]
-Ограничения: [сроки, запреты, инструменты, качество]
-Критерии готовности: [как поймём, что готово]
-```
+1. `orchestrator` classifies, routes, and integrates; it should not become the main implementation worker.
+2. Delegation must use `new_task` with the canonical handoff from [`../patterns/orchestration/context-handoff.md`](../patterns/orchestration/context-handoff.md:1).
+3. Every repo-changing task still needs a protocol. See [`protocol-new.md`](protocol-new.md:1).
+4. Each subtask should have one clear goal, one target mode, and one verification method.
+5. Keep handoffs narrow; pass only the files and facts needed for the next step.
 
-### 2) Декомпозиция (decomposer)
-Режим: `decomposer`
+## Recommended flow
 
-Задача decomposer:
-- разбить работу на атомарные шаги (одна подзадача -> один результат),
-- указать зависимости (что блокирует что),
-- предложить подходящие режимы (агентов) под каждую подзадачу.
+| Step | Owner                 | Outcome                                                                 |
+| ---- | --------------------- | ----------------------------------------------------------------------- |
+| 1    | `orchestrator`        | classify task, risks, and required specialists                          |
+| 2    | `architect` if needed | create or refine protocol and plan                                      |
+| 3    | specialist mode       | perform the focused implementation or analysis                          |
+| 4    | testing / review mode | verify result against the plan                                          |
+| 5    | `orchestrator`        | integrate outputs and decide next step                                  |
+| 6    | close workflow        | finish through [`protocol-review-merge.md`](protocol-review-merge.md:1) |
 
-Формат результата (пример):
-```
-Подзадача 1: Дизайн API (api-architect) [P0, блокирует 2/3]
-Подзадача 2: План безопасности (security-auditor) [P0, блокирует 3]
-Подзадача 3: Реализация (nodejs-dev) [P1]
-Подзадача 4: Тесты (integration-tester + security-tester) [P1]
-Подзадача 5: Ревью (reviewer) [P2]
-```
+## Handoff checklist
 
-### 3) Выбор режима (агента)
-Подбор делай по двум осям: тип задачи и стек.
+Before sending `new_task`, ensure the message includes:
 
-По типу задачи (пример):
-| Тип задачи | Режим | Результат |
-|---|---|---|
-| Требования | `business-analyst` | список требований/ограничений |
-| Архитектура | `architect` / `solution-architect` | дизайн + план реализации |
-| Безопасность | `security-auditor` | риски + рекомендации + чеклист |
-| Реализация | `*-dev` | изменения в коде |
-| Тесты | `unit-tester` / `integration-tester` / `e2e-tester` | тесты + покрытие |
-| Ревью | `reviewer` | отчёт о замечаниях и рисках |
+- `ROOT`
+- `PROTOCOL`
+- `ORIGIN`
+- `GOAL`
+- minimal `INPUTS`
+- explicit `CONSTRAINTS`
+- `OUT OF SCOPE`
+- `VERIFY`
+- `EXPECTED OUTPUT`
 
-По стеку (пример):
-| Стек | Режим |
-|---|---|
-| Python | `python-dev` |
-| Node.js | `nodejs-dev` |
-| 1C | `1c-developer` |
+## Context economy rules
 
-### 4) Запуск подзадач (new_task)
-Правила:
-- одна подзадача -> один чёткий результат,
-- минимально необходимый контекст (ссылки на файлы через `@/path`),
-- после каждой подзадачи: короткое резюме + что делать дальше.
+1. Prefer source-of-truth links over copied prose.
+2. Pass the smallest relevant file set.
+3. Separate assumptions from facts.
+4. Do not forward stale protocol notes unless they still matter.
+5. If a long explanation is needed, summarize it as a capsule first.
 
-Если подзадачи независимы - запускай параллельно (в Kilo Code CLI/Agent Manager или через отдельные сессии).
+## Failure modes to avoid
 
-### 5) Передача контекста между подзадачами
-Контекст не наследуется автоматически: то, что ты передашь в сообщение подзадаче и то, что вернётся в финальном резюме - это и есть канал связи.
+- orchestration for a trivial task
+- delegating without a measurable goal
+- passing the whole repository as context
+- allowing multiple agents to change the same area without coordination
+- skipping reviewer or tester steps on risky changes
+- switching modes informally instead of using `new_task`
 
-Шаблон сообщения в подзадачу:
-```
-Контекст:
-- репозиторий/папки: [что именно]
-- релевантные файлы: @/path/to/file.ts @/path/to/other.md
-- ограничения: [что важно учесть]
+## Exit condition
 
-Задача:
-- [1-3 пункта, максимально конкретно]
+This workflow is complete when:
 
-Ожидаемый результат:
-- [что именно должно быть сделано/создано]
-
-Критерии готовности:
-- тесты/линт/проверки, которые должны пройти
-```
-
-### 6) Гейты качества (на каждом этапе)
-Минимальный набор:
-- тесты написаны до/вместе с кодом (TDD),
-- покрытие 100% (lines/branches/functions),
-- lint: 0 ошибок / 0 предупреждений,
-- нет `TODO` без тикета,
-- чеклист безопасности пройден (минимум: ввод/валидация, авторизация, секреты, зависимости).
-
-В работе по протоколу (всегда):
-- обновляй `.protocols/.../plan.md` после каждого шага,
-- фиксируй ключевые решения в `.protocols/.../execution.md`.
-
-### 7) Сборка результата и закрытие
-Orchestrator собирает результаты:
-- сводит решения в единый план,
-- устраняет конфликты между выводами агентов,
-- проверяет гейты качества,
-- обновляет индексы/документацию (если нужно),
-- предлагает обновление Memory Bank.
-
-## Анти-паттерны
-- Оркестрация ради оркестрации: мультиагентность для тривиальной задачи.
-- Грязный контекст: передача всей кодовой базы вместо точечных файлов.
-- Без доказательств: утверждать, что тесты проходят, не запуская и не показывая вывод.
-- Переключение режимов внутри одной задачи в Kilo Code: вместо этого делай `new_task` (в Codex CLI допустим role-loop).
-
-## Диагностика (если что-то идёт не так)
-- Агент не понимает задачу -> сократи формулировку, добавь конкретные файлы через `@`, попроси decomposer.
-- Агент начинает выдумывать -> включи проверку по файлам/командам, добавь ограничения, используй reviewer.
-- Конфликты решений -> вынеси в orchestrator: он должен выбрать и зафиксировать одно решение.
-- Долго/дорого -> дроби задачу, уменьши контекст, используй более дешёвые модели на этапах `ask`/обзор.
-
-## Ссылки
-- `AGENTS.md`
-- `.kilocodemodes`
-- `~/.kilocode/workflows/orchestration-troubleshooting.md`
-- `~/.kilocode/workflows/protocol-new.md`
-- `~/.kilocode/workflows/overview.md`
+- the required specialists have finished their scoped work
+- verification is complete
+- protocol status is accurate
+- any durable project knowledge has been moved out of the protocol if needed

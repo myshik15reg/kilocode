@@ -99,7 +99,8 @@
 			"errorOutput": "Вывод ошибки: {{output}}",
 			"processExitedWithError": "Процесс Claude Code завершился с кодом {{exitCode}}. Вывод ошибки: {{output}}",
 			"stoppedWithReason": "Claude Code остановился по причине: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
+			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
+			"notAuthenticated": "Не выполнен вход в Claude Code. Войдите через OAuth-поток Claude Code."
 		},
 		"message": {
 			"no_active_task_to_delete": "Нет активной задачи для удаления сообщений",
@@ -144,7 +145,7 @@
 		"manual_url_auth_failed": "Ручная аутентификация по URL не удалась",
 		"manual_url_auth_error": "Аутентификация не удалась",
 		"openAiCodex": {
-			"notAuthenticated": "Not authenticated with OpenAI Codex. Please sign in using the OpenAI Codex OAuth flow.",
+			"notAuthenticated": "Не выполнен вход в OpenAI Codex. Войдите через OAuth-поток OpenAI Codex.",
 			"invalidRequest": "Invalid request to Codex API. Please check your input parameters.",
 			"authenticationFailed": "Authentication failed. Please re-authenticate with OpenAI Codex.",
 			"accessDenied": "Access denied. Your ChatGPT subscription may not include Codex access.",
@@ -208,8 +209,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Введите пользовательский путь хранения истории разговоров, оставьте пустым для использования расположения по умолчанию",
-		"path_placeholder": "D:\\KiloCodeStorage",
-		"enter_absolute_path": "Пожалуйста, введите абсолютный путь (например, D:\\KiloCodeStorage или /home/user/storage)",
+		"path_placeholder": "D:\\AlfaCodeAssistantStorage",
+		"enter_absolute_path": "Пожалуйста, введите абсолютный путь (например, D:\\AlfaCodeAssistantStorage или /home/user/storage)",
 		"enter_valid_path": "Пожалуйста, введите корректный путь"
 	},
 	"input": {

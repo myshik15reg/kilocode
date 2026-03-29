@@ -58,6 +58,17 @@ vi.mock("@src/components/history/HistoryView", () => ({
 	},
 }))
 
+vi.mock("@src/components/tech-debt/TechDebtView", () => ({
+	__esModule: true,
+	default: function TechDebtView({ onDone }: { onDone: () => void }) {
+		return (
+			<div data-testid="tech-debt-view" onClick={onDone}>
+				Tech Debt View
+			</div>
+		)
+	},
+}))
+
 vi.mock("../components/kilocodeMcp/marketplace/McpMarketplaceView", () => ({
 	__esModule: true,
 	default: function McpMarketplaceView() {
@@ -227,6 +238,27 @@ describe("App", () => {
 
 		const historyView = await screen.findByTestId("history-view")
 		expect(historyView).toBeInTheDocument()
+
+		const chatView = screen.getByTestId("chat-view")
+		expect(chatView.getAttribute("data-hidden")).toBe("true")
+	})
+
+	it("switches to tech debt view when receiving switchTab techDebt action", async () => {
+		render(<AppWithProviders />)
+
+		act(() => {
+			const messageEvent = new MessageEvent("message", {
+				data: {
+					type: "action",
+					action: "switchTab",
+					tab: "techDebt",
+				},
+			})
+			window.dispatchEvent(messageEvent)
+		})
+
+		const techDebtView = await screen.findByTestId("tech-debt-view")
+		expect(techDebtView).toBeInTheDocument()
 
 		const chatView = screen.getByTestId("chat-view")
 		expect(chatView.getAttribute("data-hidden")).toBe("true")

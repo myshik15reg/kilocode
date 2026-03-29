@@ -15,6 +15,11 @@ import {
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
+import { Package } from "../../../shared/package" // kilocode_change
+
+import * as taskBirthOrchestrationService from "../../orchestration/task-control/TaskBirthOrchestrationService"
+import { TaskBranchService } from "../../orchestration/task-control/TaskBranchService"
+
 import { defaultModeSlug } from "../../../shared/modes"
 import { experimentDefault } from "../../../shared/experiments"
 import { setTtsEnabled } from "../../../utils/tts"
@@ -24,6 +29,7 @@ import { safeWriteJson } from "../../../utils/safeWriteJson"
 
 import { ClineProvider } from "../ClineProvider"
 import { MessageManager } from "../../message-manager"
+import { orchestrationEventStore } from "../../orchestration/events/store"
 
 // Mock setup must come before imports.
 vi.mock("../../prompts/sections/custom-instructions")
@@ -520,6 +526,21 @@ describe("ClineProvider", () => {
 		expect(mockWebviewView.webview.html).toContain("<!DOCTYPE html>")
 	})
 
+	test("resolveWebviewView does not abort active root task on reopen", async () => {
+		const mockCline = new Task(defaultTaskOptions) as any
+		mockCline.taskId = "root-task-open"
+		;(mockWebviewView.onDidDispose as any) = vi.fn().mockImplementation(() => ({ dispose: vi.fn() }))
+
+		await provider.addClineToStack(mockCline)
+		vi.mocked(mockCline.abortTask).mockClear()
+		await provider.resolveWebviewView(mockWebviewView)
+
+		expect(mockCline.abortTask).not.toHaveBeenCalled()
+		expect(provider.getCurrentTask()?.taskId).toBe("root-task-open")
+		expect((provider as any).backgroundRootTaskStacks.has("root-task-open")).toBe(true)
+		expect((provider as any).focusedRootTaskId).toBe("root-task-open")
+	})
+
 	test("resolveWebviewView sets up webview correctly in development mode even if local server is not running", async () => {
 		provider = new ClineProvider(
 			{ ...mockContext, extensionMode: vscode.ExtensionMode.Development },
@@ -677,6 +698,102 @@ describe("ClineProvider", () => {
 		expect(stackSizeBeforeAbort - stackSizeAfterAbort).toBe(1)
 	})
 
+	test("clearTask moves root task to background without aborting it", async () => {
+		const mockCline = new Task(defaultTaskOptions) as any
+		mockCline.taskId = "root-task-1"
+
+		await provider.addClineToStack(mockCline)
+		await provider.clearTask()
+
+		expect(mockCline.abortTask).not.toHaveBeenCalled()
+		expect(provider.getTaskStackSize()).toBe(0)
+		expect((provider as any).backgroundRootTaskStacks.has("root-task-1")).toBe(true)
+	})
+
+	test("showTaskWithId restores a background root task stack", async () => {
+		const mockCline = new Task(defaultTaskOptions) as any
+		mockCline.taskId = "root-task-restore"
+
+		await provider.addClineToStack(mockCline)
+		await provider.clearTask()
+		;(provider as any).getTaskWithId = vi.fn().mockResolvedValue({
+			historyItem: { id: "root-task-restore", task: "Restore me", number: 1 },
+		})
+
+		await provider.showTaskWithId("root-task-restore")
+
+		expect(provider.getCurrentTask()).toBeTruthy()
+		expect(provider.getCurrentTask()?.taskId).toBe("root-task-restore")
+	})
+
+	// kilocode_change start
+	test("showTaskWithId marks task status as viewed", async () => {
+		const before = Date.now()
+		await provider.contextProxy.initialize()
+		await provider.contextProxy.setValue("taskHistory", [
+			{
+				id: "task-viewed",
+				number: 1,
+				task: "Viewed task",
+				ts: before - 1000,
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				status: "completed",
+				statusUpdatedAt: before,
+			},
+		])
+		;(provider as any).getTaskWithId = vi.fn().mockResolvedValue({
+			historyItem: { id: "task-viewed", task: "Viewed task", number: 1 },
+		})
+		;(provider as any).createTaskWithHistoryItem = vi.fn().mockResolvedValue(undefined)
+
+		await provider.showTaskWithId("task-viewed")
+
+		const updatedHistory = ((provider as any).getGlobalState("taskHistory") as any[]) ?? []
+		expect(updatedHistory[0]?.lastStatusViewedAt).toBeGreaterThanOrEqual(before)
+		expect(updatedHistory[0]?.lastStatusViewedAt).toBeGreaterThanOrEqual(updatedHistory[0]?.statusUpdatedAt)
+	})
+	// kilocode_change end
+
+	test("clearTask switches focus to another active root task when available", async () => {
+		const firstRoot = new Task(defaultTaskOptions) as any
+		firstRoot.taskId = "root-task-1"
+		const secondRoot = new Task(defaultTaskOptions) as any
+		secondRoot.taskId = "root-task-2"
+
+		await provider.addClineToStack(firstRoot)
+		await provider.clearTask()
+		expect((provider as any).backgroundRootTaskStacks.has("root-task-1")).toBe(true)
+
+		await provider.addClineToStack(secondRoot)
+		await provider.clearTask()
+
+		expect(provider.getCurrentTask()?.taskId).toBe("root-task-1")
+		expect((provider as any).focusedRootTaskId).toBe("root-task-1")
+		expect((provider as any).backgroundRootTaskStacks.has("root-task-2")).toBe(true)
+	})
+
+	// kilocode_change start
+	test("closeTaskToHistory keeps active roots in background and clears focused root", async () => {
+		const firstRoot = new Task(defaultTaskOptions) as any
+		firstRoot.taskId = "root-task-1"
+		const secondRoot = new Task(defaultTaskOptions) as any
+		secondRoot.taskId = "root-task-2"
+
+		await provider.addClineToStack(firstRoot)
+		await provider.clearTask()
+		await provider.addClineToStack(secondRoot)
+
+		await provider.closeTaskToHistory()
+
+		expect(provider.getCurrentTask()).toBeUndefined()
+		expect((provider as any).focusedRootTaskId).toBeUndefined()
+		expect((provider as any).backgroundRootTaskStacks.has("root-task-1")).toBe(true)
+		expect((provider as any).backgroundRootTaskStacks.has("root-task-2")).toBe(true)
+	})
+	// kilocode_change end
+
 	describe("clearTask message handler", () => {
 		beforeEach(async () => {
 			await provider.resolveWebviewView(mockWebviewView)
@@ -774,6 +891,28 @@ describe("ClineProvider", () => {
 			// clearTask should be called (delegation handled via metadata)
 			expect(clearTaskSpy).toHaveBeenCalled()
 		})
+
+		// kilocode_change start
+		test("closeTaskToHistory returns webview to chat without selecting another task", async () => {
+			const mockCline = new Task(defaultTaskOptions)
+
+			const closeTaskToHistorySpy = vi.spyOn(provider, "closeTaskToHistory").mockResolvedValue(undefined)
+			const postStateToWebviewSpy = vi.spyOn(provider, "postStateToWebview").mockResolvedValue(undefined)
+			const postMessageToWebviewSpy = vi
+				.spyOn(provider, "postMessageToWebview")
+				.mockResolvedValue(undefined as any)
+
+			await provider.addClineToStack(mockCline)
+
+			const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
+
+			await messageHandler({ type: "closeTaskToHistory" })
+
+			expect(closeTaskToHistorySpy).toHaveBeenCalled()
+			expect(postStateToWebviewSpy).toHaveBeenCalled()
+			expect(postMessageToWebviewSpy).toHaveBeenCalledWith({ type: "action", action: "chatButtonClicked" })
+		})
+		// kilocode_change end
 	})
 
 	test("addClineToStack adds multiple Cline instances to the stack", async () => {
@@ -811,6 +950,556 @@ describe("ClineProvider", () => {
 		expect(state).toHaveProperty("writeDelayMs")
 	})
 
+	test("getStateToPostToWebview merges persisted and live current task activity through the canonical projection", async () => {
+		await provider.contextProxy.initialize()
+		await provider.contextProxy.setValue("taskHistory", [
+			{
+				id: "task-activity-1",
+				number: 1,
+				task: "Projection task",
+				ts: 1,
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				activity: [
+					{
+						kind: "taskControl",
+						id: "control-branch",
+						taskId: "task-activity-1",
+						control: "branch",
+						summary: "Task branched",
+						timestamp: 300,
+					},
+					{
+						kind: "subagent",
+						id: "subagent-shared",
+						taskId: "task-activity-1",
+						sessionId: "session-1",
+						status: "completed",
+						summary: "Persisted completed child",
+						timestamp: 200,
+					},
+				],
+			},
+		])
+
+		const mockTask = new Task(defaultTaskOptions) as any
+		Object.defineProperty(mockTask, "taskId", { value: "task-activity-1", writable: true })
+		Object.defineProperty(mockTask, "clineMessages", { value: [], writable: true })
+		Object.defineProperty(mockTask, "todoList", { value: [], writable: true })
+		Object.defineProperty(mockTask, "messageQueueService", { value: undefined, writable: true })
+		provider.getCurrentTask = vi.fn().mockReturnValue(mockTask)
+		orchestrationEventStore.clear("task-activity-1")
+		orchestrationEventStore.append("task-activity-1", {
+			kind: "subagent",
+			id: "subagent-shared",
+			taskId: "task-activity-1",
+			sessionId: "session-1",
+			status: "running",
+			summary: "Live running child",
+			timestamp: 200,
+		})
+		orchestrationEventStore.append("task-activity-1", {
+			kind: "taskControl",
+			id: "control-continue",
+			taskId: "task-activity-1",
+			control: "continue",
+			summary: "Task continued",
+			timestamp: 100,
+		})
+
+		const state = await provider.getStateToPostToWebview()
+
+		expect(state.currentTaskActivity).toEqual([
+			expect.objectContaining({ id: "control-continue", control: "continue", summary: "Task continued" }),
+			expect.objectContaining({ id: "subagent-shared", status: "running", summary: "Live running child" }),
+			expect.objectContaining({ id: "control-branch", control: "branch", summary: "Task branched" }),
+		])
+
+		orchestrationEventStore.clear("task-activity-1")
+	})
+
+	test("getStateToPostToWebview keeps focused recovery activity scoped to the restored current task", async () => {
+		await provider.contextProxy.initialize()
+		await provider.contextProxy.setValue("taskHistory", [
+			{
+				id: "parent-restore",
+				number: 1,
+				task: "Recovered parent",
+				ts: 1,
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				activity: [
+					{
+						kind: "taskControl",
+						id: "parent-branch",
+						taskId: "parent-restore",
+						control: "branch",
+						summary: "Parent branched before reload",
+						timestamp: 300,
+					},
+					{
+						kind: "subagent",
+						id: "shared-child",
+						taskId: "parent-restore",
+						sessionId: "session-restore",
+						status: "completed",
+						summary: "Persisted child completed",
+						timestamp: 200,
+					},
+				],
+			},
+			{
+				id: "child-bg",
+				number: 2,
+				task: "Recovered background child",
+				ts: 2,
+				rootTaskId: "parent-restore",
+				parentTaskId: "parent-restore",
+				status: "active",
+				lifecycleState: "paused",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				activity: [
+					{
+						kind: "taskControl",
+						id: "child-pause",
+						taskId: "child-bg",
+						control: "pause",
+						summary: "Child paused in its own history",
+						timestamp: 500,
+					},
+				],
+			},
+		])
+
+		const restoredParent = new Task(defaultTaskOptions) as any
+		Object.defineProperty(restoredParent, "taskId", { value: "parent-restore", writable: true })
+		Object.defineProperty(restoredParent, "clineMessages", { value: [], writable: true })
+		Object.defineProperty(restoredParent, "todoList", { value: [], writable: true })
+		Object.defineProperty(restoredParent, "messageQueueService", { value: undefined, writable: true })
+
+		const backgroundChild = new Task(defaultTaskOptions) as any
+		Object.defineProperty(backgroundChild, "taskId", { value: "child-bg", writable: true })
+		Object.defineProperty(backgroundChild, "clineMessages", { value: [], writable: true })
+		Object.defineProperty(backgroundChild, "todoList", { value: [], writable: true })
+		Object.defineProperty(backgroundChild, "messageQueueService", { value: undefined, writable: true })
+		;(provider as any).clineStack = [restoredParent]
+		;(provider as any).backgroundRootTaskStacks = new Map([
+			["parent-restore", [restoredParent]],
+			["child-bg", [backgroundChild]],
+		])
+		;(provider as any).focusedRootTaskId = "parent-restore"
+		provider.getCurrentTask = vi.fn().mockReturnValue(restoredParent)
+
+		orchestrationEventStore.clear("parent-restore")
+		orchestrationEventStore.clear("child-bg")
+		orchestrationEventStore.append("parent-restore", {
+			kind: "subagent",
+			id: "shared-child",
+			taskId: "parent-restore",
+			sessionId: "session-restore",
+			status: "paused",
+			summary: "Recoverable child paused",
+			timestamp: 200,
+		})
+		orchestrationEventStore.append("parent-restore", {
+			kind: "taskControl",
+			id: "parent-continue",
+			taskId: "parent-restore",
+			control: "continue",
+			summary: "Parent continued after reload",
+			timestamp: 100,
+		})
+		orchestrationEventStore.append("child-bg", {
+			kind: "taskControl",
+			id: "child-continue",
+			taskId: "child-bg",
+			control: "continue",
+			summary: "Background child continued",
+			timestamp: 600,
+		})
+
+		const state = await provider.getStateToPostToWebview()
+
+		expect(state.focusedRootTaskId).toBe("parent-restore")
+		expect(state.currentTaskActivity).toEqual([
+			expect.objectContaining({ id: "parent-continue", taskId: "parent-restore", control: "continue" }),
+			expect.objectContaining({ id: "shared-child", taskId: "parent-restore", status: "paused" }),
+			expect.objectContaining({ id: "parent-branch", taskId: "parent-restore", control: "branch" }),
+		])
+		expect((state.currentTaskActivity ?? []).every((item) => item.taskId === "parent-restore")).toBe(true)
+
+		orchestrationEventStore.clear("parent-restore")
+		orchestrationEventStore.clear("child-bg")
+	})
+
+	test("recordTaskActivity persists published control activity so recovery survives live store reset", async () => {
+		await provider.contextProxy.initialize()
+		await provider.contextProxy.setValue("taskHistory", [
+			{
+				id: "task-publish-restore",
+				number: 1,
+				task: "Recoverable publish task",
+				ts: 1,
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+			},
+		])
+
+		const mockTask = new Task(defaultTaskOptions) as any
+		Object.defineProperty(mockTask, "taskId", { value: "task-publish-restore", writable: true })
+		Object.defineProperty(mockTask, "clineMessages", { value: [], writable: true })
+		Object.defineProperty(mockTask, "todoList", { value: [], writable: true })
+		Object.defineProperty(mockTask, "messageQueueService", { value: undefined, writable: true })
+		provider.getCurrentTask = vi.fn().mockReturnValue(mockTask)
+		vi.spyOn(provider as any, "getTaskWithId").mockImplementation(async (...args: unknown[]) => {
+			const id = args[0] as string
+			const taskHistory = provider.contextProxy.getValue("taskHistory") ?? []
+			const historyItem = taskHistory.find((item: any) => item.id === id)
+			if (!historyItem) {
+				throw new Error("Task not found")
+			}
+
+			return {
+				historyItem,
+				taskDirPath: "/test/task/path",
+				apiConversationHistoryFilePath: "/test/task/path/api_conversation_history.json",
+				uiMessagesFilePath: "/test/task/path/ui_messages.json",
+				apiConversationHistory: [],
+			}
+		})
+
+		await provider.recordTaskActivity("task-publish-restore", {
+			kind: "taskControl",
+			id: "publish-continue",
+			taskId: "task-publish-restore",
+			control: "continue",
+			summary: "Task continued",
+			timestamp: 100,
+		})
+		await provider.recordTaskActivity("task-publish-restore", {
+			kind: "taskControl",
+			id: "publish-branch",
+			taskId: "task-publish-restore",
+			control: "branch",
+			summary: "Task branched",
+			timestamp: 200,
+		})
+
+		orchestrationEventStore.clear("task-publish-restore")
+		const state = await provider.getStateToPostToWebview()
+
+		expect(state.currentTaskActivity).toEqual([
+			expect.objectContaining({ id: "publish-continue", taskId: "task-publish-restore", control: "continue" }),
+			expect.objectContaining({ id: "publish-branch", taskId: "task-publish-restore", control: "branch" }),
+		])
+	})
+
+	// kilocode_change start - prove dedup survives provider persistence and live-store recovery
+	test("recordTaskActivity deduplicates persisted activity ids so recovery readback stays stable", async () => {
+		await provider.contextProxy.initialize()
+		await provider.contextProxy.setValue("taskHistory", [
+			{
+				id: "task-publish-dedup",
+				number: 1,
+				task: "Recoverable dedup task",
+				ts: 1,
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+			},
+		])
+
+		const mockTask = new Task(defaultTaskOptions) as any
+		Object.defineProperty(mockTask, "taskId", { value: "task-publish-dedup", writable: true })
+		Object.defineProperty(mockTask, "clineMessages", { value: [], writable: true })
+		Object.defineProperty(mockTask, "todoList", { value: [], writable: true })
+		Object.defineProperty(mockTask, "messageQueueService", { value: undefined, writable: true })
+		provider.getCurrentTask = vi.fn().mockReturnValue(mockTask)
+		vi.spyOn(provider as any, "getTaskWithId").mockImplementation(async (...args: unknown[]) => {
+			const id = args[0] as string
+			const taskHistory = provider.contextProxy.getValue("taskHistory") ?? []
+			const historyItem = taskHistory.find((item: any) => item.id === id)
+			if (!historyItem) {
+				throw new Error("Task not found")
+			}
+
+			return {
+				historyItem,
+				taskDirPath: "/test/task/path",
+				apiConversationHistoryFilePath: "/test/task/path/api_conversation_history.json",
+				uiMessagesFilePath: "/test/task/path/ui_messages.json",
+				apiConversationHistory: [],
+			}
+		})
+
+		const duplicateActivity = {
+			kind: "subagent" as const,
+			id: "subagent-child-1-100",
+			taskId: "child-1",
+			sessionId: "session-1",
+			status: "completed" as const,
+			summary: "Done",
+			timestamp: 100,
+		}
+
+		await provider.recordTaskActivity("task-publish-dedup", duplicateActivity)
+		await provider.recordTaskActivity("task-publish-dedup", duplicateActivity)
+
+		const persistedHistory = provider.contextProxy.getValue("taskHistory") ?? []
+		expect(persistedHistory.find((item: any) => item.id === "task-publish-dedup")?.activity).toEqual([
+			duplicateActivity,
+		])
+
+		orchestrationEventStore.clear("task-publish-dedup")
+		const state = await provider.getStateToPostToWebview()
+
+		expect(state.currentTaskActivity ?? []).toEqual([
+			expect.objectContaining({
+				id: "subagent-child-1-100",
+				taskId: "child-1",
+				sessionId: "session-1",
+				status: "completed",
+			}),
+		])
+	})
+	// kilocode_change end
+
+	/**
+	 * Verifies the branch write seam end-to-end for the source task by asserting the
+	 * same branch control item is visible before and after live store reset.
+	 */
+	it("branchTask persists published branch activity so reload uses the same source-task projection", async () => {
+		const timestamp = 123
+		vi.spyOn(Date, "now").mockReturnValue(timestamp)
+
+		await provider.contextProxy.initialize()
+		await provider.contextProxy.setValue("taskHistory", [
+			{
+				id: "task-branch-source",
+				number: 1,
+				task: "Recoverable branch source",
+				ts: 1,
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				completionResultSummary: "Continue from current context",
+			},
+		])
+
+		const sourceTask = new Task(defaultTaskOptions) as any
+		Object.defineProperty(sourceTask, "taskId", { value: "task-branch-source", writable: true })
+		Object.defineProperty(sourceTask, "clineMessages", { value: [], writable: true })
+		Object.defineProperty(sourceTask, "todoList", { value: [], writable: true })
+		Object.defineProperty(sourceTask, "messageQueueService", { value: undefined, writable: true })
+		provider.getCurrentTask = vi.fn().mockReturnValue(sourceTask)
+		;(provider as any).taskBranchService = new TaskBranchService(provider as any)
+
+		const branchedTask = new Task(defaultTaskOptions) as any
+		Object.defineProperty(branchedTask, "taskId", { value: "task-branch-child", writable: true })
+
+		vi.spyOn(provider, "createTask").mockResolvedValue(branchedTask)
+		vi.spyOn(provider, "getState").mockResolvedValue({
+			apiConfiguration: {
+				apiProvider: "openrouter",
+			},
+			condensingApiConfigId: undefined,
+			listApiConfigMeta: undefined,
+		} as any)
+		vi.spyOn(provider as any, "postStateToWebview").mockResolvedValue(undefined)
+		vi.spyOn(provider as any, "getTaskWithId").mockImplementation(async (...args: unknown[]) => {
+			const id = args[0] as string
+			if (id === "task-branch-child") {
+				return {
+					historyItem: {
+						id: "task-branch-child",
+						number: 2,
+						task: "Recovered branch child",
+						ts: 2,
+						tokensIn: 0,
+						tokensOut: 0,
+						totalCost: 0,
+					},
+					taskDirPath: "/test/task/path",
+					apiConversationHistoryFilePath: "/test/task/path/api_conversation_history.json",
+					uiMessagesFilePath: "/test/task/path/ui_messages.json",
+					apiConversationHistory: [],
+				}
+			}
+
+			const taskHistory = provider.contextProxy.getValue("taskHistory") ?? []
+			const historyItem = taskHistory.find((item: any) => item.id === id)
+			if (!historyItem) {
+				throw new Error("Task not found")
+			}
+
+			return {
+				historyItem,
+				taskDirPath: "/test/task/path",
+				apiConversationHistoryFilePath: "/test/task/path/api_conversation_history.json",
+				uiMessagesFilePath: "/test/task/path/ui_messages.json",
+				apiConversationHistory: [],
+			}
+		})
+
+		orchestrationEventStore.clear("task-branch-source")
+
+		const branchTaskServiceSpy = vi.spyOn((provider as any).taskBranchService, "branchTask")
+
+		const branched = await provider.branchTask("task-branch-source", {
+			branchStrategy: "full",
+			message: "Continue from current context",
+		})
+
+		expect(branchTaskServiceSpy).toHaveBeenCalledWith("task-branch-source", {
+			branchStrategy: "full",
+			message: "Continue from current context",
+		})
+		expect(branched.taskId).toBe("task-branch-child")
+		expect(orchestrationEventStore.get("task-branch-source")).toEqual([
+			expect.objectContaining({
+				id: `task-control-branch-${timestamp}`,
+				taskId: "task-branch-source",
+				control: "branch",
+				summary: "Branched into task task-branch-child",
+				timestamp,
+			}),
+		])
+
+		let state = await provider.getStateToPostToWebview()
+		expect(state.currentTaskActivity).toEqual([
+			expect.objectContaining({
+				id: `task-control-branch-${timestamp}`,
+				taskId: "task-branch-source",
+				control: "branch",
+				summary: "Branched into task task-branch-child",
+			}),
+		])
+
+		orchestrationEventStore.clear("task-branch-source")
+		state = await provider.getStateToPostToWebview()
+		expect(state.currentTaskActivity).toEqual([
+			expect.objectContaining({
+				id: `task-control-branch-${timestamp}`,
+				taskId: "task-branch-source",
+				control: "branch",
+				summary: "Branched into task task-branch-child",
+			}),
+		])
+
+		const taskHistory = provider.contextProxy.getValue("taskHistory") ?? []
+		const sourceHistory = taskHistory.find((item: any) => item.id === "task-branch-source")
+		const branchHistory = taskHistory.find((item: any) => item.id === "task-branch-child")
+
+		expect(sourceHistory?.activity).toEqual([
+			expect.objectContaining({
+				id: `task-control-branch-${timestamp}`,
+				taskId: "task-branch-source",
+				control: "branch",
+				summary: "Branched into task task-branch-child",
+			}),
+		])
+		expect(branchHistory).toEqual(
+			expect.objectContaining({
+				id: "task-branch-child",
+				branchFromTaskId: "task-branch-source",
+				branchSummary: "Branch of task task-branch-source: Continue from current context",
+				branchStrategy: "full",
+			}),
+		)
+	})
+
+	// kilocode_change start
+	describe("createTask policy seam", () => {
+		test("top-level create delegates to the birth service and places the created task", async () => {
+			const admission = { rootTask: undefined, taskNumber: 1 }
+			const admitFreshTask = vi.fn().mockReturnValue(admission)
+			const instantiateFreshTask = vi.fn().mockReturnValue({ taskId: "created-top", instanceId: "inst" })
+			const placeTask = vi.fn().mockResolvedValue("created-top")
+			const prepareTaskBirthOrchestration = vi
+				.spyOn(taskBirthOrchestrationService, "prepareTaskBirthOrchestration")
+				.mockResolvedValueOnce({
+					admitFreshTask,
+					instantiateFreshTask,
+					instantiateHistoryTask: vi.fn(),
+					placeTask,
+				})
+			await provider.resolveWebviewView(mockWebviewView)
+
+			const task = await provider.createTask("Top-level task")
+
+			expect(prepareTaskBirthOrchestration).toHaveBeenCalledWith({
+				context: (provider as any).context,
+				provider,
+				taskCreationCallback: (provider as any).taskCreationCallback,
+				getState: expect.any(Function),
+				getCurrentStack: expect.any(Function),
+				setCurrentStack: expect.any(Function),
+				snapshotCurrentStackToBackground: expect.any(Function),
+				addClineToStack: expect.any(Function),
+				rootStackLifecycle: (provider as any).taskRootStackLifecycleService,
+				log: expect.any(Function),
+			})
+			expect(admitFreshTask).toHaveBeenCalledWith({
+				parentTask: undefined,
+				detachFromParentRoot: undefined,
+			})
+			expect(instantiateFreshTask).toHaveBeenCalledWith({
+				text: "Top-level task",
+				images: undefined,
+				parentTask: undefined,
+				options: {},
+				admission,
+			})
+			expect(placeTask).toHaveBeenCalledWith({
+				task: expect.objectContaining({ taskId: "created-top" }),
+				logContext: "createTask",
+			})
+			expect(task).toEqual(expect.objectContaining({ taskId: "created-top" }))
+		})
+
+		test("child create forwards parent and detach options to the birth service", async () => {
+			const rootTask = new Task(defaultTaskOptions) as any
+			Object.defineProperty(rootTask, "taskId", { value: "root-parent", writable: true })
+			const parentTask = new Task(defaultTaskOptions) as any
+			Object.defineProperty(parentTask, "taskId", { value: "parent-child", writable: true })
+			const admission = { rootTask, taskNumber: 2 }
+			const admitFreshTask = vi.fn().mockReturnValue(admission)
+			const instantiateFreshTask = vi.fn().mockReturnValue({ taskId: "child-created", instanceId: "inst" })
+			const placeTask = vi.fn().mockResolvedValue("root-parent")
+			vi.spyOn(taskBirthOrchestrationService, "prepareTaskBirthOrchestration").mockResolvedValueOnce({
+				admitFreshTask,
+				instantiateFreshTask,
+				instantiateHistoryTask: vi.fn(),
+				placeTask,
+			})
+			await provider.resolveWebviewView(mockWebviewView)
+
+			await provider.createTask("Child task", undefined, parentTask, { detachFromParentRoot: true })
+
+			expect(admitFreshTask).toHaveBeenCalledWith({
+				parentTask,
+				detachFromParentRoot: true,
+			})
+			expect(instantiateFreshTask).toHaveBeenCalledWith({
+				text: "Child task",
+				images: undefined,
+				parentTask,
+				options: { detachFromParentRoot: true },
+				admission,
+			})
+			expect(placeTask).toHaveBeenCalledWith({
+				task: expect.objectContaining({ taskId: "child-created" }),
+				logContext: "createTask",
+			})
+		})
+	})
+	// kilocode_change end
+
 	// kilocode_change start: Ensure code index Neo4j + vector store name are surfaced to webview
 	test("getState includes Neo4j settings and workspace vector store name", async () => {
 		;(mockContext.globalState.get as any).mockImplementation((key: string) => {
@@ -833,7 +1522,6 @@ describe("ClineProvider", () => {
 
 			return undefined
 		})
-
 		;(mockContext.workspaceState.get as any).mockImplementation(async (key: string) => {
 			if (key === "codebaseIndexVectorStoreName") return "workspace-vectors"
 			return undefined
@@ -875,7 +1563,6 @@ describe("ClineProvider", () => {
 
 			return undefined
 		})
-
 		;(mockContext.workspaceState.get as any).mockImplementation(async (key: string) => {
 			if (key === "codebaseIndexVectorStoreName") return "workspace-vectors"
 			return undefined
@@ -981,14 +1668,14 @@ describe("ClineProvider", () => {
 		expect(mockPostMessage).toHaveBeenCalled()
 	})
 
-	test("autoCondenseContextPercent defaults to 100", async () => {
+	test("autoCondenseContextPercent defaults to 85", async () => {
 		// Mock globalState.get to return undefined for autoCondenseContextPercent
 		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
 			key === "autoCondenseContextPercent" ? undefined : null,
 		)
 
 		const state = await provider.getState()
-		expect(state.autoCondenseContextPercent).toBe(100)
+		expect(state.autoCondenseContextPercent).toBe(85)
 	})
 
 	test("handles autoCondenseContextPercent message", async () => {
@@ -1002,31 +1689,111 @@ describe("ClineProvider", () => {
 		expect(mockPostMessage).toHaveBeenCalled()
 	})
 
-	test("contextRoutingEnabled defaults to false", async () => {
+	test("autoRestartProblematicProcesses defaults to false", async () => {
+		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
+			key === "autoRestartProblematicProcesses" ? undefined : null,
+		)
+
+		const state = await provider.getState()
+		expect(state.autoRestartProblematicProcesses).toBe(false)
+	})
+
+	test("handles autoRestartProblematicProcesses message", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
+
+		await messageHandler({ type: "updateSettings", updatedSettings: { autoRestartProblematicProcesses: true } })
+
+		expect(updateGlobalStateSpy).toHaveBeenCalledWith("autoRestartProblematicProcesses", true)
+		expect(mockContext.globalState.update).toHaveBeenCalledWith("autoRestartProblematicProcesses", true)
+		expect(mockPostMessage).toHaveBeenCalled()
+	})
+
+	test("problematicProcessRestartLimit defaults to 1", async () => {
+		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
+			key === "problematicProcessRestartLimit" ? undefined : null,
+		)
+
+		const state = await provider.getState()
+		expect(state.problematicProcessRestartLimit).toBe(1)
+	})
+
+	test("handles problematicProcessRestartLimit message", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
+
+		await messageHandler({ type: "updateSettings", updatedSettings: { problematicProcessRestartLimit: 3 } })
+
+		expect(updateGlobalStateSpy).toHaveBeenCalledWith("problematicProcessRestartLimit", 3)
+		expect(mockContext.globalState.update).toHaveBeenCalledWith("problematicProcessRestartLimit", 3)
+		expect(mockPostMessage).toHaveBeenCalled()
+	})
+
+	test("parallelAgentsEnabled defaults to false", async () => {
+		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
+			key === "parallelAgentsEnabled" ? undefined : null,
+		)
+
+		const state = await provider.getState()
+		expect(state.parallelAgentsEnabled).toBe(false)
+	})
+
+	test("handles parallelAgentsEnabled message", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
+
+		await messageHandler({ type: "updateSettings", updatedSettings: { parallelAgentsEnabled: true } })
+
+		expect(updateGlobalStateSpy).toHaveBeenCalledWith("parallelAgentsEnabled", true)
+		expect(mockContext.globalState.update).toHaveBeenCalledWith("parallelAgentsEnabled", true)
+		expect(mockPostMessage).toHaveBeenCalled()
+	})
+
+	test("parallelAgentCount defaults to 2", async () => {
+		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
+			key === "parallelAgentCount" ? undefined : null,
+		)
+
+		const state = await provider.getState()
+		expect(state.parallelAgentCount).toBe(2)
+	})
+
+	test("handles parallelAgentCount message", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
+
+		await messageHandler({ type: "updateSettings", updatedSettings: { parallelAgentCount: 4 } })
+
+		expect(updateGlobalStateSpy).toHaveBeenCalledWith("parallelAgentCount", 4)
+		expect(mockContext.globalState.update).toHaveBeenCalledWith("parallelAgentCount", 4)
+		expect(mockPostMessage).toHaveBeenCalled()
+	})
+
+	test("contextRoutingEnabled defaults to true", async () => {
 		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
 			key === "contextRoutingEnabled" ? undefined : null,
 		)
 
 		const state = await provider.getState()
-		expect(state.contextRoutingEnabled).toBe(false)
+		expect(state.contextRoutingEnabled).toBe(true)
 	})
 
-	test("contextRoutingFastThresholdPercent defaults to 50", async () => {
+	test("contextRoutingFastThresholdPercent defaults to 35", async () => {
 		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
 			key === "contextRoutingFastThresholdPercent" ? undefined : null,
 		)
 
 		const state = await provider.getState()
-		expect(state.contextRoutingFastThresholdPercent).toBe(50)
+		expect(state.contextRoutingFastThresholdPercent).toBe(35)
 	})
 
-	test("contextRoutingDeepThresholdPercent defaults to 80", async () => {
+	test("contextRoutingDeepThresholdPercent defaults to 65", async () => {
 		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
 			key === "contextRoutingDeepThresholdPercent" ? undefined : null,
 		)
 
 		const state = await provider.getState()
-		expect(state.contextRoutingDeepThresholdPercent).toBe(80)
+		expect(state.contextRoutingDeepThresholdPercent).toBe(65)
 	})
 
 	test("handles contextRoutingEnabled message", async () => {
@@ -1073,7 +1840,7 @@ describe("ClineProvider", () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
-		const mockConfig = vscode.workspace.getConfiguration("kilo-code") as any
+		const mockConfig = vscode.workspace.getConfiguration(Package.name) as any // kilocode_change
 		vi.spyOn(mockConfig, "update").mockImplementation(() => {
 			throw new Error("mock config update failure")
 		})

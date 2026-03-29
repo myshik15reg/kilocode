@@ -14,6 +14,7 @@ import { ExtensionStateContextProvider, useExtensionState } from "./context/Exte
 import ChatView, { ChatViewRef } from "./components/chat/ChatView"
 import HistoryView from "./components/history/HistoryView"
 import SettingsView, { SettingsViewRef } from "./components/settings/SettingsView"
+import TechDebtView from "./components/tech-debt/TechDebtView"
 import WelcomeView from "./components/kilocode/welcome/WelcomeView" // kilocode_change
 import ProfileView from "./components/kilocode/profile/ProfileView" // kilocode_change
 import McpView from "./components/mcp/McpView" // kilocode_change
@@ -33,7 +34,18 @@ import { STANDARD_TOOLTIP_DELAY } from "./components/ui/standard-tooltip"
 import { useKiloIdentity } from "./utils/kilocode/useKiloIdentity"
 import { MemoryWarningBanner } from "./kilocode/MemoryWarningBanner"
 
-type Tab = "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "account" | "cloud" | "profile" | "auth" // kilocode_change: add "profile" and "auth"
+type Tab =
+	| "settings"
+	| "history"
+	| "mcp"
+	| "modes"
+	| "chat"
+	| "marketplace"
+	| "account"
+	| "cloud"
+	| "profile"
+	| "auth"
+	| "techDebt" // kilocode_change: add "profile", "auth", and "techDebt"
 
 interface HumanRelayDialogState {
 	isOpen: boolean
@@ -330,6 +342,7 @@ const App = () => {
 			{tab === "mcp" && <McpView onDone={() => switchTab("chat")} />}
 			{/* kilocode_change end */}
 			{tab === "history" && <HistoryView onDone={() => switchTab("chat")} />}
+			{tab === "techDebt" && <TechDebtView onDone={() => switchTab("chat")} />}
 			{/* kilocode_change: auth redirect / editingProfile */}
 			{tab === "settings" && (
 				<SettingsView

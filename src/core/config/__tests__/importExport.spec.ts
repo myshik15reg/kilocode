@@ -568,7 +568,7 @@ describe("importExport", () => {
 
 		it("should export settings to the selected file location", async () => {
 			;(vscode.window.showSaveDialog as Mock).mockResolvedValue({
-				fsPath: "/mock/path/kilo-code-settings.json",
+				fsPath: "/mock/path/alfacode-settings.json",
 			})
 
 			const mockProviderProfiles = {
@@ -595,7 +595,7 @@ describe("importExport", () => {
 			expect(mockContextProxy.export).toHaveBeenCalled()
 			expect(fs.mkdir).toHaveBeenCalledWith("/mock/path", { recursive: true })
 
-			expect(safeWriteJson).toHaveBeenCalledWith("/mock/path/kilo-code-settings.json", {
+			expect(safeWriteJson).toHaveBeenCalledWith("/mock/path/alfacode-settings.json", {
 				providerProfiles: mockProviderProfiles,
 				globalSettings: mockGlobalSettings,
 			})
@@ -603,7 +603,7 @@ describe("importExport", () => {
 
 		it("should include globalSettings when allowedMaxRequests is null", async () => {
 			;(vscode.window.showSaveDialog as Mock).mockResolvedValue({
-				fsPath: "/mock/path/kilo-code-settings.json",
+				fsPath: "/mock/path/alfacode-settings.json",
 			})
 
 			const mockProviderProfiles = {
@@ -627,7 +627,7 @@ describe("importExport", () => {
 				contextProxy: mockContextProxy,
 			})
 
-			expect(safeWriteJson).toHaveBeenCalledWith("/mock/path/kilo-code-settings.json", {
+			expect(safeWriteJson).toHaveBeenCalledWith("/mock/path/alfacode-settings.json", {
 				providerProfiles: mockProviderProfiles,
 				globalSettings: mockGlobalSettings,
 			})
@@ -635,7 +635,7 @@ describe("importExport", () => {
 
 		it("should handle errors during the export process", async () => {
 			;(vscode.window.showSaveDialog as Mock).mockResolvedValue({
-				fsPath: "/mock/path/kilo-code-settings.json",
+				fsPath: "/mock/path/alfacode-settings.json",
 			})
 
 			mockProviderSettingsManager.export.mockResolvedValue({
@@ -665,7 +665,7 @@ describe("importExport", () => {
 
 		it("should handle errors during directory creation", async () => {
 			;(vscode.window.showSaveDialog as Mock).mockResolvedValue({
-				fsPath: "/mock/path/kilo-code-settings.json",
+				fsPath: "/mock/path/alfacode-settings.json",
 			})
 
 			mockProviderSettingsManager.export.mockResolvedValue({
@@ -702,9 +702,19 @@ describe("importExport", () => {
 				defaultUri: expect.anything(),
 			})
 
-			expect(vscode.Uri.file).toHaveBeenCalledWith(
-				path.join("/mock/home", "Documents", "kilo-code-settings.json"),
-			)
+			expect(vscode.Uri.file).toHaveBeenCalledWith(path.join("/mock/home", "Documents", "alfacode-settings.json"))
+		})
+
+		it("uses AlfaCode branding for exported settings filename", async () => {
+			;(vscode.window.showSaveDialog as Mock).mockResolvedValue(undefined)
+
+			await exportSettings({
+				providerSettingsManager: mockProviderSettingsManager,
+				contextProxy: mockContextProxy,
+			})
+
+			const saveDialogCall = (vscode.window.showSaveDialog as Mock).mock.calls[0]?.[0]
+			expect(saveDialogCall.defaultUri.fsPath).toContain("alfacode-settings.json")
 		})
 
 		describe("codebase indexing export", () => {
@@ -1791,6 +1801,116 @@ describe("importExport", () => {
 				expect("modelMaxTokens" in provider).toBe(false) // Should be excluded
 				expect("modelMaxThinkingTokens" in provider).toBe(false) // Should be excluded
 			},
+		)
+	})
+	it("should export AlfaCode settings fields", async () => {
+		;(vscode.window.showSaveDialog as Mock).mockResolvedValue({
+			fsPath: "/mock/path/roo-code-settings.json",
+		})
+
+		mockProviderSettingsManager.export.mockResolvedValue({
+			currentApiConfigName: "test",
+			apiConfigs: { test: { apiProvider: "openrouter" as ProviderName, id: "test-id" } },
+			modeApiConfigs: {},
+		})
+		mockContextProxy.export.mockResolvedValue({
+			parallelAgentsEnabled: true,
+			parallelAgentCount: 12,
+			autoRestartProblematicProcesses: true,
+			problematicProcessRestartLimit: 4,
+			autoCondenseContext: true,
+			autoCondenseContextPercent: 85,
+			enhancementApiConfigId: "cheap-enhance",
+			contextRoutingEnabled: true,
+			contextRoutingFastThresholdPercent: 35,
+			contextRoutingDeepThresholdPercent: 65,
+			condensingApiConfigId: "cheap-condense",
+			terminalCommandApiConfigId: "cheap-terminal",
+		})
+		;(fs.mkdir as Mock).mockResolvedValue(undefined)
+
+		await exportSettings({
+			providerSettingsManager: mockProviderSettingsManager,
+			contextProxy: mockContextProxy,
+		})
+
+		const exportedCall = (safeWriteJson as Mock).mock.calls.at(-1)
+		expect(exportedCall).toBeDefined()
+		const exportedData = exportedCall![1]
+		expect(exportedData.globalSettings).toEqual(
+			expect.objectContaining({
+				parallelAgentsEnabled: true,
+				parallelAgentCount: 12,
+				autoRestartProblematicProcesses: true,
+				problematicProcessRestartLimit: 4,
+				autoCondenseContext: true,
+				autoCondenseContextPercent: 85,
+				enhancementApiConfigId: "cheap-enhance",
+				contextRoutingEnabled: true,
+				contextRoutingFastThresholdPercent: 35,
+				contextRoutingDeepThresholdPercent: 65,
+				condensingApiConfigId: "cheap-condense",
+				terminalCommandApiConfigId: "cheap-terminal",
+			}),
+		)
+	})
+
+	it("should import AlfaCode settings fields", async () => {
+		;(vscode.window.showOpenDialog as Mock).mockResolvedValue([{ fsPath: "/mock/path/settings.json" }])
+		;(fs.readFile as Mock).mockResolvedValue(
+			JSON.stringify({
+				providerProfiles: {
+					currentApiConfigName: "test",
+					apiConfigs: {
+						test: { apiProvider: "openrouter", id: "test-id" },
+					},
+					modeApiConfigs: {},
+				},
+				globalSettings: {
+					parallelAgentsEnabled: true,
+					parallelAgentCount: 9,
+					autoRestartProblematicProcesses: true,
+					problematicProcessRestartLimit: 3,
+					autoCondenseContext: true,
+					autoCondenseContextPercent: 70,
+					enhancementApiConfigId: "cheap-enhance",
+					contextRoutingEnabled: true,
+					contextRoutingFastThresholdPercent: 25,
+					contextRoutingDeepThresholdPercent: 50,
+					condensingApiConfigId: "cheap-condense",
+					terminalCommandApiConfigId: "cheap-terminal",
+				},
+			}),
+		)
+		mockProviderSettingsManager.export.mockResolvedValue({
+			currentApiConfigName: "existing",
+			apiConfigs: {},
+			modeApiConfigs: {},
+		})
+		mockProviderSettingsManager.listConfig.mockResolvedValue([])
+
+		const result = await importSettings({
+			providerSettingsManager: mockProviderSettingsManager,
+			contextProxy: mockContextProxy,
+			customModesManager: mockCustomModesManager,
+		})
+
+		expect(result.success).toBe(true)
+		expect(mockContextProxy.setValues).toHaveBeenCalledWith(
+			expect.objectContaining({
+				parallelAgentsEnabled: true,
+				parallelAgentCount: 9,
+				autoRestartProblematicProcesses: true,
+				problematicProcessRestartLimit: 3,
+				autoCondenseContext: true,
+				autoCondenseContextPercent: 70,
+				enhancementApiConfigId: "cheap-enhance",
+				contextRoutingEnabled: true,
+				contextRoutingFastThresholdPercent: 25,
+				contextRoutingDeepThresholdPercent: 50,
+				condensingApiConfigId: "cheap-condense",
+				terminalCommandApiConfigId: "cheap-terminal",
+			}),
 		)
 	})
 })

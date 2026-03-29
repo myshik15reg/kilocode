@@ -10,50 +10,52 @@
 		"remove": "Удалить"
 	},
 	"search": {
-		"placeholder": "Поиск параметров...",
-		"noResults": "Параметры не найдены"
+		"placeholder": "Поиск настроек...",
+		"noResults": "Настройки не найдены"
 	},
 	"header": {
 		"title": "Настройки",
 		"saveButtonTooltip": "Сохранить изменения",
 		"nothingChangedTooltip": "Изменений нет",
-		"doneButtonTooltip": "Отменить несохранённые изменения и закрыть панель настроек"
+		"doneButtonTooltip": "Отменить несохранённые изменения и вернуться к задачам"
 	},
 	"unsavedChangesDialog": {
 		"title": "Несохранённые изменения",
-		"description": "Вы хотите отменить изменения и продолжить?",
+		"description": "Отменить изменения и продолжить?",
 		"cancelButton": "Отмена",
 		"discardButton": "Отменить изменения"
 	},
 	"sections": {
 		"providers": "Провайдеры",
 		"modes": "Режимы",
-		"mcp": "Серверы MCP",
-		"autoApprove": "Автоодобрение",
-		"browser": "Доступ к компьютеру",
+		"mcp": "MCP-серверы",
+		"autoApprove": "Автоподтверждение",
+		"browser": "Браузер",
 		"checkpoints": "Контрольные точки",
-		"display": "Показать",
+		"display": "Отображение",
 		"notifications": "Уведомления",
 		"contextManagement": "Контекст",
 		"terminal": "Терминал",
 		"slashCommands": "Слэш-команды",
 		"prompts": "Промпты",
-		"ui": "UI",
-		"experimental": "Экспериментальное",
+		"ui": "Интерфейс",
+		"experimental": "Экспериментальные",
 		"language": "Язык",
 		"about": "О AlfaCode assistant",
-		"autoPurge": "Авто-очистка",
+		"autoPurge": "Автоочистка",
 		"agentBehaviour": "Поведение агента",
 		"ghost": "Автодополнение"
 	},
 	"about": {
+		"version": "Версия: {{version}}",
+		"versionWithSha": "Версия: {{version}} ({{sha}})",
 		"bugReport": {
 			"label": "Нашли ошибку?",
 			"link": "Сообщить на GitHub"
 		},
 		"featureRequest": {
 			"label": "Есть идея?",
-			"link": "Поделитесь с нами"
+			"link": "Поделиться с нами"
 		},
 		"securityIssue": {
 			"label": "Обнаружили уязвимость?",
@@ -62,40 +64,40 @@
 		"contact": {
 			"label": "Нужно с нами связаться? Напишите"
 		},
-		"community": "Хотите получить советы или просто пообщаться с другими пользователями AlfaCode assistant? Присоединяйтесь к <redditLink>reddit.com/r/kilocode</redditLink> или <discordLink>kilo.ai/discord</discordLink>",
-		"contactAndCommunity": "Контакты и Сообщество",
-		"manageSettings": "Управление Настройками",
+		"community": "Хотите советы или просто пообщаться с другими пользователями AlfaCode assistant? Присоединяйтесь к <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> или <discordLink>alfacode.ai/discord</discordLink>",
+		"contactAndCommunity": "Контакты и сообщество",
+		"manageSettings": "Управление настройками",
 		"debugMode": {
 			"label": "Включить режим отладки",
-			"description": "Включите режим отладки для отображения дополнительных кнопок в заголовке задачи для просмотра истории разговоров API и сообщений UI в виде форматированного JSON во временных файлах."
+			"description": "Включите режим отладки, чтобы показывать дополнительные кнопки в заголовке задачи для просмотра истории API-диалога и UI-сообщений в виде отформатированного JSON во временных файлах."
 		}
 	},
 	"slashCommands": {
-		"description": "Управляйте своими слэш-командами для быстрого выполнения пользовательских рабочих процессов и действий. <DocsLink>Узнать больше</DocsLink>"
+		"description": "Управляйте слэш-командами, чтобы быстро запускать пользовательские процессы и действия. <DocsLink>Подробнее</DocsLink>"
 	},
 	"prompts": {
-		"description": "Настройте промпты поддержки, используемые для быстрых действий, таких как улучшение промптов, объяснение кода и исправление проблем. Эти промпты помогают AlfaCode assistant обеспечить лучшую поддержку для общих задач разработки.",
+		"description": "Настройте вспомогательные промпты для быстрых действий: улучшения промптов, объяснения кода и исправления проблем. Эти промпты помогают AlfaCode assistant лучше справляться с типичными задачами разработки.",
 		"oneC": {
 			"title": "Аннотации изменений 1С",
-			"authorLabel": "Автор изменений",
+			"authorLabel": "Автор изменения",
 			"authorPlaceholder": "например, Иванов И.И.",
-			"authorDescription": "Используется в шаблонах комментариев 1С для фиксации изменений."
+			"authorDescription": "Используется в шаблонах комментариев 1С для аннотаций изменений."
 		}
 	},
 	"codeIndex": {
 		"title": "Индексация кодовой базы",
 		"enableLabel": "Включить индексацию кодовой базы",
-		"enableDescription": "Включите индексацию кода для улучшения поиска и понимания контекста",
+		"enableDescription": "Включить индексацию кода для улучшенного поиска и понимания контекста",
 		"profileLabel": "Провайдер эмбеддингов",
 		"selectProfilePlaceholder": "Выберите провайдера",
 		"openaiProvider": "OpenAI",
 		"ollamaProvider": "Ollama",
 		"geminiProvider": "Gemini",
-		"geminiApiKeyLabel": "Ключ API:",
-		"geminiApiKeyPlaceholder": "Введите свой API-ключ Gemini",
+		"geminiApiKeyLabel": "API-ключ:",
+		"geminiApiKeyPlaceholder": "Введите API-ключ Gemini",
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
-		"vercelAiGatewayApiKeyLabel": "Ключ API",
-		"vercelAiGatewayApiKeyPlaceholder": "Введите свой API-ключ Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "API-ключ",
+		"vercelAiGatewayApiKeyPlaceholder": "Введите API-ключ Vercel AI Gateway",
 		"bedrockProvider": "Amazon Bedrock",
 		"bedrockRegionLabel": "Регион AWS",
 		"bedrockRegionPlaceholder": "us-east-1",
@@ -103,52 +105,52 @@
 		"bedrockProfilePlaceholder": "default",
 		"bedrockProfileDescription": "Имя профиля AWS из ~/.aws/credentials (обязательно).",
 		"openRouterProvider": "OpenRouter",
-		"openRouterApiKeyLabel": "Ключ API OpenRouter",
-		"openRouterApiKeyPlaceholder": "Введите свой ключ API OpenRouter",
+		"openRouterApiKeyLabel": "API-ключ OpenRouter",
+		"openRouterApiKeyPlaceholder": "Введите API-ключ OpenRouter",
 		"openRouterProviderRoutingLabel": "Маршрутизация провайдера OpenRouter",
-		"openRouterProviderRoutingDescription": "OpenRouter направляет запросы к лучшим доступным провайдерам для вашей модели эмбеддинга. По умолчанию запросы балансируются между топовыми провайдерами для максимальной доступности. Однако вы можете выбрать конкретного провайдера для этой модели.",
+		"openRouterProviderRoutingDescription": "OpenRouter направляет запросы к лучшим доступным провайдерам для вашей модели эмбеддингов. По умолчанию запросы балансируются между основными провайдерами для максимальной доступности. При необходимости вы можете выбрать конкретного провайдера для этой модели.",
 		"mistralProvider": "Mistral",
-		"mistralApiKeyLabel": "Ключ API:",
-		"mistralApiKeyPlaceholder": "Введите свой API-ключ Mistral",
-		"openaiCompatibleProvider": "OpenAI-совместимый",
-		"openaiCompatibleResponsesProvider": "OpenAI-совместимый (Responses)",
-		"openAiKeyLabel": "Ключ API OpenAI",
-		"openAiKeyPlaceholder": "Введите ваш ключ API OpenAI",
-		"openAiCompatibleBaseUrlLabel": "Базовый URL",
-		"openAiCompatibleApiKeyLabel": "Ключ API",
-		"openAiCompatibleApiKeyPlaceholder": "Введите ваш ключ API",
-		"openAiCompatibleModelDimensionLabel": "Размерность эмбеддинга:",
+		"mistralApiKeyLabel": "API-ключ:",
+		"mistralApiKeyPlaceholder": "Введите API-ключ Mistral",
+		"openaiCompatibleProvider": "Совместимый с OpenAI",
+		"openaiCompatibleResponsesProvider": "Совместимый с OpenAI (Responses)",
+		"openAiKeyLabel": "API-ключ OpenAI",
+		"openAiKeyPlaceholder": "Введите API-ключ OpenAI",
+		"openAiCompatibleBaseUrlLabel": "Base URL",
+		"openAiCompatibleApiKeyLabel": "API-ключ",
+		"openAiCompatibleApiKeyPlaceholder": "Введите API-ключ",
+		"openAiCompatibleModelDimensionLabel": "Размерность эмбеддингов:",
 		"modelDimensionLabel": "Размерность модели",
-		"openAiCompatibleModelDimensionPlaceholder": "напр., 1536",
-		"openAiCompatibleModelDimensionDescription": "Размерность эмбеддинга (размер выходных данных) для вашей модели. Проверьте документацию вашего провайдера для этого значения. Распространенные значения: 384, 768, 1536, 3072.",
+		"openAiCompatibleModelDimensionPlaceholder": "например, 1536",
+		"openAiCompatibleModelDimensionDescription": "Размерность эмбеддингов (размер выходного вектора) для вашей модели. Уточните это значение в документации провайдера. Распространённые значения: 384, 768, 1536, 3072.",
 		"modelLabel": "Модель",
 		"selectModelPlaceholder": "Выберите модель",
 		"ollamaUrlLabel": "URL Ollama:",
 		"qdrantUrlLabel": "URL Qdrant",
 		"qdrantKeyLabel": "Ключ Qdrant:",
-		"startIndexingButton": "Начать",
-		"clearIndexDataButton": "Очистить индекс",
-		"unsavedSettingsMessage": "Пожалуйста, сохрани настройки перед запуском процесса индексации.",
+		"startIndexingButton": "Начать индексацию",
+		"clearIndexDataButton": "Очистить данные индекса",
+		"unsavedSettingsMessage": "Сохраните настройки перед запуском индексации.",
 		"clearDataDialog": {
 			"title": "Вы уверены?",
-			"description": "Это действие нельзя отменить. Оно навсегда удалит данные индекса вашей кодовой базы.",
+			"description": "Это действие нельзя отменить. Все данные индекса кодовой базы будут удалены безвозвратно.",
 			"cancelButton": "Отмена",
 			"confirmButton": "Очистить данные"
 		},
-		"description": "Настройте параметры индексации кодовой базы для включения семантического поиска в вашем проекте. <0>Узнать больше</0>",
+		"description": "Настройте параметры индексации кодовой базы, чтобы включить семантический поиск по проекту. <0>Подробнее</0>",
 		"statusTitle": "Статус",
 		"settingsTitle": "Настройки индексации",
-		"disabledMessage": "Индексация кодовой базы в настоящее время отключена. Включите ее в глобальных настройках для настройки параметров индексации.",
-		"embedderProviderLabel": "Провайдер эмбеддера",
+		"disabledMessage": "Индексация кодовой базы сейчас отключена. Включите её в глобальных настройках, чтобы настроить параметры индексации.",
+		"embedderProviderLabel": "Провайдер модели эмбеддингов",
 		"modelPlaceholder": "Введите название модели",
 		"selectModel": "Выберите модель",
-		"ollamaBaseUrlLabel": "Базовый URL Ollama",
-		"vectorStoreProviderLabel": "Поставщик векторного хранилища",
+		"ollamaBaseUrlLabel": "Base URL Ollama",
+		"vectorStoreProviderLabel": "Провайдер векторного хранилища",
 		"qdrantApiKeyLabel": "API-ключ Qdrant",
-		"qdrantApiKeyPlaceholder": "Введите ваш API-ключ Qdrant (необязательно)",
-		"lancedbVectorStoreDirectoryLabel": "Путь LanceDB Vector Store",
-		"lancedbVectorStoreDirectoryPlaceholder": "Введите пользовательский путь векторного хранилища (необязательно)",
-		"lancedbVectorStoreDirectoryDescription": "Путь для хранения базы данных LanceDB. Если пустой, используется местоположение по умолчанию в globalStorageUri/vector.",
+		"qdrantApiKeyPlaceholder": "Введите API-ключ Qdrant (необязательно)",
+		"lancedbVectorStoreDirectoryLabel": "Путь к векторному хранилищу LanceDB",
+		"lancedbVectorStoreDirectoryPlaceholder": "Введите пользовательский путь к векторному хранилищу (необязательно)",
+		"lancedbVectorStoreDirectoryDescription": "Путь для хранения векторной базы данных LanceDB. Если оставить пустым, будет использовано место по умолчанию в globalStorageUri/vector.",
 		"setupConfigLabel": "Настройка",
 		"ollamaUrlPlaceholder": "http://localhost:11434",
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
@@ -167,47 +169,47 @@
 		},
 		"close": "Закрыть",
 		"validation": {
-			"invalidQdrantUrl": "Неверный URL Qdrant",
-			"invalidOllamaUrl": "Неверный URL Ollama",
-			"invalidBaseUrl": "Неверный базовый URL",
+			"invalidQdrantUrl": "Некорректный URL Qdrant",
+			"invalidOllamaUrl": "Некорректный URL Ollama",
+			"invalidBaseUrl": "Некорректный Base URL",
 			"qdrantUrlRequired": "Требуется URL Qdrant",
-			"openaiApiKeyRequired": "Требуется ключ API OpenAI",
-			"modelSelectionRequired": "Требуется выбор модели",
-			"apiKeyRequired": "Требуется ключ API",
-			"modelIdRequired": "Требуется идентификатор модели",
+			"openaiApiKeyRequired": "Требуется API-ключ OpenAI",
+			"modelSelectionRequired": "Требуется выбрать модель",
+			"apiKeyRequired": "Требуется API-ключ",
+			"modelIdRequired": "Требуется ID модели",
 			"modelDimensionRequired": "Требуется размерность модели",
-			"geminiApiKeyRequired": "Требуется ключ API Gemini",
+			"geminiApiKeyRequired": "Требуется API-ключ Gemini",
 			"mistralApiKeyRequired": "Требуется API-ключ Mistral",
 			"vercelAiGatewayApiKeyRequired": "Требуется API-ключ Vercel AI Gateway",
 			"bedrockRegionRequired": "Требуется регион AWS",
 			"bedrockProfileRequired": "Требуется профиль AWS",
-			"ollamaBaseUrlRequired": "Требуется базовый URL Ollama",
-			"baseUrlRequired": "Требуется базовый URL",
+			"ollamaBaseUrlRequired": "Требуется Base URL Ollama",
+			"baseUrlRequired": "Требуется Base URL",
 			"modelDimensionMinValue": "Размерность модели должна быть больше 0",
-			"openRouterApiKeyRequired": "Требуется ключ API OpenRouter",
+			"openRouterApiKeyRequired": "Требуется API-ключ OpenRouter",
 			"vectorStoreNameRequired": "Требуется имя векторной базы данных"
 		},
 		"optional": "необязательно",
 		"advancedConfigLabel": "Расширенная конфигурация",
 		"searchMinScoreLabel": "Порог оценки поиска",
-		"searchMinScoreDescription": "Минимальный балл сходства (0.0-1.0), необходимый для результатов поиска. Более низкие значения возвращают больше результатов, но они могут быть менее релевантными. Более высокие значения возвращают меньше результатов, но более релевантных.",
+		"searchMinScoreDescription": "Минимальная оценка сходства (0.0–1.0), необходимая для результатов поиска. Меньшие значения дают больше результатов, но они могут быть менее релевантными. Большие значения дают меньше результатов, но они обычно точнее.",
 		"searchMinScoreResetTooltip": "Сбросить к значению по умолчанию (0.4)",
-		"searchMaxResultsLabel": "Максимальное количество результатов поиска",
-		"searchMaxResultsDescription": "Максимальное количество результатов поиска, возвращаемых при запросе индекса кодовой базы. Более высокие значения предоставляют больше контекста, но могут включать менее релевантные результаты.",
-		"rerankSectionLabel": "Реранкер",
-		"rerankEnableLabel": "Включить реранкер",
-		"rerankEnableDescription": "Пересортировка кандидатов из Qdrant кросс-энкодером перед графовым расширением. При недоступности используется исходный порядок.",
-		"rerankCandidateLimitLabel": "Лимит кандидатов для реранка",
-		"rerankTopKLabel": "Топ-K после реранка",
-		"rerankTimeoutMsLabel": "Таймаут реранка (мс)",
-		"resetToDefault": "Сбросить к значению по умолчанию",
+		"searchMaxResultsLabel": "Максимум результатов поиска",
+		"searchMaxResultsDescription": "Максимальное число результатов, возвращаемых при поиске по индексу кодовой базы. Большие значения дают больше контекста, но могут включать менее релевантные совпадения.",
+		"rerankSectionLabel": "Реранжирование",
+		"rerankEnableLabel": "Включить реранжирование",
+		"rerankEnableDescription": "Повторно ранжировать кандидатов из Qdrant с помощью cross-encoder перед расширением графа. Если функция недоступна, используется обычный семантический порядок.",
+		"rerankCandidateLimitLabel": "Лимит кандидатов для реранжирования",
+		"rerankTopKLabel": "Top-K после реранжирования",
+		"rerankTimeoutMsLabel": "Тайм-аут реранжирования (мс)",
+		"resetToDefault": "Сбросить к значениям по умолчанию",
 		"cancelling": "Отмена...",
 		"cancelIndexingButton": "Отменить индексацию",
 		"vectorStoreName": "Имя векторной базы данных",
 		"vectorStoreNamePlaceholder": "Введите имя векторной базы данных",
 		"neo4j": {
-			"enableLabel": "Включить графовую базу Neo4j",
-			"enableDescription": "Включает графовый поиск и анализ кода с Neo4j. Работает вместе с Qdrant для гибридного семантического + графового поиска.",
+			"enableLabel": "Включить графовую базу данных Neo4j",
+			"enableDescription": "Включает графовый поиск и анализ кода с помощью Neo4j. Работает вместе с Qdrant для гибридного семантического и графового поиска.",
 			"uriLabel": "URI Neo4j",
 			"uriPlaceholder": "bolt://localhost:7687",
 			"usernameLabel": "Имя пользователя",
@@ -216,118 +218,117 @@
 			"databasePlaceholder": "neo4j",
 			"passwordLabel": "Пароль",
 			"passwordPlaceholder": "Введите пароль Neo4j",
-			"passwordDescription": "Пароль сохраняется безопасно в Secret Storage VSCode",
-			"testConnectionButton": "Проверить соединение",
-			"testingConnection": "Проверка соединения...",
-			"connectionSuccess": "Успешно подключено к Neo4j",
+			"passwordDescription": "Пароль безопасно хранится в Secret Storage VSCode",
+			"testConnectionButton": "Проверить подключение",
+			"testingConnection": "Проверка подключения...",
+			"connectionSuccess": "Подключение к Neo4j успешно установлено",
 			"connectionFailed": "Не удалось подключиться к Neo4j",
 			"version": "Версия Neo4j: {{version}}",
 			"aboutTitle": "О графовой базе данных Neo4j",
-			"aboutDescription": "Графовая база Neo4j хранит сущности кода и их взаимосвязи для улучшенного понимания кода и навигации. Позволяет выполнять запросы на основе графа для поиска зависимостей, использований и анализа влияния изменений.",
-			"aboutPoint1": "Хранит функции, классы и их взаимосвязи",
-			"aboutPoint2": "Позволяет отслеживать зависимости и выполнять анализ влияния изменений",
-			"aboutPoint3": "Работает вместе с Qdrant для гибридного семантического + графового поиска"
+			"aboutDescription": "Графовая база данных Neo4j хранит сущности кода и связи между ними для лучшего понимания и навигации по коду. Она позволяет выполнять графовые запросы для поиска зависимостей, мест использования и анализа влияния изменений.",
+			"aboutPoint1": "Хранит функции, классы и связи между ними",
+			"aboutPoint2": "Позволяет отслеживать зависимости и анализировать влияние изменений",
+			"aboutPoint3": "Работает вместе с Qdrant для гибридного семантического и графового поиска"
 		}
 	},
 	"autoApprove": {
-		"toggleShortcut": "Вы можете настроить глобальное сочетание клавиш для этого параметра <SettingsLink>в настройках вашей IDE</SettingsLink>.",
-		"description": "Разрешить AlfaCode assistant автоматически выполнять операции без необходимости одобрения. Включайте эти параметры только если полностью доверяете ИИ и понимаете связанные с этим риски безопасности.",
-		"enabled": "Автоодобрение включено",
-		"toggleAriaLabel": "Переключить автоодобрение",
-		"disabledAriaLabel": "Автоодобрение отключено - сначала выберите опции",
+		"toggleShortcut": "Для этой настройки можно задать сочетание клавиш <SettingsLink>в параметрах IDE</SettingsLink>.",
+		"description": "Выполнять эти действия без запроса разрешения. Включай только для действий, которым полностью доверяешь, и если понимаешь риски безопасности.",
+		"enabled": "Автоподтверждение включено",
+		"toggleAriaLabel": "Переключить автоподтверждение",
+		"disabledAriaLabel": "Автоподтверждение отключено — сначала выберите параметры",
 		"readOnly": {
 			"label": "Чтение",
-			"description": "Если включено, AlfaCode assistant будет автоматически просматривать содержимое каталогов и читать файлы без необходимости нажимать кнопку \"Одобрить\".",
+			"description": "Когда включено, AlfaCode assistant будет автоматически просматривать содержимое каталогов и читать файлы без необходимости нажимать кнопку «Подтвердить».",
 			"outsideWorkspace": {
-				"label": "Включая файлы вне рабочей области",
-				"description": "Разрешить AlfaCode assistant читать файлы вне текущей рабочей области без необходимости одобрения."
+				"label": "Включая файлы вне рабочего пространства",
+				"description": "Разрешить AlfaCode assistant читать файлы вне текущего рабочего пространства без запроса подтверждения."
 			}
 		},
 		"delete": {
 			"label": "Удаление",
-			"description": "Автоматически удалять файлы и каталоги без необходимости одобрения"
+			"description": "Автоматически удалять файлы и каталоги без запроса подтверждения"
 		},
 		"write": {
 			"label": "Запись",
-			"description": "Автоматически создавать и редактировать файлы без необходимости одобрения",
-			"delayLabel": "Задержка после записи для диагностики возможных проблем",
+			"description": "Автоматически создавать и редактировать файлы без запроса подтверждения",
+			"delayLabel": "Задержка после записи, чтобы диагностика успела обнаружить потенциальные проблемы",
 			"outsideWorkspace": {
-				"label": "Включая файлы вне рабочей области",
-				"description": "Разрешить AlfaCode assistant создавать и редактировать файлы вне текущей рабочей области без необходимости одобрения."
+				"label": "Включая файлы вне рабочего пространства",
+				"description": "Разрешить AlfaCode assistant создавать и редактировать файлы вне текущего рабочего пространства без запроса подтверждения."
 			},
 			"protected": {
-				"label": "Включить защищенные файлы",
-				"description": "Разрешить AlfaCode assistant создавать и редактировать защищенные файлы (такие как .kilocodeignore и файлы конфигурации .kilocode/) без необходимости одобрения."
+				"label": "Включая защищённые файлы",
+				"description": "Разрешить AlfaCode assistant создавать и редактировать защищённые файлы (например, .kilocodeignore и конфигурационные файлы .kilocode/) без запроса подтверждения."
 			}
 		},
 		"browser": {
 			"label": "Браузер",
-			"description": "Автоматически выполнять действия в браузере без необходимости одобрения. Применяется только, если модель поддерживает использование компьютера"
+			"description": "Автоматически выполнять действия в браузере без запроса подтверждения. Примечание: работает только если модель поддерживает computer use"
 		},
 		"mcp": {
 			"label": "MCP",
-			"description": "Включить автоодобрение отдельных инструментов MCP в представлении MCP Servers (требуется включить как этот параметр, так и индивидуальный чекбокс инструмента \"Всегда разрешать\")"
+			"description": "Включить автоподтверждение отдельных инструментов MCP в представлении MCP Servers (требуются и эта настройка, и индивидуальный флажок инструмента «Всегда разрешать»)"
 		},
 		"modeSwitch": {
 			"label": "Режим",
-			"description": "Автоматически переключаться между разными режимами без необходимости одобрения"
+			"description": "Автоматически переключаться между разными режимами без запроса подтверждения"
 		},
 		"subtasks": {
 			"label": "Подзадачи",
-			"description": "Разрешить создание и выполнение подзадач без необходимости одобрения"
+			"description": "Разрешить создание и завершение подзадач без запроса подтверждения"
 		},
 		"followupQuestions": {
 			"label": "Вопрос",
-			"description": "Автоматически выбирать первый предложенный ответ на дополнительные вопросы после настроенного тайм-аута",
+			"description": "Автоматически выбирать первый предложенный ответ для уточняющих вопросов по истечении заданного тайм-аута",
 			"timeoutLabel": "Время ожидания перед автоматическим выбором первого ответа"
 		},
 		"execute": {
 			"label": "Выполнение",
-			"description": "Автоматически выполнять разрешённые команды терминала без необходимости одобрения",
-			"allowedCommands": "Разрешённые авто-выполняемые команды",
-			"allowedCommandsDescription": "Префиксы команд, которые могут быть автоматически выполнены при включённом параметре \"Всегда одобрять выполнение операций\". Добавьте * для разрешения всех команд (используйте с осторожностью).",
-			"deniedCommands": "Запрещенные команды",
-			"deniedCommandsDescription": "Префиксы команд, которые будут автоматически отклонены без запроса одобрения. В случае конфликтов с разрешенными командами, приоритет имеет самое длинное совпадение префикса. Добавьте * чтобы запретить все команды.",
+			"description": "Автоматически выполнять разрешённые команды терминала без запроса подтверждения",
+			"allowedCommands": "Разрешённые команды для автовыполнения",
+			"allowedCommandsDescription": "Префиксы команд, которые можно выполнять автоматически, когда включена опция «Всегда подтверждать операции выполнения». Добавьте * чтобы разрешить все команды (используйте с осторожностью).",
+			"deniedCommands": "Запрещённые команды",
+			"deniedCommandsDescription": "Префиксы команд, которые будут автоматически отклоняться без запроса подтверждения. В случае конфликтов с разрешёнными командами приоритет имеет самое длинное совпадение префикса. Добавьте * чтобы запретить все команды.",
 			"commandPlaceholder": "Введите префикс команды (например, 'git ')",
 			"deniedCommandPlaceholder": "Введите префикс команды для запрета (например, 'rm -rf')",
 			"addButton": "Добавить",
-			"autoDenied": "Команды с префиксом `{{prefix}}` были запрещены пользователем. Не обходи это ограничение, выполняя другую команду."
+			"autoDenied": "Команды с префиксом `{{prefix}}` были запрещены пользователем. Не обходите это ограничение, запуская другую команду."
 		},
 		"showMenu": {
-			"label": "Показывать меню автоодобрения в окне чата",
-			"description": "Если включено, меню автоодобрения будет отображаться внизу окна чата, обеспечивая быстрый доступ к настройкам автоодобрения"
+			"label": "Показывать меню автоподтверждения в окне чата",
+			"description": "Когда включено, меню автоподтверждения будет показываться внизу окна чата для быстрого доступа к настройкам автоподтверждения"
 		},
 		"updateTodoList": {
-			"label": "Todo",
-			"description": "Список дел обновляется автоматически без подтверждения"
+			"label": "Список задач",
+			"description": "Автоматически обновлять список задач без запроса подтверждения"
 		},
 		"apiRequestLimit": {
-			"title": "Максимум запросов",
-			"description": "Автоматически выполнять это количество API-запросов перед запросом разрешения на продолжение задачи.",
+			"title": "Максимальное количество",
 			"unlimited": "Без ограничений"
 		},
-		"selectOptionsFirst": "Выберите хотя бы один вариант ниже, чтобы включить автоодобрение",
+		"selectOptionsFirst": "Выберите хотя бы один параметр ниже, чтобы включить автоподтверждение",
 		"apiCostLimit": {
 			"title": "Максимальная стоимость",
-			"unlimited": "Безлимитный"
+			"unlimited": "Без ограничений"
 		},
 		"maxLimits": {
-			"description": "Автоматически выполнять запросы до указанных лимитов, прежде чем запрашивать разрешение на продолжение."
+			"description": "Автоматически выполнять запросы в пределах этих лимитов, прежде чем запрашивать разрешение на продолжение."
 		}
 	},
 	"providers": {
 		"providerDocumentation": "Документация {{provider}}",
 		"configProfile": "Профиль конфигурации",
-		"description": "Сохраняйте различные конфигурации API для быстрого переключения между провайдерами и настройками.",
-		"makeActiveProfile": "Сделать активным профилем",
-		"makeActiveTooltip": "Активируй этот профиль для использования в API-запросах",
-		"apiProvider": "Провайдер API",
+		"description": "Сохраняйте разные API-конфигурации, чтобы быстро переключаться между провайдерами и настройками.",
+		"makeActiveProfile": "Сделать профиль активным",
+		"makeActiveTooltip": "Активировать этот профиль для использования в API-запросах",
+		"apiProvider": "API-провайдер",
 		"apiProviderDocs": "Документация провайдера",
 		"model": "Модель",
 		"nameEmpty": "Имя не может быть пустым",
 		"nameExists": "Профиль с таким именем уже существует",
 		"deleteProfile": "Удалить профиль",
-		"invalidArnFormat": "Неверный формат ARN. Пожалуйста, проверьте примеры выше.",
+		"invalidArnFormat": "Некорректный формат ARN. Проверьте примеры выше.",
 		"enterNewName": "Введите новое имя",
 		"addProfile": "Добавить профиль",
 		"renameProfile": "Переименовать профиль",
@@ -338,924 +339,947 @@
 		"searchPlaceholder": "Поиск профилей",
 		"searchProviderPlaceholder": "Поиск провайдеров",
 		"noProviderMatchFound": "Провайдеры не найдены",
-		"noMatchFound": "Совпадений не найдено",
-		"vscodeLmDescription": "API языковой модели VS Code позволяет запускать модели, предоставляемые другими расширениями VS Code (включая, но не ограничиваясь GitHub Copilot). Для начала установите расширения Copilot и Copilot Chat из VS Code Marketplace.",
-		"vscodeLmUnavailable": "Поддержка языковых моделей VS Code доступна только в Visual Studio Code. Форки, такие как VSCodium и другие, могут не работать. Кроме того, эта возможность недоступна в инструментах JetBrains.",
+		"noMatchFound": "Подходящие профили не найдены",
+		"vscodeLmDescription": "API VS Code Language Model позволяет запускать модели, предоставляемые другими расширениями VS Code (включая, но не ограничиваясь GitHub Copilot). Самый простой способ начать — установить расширения Copilot и Copilot Chat из VS Code Marketplace.",
+		"vscodeLmUnavailable": "Поддержка VS Code Language Model доступна только в Visual Studio Code. Форки, такие как VSCodium и другие, могут не работать. Кроме того, эта возможность недоступна в инструментах JetBrains.",
 		"vscodeLmUnavailableInstructions": "Убедитесь, что вы используете поддерживаемый инструмент и что VS Code Chat установлен и включён",
-		"awsCustomArnUse": "Введите действительный Amazon Bedrock ARN для используемой модели. Примеры формата:",
+		"awsCustomArnUse": "Введите корректный ARN Amazon Bedrock для модели, которую хотите использовать. Примеры формата:",
 		"awsCustomArnDesc": "Убедитесь, что регион в ARN совпадает с выбранным выше регионом AWS.",
-		"openRouterApiKey": "OpenRouter API-ключ",
-		"getOpenRouterApiKey": "Получить OpenRouter API-ключ",
-		"vercelAiGatewayApiKey": "Ключ API Vercel AI Gateway",
-		"getVercelAiGatewayApiKey": "Получить ключ API Vercel AI Gateway",
+		"openRouterApiKey": "API-ключ OpenRouter",
+		"getOpenRouterApiKey": "Получить API-ключ OpenRouter",
+		"vercelAiGatewayApiKey": "API-ключ Vercel AI Gateway",
+		"getVercelAiGatewayApiKey": "Получить API-ключ Vercel AI Gateway",
 		"glamaApiKey": "API-ключ Glama",
 		"getGlamaApiKey": "Получить API-ключ Glama",
-		"apiKeyStorageNotice": "API-ключи хранятся безопасно в Secret Storage VSCode",
+		"apiKeyStorageNotice": "API-ключи надёжно хранятся в Secret Storage VSCode",
 		"openAiCodexRateLimits": {
-			"title": "Usage Limits for Codex{{planLabel}}",
-			"loading": "Loading usage limits...",
-			"loadError": "Failed to load usage limits",
-			"retry": "Retry",
-			"usedPercent": "{{percent}}% used",
-			"resetsIn": "Resets in {{time}}",
+			"title": "Лимиты использования Codex{{planLabel}}",
+			"loading": "Загрузка лимитов использования...",
+			"loadError": "Не удалось загрузить лимиты использования",
+			"retry": "Повторить",
+			"usedPercent": "Использовано {{percent}}%",
+			"resetsIn": "Сброс через {{time}}",
 			"plan": {
 				"default": "",
 				"withType": " ({{planType}})"
 			},
 			"time": {
-				"now": "Now",
-				"notAvailable": "N/A"
+				"now": "сейчас",
+				"notAvailable": "н/д"
 			},
 			"duration": {
-				"daysHours": "{{days}}d {{hours}}h",
-				"hoursMinutes": "{{hours}}h {{minutes}}m",
-				"minutes": "{{minutes}}m"
+				"daysHours": "{{days}} д {{hours}} ч",
+				"hoursMinutes": "{{hours}} ч {{minutes}} мин",
+				"minutes": "{{minutes}} мин"
 			},
 			"window": {
-				"usage": "Usage",
-				"fiveHour": "5h limit",
-				"oneHour": "1h limit",
-				"daily": "Daily limit",
-				"weekly": "Weekly limit",
-				"days": "{{days}}d limit",
-				"hours": "{{hours}}h limit",
-				"minutes": "{{minutes}}m limit"
+				"usage": "Использование",
+				"fiveHour": "Лимит на 5 ч",
+				"oneHour": "Лимит на 1 ч",
+				"daily": "Дневной лимит",
+				"weekly": "Недельный лимит",
+				"days": "Лимит на {{days}} д",
+				"hours": "Лимит на {{hours}} ч",
+				"minutes": "Лимит на {{minutes}} мин"
 			}
 		},
-		"useCustomBaseUrl": "Использовать пользовательский базовый URL",
-		"useReasoning": "Включить рассуждения",
-		"useHostHeader": "Использовать пользовательский Host-заголовок",
+		"claudeCodeRateLimits": {
+			"title": "Лимиты использования",
+			"loading": "Загрузка лимитов...",
+			"loadError": "Не удалось загрузить лимиты",
+			"retry": "Повторить",
+			"usedPercent": "Использовано {{percent}}%",
+			"resetsIn": "сброс через {{time}}",
+			"time": {
+				"now": "сейчас",
+				"notAvailable": "н/д"
+			},
+			"duration": {
+				"daysHours": "{{days}} д {{hours}} ч",
+				"hoursMinutes": "{{hours}} ч {{minutes}} мин",
+				"minutes": "{{minutes}} мин"
+			},
+			"window": {
+				"fiveHour": "5-часовой",
+				"weekly": "Недельный"
+			},
+			"limitLabel": "Лимит: {{limit}}"
+		},
+		"useCustomBaseUrl": "Использовать пользовательский base URL",
+		"useReasoning": "Включить рассуждение",
+		"useHostHeader": "Использовать пользовательский заголовок Host",
 		"customHeaders": "Пользовательские заголовки",
 		"headerName": "Имя заголовка",
 		"headerValue": "Значение заголовка",
-		"noCustomHeaders": "Пользовательские заголовки не определены. Нажмите кнопку +, чтобы добавить.",
-		"requestyApiKey": "Requesty API-ключ",
+		"noCustomHeaders": "Пользовательские заголовки не заданы. Нажмите кнопку +, чтобы добавить заголовок.",
+		"requestyApiKey": "API-ключ Requesty",
 		"refreshModels": {
 			"label": "Обновить модели",
-			"hint": "Пожалуйста, откройте настройки заново, чтобы увидеть последние модели.",
+			"hint": "Переоткройте настройки, чтобы увидеть актуальный список моделей.",
 			"loading": "Обновление списка моделей...",
-			"success": "Список моделей успешно обновлен!",
-			"error": "Не удалось обновить список моделей. Пожалуйста, попробуйте снова."
+			"success": "Список моделей успешно обновлён!",
+			"error": "Не удалось обновить список моделей. Попробуйте ещё раз."
 		},
-		"getRequestyApiKey": "Получить Requesty API-ключ",
+		"getRequestyApiKey": "Создать новый API-ключ Requesty",
 		"getRequestyBaseUrl": "Базовый URL",
-		"requestyUseCustomBaseUrl": "Использовать пользовательский базовый URL",
-		"anthropicApiKey": "Anthropic API-ключ",
-		"getAnthropicApiKey": "Получить Anthropic API-ключ",
-		"anthropicUseAuthToken": "Передавать Anthropic API-ключ как Authorization-заголовок вместо X-Api-Key",
+		"requestyUseCustomBaseUrl": "Использовать пользовательский base URL",
+		"anthropicApiKey": "API-ключ Anthropic",
+		"getAnthropicApiKey": "Получить API-ключ Anthropic",
+		"anthropicUseAuthToken": "Передавать API-ключ Anthropic как заголовок Authorization вместо X-Api-Key",
 		"anthropicUseAzureDeployment": "Использовать имя развертывания Azure",
-		"anthropicAzureDeploymentPlaceholder": "Введите имя развертывания...",
-		"anthropic1MContextBetaLabel": "Включить контекстное окно 1M (бета)",
-		"anthropic1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
-		"awsBedrock1MContextBetaLabel": "Включить контекстное окно 1M (бета)",
-		"awsBedrock1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
-		"vertex1MContextBetaLabel": "Включить контекстное окно 1M (бета)",
-		"vertex1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
-		"basetenApiKey": "Baseten API-ключ",
-		"getBasetenApiKey": "Получить Baseten API-ключ",
-		"cerebrasApiKey": "Cerebras API-ключ",
-		"getCerebrasApiKey": "Получить Cerebras API-ключ",
-		"chutesApiKey": "Chutes API-ключ",
-		"getChutesApiKey": "Получить Chutes API-ключ",
-		"fireworksApiKey": "Fireworks API-ключ",
-		"getFireworksApiKey": "Получить Fireworks API-ключ",
-		"syntheticApiKey": "Synthetic API-ключ",
-		"getSyntheticApiKey": "Получить Synthetic API-ключ",
-		"featherlessApiKey": "Featherless API-ключ",
-		"getFeatherlessApiKey": "Получить Featherless API-ключ",
-		"ioIntelligenceApiKey": "IO Intelligence API-ключ",
-		"ioIntelligenceApiKeyPlaceholder": "Введите свой ключ API IO Intelligence",
-		"getIoIntelligenceApiKey": "Получить IO Intelligence API-ключ",
-		"deepSeekApiKey": "DeepSeek API-ключ",
-		"getDeepSeekApiKey": "Получить DeepSeek API-ключ",
-		"doubaoApiKey": "Doubao API-ключ",
-		"getDoubaoApiKey": "Получить Doubao API-ключ",
-		"moonshotApiKey": "Moonshot API-ключ",
-		"getMoonshotApiKey": "Получить Moonshot API-ключ",
-		"moonshotBaseUrl": "Точка входа Moonshot",
-		"zaiApiKey": "Z AI API-ключ",
-		"getZaiApiKey": "Получить Z AI API-ключ",
-		"zaiEntrypoint": "Точка входа Z AI",
-		"zaiEntrypointDescription": "Пожалуйста, выберите подходящую точку входа API в зависимости от вашего местоположения. Если вы находитесь в Китае, выберите open.bigmodel.cn. В противном случае выберите api.z.ai.",
-		"minimaxApiKey": "MiniMax API-ключ",
-		"getMiniMaxApiKey": "Получить MiniMax API-ключ",
-		"minimaxBaseUrl": "Точка входа MiniMax",
-		"geminiApiKey": "Gemini API-ключ",
-		"getGroqApiKey": "Получить Groq API-ключ",
-		"groqApiKey": "Groq API-ключ",
-		"getSambaNovaApiKey": "Получить SambaNova API-ключ",
-		"sambaNovaApiKey": "SambaNova API-ключ",
-		"getGeminiApiKey": "Получить Gemini API-ключ",
-		"getHuggingFaceApiKey": "Получить Hugging Face API-ключ",
-		"huggingFaceApiKey": "Hugging Face API-ключ",
-		"getOvhCloudAiEndpointsApiKey": "Получить OVHcloud AI Endpoints API-ключ",
-		"ovhCloudAiEndpointsApiKey": "OVHcloud AI Endpoints API-ключ",
-		"ovhCloudAiEndpointsBaseUrl": "Базовый URL",
-		"getOvhCloudAiEndpointsBaseUrl": "Использовать пользовательский базовый URL",
-		"huggingFaceModelId": "ID модели",
-		"huggingFaceLoading": "Загрузка...",
-		"huggingFaceModelsCount": "({{count}} моделей)",
-		"huggingFaceSelectModel": "Выберите модель...",
-		"huggingFaceSearchModels": "Поиск моделей...",
-		"huggingFaceNoModelsFound": "Модели не найдены",
-		"huggingFaceProvider": "Провайдер",
-		"huggingFaceProviderAuto": "Автоматически",
-		"huggingFaceSelectProvider": "Выберите провайдера...",
-		"huggingFaceSearchProviders": "Поиск провайдеров...",
-		"huggingFaceNoProvidersFound": "Провайдеры не найдены",
+		"anthropicAzureDeploymentPlaceholder": "������� ��� �������������...",
+		"anthropic1MContextBetaLabel": "�������� ����������� ���� 1M (����)",
+		"anthropic1MContextBetaDescription": "��������� ����������� ���� �� 1 �������� ������� ��� Claude Sonnet 4",
+		"awsBedrock1MContextBetaLabel": "�������� ����������� ���� 1M (����)",
+		"awsBedrock1MContextBetaDescription": "��������� ����������� ���� �� 1 �������� ������� ��� Claude Sonnet 4",
+		"vertex1MContextBetaLabel": "�������� ����������� ���� 1M (����)",
+		"vertex1MContextBetaDescription": "��������� ����������� ���� �� 1 �������� ������� ��� Claude Sonnet 4",
+		"basetenApiKey": "Baseten API-����",
+		"getBasetenApiKey": "�������� Baseten API-����",
+		"cerebrasApiKey": "Cerebras API-����",
+		"getCerebrasApiKey": "�������� Cerebras API-����",
+		"chutesApiKey": "Chutes API-����",
+		"getChutesApiKey": "�������� Chutes API-����",
+		"fireworksApiKey": "Fireworks API-����",
+		"getFireworksApiKey": "�������� Fireworks API-����",
+		"syntheticApiKey": "Synthetic API-����",
+		"getSyntheticApiKey": "�������� Synthetic API-����",
+		"featherlessApiKey": "Featherless API-����",
+		"getFeatherlessApiKey": "�������� Featherless API-����",
+		"ioIntelligenceApiKey": "IO Intelligence API-����",
+		"ioIntelligenceApiKeyPlaceholder": "������� ���� ���� API IO Intelligence",
+		"getIoIntelligenceApiKey": "�������� IO Intelligence API-����",
+		"deepSeekApiKey": "DeepSeek API-����",
+		"getDeepSeekApiKey": "�������� DeepSeek API-����",
+		"doubaoApiKey": "Doubao API-����",
+		"getDoubaoApiKey": "�������� Doubao API-����",
+		"moonshotApiKey": "Moonshot API-����",
+		"getMoonshotApiKey": "�������� Moonshot API-����",
+		"moonshotBaseUrl": "����� ����� Moonshot",
+		"zaiApiKey": "Z AI API-����",
+		"getZaiApiKey": "�������� Z AI API-����",
+		"zaiEntrypoint": "����� ����� Z AI",
+		"zaiEntrypointDescription": "����������, �������� ���������� ����� ����� API � ����������� �� ������ ��������������. ���� �� ���������� � �����, �������� open.bigmodel.cn. � ��������� ������ �������� api.z.ai.",
+		"minimaxApiKey": "MiniMax API-����",
+		"getMiniMaxApiKey": "�������� MiniMax API-����",
+		"minimaxBaseUrl": "����� ����� MiniMax",
+		"geminiApiKey": "Gemini API-����",
+		"getGroqApiKey": "�������� Groq API-����",
+		"groqApiKey": "Groq API-����",
+		"getSambaNovaApiKey": "�������� SambaNova API-����",
+		"sambaNovaApiKey": "SambaNova API-����",
+		"getGeminiApiKey": "�������� Gemini API-����",
+		"getHuggingFaceApiKey": "�������� Hugging Face API-����",
+		"huggingFaceApiKey": "Hugging Face API-����",
+		"getOvhCloudAiEndpointsApiKey": "�������� OVHcloud AI Endpoints API-����",
+		"ovhCloudAiEndpointsApiKey": "OVHcloud AI Endpoints API-����",
+		"ovhCloudAiEndpointsBaseUrl": "������� URL",
+		"getOvhCloudAiEndpointsBaseUrl": "������������ ���������������� ������� URL",
+		"huggingFaceModelId": "ID ������",
+		"huggingFaceLoading": "��������...",
+		"huggingFaceModelsCount": "({{count}} �������)",
+		"huggingFaceSelectModel": "�������� ������...",
+		"huggingFaceSearchModels": "����� �������...",
+		"huggingFaceNoModelsFound": "������ �� �������",
+		"huggingFaceProvider": "���������",
+		"huggingFaceProviderAuto": "�������������",
+		"huggingFaceSelectProvider": "�������� ����������...",
+		"huggingFaceSearchProviders": "����� �����������...",
+		"huggingFaceNoProvidersFound": "���������� �� �������",
 		"sapAiCore": {
-			"serviceKey": "Ключ сервиса AI Core",
-			"serviceKeyJson": "Введите JSON ключа сервиса...",
-			"resourceGroup": "Группа ресурсов AI Core",
-			"credentialsNote": "Эти учётные данные хранятся локально и используются только для выполнения API-запросов из этого расширения.",
-			"learnMore": "Дополнительную информацию о доступе к SAP AI Core API можно найти здесь.",
-			"orchestrationMode": "Режим оркестрации",
-			"orchestrationEnabledDesc": "При включении предоставляет доступ ко всем доступным моделям без необходимости индивидуального развёртывания.",
-			"orchestrationDisabledDesc": "При отключении предоставляет доступ только к развёрнутым базовым моделям в вашем экземпляре сервиса AI Core.",
-			"modelDeploymentDesc": "Вы можете выбирать только модели с доступными развёртываниями.",
-			"deployment": "Развёртывание",
-			"loading": "Загрузка...",
-			"modelsCount": "({{count}} моделей)",
-			"deploymentsCount": "({{count}} развёртываний)",
-			"selectModel": "Выберите модель...",
-			"selectDeployment": "Выберите развёртывание...",
-			"searchModels": "Поиск моделей...",
-			"searchDeployments": "Поиск развёртываний...",
-			"noModelsFound": "Модели не найдены",
-			"noDeploymentFound": "Развёртывание не найдено",
-			"getStarted": "Начало работы с SAP AI Core",
-			"supportedProviders": "Поддерживаемые провайдеры",
-			"supportedProvidersDesc1": "Провайдер SAP AI Core в настоящее время поддерживает только базовые модели для следующих LLM-провайдеров:",
-			"supportedProvidersDesc2": "Рассмотрите возможность перехода в режим оркестрации для доступа к большему количеству моделей.",
-			"supportedProvidersDesc3": "Подробнее о режиме оркестрации"
+			"serviceKey": "���� ������� AI Core",
+			"serviceKeyJson": "������� JSON ����� �������...",
+			"resourceGroup": "������ �������� AI Core",
+			"credentialsNote": "��� ������� ������ �������� �������� � ������������ ������ ��� ���������� API-�������� �� ����� ����������.",
+			"learnMore": "�������������� ���������� � ������� � SAP AI Core API ����� ����� �����.",
+			"orchestrationMode": "����� �����������",
+			"orchestrationEnabledDesc": "��� ��������� ������������� ������ �� ���� ��������� ������� ��� ������������� ��������������� ������������.",
+			"orchestrationDisabledDesc": "��� ���������� ������������� ������ ������ � ���������� ������� ������� � ����� ���������� ������� AI Core.",
+			"modelDeploymentDesc": "�� ������ �������� ������ ������ � ���������� ��������������.",
+			"deployment": "������������",
+			"loading": "��������...",
+			"modelsCount": "({{count}} �������)",
+			"deploymentsCount": "({{count}} ������������)",
+			"selectModel": "�������� ������...",
+			"selectDeployment": "�������� ������������...",
+			"searchModels": "����� �������...",
+			"searchDeployments": "����� ������������...",
+			"noModelsFound": "������ �� �������",
+			"noDeploymentFound": "������������ �� �������",
+			"getStarted": "������ ������ � SAP AI Core",
+			"supportedProviders": "�������������� ����������",
+			"supportedProvidersDesc1": "��������� SAP AI Core � ��������� ����� ������������ ������ ������� ������ ��� ��������� LLM-�����������:",
+			"supportedProvidersDesc2": "����������� ����������� �������� � ����� ����������� ��� ������� � �������� ���������� �������.",
+			"supportedProvidersDesc3": "��������� � ������ �����������"
 		},
-		"apiKey": "API-ключ",
-		"openAiApiKey": "OpenAI API-ключ",
-		"openAiBaseUrl": "Базовый URL",
-		"getOpenAiApiKey": "Получить OpenAI API-ключ",
-		"mistralApiKey": "Mistral API-ключ",
-		"getMistralApiKey": "Получить Mistral / Codestral API-ключ",
-		"codestralBaseUrl": "Базовый URL Codestral (опционально)",
-		"codestralBaseUrlDesc": "Укажите альтернативный URL для модели Codestral.",
-		"xaiApiKey": "xAI API-ключ",
-		"getXaiApiKey": "Получить xAI API-ключ",
-		"litellmApiKey": "API-ключ LiteLLM",
-		"litellmBaseUrl": "Базовый URL LiteLLM",
-		"awsCredentials": "AWS-учётные данные",
-		"awsProfile": "Профиль AWS",
-		"awsApiKey": "Ключ API Amazon Bedrock",
-		"awsProfileName": "Имя профиля AWS",
+		"apiKey": "API-����",
+		"openAiApiKey": "OpenAI API-����",
+		"openAiBaseUrl": "������� URL",
+		"getOpenAiApiKey": "�������� OpenAI API-����",
+		"mistralApiKey": "Mistral API-����",
+		"getMistralApiKey": "�������� Mistral / Codestral API-����",
+		"codestralBaseUrl": "������� URL Codestral (�����������)",
+		"codestralBaseUrlDesc": "������� �������������� URL ��� ������ Codestral.",
+		"xaiApiKey": "xAI API-����",
+		"getXaiApiKey": "�������� xAI API-����",
+		"litellmApiKey": "API-���� LiteLLM",
+		"litellmBaseUrl": "������� URL LiteLLM",
+		"awsCredentials": "AWS-������� ������",
+		"awsProfile": "������� AWS",
+		"awsApiKey": "���� API Amazon Bedrock",
+		"awsProfileName": "��� ������� AWS",
 		"awsAccessKey": "AWS Access Key",
 		"awsSecretKey": "AWS Secret Key",
 		"awsSessionToken": "AWS Session Token",
-		"awsRegion": "Регион AWS",
-		"awsCrossRegion": "Использовать кросс-региональный вывод",
-		"awsGlobalInference": "Использовать глобальный вывод (автоматический выбор оптимального региона AWS)",
-		"awsServiceTier": "Уровень обслуживания",
-		"awsServiceTierStandard": "Стандартный",
-		"awsServiceTierStandardDesc": "Сбалансированная производительность и стоимость",
-		"awsServiceTierFlex": "Гибкий (50% скидка)",
-		"awsServiceTierFlexDesc": "Более низкая стоимость, более высокая задержка для некритичных задач",
-		"awsServiceTierPriority": "Приоритетный (75% надбавка)",
-		"awsServiceTierPriorityDesc": "Максимальная производительность для критичных приложений",
-		"awsServiceTierNote": "Уровни обслуживания влияют на цены и производительность. Гибкий предлагает 50% скидку с более высокой задержкой, Приоритетный предлагает 25% лучшую производительность с 75% надбавкой.",
+		"awsRegion": "������ AWS",
+		"awsCrossRegion": "������������ �����-������������ �����",
+		"awsGlobalInference": "������������ ���������� ����� (�������������� ����� ������������ ������� AWS)",
+		"awsServiceTier": "������� ������������",
+		"awsServiceTierStandard": "�����������",
+		"awsServiceTierStandardDesc": "���������������� ������������������ � ���������",
+		"awsServiceTierFlex": "������ (50% ������)",
+		"awsServiceTierFlexDesc": "����� ������ ���������, ����� ������� �������� ��� ����������� �����",
+		"awsServiceTierPriority": "������������ (75% ��������)",
+		"awsServiceTierPriorityDesc": "������������ ������������������ ��� ��������� ����������",
+		"awsServiceTierNote": "������ ������������ ������ �� ���� � ������������������. ������ ���������� 50% ������ � ����� ������� ���������, ������������ ���������� 25% ������ ������������������ � 75% ���������.",
 		"awsBedrockVpc": {
-			"useCustomVpcEndpoint": "Использовать пользовательскую конечную точку VPC",
-			"vpcEndpointUrlPlaceholder": "Введите URL конечной точки VPC (опционально)",
-			"examples": "Примеры:"
+			"useCustomVpcEndpoint": "������������ ���������������� �������� ����� VPC",
+			"vpcEndpointUrlPlaceholder": "������� URL �������� ����� VPC (�����������)",
+			"examples": "�������:"
 		},
-		"enablePromptCaching": "Включить кэширование подсказок",
-		"enablePromptCachingTitle": "Включить кэширование подсказок для повышения производительности и снижения затрат для поддерживаемых моделей.",
-		"cacheUsageNote": "Примечание: если вы не видите использование кэша, попробуйте выбрать другую модель, а затем вернуться к нужной.",
-		"vscodeLmModel": "Языковая модель",
-		"vscodeLmWarning": "Внимание: Модели, доступные через API VS Code Language Model, могут быть обёрнуты или дополнительно дообучены поставщиком, поэтому их поведение может отличаться от прямого использования той же модели у типичного провайдера или роутера. Чтобы использовать модель из выпадающего списка «Language Model», сначала переключитесь на эту модель, затем нажмите «Принять» в запросе Copilot Chat; в противном случае возможна ошибка, например 400 «The requested model is not supported».",
+		"enablePromptCaching": "�������� ����������� ���������",
+		"enablePromptCachingTitle": "�������� ����������� ��������� ��� ��������� ������������������ � �������� ������ ��� �������������� �������.",
+		"cacheUsageNote": "����������: ���� �� �� ������ ������������� ����, ���������� ������� ������ ������, � ����� ��������� � ������.",
+		"vscodeLmModel": "�������� ������",
+		"vscodeLmWarning": "��������: ������, ��������� ����� API VS Code Language Model, ����� ���� ������� ��� ������������� ��������� �����������, ������� �� ��������� ����� ���������� �� ������� ������������� ��� �� ������ � ��������� ���������� ��� �������. ����� ������������ ������ �� ����������� ������ �Language Model�, ������� ������������� �� ��� ������, ����� ������� ��������� � ������� Copilot Chat; � ��������� ������ �������� ������, �������� 400 �The requested model is not supported�.",
 		"geminiParameters": {
 			"urlContext": {
-				"title": "Включить контекст URL",
-				"description": "Позволяет Gemini получать доступ к URL-адресам и обрабатывать их для дополнительного контекста при генерации ответов. Полезно для задач, требующих анализа веб-контента."
+				"title": "�������� �������� URL",
+				"description": "��������� Gemini �������� ������ � URL-������� � ������������ �� ��� ��������������� ��������� ��� ��������� �������. ������� ��� �����, ��������� ������� ���-��������."
 			},
 			"groundingSearch": {
-				"title": "Включить grounding через поиск Google",
-				"description": "Позволяет Gemini искать актуальную информацию в Google и основывать ответы на данных в реальном времени. Полезно для запросов, требующих актуальной информации."
+				"title": "�������� grounding ����� ����� Google",
+				"description": "��������� Gemini ������ ���������� ���������� � Google � ���������� ������ �� ������ � �������� �������. ������� ��� ��������, ��������� ���������� ����������."
 			}
 		},
 		"googleCloudSetup": {
-			"title": "Для использования Google Cloud Vertex AI необходимо:",
-			"step1": "1. Создайте аккаунт Google Cloud, включите Vertex AI API и нужные модели Claude.",
-			"step2": "2. Установите Google Cloud CLI и настройте учетные данные по умолчанию.",
-			"step3": "3. Или создайте сервисный аккаунт с ключом."
+			"title": "��� ������������� Google Cloud Vertex AI ����������:",
+			"step1": "1. �������� ������� Google Cloud, �������� Vertex AI API � ������ ������ Claude.",
+			"step2": "2. ���������� Google Cloud CLI � ��������� ������� ������ �� ���������.",
+			"step3": "3. ��� �������� ��������� ������� � ������."
 		},
-		"googleCloudCredentials": "Учётные данные Google Cloud",
-		"googleCloudKeyFile": "Путь к ключу Google Cloud",
-		"googleCloudProjectId": "ID проекта Google Cloud",
-		"googleCloudRegion": "Регион Google Cloud",
+		"googleCloudCredentials": "������� ������ Google Cloud",
+		"googleCloudKeyFile": "���� � ����� Google Cloud",
+		"googleCloudProjectId": "ID ������� Google Cloud",
+		"googleCloudRegion": "������ Google Cloud",
 		"lmStudio": {
-			"baseUrl": "Базовый URL (опционально)",
-			"modelId": "ID модели",
-			"speculativeDecoding": "Включить speculative decoding",
-			"draftModelId": "ID черновой модели",
-			"draftModelDesc": "Черновая модель должна быть из той же семьи моделей для корректной работы speculative decoding.",
-			"selectDraftModel": "Выбрать черновую модель",
-			"noModelsFound": "Черновых моделей не найдено. Проверьте, что LM Studio запущен с включённым серверным режимом.",
-			"description": "LM Studio позволяет запускать модели локально на вашем компьютере. Для начала ознакомьтесь с <a>кратким руководством</a>. Также необходимо включить <b>локальный сервер</b> LM Studio для работы с этим расширением. <span>Примечание:</span> AlfaCode assistant использует сложные подсказки и лучше всего работает с моделями Claude. Менее мощные модели могут работать некорректно."
+			"baseUrl": "������� URL (�����������)",
+			"modelId": "ID ������",
+			"speculativeDecoding": "�������� speculative decoding",
+			"draftModelId": "ID �������� ������",
+			"draftModelDesc": "�������� ������ ������ ���� �� ��� �� ����� ������� ��� ���������� ������ speculative decoding.",
+			"selectDraftModel": "������� �������� ������",
+			"noModelsFound": "�������� ������� �� �������. ���������, ��� LM Studio ������� � ���������� ��������� �������.",
+			"description": "LM Studio ��������� ��������� ������ �������� �� ����� ����������. ��� ������ ������������ � <a>������� ������������</a>. ����� ���������� �������� <b>��������� ������</b> LM Studio ��� ������ � ���� �����������. <span>����������:</span> AlfaCode assistant ���������� ������� ��������� � ����� ����� �������� � �������� Claude. ����� ������ ������ ����� �������� �����������."
 		},
 		"ollama": {
-			"baseUrl": "Базовый URL (опционально)",
-			"modelId": "ID модели",
-			"apiKey": "API-ключ Ollama",
-			"apiKeyPlaceholder": "Введите ваш API-ключ",
-			"apiKeyHelp": "Опциональный API-ключ для аутентифицированных экземпляров Ollama или облачных сервисов. Оставьте пустым для локальных установок.",
-			"numCtx": "Размер контекстного окна (num_ctx)",
-			"numCtxHelp": "Переопределяет размер контекстного окна модели по умолчанию. Оставьте пустым, чтобы использовать конфигурацию Modelfile модели. Минимальное значение — 128.",
-			"description": "Ollama позволяет запускать модели локально на вашем компьютере. Для начала ознакомьтесь с кратким руководством.",
-			"warning": "Примечание: AlfaCode assistant использует сложные подсказки и лучше всего работает с моделями Claude. Менее мощные модели могут работать некорректно."
+			"baseUrl": "������� URL (�����������)",
+			"modelId": "ID ������",
+			"apiKey": "API-���� Ollama",
+			"apiKeyPlaceholder": "������� ��� API-����",
+			"apiKeyHelp": "������������ API-���� ��� ������������������� ����������� Ollama ��� �������� ��������. �������� ������ ��� ��������� ���������.",
+			"numCtx": "������ ������������ ���� (num_ctx)",
+			"numCtxHelp": "�������������� ������ ������������ ���� ������ �� ���������. �������� ������, ����� ������������ ������������ Modelfile ������. ����������� �������� � 128.",
+			"description": "Ollama ��������� ��������� ������ �������� �� ����� ����������. ��� ������ ������������ � ������� ������������.",
+			"warning": "����������: AlfaCode assistant ���������� ������� ��������� � ����� ����� �������� � �������� Claude. ����� ������ ������ ����� �������� �����������."
 		},
-		"unboundApiKey": "Unbound API-ключ",
-		"getUnboundApiKey": "Получить Unbound API-ключ",
-		"unboundRefreshModelsSuccess": "Список моделей обновлен! Теперь вы можете выбрать из последних моделей.",
-		"unboundInvalidApiKey": "Недействительный API-ключ. Пожалуйста, проверьте ваш API-ключ и попробуйте снова.",
-		"nanoGptApiKey": "API-ключ Nano-GPT",
-		"getNanoGptApiKey": "Получить API-ключ Nano-GPT",
-		"nanoGptModelList": "Список моделей",
+		"unboundApiKey": "Unbound API-����",
+		"getUnboundApiKey": "�������� Unbound API-����",
+		"unboundRefreshModelsSuccess": "������ ������� ��������! ������ �� ������ ������� �� ��������� �������.",
+		"unboundInvalidApiKey": "���������������� API-����. ����������, ��������� ��� API-���� � ���������� �����.",
+		"nanoGptApiKey": "API-���� Nano-GPT",
+		"getNanoGptApiKey": "�������� API-���� Nano-GPT",
+		"nanoGptModelList": "������ �������",
 		"nanoGptModelListOptions": {
-			"all": "Все модели",
-			"personalized": "Персонализированные модели",
-			"subscription": "Модели по подписке"
+			"all": "��� ������",
+			"personalized": "������������������� ������",
+			"subscription": "������ �� ��������"
 		},
 		"humanRelay": {
-			"description": "API-ключ не требуется, но пользователю нужно вручную копировать и вставлять информацию в веб-чат ИИ.",
-			"instructions": "Во время использования появится диалоговое окно, и текущее сообщение будет скопировано в буфер обмена автоматически. Вам нужно вставить его в веб-версию ИИ (например, ChatGPT или Claude), затем скопировать ответ ИИ обратно в диалоговое окно и нажать кнопку подтверждения."
+			"description": "API-���� �� ���������, �� ������������ ����� ������� ���������� � ��������� ���������� � ���-��� ��.",
+			"instructions": "�� ����� ������������� �������� ���������� ����, � ������� ��������� ����� ����������� � ����� ������ �������������. ��� ����� �������� ��� � ���-������ �� (��������, ChatGPT ��� Claude), ����� ����������� ����� �� ������� � ���������� ���� � ������ ������ �������������."
 		},
 		"roo": {
-			"authenticatedMessage": "Безопасно аутентифицирован через твой аккаунт Roo Code Cloud.",
-			"connectButton": "Подключиться к Roo Code Cloud"
+			"authenticatedMessage": "��������� ���������������� ����� ���� ������� AlfaCode assistant Cloud.",
+			"connectButton": "������������ � AlfaCode assistant Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
-				"title": "Маршрутизация провайдера OpenRouter",
-				"description": "OpenRouter направляет запросы к лучшим доступным провайдерам для вашей модели. По умолчанию запросы балансируются между топовыми провайдерами для максимальной доступности. Однако вы можете выбрать конкретного провайдера для этой модели.",
-				"learnMore": "Подробнее о маршрутизации провайдеров"
+				"title": "������������� ���������� OpenRouter",
+				"description": "OpenRouter ���������� ������� � ������ ��������� ����������� ��� ����� ������. �� ��������� ������� ������������� ����� �������� ������������ ��� ������������ �����������. ������ �� ������ ������� ����������� ���������� ��� ���� ������.",
+				"learnMore": "��������� � ������������� �����������"
 			}
 		},
 		"customModel": {
-			"capabilities": "Настройте возможности и стоимость вашей пользовательской модели, совместимой с OpenAI. Будьте осторожны при указании возможностей модели, это может повлиять на работу AlfaCode assistant.",
+			"capabilities": "��������� ����������� � ��������� ����� ���������������� ������, ����������� � OpenAI. ������ ��������� ��� �������� ������������ ������, ��� ����� �������� �� ������ AlfaCode assistant.",
 			"maxTokens": {
-				"label": "Максимум токенов на вывод",
-				"description": "Максимальное количество токенов, которые модель может сгенерировать в ответе. (Укажите -1, чтобы сервер сам определил максимум.)"
+				"label": "�������� ������� �� �����",
+				"description": "������������ ���������� �������, ������� ������ ����� ������������� � ������. (������� -1, ����� ������ ��� ��������� ��������.)"
 			},
 			"contextWindow": {
-				"label": "Размер окна контекста",
-				"description": "Общее количество токенов (вход + выход), которые модель может обработать."
+				"label": "������ ���� ���������",
+				"description": "����� ���������� ������� (���� + �����), ������� ������ ����� ����������."
 			},
 			"imageSupport": {
-				"label": "Поддержка изображений",
-				"description": "Может ли эта модель обрабатывать и понимать изображения?"
+				"label": "��������� �����������",
+				"description": "����� �� ��� ������ ������������ � �������� �����������?"
 			},
 			"computerUse": {
-				"label": "Использование компьютера",
-				"description": "Может ли эта модель взаимодействовать с браузером?"
+				"label": "������������� ����������",
+				"description": "����� �� ��� ������ ����������������� � ���������?"
 			},
 			"promptCache": {
-				"label": "Кэширование подсказок",
-				"description": "Может ли эта модель кэшировать подсказки?"
+				"label": "����������� ���������",
+				"description": "����� �� ��� ������ ���������� ���������?"
 			},
 			"pricing": {
 				"input": {
-					"label": "Цена за вход",
-					"description": "Стоимость за миллион токенов во входном сообщении/подсказке. Влияет на стоимость отправки контекста и инструкций модели."
+					"label": "���� �� ����",
+					"description": "��������� �� ������� ������� �� ������� ���������/���������. ������ �� ��������� �������� ��������� � ���������� ������."
 				},
 				"output": {
-					"label": "Цена за вывод",
-					"description": "Стоимость за миллион токенов в ответе модели. Влияет на стоимость генерируемого контента."
+					"label": "���� �� �����",
+					"description": "��������� �� ������� ������� � ������ ������. ������ �� ��������� ������������� ��������."
 				},
 				"cacheReads": {
-					"label": "Цена чтения из кэша",
-					"description": "Стоимость за миллион токенов при чтении из кэша. Взимается при получении кэшированного ответа."
+					"label": "���� ������ �� ����",
+					"description": "��������� �� ������� ������� ��� ������ �� ����. ��������� ��� ��������� ������������� ������."
 				},
 				"cacheWrites": {
-					"label": "Цена записи в кэш",
-					"description": "Стоимость за миллион токенов при записи в кэш. Взимается при первом кэшировании подсказки."
+					"label": "���� ������ � ���",
+					"description": "��������� �� ������� ������� ��� ������ � ���. ��������� ��� ������ ����������� ���������."
 				}
 			},
-			"resetDefaults": "Сбросить к значениям по умолчанию"
+			"resetDefaults": "�������� � ��������� �� ���������"
 		},
 		"rateLimitAfter": {
-			"label": "Ограничение скорости в конце",
-			"description": "Начните ограничивать скорость после завершения потока API."
+			"label": "����������� �������� � �����",
+			"description": "������� ������������ �������� ����� ���������� ������ API."
 		},
 		"rateLimitSeconds": {
-			"label": "Лимит скорости",
-			"description": "Минимальное время между запросами к API."
+			"label": "����� ��������",
+			"description": "����������� ����� ����� ��������� � API."
 		},
 		"consecutiveMistakeLimit": {
-			"label": "Лимит ошибок и повторений",
-			"description": "Количество последовательных ошибок или повторных действий перед показом диалогового окна 'У Kilo возникли проблемы'. Установите 0, чтобы отключить этот механизм безопасности (он никогда не сработает).",
-			"unlimitedDescription": "Включены неограниченные повторные попытки (автоматическое продолжение). Диалоговое окно никогда не появится.",
-			"warning": "⚠️ Установка значения 0 разрешает неограниченные повторные попытки, что может значительно увеличить использование API"
+			"label": "����� ������ � ����������",
+			"description": "���������� ���������������� ������ ��� ��������� �������� ����� ������� ����������� ���� '� AlfaCode assistant �������� ��������'. ���������� 0, ����� ��������� ���� �������� ������������ (�� ������� �� ���������).",
+			"unlimitedDescription": "�������� �������������� ��������� ������� (�������������� �����������). ���������� ���� ������� �� ��������.",
+			"warning": "?? ��������� �������� 0 ��������� �������������� ��������� �������, ��� ����� ����������� ��������� ������������� API"
 		},
 		"reasoningEffort": {
-			"label": "Усилия по рассуждению модели",
-			"none": "Нет",
-			"minimal": "Минимальный (самый быстрый)",
-			"high": "Высокие",
-			"xhigh": "Очень высокие",
-			"medium": "Средние",
-			"low": "Низкие",
-			"xhigh": "Очень высокие"
+			"label": "������ �� ����������� ������",
+			"none": "���",
+			"minimal": "����������� (����� �������)",
+			"high": "�������",
+			"xhigh": "����� �������",
+			"medium": "�������",
+			"low": "������"
 		},
 		"verbosity": {
-			"label": "Подробность вывода",
-			"high": "Высокая",
-			"medium": "Средняя",
-			"low": "Низкая",
-			"description": "Контролирует, насколько подробны ответы модели. Низкая подробность дает краткие ответы, а высокая — подробные объяснения."
+			"label": "����������� ������",
+			"high": "�������",
+			"medium": "�������",
+			"low": "������",
+			"description": "������������, ��������� �������� ������ ������. ������ ����������� ���� ������� ������, � ������� � ��������� ����������."
 		},
-		"setReasoningLevel": "Включить усилие рассуждения",
+		"setReasoningLevel": "�������� ������ �����������",
 		"claudeCode": {
-			"pathLabel": "Путь к Claude Code",
-			"description": "Необязательный путь к вашему Claude Code CLI. По умолчанию используется 'claude', если не установлено.",
-			"placeholder": "По умолчанию: claude",
-			"maxTokensLabel": "Макс. выходных токенов",
-			"maxTokensDescription": "Максимальное количество выходных токенов для ответов Claude Code. По умолчанию 8000."
+			"pathLabel": "���� � Claude Code",
+			"description": "�������������� ���� � ������ Claude Code CLI. �� ��������� ������������ 'claude', ���� �� �����������.",
+			"placeholder": "�� ���������: claude",
+			"maxTokensLabel": "����. �������� �������",
+			"maxTokensDescription": "������������ ���������� �������� ������� ��� ������� Claude Code. �� ��������� 8000.",
+			"signInButton": "����� � Claude Code",
+			"signOutButton": "�����"
 		},
 		"qwenCode": {
-			"oauthPath": "Путь к учетным данным OAuth (необязательно)",
-			"oauthPathDescription": "Путь к файлу учетных данных OAuth. Оставьте пустым для использования местоположения по умолчанию (~/.qwen/oauth_creds.json).",
-			"description": "Этот провайдер использует OAuth-аутентификацию из сервиса Qwen и не требует API-ключей.",
-			"instructions": "Пожалуйста, следуйте официальной документации для получения файла авторизации и размещения его по указанному пути.",
-			"setupLink": "Официальная документация Qwen"
+			"oauthPath": "���� � ������� ������ OAuth (�������������)",
+			"oauthPathDescription": "���� � ����� ������� ������ OAuth. �������� ������ ��� ������������� �������������� �� ��������� (~/.qwen/oauth_creds.json).",
+			"description": "���� ��������� ���������� OAuth-�������������� �� ������� Qwen � �� ������� API-������.",
+			"instructions": "����������, �������� ����������� ������������ ��� ��������� ����� ����������� � ���������� ��� �� ���������� ����.",
+			"setupLink": "����������� ������������ Qwen"
 		},
-		"profileName": "Имя профиля",
-		"profileType": "Тип профиля",
-		"profileTypeChat": "Чат",
-		"profileTypeAutocomplete": "Автодополнение",
-		"profileTypeDescription": "Профили чата используются для разговоров. Разрешён только один профиль автодополнения.",
-		"autocompleteLabel": "(Автодополнение)",
+		"profileName": "��� �������",
+		"profileType": "��� �������",
+		"profileTypeChat": "���",
+		"profileTypeAutocomplete": "��������������",
+		"profileTypeDescription": "������� ���� ������������ ��� ����������. �������� ������ ���� ������� ��������������.",
+		"autocompleteLabel": "(��������������)",
 		"autocomplete": {
-			"onlyOneAllowed": "Разрешён только один профиль автодополнения. Профиль \"{{existingName}}\" уже настроен для автодополнения. Пожалуйста, сначала измени его тип или удали его."
+			"onlyOneAllowed": "�������� ������ ���� ������� ��������������. ������� \"{{existingName}}\" ��� �������� ��� ��������������. ����������, ������� ������ ��� ��� ��� ����� ���."
 		}
 	},
 	"browser": {
 		"enable": {
-			"label": "Включить инструмент браузера",
-			"description": "Если включено, AlfaCode assistant может использовать браузер для взаимодействия с сайтами при использовании моделей, поддерживающих работу с компьютером. <0>Подробнее</0>"
+			"label": "�������� ���������� ��������",
+			"description": "���� ��������, AlfaCode assistant ����� ������������ ������� ��� �������������� � ������� ��� ������������� �������, �������������� ������ � �����������. <0>���������</0>"
 		},
 		"viewport": {
-			"label": "Размер окна просмотра",
-			"description": "Выберите размер окна для взаимодействия с браузером. Влияет на отображение и взаимодействие с сайтами.",
+			"label": "������ ���� ���������",
+			"description": "�������� ������ ���� ��� �������������� � ���������. ������ �� ����������� � �������������� � �������.",
 			"options": {
-				"largeDesktop": "Большой рабочий стол (1280x800)",
-				"smallDesktop": "Маленький рабочий стол (900x600)",
-				"tablet": "Планшет (768x1024)",
-				"mobile": "Мобильный (360x640)"
+				"largeDesktop": "������� ������� ���� (1280x800)",
+				"smallDesktop": "��������� ������� ���� (900x600)",
+				"tablet": "������� (768x1024)",
+				"mobile": "��������� (360x640)"
 			}
 		},
 		"screenshotQuality": {
-			"label": "Качество скриншота",
-			"description": "Настройте качество WebP для скриншотов браузера. Более высокие значения дают более чёткие изображения, но увеличивают расход токенов."
+			"label": "�������� ���������",
+			"description": "��������� �������� WebP ��� ���������� ��������. ����� ������� �������� ���� ����� ������ �����������, �� ����������� ������ �������."
 		},
 		"remote": {
-			"label": "Использовать удалённое подключение к браузеру",
-			"description": "Подключиться к Chrome с включённым удалённым дебагом (--remote-debugging-port=9222).",
-			"urlPlaceholder": "Пользовательский URL (например, http://localhost:9222)",
-			"testButton": "Проверить соединение",
-			"testingButton": "Проверка...",
-			"instructions": "Введите адрес DevTools Protocol или оставьте поле пустым для автоматического поиска локальных экземпляров Chrome. Кнопка проверки попробует пользовательский URL, если он указан, или выполнит автопоиск."
+			"label": "������������ �������� ����������� � ��������",
+			"description": "������������ � Chrome � ���������� �������� ������� (--remote-debugging-port=9222).",
+			"urlPlaceholder": "���������������� URL (��������, http://localhost:9222)",
+			"testButton": "��������� ����������",
+			"testingButton": "��������...",
+			"instructions": "������� ����� DevTools Protocol ��� �������� ���� ������ ��� ��������������� ������ ��������� ����������� Chrome. ������ �������� ��������� ���������������� URL, ���� �� ������, ��� �������� ���������."
 		}
 	},
 	"checkpoints": {
 		"timeout": {
-			"label": "Таймаут инициализации контрольной точки (секунды)",
-			"description": "Максимальное время ожидания инициализации сервиса контрольных точек. По умолчанию 15 секунд. Диапазон: 10-60 секунд."
+			"label": "������� ������������� ����������� ����� (�������)",
+			"description": "������������ ����� �������� ������������� ������� ����������� �����. �� ��������� 15 ������. ��������: 10-60 ������."
 		},
 		"enable": {
-			"label": "Включить автоматические контрольные точки",
-			"description": "Если включено, AlfaCode assistant будет автоматически создавать контрольные точки во время выполнения задач, что упрощает просмотр изменений или возврат к предыдущим состояниям. <0>Подробнее</0>"
+			"label": "�������� �������������� ����������� �����",
+			"description": "���� ��������, AlfaCode assistant ����� ������������� ��������� ����������� ����� �� ����� ���������� �����, ��� �������� �������� ��������� ��� ������� � ���������� ����������. <0>���������</0>"
 		}
 	},
 	"autoPurge": {
 		"enable": {
-			"label": "Включить автоматическую очистку задач",
-			"description": "Автоматически удалять старые задачи для освобождения дискового пространства и улучшения производительности. Задачи классифицируются по типу и возрасту для определения времени удаления."
+			"label": "�������� �������������� ������� �����",
+			"description": "������������� ������� ������ ������ ��� ������������ ��������� ������������ � ��������� ������������������. ������ ���������������� �� ���� � �������� ��� ����������� ������� ��������."
 		},
 		"defaultRetention": {
-			"label": "Период хранения по умолчанию (дни)",
-			"description": "Количество дней для хранения задач перед их удалением"
+			"label": "������ �������� �� ��������� (���)",
+			"description": "���������� ���� ��� �������� ����� ����� �� ���������"
 		},
 		"neverPurgeFavorited": {
-			"label": "Никогда не удалять избранные задачи",
-			"description": "При включении избранные задачи никогда не будут автоматически удаляться независимо от возраста"
+			"label": "������� �� ������� ��������� ������",
+			"description": "��� ��������� ��������� ������ ������� �� ����� ������������� ��������� ���������� �� ��������"
 		},
 		"favoritedRetention": {
-			"label": "Хранение избранных задач (дни)",
-			"description": "Количество дней для хранения избранных задач (применяется только когда 'Никогда не удалять избранные задачи' отключено)"
+			"label": "�������� ��������� ����� (���)",
+			"description": "���������� ���� ��� �������� ��������� ����� (����������� ������ ����� '������� �� ������� ��������� ������' ���������)"
 		},
 		"completedRetention": {
-			"label": "Хранение завершённых задач (дни)",
-			"description": "Количество дней для хранения задач, которые были успешно завершены"
+			"label": "�������� ����������� ����� (���)",
+			"description": "���������� ���� ��� �������� �����, ������� ���� ������� ���������"
 		},
 		"incompleteRetention": {
-			"label": "Хранение незавершённых задач (дни)",
-			"description": "Количество дней для хранения задач, которые не были завершены (обычно короче чем завершённые задачи)"
+			"label": "�������� ������������� ����� (���)",
+			"description": "���������� ���� ��� �������� �����, ������� �� ���� ��������� (������ ������ ��� ����������� ������)"
 		},
 		"lastRun": {
-			"label": "Последняя очистка"
+			"label": "��������� �������"
 		},
 		"manualPurge": {
-			"button": "Запустить очистку сейчас"
+			"button": "��������� ������� ������"
 		}
 	},
 	"notifications": {
 		"sound": {
-			"label": "Включить звуковые эффекты",
-			"description": "Если включено, AlfaCode assistant будет воспроизводить звуковые эффекты для уведомлений и событий.",
-			"volumeLabel": "Громкость"
+			"label": "�������� �������� �������",
+			"description": "���� ��������, AlfaCode assistant ����� �������������� �������� ������� ��� ����������� � �������.",
+			"volumeLabel": "���������"
 		},
 		"tts": {
-			"label": "Включить озвучивание",
-			"description": "Если включено, AlfaCode assistant будет озвучивать свои ответы с помощью преобразования текста в речь.",
-			"speedLabel": "Скорость"
+			"label": "�������� �����������",
+			"description": "���� ��������, AlfaCode assistant ����� ���������� ���� ������ � ������� �������������� ������ � ����.",
+			"speedLabel": "��������"
 		}
 	},
 	"contextManagement": {
-		"description": "Управляйте, какая информация включается в окно контекста ИИ, что влияет на расход токенов и качество ответов",
+		"description": "����������, ����� ���������� ���������� � ���� ��������� ��, ��� ������ �� ������ ������� � �������� �������",
 		"autoCondenseContextPercent": {
-			"label": "Порог для запуска интеллектуального сжатия контекста",
-			"description": "Когда контекстное окно достигает этого порога, AlfaCode assistant автоматически его сожмёт."
+			"label": "����� ��� ������� ����������������� ������ ���������",
+			"description": "����� ����������� ���� ��������� ����� ������, AlfaCode assistant ������������� ��� �����."
 		},
 		"condensingApiConfiguration": {
-			"label": "Конфигурация API для сжатия контекста",
-			"description": "Выберите конфигурацию API для операций сжатия контекста. Оставьте невыбранным, чтобы использовать текущую активную конфигурацию.",
-			"useCurrentConfig": "По умолчанию"
+			"label": "������������ API ��� ������ ���������",
+			"description": "�������� ������������ API ��� �������� ������ ���������. �������� �����������, ����� ������������ ������� �������� ������������.",
+			"useCurrentConfig": "�� ���������"
 		},
 		"customCondensingPrompt": {
-			"label": "Пользовательская подсказка для сжатия контекста",
-			"description": "Пользовательская системная подсказка для сжатия контекста. Оставьте пустым, чтобы использовать подсказку по умолчанию.",
-			"placeholder": "Введите здесь свой пользовательский промпт для сжатия...\n\nВы можете использовать ту же структуру, что и в промпте по умолчанию:\n- Предыдущий разговор\n- Текущая работа\n- Ключевые технические концепции\n- Соответствующие файлы и код\n- Решение проблем\n- Ожидающие задачи и следующие шаги",
-			"reset": "Сбросить на значение по умолчанию",
-			"hint": "Пусто = использовать промпт по умолчанию"
+			"label": "���������������� ��������� ��� ������ ���������",
+			"description": "���������������� ��������� ��������� ��� ������ ���������. �������� ������, ����� ������������ ��������� �� ���������.",
+			"placeholder": "������� ����� ���� ���������������� ������ ��� ������...\n\n�� ������ ������������ �� �� ���������, ��� � � ������� �� ���������:\n- ���������� ��������\n- ������� ������\n- �������� ����������� ���������\n- ��������������� ����� � ���\n- ������� �������\n- ��������� ������ � ��������� ����",
+			"reset": "�������� �� �������� �� ���������",
+			"hint": "����� = ������������ ������ �� ���������"
 		},
 		"autoCondenseContext": {
-			"name": "Автоматически запускать интеллектуальное сжатие контекста",
-			"description": "Когда включено, AlfaCode assistant будет автоматически сжимать контекст при достижении порога. Когда отключено, вы все еще можете вручную запускать сжатие контекста."
+			"name": "������������� ��������� ���������������� ������ ���������",
+			"description": "����� ��������, AlfaCode assistant ����� ������������� ������� �������� ��� ���������� ������. ����� ���������, �� ��� ��� ������ ������� ��������� ������ ���������."
 		},
 		"contextRouting": {
-			"name": "Включить маршрутизацию контекста (fast/deep)",
-			"description": "Когда включено, AlfaCode assistant будет переключаться на fast или deep в зависимости от заполненности контекстного окна.",
-			"thresholdsLabel": "Пороги маршрутизации",
-			"fastLabel": "Порог fast",
-			"fastDescription": "Переключаться на fast при достижении этого процента.",
-			"deepLabel": "Порог deep",
-			"deepDescription": "Переключаться на deep при достижении этого процента."
+			"name": "�������� ������������� ��������� (fast/deep)",
+			"description": "����� ��������, AlfaCode assistant ����� ������������� �� fast ��� deep � ����������� �� ������������� ������������ ����.",
+			"thresholdsLabel": "������ �������������",
+			"fastLabel": "����� fast",
+			"fastDescription": "������������� �� fast ��� ���������� ����� ��������.",
+			"deepLabel": "����� deep",
+			"deepDescription": "������������� �� deep ��� ���������� ����� ��������."
 		},
 		"openTabs": {
-			"label": "Лимит контекста открытых вкладок",
-			"description": "Максимальное количество открытых вкладок VSCode, включаемых в контекст. Большее значение даёт больше контекста, но увеличивает расход токенов."
+			"label": "����� ��������� �������� �������",
+			"description": "������������ ���������� �������� ������� VSCode, ���������� � ��������. ������� �������� ��� ������ ���������, �� ����������� ������ �������."
 		},
 		"workspaceFiles": {
-			"label": "Лимит контекста файлов рабочей области",
-			"description": "Максимальное количество файлов, включаемых в детали текущей рабочей директории. Большее значение даёт больше контекста, но увеличивает расход токенов."
+			"label": "����� ��������� ������ ������� �������",
+			"description": "������������ ���������� ������, ���������� � ������ ������� ������� ����������. ������� �������� ��� ������ ���������, �� ����������� ������ �������."
 		},
 		"rooignore": {
-			"label": "Показывать .kilocodeignore-файлы в списках и поиске",
-			"description": "Если включено, файлы, совпадающие с шаблонами в .kilocodeignore, будут отображаться в списках с символом замка. Если выключено, такие файлы полностью скрываются из списков и поиска."
+			"label": "���������� .kilocodeignore-����� � ������� � ������",
+			"description": "���� ��������, �����, ����������� � ��������� � .kilocodeignore, ����� ������������ � ������� � �������� �����. ���� ���������, ����� ����� ��������� ���������� �� ������� � ������."
 		},
 		"maxReadFile": {
-			"label": "Порог автообрезки при чтении файла",
-			"description": "AlfaCode assistant читает столько строк, если модель не указала явно начало/конец. Если число меньше общего количества строк в файле, AlfaCode assistant создаёт индекс определений кода по строкам. Особые случаи: -1 — AlfaCode assistant читает весь файл (без индексации), 0 — не читает строки, а создаёт только минимальный индекс. Меньшие значения минимизируют начальный контекст, позволяя точнее читать нужные диапазоны строк. Явные запросы начала/конца не ограничиваются этим параметром.",
-			"lines": "строк",
-			"always_full_read": "Всегда читать весь файл"
+			"label": "����� ����������� ��� ������ �����",
+			"description": "AlfaCode assistant ������ ������� �����, ���� ������ �� ������� ���� ������/�����. ���� ����� ������ ������ ���������� ����� � �����, AlfaCode assistant ������ ������ ����������� ���� �� �������. ������ ������: -1 � AlfaCode assistant ������ ���� ���� (��� ����������), 0 � �� ������ ������, � ������ ������ ����������� ������. ������� �������� ������������ ��������� ��������, �������� ������ ������ ������ ��������� �����. ����� ������� ������/����� �� �������������� ���� ����������.",
+			"lines": "�����",
+			"always_full_read": "������ ������ ���� ����"
 		},
 		"maxConcurrentFileReads": {
-			"label": "Лимит одновременного чтения",
-			"description": "Максимальное количество файлов, которые инструмент 'read_file' может обрабатывать одновременно. Более высокие значения могут ускорить чтение нескольких небольших файлов, но увеличивают использование памяти."
+			"label": "����� �������������� ������",
+			"description": "������������ ���������� ������, ������� ���������� 'read_file' ����� ������������ ������������. ����� ������� �������� ����� �������� ������ ���������� ��������� ������, �� ����������� ������������� ������."
 		},
 		"diagnostics": {
 			"includeMessages": {
-				"label": "Автоматически включать диагностику в контекст",
-				"description": "Если включено, диагностические сообщения (ошибки) из редактируемых файлов будут автоматически включаться в контекст. Вы всегда можете вручную включить всю диагностику рабочей области, используя @problems."
+				"label": "������������� �������� ����������� � ��������",
+				"description": "���� ��������, ��������������� ��������� (������) �� ������������� ������ ����� ������������� ���������� � ��������. �� ������ ������ ������� �������� ��� ����������� ������� �������, ��������� @problems."
 			},
 			"maxMessages": {
-				"label": "Максимальное количество диагностических сообщений",
-				"description": "Максимальное количество диагностических сообщений для включения в файл. Этот лимит применяется как к автоматическому включению (когда флажок включен), так и к ручным упоминаниям @problems. Более высокие значения предоставляют больше контекста, но увеличивают использование токенов.",
-				"resetTooltip": "Сбросить к значению по умолчанию (50)",
-				"unlimited": "Неограниченные диагностические сообщения",
-				"unlimitedLabel": "Неограниченно"
+				"label": "������������ ���������� ��������������� ���������",
+				"description": "������������ ���������� ��������������� ��������� ��� ��������� � ����. ���� ����� ����������� ��� � ��������������� ��������� (����� ������ �������), ��� � � ������ ����������� @problems. ����� ������� �������� ������������� ������ ���������, �� ����������� ������������� �������.",
+				"resetTooltip": "�������� � �������� �� ��������� (50)",
+				"unlimited": "�������������� ��������������� ���������",
+				"unlimitedLabel": "�������������"
 			},
 			"delayAfterWrite": {
-				"label": "Задержка после записи, чтобы диагностика могла обнаружить потенциальные проблемы",
-				"description": "Время ожидания после записи файлов перед продолжением, чтобы средства диагностики могли обработать изменения и выявить проблемы."
+				"label": "�������� ����� ������, ����� ����������� ����� ���������� ������������� ��������",
+				"description": "����� �������� ����� ������ ������ ����� ������������, ����� �������� ����������� ����� ���������� ��������� � ������� ��������."
 			}
 		},
 		"condensingThreshold": {
-			"label": "Порог запуска сжатия",
-			"selectProfile": "Настроить порог для профиля",
-			"defaultProfile": "Глобальный по умолчанию (все профили)",
-			"defaultDescription": "Когда контекст достигнет этого процента, он будет автоматически сжат для всех профилей, если у них нет пользовательских настроек",
-			"profileDescription": "Пользовательский порог только для этого профиля (переопределяет глобальный по умолчанию)",
-			"inheritDescription": "Этот профиль наследует глобальный порог по умолчанию ({{threshold}}%)",
-			"usesGlobal": "(использует глобальный {{threshold}}%)"
+			"label": "����� ������� ������",
+			"selectProfile": "��������� ����� ��� �������",
+			"defaultProfile": "���������� �� ��������� (��� �������)",
+			"defaultDescription": "����� �������� ��������� ����� ��������, �� ����� ������������� ���� ��� ���� ��������, ���� � ��� ��� ���������������� ��������",
+			"profileDescription": "���������������� ����� ������ ��� ����� ������� (�������������� ���������� �� ���������)",
+			"inheritDescription": "���� ������� ��������� ���������� ����� �� ��������� ({{threshold}}%)",
+			"usesGlobal": "(���������� ���������� {{threshold}}%)"
 		},
 		"maxImageFileSize": {
-			"label": "Максимальный размер файла изображения",
+			"label": "������������ ������ ����� �����������",
 			"mb": "MB",
-			"description": "Максимальный размер (в МБ) для файлов изображений, которые могут быть обработаны инструментом чтения файлов."
+			"description": "������������ ������ (� ��) ��� ������ �����������, ������� ����� ���� ���������� ������������ ������ ������."
 		},
 		"maxTotalImageSize": {
-			"label": "Максимальный общий размер изображений",
-			"mb": "МБ",
-			"description": "Максимальный совокупный лимит размера (в МБ) для всех изображений, обрабатываемых в одной операции read_file. При чтении нескольких изображений размер каждого изображения добавляется к общему. Если включение другого изображения превысит этот лимит, оно будет пропущено."
+			"label": "������������ ����� ������ �����������",
+			"mb": "��",
+			"description": "������������ ���������� ����� ������� (� ��) ��� ���� �����������, �������������� � ����� �������� read_file. ��� ������ ���������� ����������� ������ ������� ����������� ����������� � ������. ���� ��������� ������� ����������� �������� ���� �����, ��� ����� ���������."
 		},
 		"includeCurrentTime": {
-			"label": "Включить текущее время в контекст",
-			"description": "Если включено, текущее время и информация о часовом поясе будут включены в системную подсказку. Отключите, если модели прекращают работу из-за проблем со временем."
+			"label": "�������� ������� ����� � ��������",
+			"description": "���� ��������, ������� ����� � ���������� � ������� ����� ����� �������� � ��������� ���������. ���������, ���� ������ ���������� ������ ��-�� ������� �� ��������."
 		},
 		"includeCurrentCost": {
-			"label": "Включить текущую стоимость в контекст",
-			"description": "Если включено, текущая стоимость использования API будет включена в системную подсказку. Отключите, если модели прекращают работу из-за проблем со стоимостью."
+			"label": "�������� ������� ��������� � ��������",
+			"description": "���� ��������, ������� ��������� ������������� API ����� �������� � ��������� ���������. ���������, ���� ������ ���������� ������ ��-�� ������� �� ����������."
 		},
 		"maxGitStatusFiles": {
-			"label": "Git статус макс. файлов",
-			"description": "Максимальное количество записей файлов для включения в контекст статуса git. Установите значение 0, чтобы отключить. Информация о ветке и коммитах всегда отображается, если значение > 0."
+			"label": "Git ������ ����. ������",
+			"description": "������������ ���������� ������� ������ ��� ��������� � �������� ������� git. ���������� �������� 0, ����� ���������. ���������� � ����� � �������� ������ ������������, ���� �������� > 0."
 		},
 		"enableSubfolderRules": {
-			"label": "Включить правила подпапок",
-			"description": "Рекурсивно обнаруживать и загружать файлы .roo/rules и AGENTS.md из подкаталогов. Полезно для монорепозиториев с правилами для каждого пакета."
+			"label": "�������� ������� ��������",
+			"description": "���������� ������������ � ��������� ����� .roo/rules � AGENTS.md �� ������������. ������� ��� ���������������� � ��������� ��� ������� ������."
 		}
 	},
 	"terminal": {
 		"basic": {
-			"label": "Настройки терминала: Основные",
-			"description": "Основные настройки терминала"
+			"label": "��������� ���������: ��������",
+			"description": "�������� ��������� ���������"
 		},
 		"advanced": {
-			"label": "Настройки терминала: Расширенные",
-			"description": "Эти настройки применяются только когда 'Использовать встроенный терминал' отключено. Они влияют только на терминал VS Code и могут потребовать перезапуска IDE."
+			"label": "��������� ���������: �����������",
+			"description": "��� ��������� ����������� ������ ����� '������������ ���������� ��������' ���������. ��� ������ ������ �� �������� VS Code � ����� ����������� ����������� IDE."
 		},
 		"outputLineLimit": {
-			"label": "Лимит вывода терминала",
-			"description": "Сохраняет первые и последние строки и отбрасывает средние, чтобы остаться в пределах лимита. Уменьшите для экономии токенов; увеличьте, чтобы дать Kilo больше деталей из середины. Kilo видит заполнитель там, где контент пропущен.<0>Подробнее</0>"
+			"label": "����� ������ ���������",
+			"description": "��������� ������ � ��������� ������ � ����������� �������, ����� �������� � �������� ������. ��������� ��� �������� �������; ���������, ����� ���� AlfaCode assistant ������ ������� �� ��������. AlfaCode assistant ����� ����������� ���, ��� ������� ��������.<0>���������</0>"
 		},
 		"outputCharacterLimit": {
-			"label": "Лимит символов терминала",
-			"description": "Переопределяет лимит строк для предотвращения проблем с памятью, устанавливая жёсткое ограничение на размер вывода. При превышении сохраняет начало и конец и показывает Kilo заполнитель там, где контент пропущен. <0>Подробнее</0>"
+			"label": "����� �������� ���������",
+			"description": "�������������� ����� ����� ��� �������������� ������� � �������, ������������ ������ ����������� �� ������ ������. ��� ���������� ��������� ������ � ����� � ���������� AlfaCode assistant ����������� ���, ��� ������� ��������. <0>���������</0>"
 		},
 		"shellIntegrationTimeout": {
-			"label": "Таймаут интеграции shell терминала",
-			"description": "Сколько ждать интеграции shell VS Code перед выполнением команд. Увеличьте, если ваш shell запускается медленно или вы видите ошибки 'Интеграция Shell Недоступна'. <0>Подробнее</0>"
+			"label": "������� ���������� shell ���������",
+			"description": "������� ����� ���������� shell VS Code ����� ����������� ������. ���������, ���� ��� shell ����������� �������� ��� �� ������ ������ '���������� Shell ����������'. <0>���������</0>"
 		},
 		"shellIntegrationDisabled": {
-			"label": "Использовать встроенный терминал (рекомендуется)",
-			"description": "Выполняйте команды во встроенном терминале (чат), чтобы обойти профили/интеграцию shell для более быстрого и надёжного выполнения. Когда отключено, Kilo использует терминал VS Code с вашим профилем shell, промптами и плагинами. <0>Подробнее</0>"
+			"label": "������������ ���������� �������� (�������������)",
+			"description": "���������� ������� �� ���������� ��������� (���), ����� ������ �������/���������� shell ��� ����� �������� � �������� ����������. ����� ���������, AlfaCode assistant ���������� �������� VS Code � ����� �������� shell, ��������� � ���������. <0>���������</0>"
 		},
 		"commandDelay": {
-			"label": "Задержка команды терминала",
-			"description": "Добавляет короткую паузу после каждой команды, чтобы терминал VS Code мог вывести весь output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Используйте только если видите отсутствующий tail output; иначе оставьте 0. <0>Подробнее</0>"
+			"label": "�������� ������� ���������",
+			"description": "��������� �������� ����� ����� ������ �������, ����� �������� VS Code ��� ������� ���� output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). ����������� ������ ���� ������ ������������� tail output; ����� �������� 0. <0>���������</0>"
 		},
 		"compressProgressBar": {
-			"label": "Сжимать вывод прогресс-бара",
-			"description": "Сворачивает прогресс-бары/спиннеры, чтобы сохранялось только финальное состояние (экономит токены). <0>Подробнее</0>"
+			"label": "������� ����� ��������-����",
+			"description": "����������� ��������-����/��������, ����� ����������� ������ ��������� ��������� (�������� ������). <0>���������</0>"
 		},
 		"powershellCounter": {
-			"label": "Включить обходчик счётчика PowerShell",
-			"description": "Включите, когда вывод PowerShell отсутствует или дублируется; добавляет маленький счётчик к каждой команде для стабилизации вывода. Оставьте выключенным, если вывод уже выглядит корректно. <0>Подробнее</0>"
+			"label": "�������� �������� �������� PowerShell",
+			"description": "��������, ����� ����� PowerShell ����������� ��� �����������; ��������� ��������� ������� � ������ ������� ��� ������������ ������. �������� �����������, ���� ����� ��� �������� ���������. <0>���������</0>"
 		},
 		"zshClearEolMark": {
-			"label": "Очистить метку EOL ZSH",
-			"description": "Включите, когда видите потерянные % в конце строк или парсинг выглядит неправильно; пропускает метку конца строки (%) Zsh. <0>Подробнее</0>"
+			"label": "�������� ����� EOL ZSH",
+			"description": "��������, ����� ������ ���������� % � ����� ����� ��� ������� �������� �����������; ���������� ����� ����� ������ (%) Zsh. <0>���������</0>"
 		},
 		"zshOhMy": {
-			"label": "Включить интеграцию Oh My Zsh",
-			"description": "Включите, когда ваша тема/плагины Oh My Zsh ожидают интеграцию shell; устанавливает ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Выключите, чтобы избежать установки этой переменной. <0>Подробнее</0>"
+			"label": "�������� ���������� Oh My Zsh",
+			"description": "��������, ����� ���� ����/������� Oh My Zsh ������� ���������� shell; ������������� ITERM_SHELL_INTEGRATION_INSTALLED=Yes. ���������, ����� �������� ��������� ���� ����������. <0>���������</0>"
 		},
 		"zshP10k": {
-			"label": "Включить интеграцию Powerlevel10k",
-			"description": "Включите при использовании интеграции shell Powerlevel10k. <0>Подробнее</0>"
+			"label": "�������� ���������� Powerlevel10k",
+			"description": "�������� ��� ������������� ���������� shell Powerlevel10k. <0>���������</0>"
 		},
 		"zdotdir": {
-			"label": "Включить обработку ZDOTDIR",
-			"description": "Включите, когда интеграция shell zsh не работает или конфликтует с вашими dotfiles. <0>Подробнее</0>"
+			"label": "�������� ��������� ZDOTDIR",
+			"description": "��������, ����� ���������� shell zsh �� �������� ��� ����������� � ������ dotfiles. <0>���������</0>"
 		},
 		"inheritEnv": {
-			"label": "Наследовать переменные среды",
-			"description": "Включите для наследования переменных среды от родительского процесса VS Code. <0>Подробнее</0>"
+			"label": "����������� ���������� �����",
+			"description": "�������� ��� ������������ ���������� ����� �� ������������� �������� VS Code. <0>���������</0>"
 		}
 	},
 	"advancedSettings": {
-		"title": "Дополнительные настройки"
+		"title": "�������������� ���������"
 	},
 	"toolProtocol": {
-		"label": "Протокол вызова инструментов",
-		"description": "Выберите, как AlfaCode assistant будет взаимодействовать с API. Нативный использует API вызова функций провайдера, а XML — определения инструментов в формате XML.",
-		"default": "По умолчанию",
+		"label": "�������� ������ ������������",
+		"description": "��������, ��� AlfaCode assistant ����� ����������������� � API. �������� ���������� API ������ ������� ����������, � XML � ����������� ������������ � ������� XML.",
+		"default": "�� ���������",
 		"xml": "XML",
-		"native": "Нативный",
-		"currentDefault": "По умолчанию: {{protocol}}"
+		"native": "��������",
+		"currentDefault": "�� ���������: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {
-			"label": "Включить редактирование через диффы",
-			"description": "Если включено, AlfaCode assistant сможет быстрее редактировать файлы и автоматически отклонять усечённые полные записи",
+			"label": "�������� �������������� ����� �����",
+			"description": "���� ��������, AlfaCode assistant ������ ������� ������������� ����� � ������������� ��������� ��������� ������ ������",
 			"strategy": {
-				"label": "Стратегия диффа",
+				"label": "��������� �����",
 				"options": {
-					"standard": "Стандартная (один блок)",
-					"multiBlock": "Экспериментально: Мультиблочный дифф",
-					"unified": "Экспериментально: Унифицированный дифф"
+					"standard": "����������� (���� ����)",
+					"multiBlock": "����������������: ������������� ����",
+					"unified": "����������������: ��������������� ����"
 				},
 				"descriptions": {
-					"standard": "Стандартная стратегия применяет изменения к одному блоку кода за раз.",
-					"unified": "Унифицированная стратегия использует несколько подходов к применению диффов и выбирает лучший.",
-					"multiBlock": "Мультиблочная стратегия позволяет обновлять несколько блоков кода в файле за один запрос."
+					"standard": "����������� ��������� ��������� ��������� � ������ ����� ���� �� ���.",
+					"unified": "��������������� ��������� ���������� ��������� �������� � ���������� ������ � �������� ������.",
+					"multiBlock": "������������� ��������� ��������� ��������� ��������� ������ ���� � ����� �� ���� ������."
 				}
 			},
 			"matchPrecision": {
-				"label": "Точность совпадения",
-				"description": "Этот ползунок управляет точностью совпадения секций кода при применении диффов. Меньшие значения позволяют более гибкое совпадение, но увеличивают риск неверной замены. Используйте значения ниже 100% с осторожностью."
+				"label": "�������� ����������",
+				"description": "���� �������� ��������� ��������� ���������� ������ ���� ��� ���������� ������. ������� �������� ��������� ����� ������ ����������, �� ����������� ���� �������� ������. ����������� �������� ���� 100% � �������������."
 			}
 		},
 		"todoList": {
-			"label": "Включить инструмент списка задач",
-			"description": "При включении AlfaCode assistant может создавать и управлять списками задач для отслеживания прогресса. Это помогает организовать сложные задачи в управляемые шаги."
+			"label": "�������� ���������� ������ �����",
+			"description": "��� ��������� AlfaCode assistant ����� ��������� � ��������� �������� ����� ��� ������������ ���������. ��� �������� ������������ ������� ������ � ����������� ����."
 		}
 	},
 	"experimental": {
 		"DIFF_STRATEGY_UNIFIED": {
-			"name": "Использовать экспериментальную стратегию унифицированного диффа",
-			"description": "Включает экспериментальную стратегию унифицированного диффа. Может уменьшить количество повторных попыток из-за ошибок модели, но может привести к неожиданному поведению или неверным правкам. Включайте только если готовы внимательно проверять все изменения."
+			"name": "������������ ����������������� ��������� ���������������� �����",
+			"description": "�������� ����������������� ��������� ���������������� �����. ����� ��������� ���������� ��������� ������� ��-�� ������ ������, �� ����� �������� � ������������ ��������� ��� �������� �������. ��������� ������ ���� ������ ����������� ��������� ��� ���������."
 		},
 		"INSERT_BLOCK": {
-			"name": "Использовать экспериментальный инструмент вставки контента",
-			"description": "Включает экспериментальный инструмент вставки контента, позволяя AlfaCode assistant вставлять контент по номеру строки без создания диффа."
+			"name": "������������ ����������������� ���������� ������� ��������",
+			"description": "�������� ����������������� ���������� ������� ��������, �������� AlfaCode assistant ��������� ������� �� ������ ������ ��� �������� �����."
 		},
 		"POWER_STEERING": {
-			"name": "Использовать экспериментальный режим \"power steering\"",
-			"description": "Если включено, AlfaCode assistant будет чаще напоминать модели детали текущего режима. Это приведёт к более строгому следованию ролям и инструкциям, но увеличит расход токенов."
+			"name": "������������ ����������������� ����� \"power steering\"",
+			"description": "���� ��������, AlfaCode assistant ����� ���� ���������� ������ ������ �������� ������. ��� ������� � ����� �������� ���������� ����� � �����������, �� �������� ������ �������."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
-			"name": "Использовать экспериментальный мультиблочный инструмент диффа",
-			"description": "Если включено, AlfaCode assistant будет использовать мультиблочный инструмент диффа, пытаясь обновить несколько блоков кода за один запрос."
+			"name": "������������ ����������������� ������������� ���������� �����",
+			"description": "���� ��������, AlfaCode assistant ����� ������������ ������������� ���������� �����, ������� �������� ��������� ������ ���� �� ���� ������."
 		},
 		"CONCURRENT_FILE_READS": {
-			"name": "Включить одновременное чтение файлов",
-			"description": "При включении AlfaCode assistant может читать несколько файлов в одном запросе. При отключении AlfaCode assistant должен читать файлы по одному. Отключение может помочь при работе с менее производительными моделями или когда вы хотите больше контроля над доступом к файлам."
+			"name": "�������� ������������� ������ ������",
+			"description": "��� ��������� AlfaCode assistant ����� ������ ��������� ������ � ����� �������. ��� ���������� AlfaCode assistant ������ ������ ����� �� ������. ���������� ����� ������ ��� ������ � ����� ����������������� �������� ��� ����� �� ������ ������ �������� ��� �������� � ������."
 		},
 		"MARKETPLACE": {
-			"name": "Включить Marketplace",
-			"description": "Когда включено, вы можете устанавливать MCP и пользовательские режимы из Marketplace."
+			"name": "�������� Marketplace",
+			"description": "����� ��������, �� ������ ������������� MCP � ���������������� ������ �� Marketplace."
 		},
 		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Включить одновременное редактирование файлов",
-			"description": "Когда включено, AlfaCode assistant может редактировать несколько файлов в одном запросе. Когда отключено, AlfaCode assistant должен редактировать файлы по одному. Отключение этой функции может помочь при работе с менее способными моделями или когда вы хотите больше контроля над изменениями файлов。"
+			"name": "�������� ������������� �������������� ������",
+			"description": "����� ��������, AlfaCode assistant ����� ������������� ��������� ������ � ����� �������. ����� ���������, AlfaCode assistant ������ ������������� ����� �� ������. ���������� ���� ������� ����� ������ ��� ������ � ����� ���������� �������� ��� ����� �� ������ ������ �������� ��� ����������� ������?"
 		},
 		"MORPH_FAST_APPLY": {
-			"name": "Включить Fast Apply",
-			"description": "Если включено, AlfaCode assistant может редактировать файлы с помощью Fast Apply со специализированными моделями, оптимизированными для изменения кода. Требуется Kilo Gateway Provider, OpenRouter или API-ключ Morph.",
-			"apiProvider": "Провайдер API",
+			"name": "�������� Fast Apply",
+			"description": "���� ��������, AlfaCode assistant ����� ������������� ����� � ������� Fast Apply �� ������������������� ��������, ����������������� ��� ��������� ����. ��������� AlfaCode Gateway, OpenRouter ��� API-���� Morph.",
+			"apiProvider": "��������� API",
 			"apiProviderList": {
-				"current": "Текущий"
+				"current": "�������"
 			},
-			"apiKey": "API-ключ (необязательно)",
-			"placeholder": "Введите ваш API-ключ (необязательно)",
-			"modelLabel": "Выбор модели",
-			"modelDescription": "Выберите модель Fast Apply для редактирования файлов",
+			"apiKey": "API-���� (�������������)",
+			"placeholder": "������� ��� API-���� (�������������)",
+			"modelLabel": "����� ������",
+			"modelDescription": "�������� ������ Fast Apply ��� �������������� ������",
 			"models": {
-				"auto": "Авто (по умолчанию - выбирает лучшую доступную)",
-				"morphFast": "Morph v3 Fast (быстрее, ниже стоимость)",
-				"morphLarge": "Morph v3 Large (более мощная)",
+				"auto": "���� (�� ��������� - �������� ������ ���������)",
+				"morphFast": "Morph v3 Fast (�������, ���� ���������)",
+				"morphLarge": "Morph v3 Large (����� ������)",
 				"relace": "Relace Apply v3"
 			}
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
-			"name": "Фоновое редактирование",
-			"description": "Предотвращает нарушение фокуса редактора при включении. Редактирование файлов происходит в фоновом режиме без открытия представлений различий или кражи фокуса. Вы можете продолжать работать без перерывов, пока AlfaCode assistant вносит изменения. Файлы могут открываться без фокуса для захвата диагностики или оставаться полностью закрытыми."
+			"name": "������� ��������������",
+			"description": "������������� ��������� ������ ��������� ��� ���������. �������������� ������ ���������� � ������� ������ ��� �������� ������������� �������� ��� ����� ������. �� ������ ���������� �������� ��� ���������, ���� AlfaCode assistant ������ ���������. ����� ����� ����������� ��� ������ ��� ������� ����������� ��� ���������� ��������� ���������."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
-			"name": "Использовать новый парсер сообщений",
-			"description": "Включите экспериментальный потоковый парсер сообщений, который ускоряет длинные ответы благодаря более эффективной обработке сообщений."
+			"name": "������������ ����� ������ ���������",
+			"description": "�������� ����������������� ��������� ������ ���������, ������� �������� ������� ������ ��������� ����� ����������� ��������� ���������."
 		},
 		"NEW_TASK_REQUIRE_TODOS": {
-			"name": "Требовать список 'todos' для новых задач",
-			"description": "Если включено, инструмент new_task будет требовать предоставления параметра todos. Это гарантирует, что все новые задачи начинаются с четкого списка целей. Когда отключено (по умолчанию), параметр todos остается необязательным для обратной совместимости."
+			"name": "��������� ������ 'todos' ��� ����� �����",
+			"description": "���� ��������, ���������� new_task ����� ��������� �������������� ��������� todos. ��� �����������, ��� ��� ����� ������ ���������� � ������� ������ �����. ����� ��������� (�� ���������), �������� todos �������� �������������� ��� �������� �������������."
 		},
 		"IMAGE_GENERATION": {
-			"providerLabel": "Провайдер",
-			"providerDescription": "Выберите провайдера для генерации изображений.",
-			"name": "Включить генерацию изображений ИИ",
-			"description": "Когда включено, AlfaCode assistant может генерировать изображения из текстовых запросов. Поддерживается LiteLLM с Gemini 3 Pro Image, а также AlfaCode assistant/OpenRouter.",
-			"apiProvider": "Провайдер API",
-			"openRouterApiKeyLabel": "API-ключ OpenRouter",
-			"openRouterApiKeyPlaceholder": "Введите ваш API-ключ OpenRouter",
-			"kiloCodeApiKeyLabel": "API-ключ AlfaCode assistant",
-			"kiloCodeApiKeyPlaceholder": "Введите ваш API-ключ AlfaCode assistant",
-			"kiloCodeApiKeyPaste": "Вставить текущий API-ключ AlfaCode assistant",
-			"litellmApiKeyLabel": "API-ключ LiteLLM",
-			"litellmApiKeyPlaceholder": "Введите ваш API-ключ LiteLLM",
+			"providerLabel": "���������",
+			"providerDescription": "�������� ���������� ��� ��������� �����������.",
+			"name": "�������� ��������� ����������� ��",
+			"description": "����� ��������, AlfaCode assistant ����� ������������ ����������� �� ��������� ��������. �������������� LiteLLM � Gemini 3 Pro Image, � ����� AlfaCode assistant/OpenRouter.",
+			"apiProvider": "��������� API",
+			"openRouterApiKeyLabel": "API-���� OpenRouter",
+			"openRouterApiKeyPlaceholder": "������� ��� API-���� OpenRouter",
+			"kiloCodeApiKeyLabel": "API-���� AlfaCode assistant",
+			"kiloCodeApiKeyPlaceholder": "������� ��� API-���� AlfaCode assistant",
+			"kiloCodeApiKeyPaste": "�������� ������� API-���� AlfaCode assistant",
+			"litellmApiKeyLabel": "API-���� LiteLLM",
+			"litellmApiKeyPlaceholder": "������� ��� API-���� LiteLLM",
 			"litellmBaseUrlLabel": "Base URL LiteLLM",
-			"litellmBaseUrlPlaceholder": "https://ваш-litellm-хост",
-			"litellmDescription": "Использует Gemini 3 Pro Image через ваш LiteLLM-шлюз.",
-			"getApiKeyText": "Получите ваш API-ключ от",
-			"modelSelectionLabel": "Модель генерации изображений",
-			"modelSelectionDescription": "Выберите модель для генерации изображений",
-			"warningMissingKey": "⚠️ API-ключ необходим для генерации изображений, настройте его выше.",
-			"successConfigured": "✓ Генерация изображений настроена и готова к использованию"
+			"litellmBaseUrlPlaceholder": "https://���-litellm-����",
+			"litellmDescription": "���������� Gemini 3 Pro Image ����� ��� LiteLLM-����.",
+			"getApiKeyText": "�������� ��� API-���� ��",
+			"modelSelectionLabel": "������ ��������� �����������",
+			"modelSelectionDescription": "�������� ������ ��� ��������� �����������",
+			"warningMissingKey": "?? API-���� ��������� ��� ��������� �����������, ��������� ��� ����.",
+			"successConfigured": "? ��������� ����������� ��������� � ������ � �������������"
 		},
 		"INLINE_ASSIST": {
-			"name": "Autocomplete",
-			"description": "Включи функции Autocomplete для быстрых предложений кода и улучшений прямо в твоем редакторе. Включает Быструю Задачу (Cmd+I) для целевых изменений и Autocomplete для контекстуальных улучшений."
+			"name": "Автодополнение",
+			"description": "Показывает функции автодополнения для быстрых исправлений кода и встроенной помощи. Нажмите сочетание клавиш (Cmd+I), чтобы открыть встроенное редактирование и автодополнение для выбранного кода."
 		},
 		"RUN_SLASH_COMMAND": {
-			"name": "Включить слэш-команды, инициированные моделью",
-			"description": "Когда включено, AlfaCode assistant может выполнять ваши слэш-команды для выполнения рабочих процессов."
+			"name": "�������� ����-�������, �������������� �������",
+			"description": "����� ��������, AlfaCode assistant ����� ��������� ���� ����-������� ��� ���������� ������� ���������."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Параллельные вызовы инструментов",
-			"description": "При включении нативный протокол может выполнять несколько инструментов в одном ходе сообщения ассистента."
+			"name": "������������ ������ ������������",
+			"description": "��� ��������� �������� �������� ����� ��������� ��������� ������������ � ����� ���� ��������� ����������."
 		},
 		"SPEECH_TO_TEXT": {
-			"name": "Речь-в-текст (STT)",
-			"description": "При включении AlfaCode assistant может преобразовывать вашу речь в текст с помощью модели Whisper от OpenAI. Нажмите кнопку микрофона в чате, чтобы начать запись. Требуется установленный FFmpeg и настроенный API-провайдер OpenAI."
+			"name": "����-�-����� (STT)",
+			"description": "��� ��������� AlfaCode assistant ����� ��������������� ���� ���� � ����� � ������� ������ Whisper �� OpenAI. ������� ������ ��������� � ����, ����� ������ ������. ��������� ������������� FFmpeg � ����������� API-��������� OpenAI."
 		},
 		"CUSTOM_TOOLS": {
-			"name": "Включить пользовательские инструменты",
-			"description": "Если включено, Kilo может загружать и использовать пользовательские инструменты TypeScript/JavaScript из каталога .kilocode/tools вашего проекта или ~/.kilocode/tools для глобальных инструментов. Примечание: эти инструменты будут одобрены автоматически.",
-			"toolsHeader": "Доступные пользовательские инструменты",
-			"noTools": "Пользовательские инструменты не загружены. Добавьте файлы .ts или .js в каталог .kilocode/tools вашего проекта или ~/.kilocode/tools для глобальных инструментов.",
-			"refreshButton": "Обновить",
-			"refreshing": "Обновление...",
-			"refreshSuccess": "Инструменты успешно обновлены",
-			"refreshError": "Не удалось обновить инструменты",
-			"toolParameters": "Параметры"
+			"name": "�������� ���������������� �����������",
+			"description": "���� ��������, AlfaCode assistant ����� ��������� � ������������ ���������������� ����������� TypeScript/JavaScript �� �������� .kilocode/tools ������ ������� ��� ~/.kilocode/tools ��� ���������� ������������. ����������: ��� ����������� ����� �������� �������������.",
+			"toolsHeader": "��������� ���������������� �����������",
+			"noTools": "���������������� ����������� �� ���������. �������� ����� .ts ��� .js � ������� .kilocode/tools ������ ������� ��� ~/.kilocode/tools ��� ���������� ������������.",
+			"refreshButton": "��������",
+			"refreshing": "����������...",
+			"refreshSuccess": "����������� ������� ���������",
+			"refreshError": "�� ������� �������� �����������",
+			"toolParameters": "���������"
 		}
 	},
 	"promptCaching": {
-		"label": "Отключить кэширование промптов",
-		"description": "Если отмечено, AlfaCode assistant не будет использовать кэширование промптов для этой модели."
+		"label": "��������� ����������� ��������",
+		"description": "���� ��������, AlfaCode assistant �� ����� ������������ ����������� �������� ��� ���� ������."
 	},
 	"temperature": {
-		"useCustom": "Использовать пользовательскую температуру",
-		"description": "Управляет случайностью ответов модели.",
-		"rangeDescription": "Более высокие значения делают ответы более случайными, низкие — более детерминированными."
+		"useCustom": "������������ ���������������� �����������",
+		"description": "��������� ������������ ������� ������.",
+		"rangeDescription": "����� ������� �������� ������ ������ ����� ����������, ������ � ����� ������������������."
 	},
 	"modelInfo": {
-		"supportsImages": "Поддерживает изображения",
-		"noImages": "Не поддерживает изображения",
-		"supportsPromptCache": "Поддерживает кэширование подсказок",
-		"noPromptCache": "Не поддерживает кэширование подсказок",
-		"contextWindow": "Контекстное окно:",
-		"maxOutput": "Максимум вывода",
-		"inputPrice": "Цена за вход",
-		"outputPrice": "Цена за вывод",
-		"cacheReadsPrice": "Цена чтения из кэша",
-		"cacheWritesPrice": "Цена записи в кэш",
-		"enableStreaming": "Включить потоковую передачу",
-		"enableR1Format": "Включить параметры модели R1",
-		"enableR1FormatTips": "Необходимо включить при использовании моделей R1 (например, QWQ), чтобы избежать ошибок 400",
-		"useAzure": "Использовать Azure",
-		"azureApiVersion": "Установить версию API Azure",
+		"supportsImages": "������������ �����������",
+		"noImages": "�� ������������ �����������",
+		"supportsPromptCache": "������������ ����������� ���������",
+		"noPromptCache": "�� ������������ ����������� ���������",
+		"contextWindow": "����������� ����:",
+		"maxOutput": "�������� ������",
+		"inputPrice": "���� �� ����",
+		"outputPrice": "���� �� �����",
+		"cacheReadsPrice": "���� ������ �� ����",
+		"cacheWritesPrice": "���� ������ � ���",
+		"enableStreaming": "�������� ��������� ��������",
+		"enableR1Format": "�������� ��������� ������ R1",
+		"enableR1FormatTips": "���������� �������� ��� ������������� ������� R1 (��������, QWQ), ����� �������� ������ 400",
+		"useAzure": "������������ Azure",
+		"azureApiVersion": "���������� ������ API Azure",
 		"gemini": {
-			"freeRequests": "* Бесплатно до {{count}} запросов в минуту. Далее тарификация зависит от размера подсказки.",
-			"pricingDetails": "Подробнее о ценах.",
-			"billingEstimate": "* Счёт — приблизительный, точная стоимость зависит от размера подсказки."
+			"freeRequests": "* ��������� �� {{count}} �������� � ������. ����� ����������� ������� �� ������� ���������.",
+			"pricingDetails": "��������� � �����.",
+			"billingEstimate": "* ���� � ���������������, ������ ��������� ������� �� ������� ���������."
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "Расширение автоматически получает актуальный список моделей на <serviceLink>{{serviceName}}</serviceLink>. Если не уверены, что выбрать, AlfaCode assistant лучше всего работает с <defaultModelLink>{{defaultModelId}}</defaultModelLink>.",
-		"label": "Модель",
-		"searchPlaceholder": "Поиск",
-		"noMatchFound": "Совпадений не найдено",
-		"useCustomModel": "Использовать пользовательскую: {{modelId}}",
-		"simplifiedExplanation": "Ты сможешь настроить подробные параметры модели позже.",
-		"recommendedModels": "Рекомендуемые модели",
-		"allModels": "Все модели"
+		"automaticFetch": "���������� ������������� �������� ���������� ������ ������� �� <serviceLink>{{serviceName}}</serviceLink>. ���� �� �������, ��� �������, AlfaCode assistant ����� ����� �������� � <defaultModelLink>{{defaultModelId}}</defaultModelLink>.",
+		"label": "������",
+		"searchPlaceholder": "�����",
+		"noMatchFound": "���������� �� �������",
+		"useCustomModel": "������������ ����������������: {{modelId}}",
+		"simplifiedExplanation": "�� ������� ��������� ��������� ��������� ������ �����.",
+		"recommendedModels": "������������� ������",
+		"allModels": "��� ������"
 	},
 	"footer": {
-		"feedback": "Если у вас есть вопросы или предложения, откройте issue на <githubLink>github.com/Kilo-Org/kilocode</githubLink> или присоединяйтесь к <redditLink>reddit.com/r/kilocode</redditLink> или <discordLink>kilo.ai/discord</discordLink>",
-		"support": "По финансовым вопросам обращайтесь в службу поддержки по адресу <supportLink>https://kilo.ai/support</supportLink>",
+		"feedback": "���� � ��� ���� ������� ��� �����������, �������� issue �� <githubLink>github.com/Alfa-Org/alfacode</githubLink> ��� ��������������� � <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> ��� <discordLink>alfacode.ai/discord</discordLink>",
+		"support": "�� ���������� �������� ����������� � ������ ��������� �� ������ <supportLink>https://alfacode.ai/support</supportLink>",
 		"telemetry": {
-			"label": "Разрешить отправку ошибок и статистики использования",
-			"description": "Помогите улучшить AlfaCode assistant, отправляя данные об ошибках и использовании. Код, подсказки и личная информация не отправляются. Подробнее — в политике конфиденциальности."
+			"label": "��������� �������� ������ � ���������� �������������",
+			"description": "�������� �������� AlfaCode assistant, ��������� ������ �� ������� � �������������. ���, ��������� � ������ ���������� �� ������������. ��������� � � �������� ������������������."
 		},
 		"settings": {
-			"import": "Импорт",
-			"export": "Экспорт",
-			"reset": "Сбросить"
+			"import": "������",
+			"export": "�������",
+			"reset": "��������"
 		}
 	},
 	"thinkingBudget": {
-		"maxTokens": "Максимум токенов",
-		"maxThinkingTokens": "Максимум токенов на размышления"
+		"maxTokens": "�������� �������",
+		"maxThinkingTokens": "�������� ������� �� �����������"
 	},
 	"validation": {
-		"apiKey": "Вы должны указать действительный API-ключ.",
-		"awsRegion": "Вы должны выбрать регион для использования с Amazon Bedrock.",
-		"googleCloud": "Вы должны указать действительный Project ID и регион Google Cloud.",
-		"modelId": "Вы должны указать действительный ID модели.",
-		"modelSelector": "Вы должны указать действительный селектор модели.",
-		"openAi": "Вы должны указать действительный базовый URL, API-ключ и ID модели.",
+		"apiKey": "�� ������ ������� �������������� API-����.",
+		"awsRegion": "�� ������ ������� ������ ��� ������������� � Amazon Bedrock.",
+		"googleCloud": "�� ������ ������� �������������� Project ID � ������ Google Cloud.",
+		"modelId": "�� ������ ������� �������������� ID ������.",
+		"modelSelector": "�� ������ ������� �������������� �������� ������.",
+		"openAi": "�� ������ ������� �������������� ������� URL, API-���� � ID ������.",
 		"arn": {
-			"invalidFormat": "Неверный формат ARN. Проверьте требования к формату.",
-			"regionMismatch": "Внимание: регион в вашем ARN ({{arnRegion}}) не совпадает с выбранным регионом ({{region}}). Это может вызвать проблемы с доступом. Провайдер будет использовать регион из ARN."
+			"invalidFormat": "�������� ������ ARN. ��������� ���������� � �������.",
+			"regionMismatch": "��������: ������ � ����� ARN ({{arnRegion}}) �� ��������� � ��������� �������� ({{region}}). ��� ����� ������� �������� � ��������. ��������� ����� ������������ ������ �� ARN."
 		},
-		"modelAvailability": "ID модели ({{modelId}}), который вы указали, недоступен. Пожалуйста, выберите другую модель.",
-		"modelDeprecated": "Эта модель больше недоступна. Пожалуйста, выберите другую модель.",
-		"providerNotAllowed": "Провайдер '{{provider}}' не разрешен вашей организацией",
-		"modelNotAllowed": "Модель '{{model}}' не разрешена для провайдера '{{provider}}' вашей организацией",
-		"profileInvalid": "Этот профиль содержит провайдера или модель, которые не разрешены вашей организацией",
-		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth",
-		"sapAiCore": "Вы должны предоставить действительный ключ сервиса SAP AI Core.",
-		"sapAiCoreDeploymentId": "Вы должны выбрать работающее развёртывание для модели '{{model}}'."
+		"modelAvailability": "ID ������ ({{modelId}}), ������� �� �������, ����������. ����������, �������� ������ ������.",
+		"modelDeprecated": "��� ������ ������ ����������. ����������, �������� ������ ������.",
+		"providerNotAllowed": "��������� '{{provider}}' �� �������� ����� ������������",
+		"modelNotAllowed": "������ '{{model}}' �� ��������� ��� ���������� '{{provider}}' ����� ������������",
+		"profileInvalid": "���� ������� �������� ���������� ��� ������, ������� �� ��������� ����� ������������",
+		"qwenCodeOauthPath": "�� ������ ������� ���������� ���� � ������� ������ OAuth",
+		"sapAiCore": "�� ������ ������������ �������������� ���� ������� SAP AI Core.",
+		"sapAiCoreDeploymentId": "�� ������ ������� ���������� ������������ ��� ������ '{{model}}'."
 	},
 	"placeholders": {
-		"apiKey": "Введите API-ключ...",
-		"profileName": "Введите имя профиля",
-		"accessKey": "Введите Access Key...",
-		"secretKey": "Введите Secret Key...",
-		"sessionToken": "Введите Session Token...",
-		"credentialsJson": "Введите Credentials JSON...",
-		"keyFilePath": "Введите путь к ключу...",
-		"projectId": "Введите Project ID...",
-		"customArn": "Введите ARN (например, arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
-		"baseUrl": "Введите базовый URL...",
+		"apiKey": "������� API-����...",
+		"profileName": "������� ��� �������",
+		"accessKey": "������� Access Key...",
+		"secretKey": "������� Secret Key...",
+		"sessionToken": "������� Session Token...",
+		"credentialsJson": "������� Credentials JSON...",
+		"keyFilePath": "������� ���� � �����...",
+		"projectId": "������� Project ID...",
+		"customArn": "������� ARN (��������, arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
+		"baseUrl": "������� ������� URL...",
 		"modelId": {
-			"lmStudio": "например, meta-llama-3.1-8b-instruct",
-			"lmStudioDraft": "например, lmstudio-community/llama-3.2-1b-instruct",
-			"ollama": "например, llama3.1"
+			"lmStudio": "��������, meta-llama-3.1-8b-instruct",
+			"lmStudioDraft": "��������, lmstudio-community/llama-3.2-1b-instruct",
+			"ollama": "��������, llama3.1"
 		},
 		"numbers": {
-			"maxTokens": "например, 4096",
-			"contextWindow": "например, 128000",
-			"inputPrice": "например, 0.0001",
-			"outputPrice": "например, 0.0002",
-			"cacheWritePrice": "например, 0.00005"
+			"maxTokens": "��������, 4096",
+			"contextWindow": "��������, 128000",
+			"inputPrice": "��������, 0.0001",
+			"outputPrice": "��������, 0.0002",
+			"cacheWritePrice": "��������, 0.00005"
 		}
 	},
 	"defaults": {
-		"ollamaUrl": "По умолчанию: http://localhost:11434",
-		"lmStudioUrl": "По умолчанию: http://localhost:1234",
-		"geminiUrl": "По умолчанию: https://generativelanguage.googleapis.com"
+		"ollamaUrl": "�� ���������: http://localhost:11434",
+		"lmStudioUrl": "�� ���������: http://localhost:1234",
+		"geminiUrl": "�� ���������: https://generativelanguage.googleapis.com"
 	},
 	"labels": {
-		"customArn": "Пользовательский ARN",
-		"useCustomArn": "Использовать пользовательский ARN..."
+		"customArn": "���������������� ARN",
+		"useCustomArn": "������������ ���������������� ARN..."
 	},
 	"display": {
 		"taskTimeline": {
-			"label": "Показать временную шкалу задачи",
-			"description": "Отображение визуальной временной шкалы сообщений задачи с цветовым разделением по типам, позволяющее быстро просматривать прогресс выполнения и перематывать к определенным моментам в истории задачи."
+			"label": "�������� ��������� ����� ������",
+			"description": "����������� ���������� ��������� ����� ��������� ������ � �������� ����������� �� �����, ����������� ������ ������������� �������� ���������� � ������������ � ������������ �������� � ������� ������."
 		},
 		"sendMessageOnEnter": {
-			"label": "Отправлять сообщение по Enter",
-			"description": "Если включено, нажатие Enter отправляет сообщение, а Shift+Enter создает новую строку. Отключите, чтобы использовать Shift+Enter для отправки."
+			"label": "���������� ��������� �� Enter",
+			"description": "���� ��������, ������� Enter ���������� ���������, � Shift+Enter ������� ����� ������. ���������, ����� ������������ Shift+Enter ��� ��������."
 		},
 		"costThreshold": {
-			"label": "Скрыть стоимость ниже порога",
-			"description": "Показывать только расходы на запросы выше этой суммы. Расходы всегда видны, когда открыта панель подробностей.",
-			"currentValue": "Текущее пороговое значение: ${{value}}"
+			"label": "������ ��������� ���� ������",
+			"description": "���������� ������ ������� �� ������� ���� ���� �����. ������� ������ �����, ����� ������� ������ ������������.",
+			"currentValue": "������� ��������� ��������: ${{value}}"
 		},
 		"showTimestamps": {
-			"label": "Показывать временные метки",
-			"description": "Показывать временную метку для каждого сообщения в представлении чата"
+			"label": "���������� ��������� �����",
+			"description": "���������� ��������� ����� ��� ������� ��������� � ������������� ����"
 		},
 		"showDiffStats": {
-			"label": "Показывать статистику изменений",
-			"description": "Отображать статистику добавленных/удалённых строк в заголовке задачи"
+			"label": "���������� ���������� ���������",
+			"description": "���������� ���������� �����������/�������� ����� � ��������� ������"
 		}
 	},
 	"ghost": {
 		"showGutterAnimation": {
-			"label": "Показывать анимацию на полях при автозаполнении",
-			"description": "Отображать анимированный индикатор на полях редактора во время работы автозаполнения",
-			"preview": "Предпросмотр анимации"
+			"label": "���������� �������� �� ����� ��� ��������������",
+			"description": "���������� ������������� ��������� �� ����� ��������� �� ����� ������ ��������������",
+			"preview": "������������ ��������"
 		}
 	},
-	"includeMaxOutputTokens": "Включить максимальные выходные токены",
-	"includeMaxOutputTokensDescription": "Отправлять параметр максимальных выходных токенов в API-запросах. Некоторые провайдеры могут не поддерживать это.",
-	"limitMaxTokensDescription": "Ограничить максимальное количество токенов в ответе",
-	"maxOutputTokensLabel": "Максимальные выходные токены",
-	"maxTokensGenerateDescription": "Максимальные токены для генерации в ответе",
+	"includeMaxOutputTokens": "�������� ������������ �������� ������",
+	"includeMaxOutputTokensDescription": "���������� �������� ������������ �������� ������� � API-��������. ��������� ���������� ����� �� ������������ ���.",
+	"limitMaxTokensDescription": "���������� ������������ ���������� ������� � ������",
+	"maxOutputTokensLabel": "������������ �������� ������",
+	"maxTokensGenerateDescription": "������������ ������ ��� ��������� � ������",
 	"serviceTier": {
-		"label": "Уровень обслуживания",
-		"tooltip": "Для более быстрой обработки запросов API попробуйте уровень обслуживания с приоритетной обработкой. Для более низких цен с более высокой задержкой попробуйте уровень гибкой обработки.",
-		"standard": "Стандартный",
-		"flex": "Гибкий",
-		"priority": "Приоритетный",
-		"pricingTableTitle": "Цены по уровням обслуживания (цена за 1 млн токенов)",
+		"label": "������� ������������",
+		"tooltip": "��� ����� ������� ��������� �������� API ���������� ������� ������������ � ������������ ����������. ��� ����� ������ ��� � ����� ������� ��������� ���������� ������� ������ ���������.",
+		"standard": "�����������",
+		"flex": "������",
+		"priority": "������������",
+		"pricingTableTitle": "���� �� ������� ������������ (���� �� 1 ��� �������)",
 		"columns": {
-			"tier": "Уровень",
-			"input": "Вход",
-			"output": "Выход",
-			"cacheReads": "Чтения из кэша"
+			"tier": "�������",
+			"input": "����",
+			"output": "�����",
+			"cacheReads": "������ �� ����"
 		}
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "Сворачивать сообщения о размышлениях по умолчанию",
-			"description": "Если включено, блоки с размышлениями будут свернуты по умолчанию, пока вы не начнете с ними взаимодействовать"
+			"label": "����������� ��������� � ������������ �� ���������",
+			"description": "���� ��������, ����� � ������������� ����� �������� �� ���������, ���� �� �� ������� � ���� �����������������"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "Требовать {{primaryMod}}+Enter для отправки сообщений",
-			"description": "Если включено, необходимо нажать {{primaryMod}}+Enter для отправки сообщений вместо простого Enter"
+			"label": "��������� {{primaryMod}}+Enter ��� �������� ���������",
+			"description": "���� ��������, ���������� ������ {{primaryMod}}+Enter ��� �������� ��������� ������ �������� Enter"
 		}
 	}
 }

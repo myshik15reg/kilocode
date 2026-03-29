@@ -14,6 +14,8 @@
 - getter/setter methods
 - async functions and arrow functions
 */
+// FIX: 2026-02-19-neo4j-integration (TestAnalyzer)
+// Root cause: TypeScript tree-sitter query had no `@definition.import` capture, so `TreeSitterGraphExtractor` produced 0 `import` entities.
 export default `
 (function_signature
   name: (identifier) @name.definition.function) @definition.function
@@ -29,6 +31,10 @@ export default `
 
 (module
   name: (identifier) @name.definition.module) @definition.module
+
+; Import statements
+(import_statement
+  (string) @name.definition.import) @definition.import
 
 (function_declaration
   name: (identifier) @name.definition.function) @definition.function

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { existsSync, readFileSync } from "fs"
-import { resolve } from "path"
+import { isAbsolute, join, resolve } from "path" // kilocode_change
 import type { CLIOptions } from "../types/cli.js"
 
 // Mock fs module
@@ -368,12 +368,17 @@ Line 3: Third instruction`
 
 			// resolve() should convert relative to absolute based on cwd
 			expect(resolvedPath).not.toBe(relativePath)
-			expect(resolvedPath.startsWith("/")).toBe(true)
+			expect(isAbsolute(resolvedPath)).toBe(true)
 			expect(resolvedPath.endsWith("custom-instructions.md")).toBe(true)
 		})
 
 		it("should handle absolute paths directly", () => {
-			const absolutePath = "/home/user/config/instructions.md"
+			// Use an OS-appropriate absolute path. On Windows, POSIX-style "/home/..."
+			// is resolved against the current drive root.
+			const absolutePath =
+				process.platform === "win32"
+					? "C:\\home\\user\\config\\instructions.md"
+					: "/home/user/config/instructions.md"
 			const resolvedPath = resolve(absolutePath)
 
 			// resolve() should return absolute paths as-is
@@ -393,7 +398,7 @@ Line 3: Third instruction`
 			const relativePath = "./config/prompts/instructions.md"
 			const resolvedPath = resolve(relativePath)
 
-			expect(resolvedPath.endsWith("config/prompts/instructions.md")).toBe(true)
+			expect(resolvedPath.endsWith(join("config", "prompts", "instructions.md"))).toBe(true)
 		})
 
 		it("should handle paths without leading ./", () => {
@@ -401,7 +406,7 @@ Line 3: Third instruction`
 			const resolvedPath = resolve(relativePath)
 
 			// Should still resolve from cwd
-			expect(resolvedPath.startsWith("/")).toBe(true)
+			expect(isAbsolute(resolvedPath)).toBe(true)
 			expect(resolvedPath.endsWith("instructions.md")).toBe(true)
 		})
 	})
@@ -521,7 +526,10 @@ Line 3: Third instruction`
 		})
 
 		it("should handle symbolic characters in path", () => {
-			const pathWithSymbols = "/path/with-dashes_underscores/file.md"
+			const pathWithSymbols =
+				process.platform === "win32"
+					? "C:\\path\\with-dashes_underscores\\file.md"
+					: "/path/with-dashes_underscores/file.md"
 			const resolvedPath = resolve(pathWithSymbols)
 
 			expect(resolvedPath).toBe(pathWithSymbols)

@@ -2,6 +2,7 @@ import type { Mock } from "vitest"
 import * as vscode from "vscode"
 
 import { EditorUtils } from "../../integrations/editor/EditorUtils"
+import { Package } from "../../shared/package" // kilocode_change
 
 import { CodeActionProvider, TITLES } from "../CodeActionProvider"
 
@@ -110,7 +111,7 @@ describe("CodeActionProvider", () => {
 			const actions = provider.provideCodeActions(mockDocument, mockRange, mockContext)
 
 			expect(actions).toEqual([])
-			expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("kilo-code")
+			expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith(Package.name) // kilocode_change
 			expect(mockGet).toHaveBeenCalledWith("enableCodeActions", true)
 		})
 

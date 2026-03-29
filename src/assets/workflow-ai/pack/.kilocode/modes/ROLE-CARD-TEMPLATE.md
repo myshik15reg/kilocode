@@ -12,20 +12,20 @@
 
 ## Identity Card
 
-| Attribute | Value |
-|-----------|-------|
-| **Primary Role** | [Что этот режим делает] |
-| **When to Call** | [В каких ситуациях использовать] |
-| **Success Criteria** | [Как понять, что задача выполнена] |
-| **Category** | [Core/Development/Testing/Quality/Architecture/Infrastructure/1C] |
+| Attribute            | Value                                                             |
+| -------------------- | ----------------------------------------------------------------- |
+| **Primary Role**     | [Что этот режим делает]                                           |
+| **When to Call**     | [В каких ситуациях использовать]                                  |
+| **Success Criteria** | [Как понять, что задача выполнена]                                |
+| **Category**         | [Core/Development/Testing/Quality/Architecture/Infrastructure/1C] |
 
 ## Capabilities
 
-| Capability | Value |
-|------------|-------|
-| memory_bank | [full/limited] |
-| subagents | [yes/no] |
-| tools | [full/read-only/read+delegate/read+docs] |
+| Capability  | Value                                    |
+| ----------- | ---------------------------------------- |
+| memory_bank | [full/limited]                           |
+| subagents   | [yes/no]                                 |
+| tools       | [full/read-only/read+delegate/read+docs] |
 
 ## Context Priming
 
@@ -45,29 +45,32 @@
 ## Tool Access Policy
 
 ### CAN Use
-| Tool/Action | Notes |
-|-------------|-------|
-| `read_file` | [Любые файлы / только определённые] |
-| `write_file` | [В каких случаях] |
-| `execute_command` | [Какие команды разрешены] |
+
+| Tool/Action       | Notes                               |
+| ----------------- | ----------------------------------- |
+| `read_file`       | [Любые файлы / только определённые] |
+| `write_file`      | [В каких случаях]                   |
+| `execute_command` | [Какие команды разрешены]           |
 
 ### CANNOT Use (Prohibited)
-| Tool/Action | Why | Delegate To |
-|-------------|-----|-------------|
-| [Действие] | [Причина] | [Какой режим может] |
+
+| Tool/Action | Why       | Delegate To         |
+| ----------- | --------- | ------------------- |
+| [Действие]  | [Причина] | [Какой режим может] |
 
 ## Decision Framework
 
 ### When to Continue vs Delegate
+```
 
-```
 if [condition]:
-    continue in this mode
+continue in this mode
 elif [condition]:
-    new_task([target-mode])
+new_task([target-mode])
 elif [condition]:
-    escalate to orchestrator
-```
+escalate to orchestrator
+
+````
 
 ### Key Decisions
 
@@ -121,7 +124,7 @@ EXPECTED OUTPUT: [deliverable]
 =======================
 </message>
 </new_task>
-```
+````
 
 ## Examples
 
@@ -130,16 +133,19 @@ EXPECTED OUTPUT: [deliverable]
 **Situation:** [Описание ситуации]
 
 **Input:**
+
 ```
 [Что получил на вход]
 ```
 
 **Action:**
+
 ```
 [Что сделал]
 ```
 
 **Output:**
+
 ```
 [Результат]
 ```
@@ -160,16 +166,17 @@ EXPECTED OUTPUT: [deliverable]
 
 ## Related Modes
 
-| Mode | Relationship |
-|------|--------------|
+| Mode     | Relationship                           |
+| -------- | -------------------------------------- |
 | [Mode 1] | [Когда вызывать / когда вызывает тебя] |
-| [Mode 2] | [Relationship] |
+| [Mode 2] | [Relationship]                         |
 
 ## References
 
 - [Ссылка на связанную документацию]
 - [Ссылка на паттерны]
-```
+
+````
 
 ---
 
@@ -229,14 +236,16 @@ EXPECTED OUTPUT: [deliverable]
 
 ## Decision Framework
 
-```
+````
+
 if (root cause found):
-    document and delegate to code-fixer
+document and delegate to code-fixer
 elif (need more logging):
-    add logging, reproduce, continue
+add logging, reproduce, continue
 elif (cannot reproduce):
-    document steps tried, escalate
-```
+document steps tried, escalate
+
+````
 
 ## Workflow
 
@@ -273,7 +282,7 @@ EXPECTED OUTPUT: Fixed code + passing tests
 =======================
 </message>
 </new_task>
-```
+````
 
 ## Quality Checklist
 
@@ -281,6 +290,7 @@ EXPECTED OUTPUT: Fixed code + passing tests
 - [ ] Reproduction steps записаны
 - [ ] Affected files identified
 - [ ] Рекомендация по fix передана
+
 ```
 
 ---
@@ -289,6 +299,7 @@ EXPECTED OUTPUT: Fixed code + passing tests
 
 1. Скопируй шаблон
 2. Заполни все секции
-3. Сохрани в `~/.kilocode/modes/<mode-name>.md`
+3. Сохрани в `.kilocode/modes/<mode-name>.md`
 4. Добавь ссылку в `REGISTRY.md`
 5. При необходимости обнови `roles.md` или `orchestrator-guide.md`
+```

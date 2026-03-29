@@ -53,7 +53,7 @@ export function getSupportedSlashCommands(
 		},
 		{
 			name: "newrule",
-			description: "Create a new AlfaCode rule with context from your conversation",
+			description: "Create a new AlfaCode assistant rule with context from your conversation",
 		},
 		{ name: "reportbug", description: "Create an AlfaCode assistant GitHub issue" },
 		{ name: "smol", description: "Condenses your current context window" },

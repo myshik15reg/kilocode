@@ -27,13 +27,3 @@ SoT по скриптам и путям: [`scripts-entrypoints.md`](../workflows
 | Global     | `~/.kilocode/` (Unix) or `$HOME/.kilocode/` (PowerShell) |
 | Embedded   | `<project>/.kilocode/`                                   |
 | Entrypoint | `AGENTS.md` at project root                              |
-
-## Repo sync policy (runtime/vendor/distribution)
-
-Для этого репозитория действует однонаправленная синхронизация:
-
-1. Vendor source: [`WorkFlowAI/`](../../WorkFlowAI/:1).
-2. Runtime SoT: root pack [`../`](../:1) (файлы `.kilocode/` в корне репозитория).
-3. Distribution copy: [`src/assets/workflow-ai/pack/`](../../src/assets/workflow-ai/pack/:1).
-
-Правило: **Vendor -> Runtime -> Distribution**. Distribution MUST рассматриваться как derived-copy и не должен редактироваться вручную вне sync-процесса.

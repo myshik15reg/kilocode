@@ -1,0 +1,18 @@
+[
+	{
+		"id": "small-synth",
+		"label": "Synthetic small repo (TS + PY)",
+		"repoPath": "benchmark/code-index/datasets/small-synth-repo"
+	},
+	{
+		"id": "medium-this-repo",
+		"label": "This monorepo (kilo-code)",
+		"repoPath": "."
+	},
+	{
+		"id": "large-vscode",
+		"label": "VSCode repo submodule (deps/vscode)",
+		"repoPath": "deps/vscode",
+		"optional": true
+	}
+]

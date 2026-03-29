@@ -52,6 +52,22 @@ describe("ensureMemoryBankInitialized", () => {
 		await expect(fs.readFile(path.join(destDir, "context.md"), "utf8")).resolves.toBe("# Context")
 	})
 
+	it("initializes the workspace copy from templates without mutating template storage", async () => {
+		const projectRoot = path.join(tempRoot, "project")
+		const globalKiloDir = path.join(tempRoot, "global")
+		const templateDir = path.join(globalKiloDir, "workflowai", "templates", "memory-bank")
+
+		await writeFile(path.join(templateDir, "index.md"), "# Template Index")
+		await writeFile(path.join(templateDir, "context.md"), "# Template Context")
+
+		const result = await ensureMemoryBankInitialized({ projectRoot, globalKiloDir })
+
+		expect(result.didInitialize).toBe(true)
+		await expect(fs.readFile(path.join(projectRoot, ".kilocode", "memory-bank", "index.md"), "utf8")).resolves.toBe(
+			"# Template Index",
+		)
+		await expect(fs.readFile(path.join(templateDir, "index.md"), "utf8")).resolves.toBe("# Template Index")
+	})
 	it("does nothing when Memory Bank already exists (index.md present)", async () => {
 		const projectRoot = path.join(tempRoot, "project")
 		const globalKiloDir = path.join(tempRoot, "global")

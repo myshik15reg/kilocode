@@ -1,54 +1,51 @@
-# One Mode Per Task — Delegation Examples
+﻿# Mode Delegation Example
 
-Правило описано в `AGENTS.md`. Этот файл содержит только короткие примеры.
+Source of truth for handoff structure: [`../patterns/orchestration/context-handoff.md`](../patterns/orchestration/context-handoff.md:1).
 
-> Kilo Code: делегируй через `new_task`, `switch_mode` запрещён. Codex CLI: `new_task` нет, допустима роль-петля в одной сессии.
+## Minimal checklist
 
-## Минимальный чеклист
-- Делегируй через `new_task` (не `switch_mode`).
-- Указывай `CAPABILITIES` (memory_bank/subagents/tools).
-- Передавай путь к протоколу и ожидаемые артефакты.
-- Соблюдай Context Isolation.
+| Check         | Requirement                                 |
+| ------------- | ------------------------------------------- |
+| Delegation    | use `new_task`                              |
+| Context block | include `=== CONTEXT HANDOFF ===`           |
+| Inputs        | list specific files, preferably `path:line` |
+| Constraints   | include relevant quality and safety limits  |
+| Output        | define what the receiving mode must return  |
 
-## Architect -> Code
-```yaml
-new_task:
-  mode: code
-  capabilities:
-    memory_bank: full
-    subagents: yes
-    tools: full
-  message: |
-    TASK: Implement according to plan.
-    Protocol: .protocols/2025-12-31-auth/plan.md
-    Inputs: .protocols/2025-12-31-auth/brief.md
-    Outputs: updated code + tests + execution.md
-```
+## Example: `architect` -> `code`
 
-## Code -> Unit Tester
-```yaml
-new_task:
-  mode: unit-tester
-  capabilities:
-    memory_bank: full
-    subagents: yes
-    tools: full
-  message: |
-    TASK: Verify tests and coverage 100%.
-    Target: src/auth.ts
-    Protocol: .protocols/2025-12-31-auth/
-```
+```text
+TASK: Implement the approved plan
 
-## Memory-bank limited
-```yaml
-new_task:
-  mode: reviewer
-  capabilities:
-    memory_bank: limited
-    subagents: no
-    tools: read-only
-  message: |
-    TASK: Code review.
-    Context Capsule: .protocols/2025-12-31-auth/context-capsule.md
-    Protocol: .protocols/2025-12-31-auth/
+=== CONTEXT HANDOFF ===
+ROOT: <workspace root>
+PROTOCOL: .protocols/YYYY-MM-DD-name/
+ORIGIN: architect -> code
+DOMAIN: <domain>
+PHASE: implementation
+
+GOAL:
+Implement the planned change and keep behavior aligned with the protocol.
+
+INPUTS:
+1. .protocols/YYYY-MM-DD-name/brief.md:1 - requirements and constraints
+2. .protocols/YYYY-MM-DD-name/plan.md:1 - execution steps
+3. <relevant source file>:<line> - implementation target
+
+CONSTRAINTS:
+1. Use TDD when the repo policy requires it.
+2. Respect repository lint and test rules.
+3. Keep the diff scoped to the approved task.
+
+OUT OF SCOPE:
+1. Unrelated refactors.
+2. New features outside the brief.
+
+VERIFY:
+1. Run the smallest relevant validation first.
+2. Confirm the result matches the protocol goal.
+
+EXPECTED OUTPUT:
+Code changes, tests if needed, and a concise implementation summary.
+=======================
 ```

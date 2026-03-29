@@ -61,6 +61,7 @@ describe("RelationshipExtractor", () => {
 	})
 
 	it("falls back to plainText extractor when tree-sitter initialization fails (e.g. missing WASM)", async () => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
 		initializeMock.mockRejectedValueOnce(new Error("WASM missing"))
 
 		const result = await extractor.extract("code", "file.bsl")
@@ -72,6 +73,12 @@ describe("RelationshipExtractor", () => {
 		expect(result.entities).toHaveLength(1)
 		expect(result.entities[0].type).toBe("file")
 		expect(result.entities[0].language).toBe("onec")
+
+		// FIX: 2026-02-19-neo4j-integration (TestAnalyzer)
+		// Root cause: fallback was silent; log a deterministic warning so wasm-path issues are diagnosable.
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('[RelationshipExtractor] Falling back to plainText extractor for language "onec"'),
+		)
 	})
 
 	it("throws when language cannot be resolved", async () => {

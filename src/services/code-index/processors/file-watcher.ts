@@ -564,7 +564,7 @@ export class FileWatcher implements IFileWatcher {
 
 			// Read file content
 			const fileContent = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath))
-			const content = fileContent.toString()
+			const content = new TextDecoder("utf-8").decode(fileContent) // kilocode_change
 
 			// Calculate hash
 			const newHash = createHash("sha256").update(content).digest("hex")
@@ -589,8 +589,10 @@ export class FileWatcher implements IFileWatcher {
 
 				pointsToUpsert = blocks.map((block, index) => {
 					const normalizedAbsolutePath = generateNormalizedAbsolutePath(block.file_path, this.workspacePath)
-					const stableName = `${normalizedAbsolutePath}:${block.start_line}`
-					const pointId = uuidv5(stableName, QDRANT_CODE_BLOCK_NAMESPACE)
+
+					// Keep point IDs consistent with DirectoryScanner (segmentHash-based)
+					// to ensure deterministic incremental updates across indexing modes.
+					const pointId = uuidv5(block.segmentHash, QDRANT_CODE_BLOCK_NAMESPACE)
 
 					return {
 						id: pointId,
@@ -600,6 +602,7 @@ export class FileWatcher implements IFileWatcher {
 							codeChunk: block.content,
 							startLine: block.start_line,
 							endLine: block.end_line,
+							segmentHash: block.segmentHash,
 						},
 					}
 				})

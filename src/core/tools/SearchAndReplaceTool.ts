@@ -12,6 +12,9 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { sanitizeUnifiedDiff, computeDiffStats } from "../diff/stats"
 import type { ToolUse } from "../../shared/tools"
+// kilocode_change start
+import { annotateWithHashline, expandHashlineReferences, stripHashlinePrefixes } from "./helpers/hashline"
+// kilocode_change end
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -128,26 +131,30 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 			const errors: string[] = []
 
 			for (let i = 0; i < operations.length; i++) {
+				// kilocode_change start
 				// Normalize line endings in search/replace strings to match file content
-				const search = operations[i].search.replace(/\r\n/g, "\n")
-				const replace = operations[i].replace.replace(/\r\n/g, "\n")
+				const search = expandHashlineReferences(newContent, operations[i].search.replace(/\r\n/g, "\n"))
+				const replace = stripHashlinePrefixes(operations[i].replace).replace(/\r\n/g, "\n")
 				const searchPattern = new RegExp(escapeRegExp(search), "g")
 
 				const matchCount = newContent.match(searchPattern)?.length ?? 0
 				if (matchCount === 0) {
-					errors.push(`Operation ${i + 1}: No match found for search text.`)
+					errors.push(
+						`Operation ${i + 1}: No match found for search text.\nSelective hashline preview:\n${annotateWithHashline(newContent)}`,
+					)
 					continue
 				}
 
 				if (matchCount > 1) {
 					errors.push(
-						`Operation ${i + 1}: Found ${matchCount} matches. Please provide more context to make a unique match.`,
+						`Operation ${i + 1}: Found ${matchCount} matches. Please provide more context to make a unique match.\nSelective hashline preview:\n${annotateWithHashline(newContent)}`,
 					)
 					continue
 				}
 
 				// Apply the replacement
 				newContent = newContent.replace(searchPattern, replace)
+				// kilocode_change end
 			}
 
 			// If all operations failed, return error

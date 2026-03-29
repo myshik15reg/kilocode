@@ -69,6 +69,10 @@ export type RegisterCommandOptions = {
 // kilocode_change start - Agent Manager provider
 let agentManagerProvider: AgentManagerProvider | undefined
 
+export function getAgentManagerProvider(): AgentManagerProvider | undefined {
+	return agentManagerProvider
+}
+
 const registerAgentManager = (options: RegisterCommandOptions) => {
 	const { context, outputChannel, provider } = options
 
@@ -333,7 +337,8 @@ export const openClineInNewTab = async ({ context, outputChannel }: Omit<Registe
 
 	const targetCol = hasVisibleEditors ? Math.max(lastCol + 1, 1) : vscode.ViewColumn.Two
 
-	const newPanel = vscode.window.createWebviewPanel(ClineProvider.tabPanelId, "Alfa Code Assistant", targetCol, { // kilocode_change
+	const newPanel = vscode.window.createWebviewPanel(ClineProvider.tabPanelId, "Alfa Code Assistant", targetCol, {
+		// kilocode_change
 		enableScripts: true,
 		retainContextWhenHidden: true,
 		localResourceRoots: [context.extensionUri],

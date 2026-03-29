@@ -1,0 +1,23 @@
+{
+	"time": "2026-02-03T14:04:03",
+	"root": "D:\\WorkFlowAI",
+	"excludedDirs": [".git", "node_modules", "temp"],
+	"extensions": [
+		".md",
+		".yml",
+		".yaml",
+		".json",
+		".xml",
+		".ps1",
+		".txt",
+		".clinerules",
+		".kilocodemodes",
+		".code-workspace"
+	],
+	"stats": {
+		"ScannedFiles": 348,
+		"BomFiles": 0,
+		"InvalidUtf8StrictFiles": 0
+	},
+	"issues": []
+}

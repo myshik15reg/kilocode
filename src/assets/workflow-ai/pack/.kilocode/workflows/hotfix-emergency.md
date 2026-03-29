@@ -1,87 +1,41 @@
-# Инцидент и горячий фикс (hotfix)
+﻿# Hotfix Emergency
 
-Процесс для аварийных ситуаций в production: быстро стабилизировать систему, минимизировать ущерб, затем провести разбор.
+Purpose: handle urgent production-impacting defects with the smallest safe change and an explicit follow-up path.
 
-## Когда использовать
-- Падение сервиса, массовые ошибки, деградация SLA.
-- Потеря данных или риск потери данных.
-- Инциденты безопасности.
-- Критичные регрессии после деплоя.
+## Use when
 
-## Классификация критичности (пример)
-- P0: система недоступна/утечка данных/массовая потеря функциональности.
-- P1: сильная деградация, затронуты многие пользователи или критичный сценарий.
-- P2: частичная деградация/ошибка без массового влияния.
+Use this workflow only when delay creates unacceptable business or operational risk.
+For non-production mistakes, use [`failure-recovery.md`](failure-recovery.md:1).
 
-## Шаги
+## Core rules
 
-### Шаг 1: Объявить инцидент
-1. Назначь ответственного (incident commander).
-2. Зафиксируй канал коммуникации и стейкхолдеров.
-3. Создай запись инцидента (минимальный шаблон):
-```text
-HOTFIX-YYYYMMDD-NNN: Краткое название
+1. Scope the fix as narrowly as possible.
+2. Prefer mitigation or rollback if it is safer than a rushed code change.
+3. Record what happened, what changed, and what still needs follow-up.
+4. Return to normal protocol hygiene as soon as the incident is contained.
 
-Симптомы:
-- ...
+## Flow
 
-Затронутые системы:
-- ...
+| Step | Outcome                                                             |
+| ---- | ------------------------------------------------------------------- |
+| 1    | confirm incident severity and affected area                         |
+| 2    | establish safe mitigation or rollback option                        |
+| 3    | create an incident-focused protocol or equivalent tracked record    |
+| 4    | implement the minimal safe fix                                      |
+| 5    | run the fastest relevant verification                               |
+| 6    | ship, monitor, and create follow-up work for any deferred hardening |
 
-Таймлайн:
-- ...
-```
+## Minimum record
 
-### Шаг 2: Быстрая диагностика
-1. Собери факты:
-   - какие ошибки, где, с какого времени;
-   - что изменилось последним (деплой/конфиг/зависимости).
-2. Сузь область:
-   - один сервис или цепочка;
-   - один регион или везде;
-   - конкретный endpoint или общий сбой.
-3. Зафиксируй гипотезы и проверяй по одной.
+- incident summary
+- impacted system or user path
+- chosen mitigation or fix
+- verification performed
+- known residual risk
+- follow-up task or protocol if the fix is intentionally incomplete
 
-### Шаг 3: Выбрать стратегию стабилизации
-| Тип проблемы | Рекомендуемая стратегия |
-|---|---|
-| Регрессия после деплоя | Откат на предыдущую стабильную версию |
-| Простой баг, понятный фикс | Быстрый фикс + ускоренный деплой |
-| Сложный баг, нужен временный обход | Workaround (обходной путь) + план полноценного фикса |
-| Риск/факт порчи данных или инцидент безопасности | Режим обслуживания, блокировка опасных путей, затем план |
+## References
 
-Важно:
-- Если нет уверенности, что фикс безопасен - предпочитай откат или ограничение воздействия.
-- Если нужен обходной путь, явно зафиксируй долг и план возврата к норме.
-
-### Шаг 4: Реализация фикса
-1. Создай ветку `fix/hotfix-...`.
-2. Внеси минимальные изменения для стабилизации.
-3. По возможности добавь тест, который воспроизводит баг (хотя бы smoke/интеграционный).
-4. Прогони минимальные проверки (пример, адаптируй под проект):
-```powershell
-npm test
-npm run lint
-```
-
-### Шаг 5: Ускоренное ревью и деплой
-1. Ревью должно быть коротким, но реальным: что меняется, какие риски, как откатываем.
-2. Деплой выполняй по `/deployment-workflow.md`, но с приоритетом скорости и наблюдаемости.
-3. Наблюдай метрики/логи после деплоя и подтверждай стабилизацию.
-
-### Шаг 6: Пост-инцидент
-1. Сформируй постмортем:
-   - первопричина;
-   - почему не поймали раньше;
-   - какие действия предотвратят повтор.
-2. Создай задачи на:
-   - полноценный фикс (если был обходной путь);
-   - улучшение тестов/мониторинга;
-   - улучшение процесса деплоя (если это причина).
-3. Обнови документацию/операционный гайд (runbook) и Memory Bank (если изменился контекст).
-
-## Связанные процессы
-- Деплой: `deployment-workflow.md`
-- Оркестрация: `agent-orchestration.md`
-- Исключения из правил (крайний случай): `waiver-workflow.md`
-- Гейты качества: `quality-enforcement.md`
+- Failure recovery: [`failure-recovery.md`](failure-recovery.md:1)
+- Protocol closure: [`protocol-review-merge.md`](protocol-review-merge.md:1)
+- Security rules: [`../rules/security-rules.md`](../rules/security-rules.md:1)

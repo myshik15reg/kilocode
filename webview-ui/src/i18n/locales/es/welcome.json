@@ -1,6 +1,6 @@
 {
-	"greeting": "¡Hola, soy AlfaCode assistant!",
-	"introduction": "<strong>AlfaCode assistant es el principal agente de codificación autónomo.</strong> Prepárate para arquitectar, codificar, depurar y aumentar tu productividad como nunca antes. Para continuar, AlfaCode assistant requiere una clave API.",
+	"greeting": "¡Hola, soy AlfaCode!",
+	"introduction": "<strong>AlfaCode es el principal agente de codificación autónomo.</strong> Prepárate para arquitectar, codificar, depurar y aumentar tu productividad como nunca antes. Para continuar, AlfaCode requiere una clave API.",
 	"notice": "Para comenzar, esta extensión necesita un proveedor de API.",
 	"start": "¡Vamos!",
 	"routers": {
@@ -13,45 +13,45 @@
 		},
 		"roo": {
 			"description": "Los mejores modelos gratuitos para empezar",
-			"incentive": "Prueba Roo gratis"
+			"incentive": "Prueba AlfaCode gratis"
 		}
 	},
-	"chooseProvider": "Para hacer su magia, AlfaCode assistant necesita una clave API.",
+	"chooseProvider": "Para hacer su magia, AlfaCode necesita una clave API.",
 	"landing": {
-		"greeting": "¡Bienvenido a AlfaCode assistant!",
-		"introduction": "Con una variedad de Modos integrados y extensibles, AlfaCode assistant te permite planificar, arquitectar, codificar, depurar y aumentar tu productividad como nunca antes.",
-		"accountMention": "Para comenzar, crea tu cuenta de AlfaCode assistant Cloud. Obtén modelos potentes, control web, análisis, soporte y más.",
+		"greeting": "¡Bienvenido a AlfaCode!",
+		"introduction": "Con una variedad de Modos integrados y extensibles, AlfaCode te permite planificar, arquitectar, codificar, depurar y aumentar tu productividad como nunca antes.",
+		"accountMention": "Para comenzar, crea tu cuenta de AlfaCode Cloud. Obtén modelos potentes, control web, análisis, soporte y más.",
 		"getStarted": "Crear cuenta de AlfaCode",
 		"noAccount": "o usar sin cuenta"
 	},
 	"providerSignup": {
 		"heading": "Elige tu proveedor",
-		"chooseProvider": "Roo necesita un proveedor de LLM para funcionar. Elige uno para comenzar, puedes añadir más después.",
-		"rooCloudProvider": "Proveedor de Roo Code Cloud",
-		"rooCloudDescription": "La forma más sencilla de comenzar es con el Proveedor Roo Code Cloud: una mezcla seleccionada de modelos gratuitos y de pago a bajo costo.",
+		"chooseProvider": "AlfaCode necesita un proveedor de LLM para funcionar. Elige uno para comenzar, puedes añadir más después.",
+		"rooCloudProvider": "Proveedor de AlfaCode Cloud",
+		"rooCloudDescription": "La forma más sencilla de comenzar es con el Proveedor AlfaCode Cloud: una mezcla seleccionada de modelos gratuitos y de pago a bajo costo.",
 		"learnMore": "Más información",
 		"useAnotherProvider": "Proveedor de terceros",
 		"useAnotherProviderDescription": "Introduce una clave API y comienza.",
 		"noApiKeys": "¿No quieres lidiar con claves API y cuentas separadas?",
-		"backToRoo": "Ve con el Proveedor de Roo Code Cloud.",
+		"backToRoo": "Ve con el Proveedor de AlfaCode Cloud.",
 		"goBack": "Atrás",
 		"finish": "Finalizar"
 	},
 	"waitingForCloud": {
-		"heading": "Iniciando sesión en Roo Code Cloud...",
-		"description": "Te llevaremos a tu navegador para que te registres en Roo Code Cloud. Luego te traeremos aquí para terminar.",
+		"heading": "Iniciando sesión en AlfaCode Cloud...",
+		"description": "Te llevaremos a tu navegador para que te registres en AlfaCode Cloud. Luego te traeremos aquí para terminar.",
 		"noPrompt": "Si no se te pide que abras una URL, <clickHere>haz clic aquí</clickHere>.",
 		"havingTrouble": "Si completaste el registro pero tienes problemas, <clickHere>haz clic aquí</clickHere>.",
 		"pasteUrl": "Pega la URL de respuesta de tu navegador:",
 		"docsLink": "¿No funciona? <DocsLink>Consulta la documentación</DocsLink>.",
-		"invalidURL": "Eso no parece ser una URL de respuesta válida. Por favor copia lo que Roo Code Cloud está mostrando en tu navegador.",
+		"invalidURL": "Eso no parece ser una URL de respuesta válida. Por favor copia lo que AlfaCode Cloud está mostrando en tu navegador.",
 		"goBack": "Atrás"
 	},
 	"startRouter": "Recomendamos usar un router LLM:",
 	"startCustom": "O puedes traer tu propia clave API:",
 	"telemetry": {
-		"helpImprove": "Ayuda a mejorar AlfaCode assistant",
-		"helpImproveMessage": "AlfaCode assistant recopila datos de errores y uso para ayudarnos a corregir errores y mejorar la extensión. Esta telemetría no recopila código, prompts o información personal. Puedes desactivar esto en la <settingsLink>configuración</settingsLink>."
+		"helpImprove": "Ayuda a mejorar AlfaCode",
+		"helpImproveMessage": "AlfaCode recopila datos de errores y uso para ayudarnos a corregir errores y mejorar la extensión. Esta telemetría no recopila código, prompts o información personal. Puedes desactivar esto en la <settingsLink>configuración</settingsLink>."
 	},
 	"importSettings": "Importar configuración"
 }

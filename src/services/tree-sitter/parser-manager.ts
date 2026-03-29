@@ -1,4 +1,6 @@
-import { Parser, Language } from 'web-tree-sitter'
+import { Parser, Language } from "web-tree-sitter"
+import * as fs from "fs"
+import * as path from "path"
 
 /**
  * Централизованный менеджер для загрузки и кэширования Tree-sitter парсеров
@@ -63,21 +65,61 @@ export class TreeSitterParserManager {
 			return this.languages.get(languageId)!
 		}
 
-		// Загружаем новый язык
-		if (!wasmPath) {
-			// Используем стандартное расположение
-			wasmPath = `tree-sitter-${languageId}.wasm`
+		const { wasmPath: resolvedWasmPath, triedPaths } = this.resolveWasmPath(languageId, wasmPath)
+		try {
+			const language = await Language.load(resolvedWasmPath)
+			this.languages.set(languageId, language)
+			return language
+		} catch (error) {
+			// FIX: 2026-02-19-neo4j-integration (TestAnalyzer)
+			// Root cause: when wasmPath isn't provided, defaulting to `tree-sitter-${languageId}.wasm` relative to cwd breaks `cd src` test runs,
+			// which makes Neo4j indexing silently fall back to the plainText extractor.
+			const reason = error instanceof Error ? error.message : String(error)
+			throw new Error(
+				`Failed to load Tree-sitter language "${languageId}" from "${resolvedWasmPath}". Reason: ${reason}. Tried paths: ${triedPaths.join(
+					", ",
+				)}`,
+			)
+		}
+	}
+
+	// FIX: 2026-02-19-neo4j-integration (TestAnalyzer)
+	// Root cause: default WASM path `tree-sitter-${languageId}.wasm` is cwd-dependent; integration tests run from `cd src`.
+	// Resolution: prefer packaged/runtime locations and remove dependence on the repo-root grammar workspace.
+	private resolveWasmPath(languageId: string, wasmPath?: string): { wasmPath: string; triedPaths: string[] } {
+		if (wasmPath) {
+			return { wasmPath, triedPaths: [wasmPath] }
 		}
 
-		const language = await Language.load(wasmPath)
-		this.languages.set(languageId, language)
-		return language
+		const filename = `tree-sitter-${languageId}.wasm`
+
+		const candidatePaths = [
+			// TS source layout: src/services/tree-sitter -> src/dist
+			path.join(__dirname, "..", "..", "dist", filename),
+			// Compiled layout: dist/services/tree-sitter -> dist/
+			path.join(__dirname, "..", "..", filename),
+			// Node package layout for tests: src/node_modules/tree-sitter-wasms/out
+			path.join(__dirname, "..", "..", "node_modules", "tree-sitter-wasms", "out", filename),
+
+			// Monorepo root fallbacks
+			path.join(__dirname, "..", "..", "..", "src", "dist", filename),
+			path.join(__dirname, "..", "..", "..", "dist", filename),
+			path.join(__dirname, "..", "..", "..", "src", "node_modules", "tree-sitter-wasms", "out", filename),
+			path.join(__dirname, "..", "..", "..", "node_modules", "tree-sitter-wasms", "out", filename),
+
+			// CWD-based fallbacks (legacy)
+			path.join(process.cwd(), "dist", filename),
+			path.join(process.cwd(), filename),
+		]
+
+		const resolved = candidatePaths.find((candidate) => fs.existsSync(candidate))
+		return { wasmPath: resolved ?? filename, triedPaths: candidatePaths }
 	}
 
 	/**
 	 * Парсить код с использованием кэшированного парсера
 	 */
-	async parse(languageId: string, code: string, wasmPath?: string): Promise<ReturnType<Parser['parse']>> {
+	async parse(languageId: string, code: string, wasmPath?: string): Promise<ReturnType<Parser["parse"]>> {
 		const parser = await this.getParser(languageId, wasmPath)
 		return parser.parse(code)
 	}

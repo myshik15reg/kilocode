@@ -40,11 +40,11 @@ vi.mock("react-i18next", () => ({
 				"chat:task.sharePublicly": "Share Publicly",
 				"chat:task.sharePubliclyDescription": "Anyone with the link can access",
 				"chat:task.connectToCloud": "Connect to Cloud",
-				"chat:task.connectToCloudDescription": "Sign in to Roo Code Cloud to share tasks",
+				"chat:task.connectToCloudDescription": "Sign in to AlfaCode assistant Cloud to share tasks",
 				"chat:task.sharingDisabledByOrganization": "Sharing disabled by organization",
 				"chat:task.openApiHistory": "Open API History",
 				"chat:task.openUiHistory": "Open UI History",
-				"cloud:cloudBenefitsTitle": "Connect to Roo Code Cloud",
+				"cloud:cloudBenefitsTitle": "Connect to AlfaCode assistant Cloud",
 				"cloud:cloudBenefitHistory": "Access your task history from anywhere",
 				"cloud:cloudBenefitSharing": "Share tasks with your team",
 				"cloud:cloudBenefitMetrics": "Track usage and costs",
@@ -203,7 +203,7 @@ describe("TaskActions", () => {
 			const shareButton = screen.getByTestId("share-button")
 			fireEvent.click(shareButton)
 
-			expect(screen.getByText("Connect to Roo Code Cloud")).toBeInTheDocument()
+			expect(screen.getByText("Connect to AlfaCode assistant Cloud")).toBeInTheDocument()
 			expect(screen.getByText("Connect")).toBeInTheDocument()
 		})
 
@@ -495,5 +495,46 @@ describe("TaskActions", () => {
 				type: "openDebugUiHistory",
 			})
 		})
+	})
+
+	describe("Task Controls", () => {
+		it("sends pauseTask when pause button is clicked", () => {
+			render(<TaskActions item={{ ...mockItem, lifecycleState: "running" } as any} buttonsDisabled={false} />)
+
+			fireEvent.click(screen.getByLabelText("Pause task"))
+
+			expect(mockPostMessage).toHaveBeenCalledWith({ type: "pauseTask", text: "test-task-id" })
+		})
+
+		it("sends resumeTask when resume button is clicked", () => {
+			render(<TaskActions item={{ ...mockItem, lifecycleState: "paused" } as any} buttonsDisabled={false} />)
+
+			fireEvent.click(screen.getByLabelText("Resume task"))
+
+			expect(mockPostMessage).toHaveBeenCalledWith({ type: "resumeTask", text: "test-task-id" })
+		})
+
+		it("sends branchTask when branch button is clicked", () => {
+			render(<TaskActions item={mockItem} buttonsDisabled={false} />)
+
+			fireEvent.click(screen.getByLabelText("Branch task"))
+
+			expect(mockPostMessage).toHaveBeenCalledWith({ type: "branchTask", text: "test-task-id" })
+		})
+
+		// kilocode_change start
+		it("hides pause, resume, and branch controls for completed tasks", () => {
+			render(
+				<TaskActions
+					item={{ ...mockItem, status: "completed", lifecycleState: "completed" } as any}
+					buttonsDisabled={false}
+				/>,
+			)
+
+			expect(screen.queryByLabelText("Pause task")).not.toBeInTheDocument()
+			expect(screen.queryByLabelText("Resume task")).not.toBeInTheDocument()
+			expect(screen.queryByLabelText("Branch task")).not.toBeInTheDocument()
+		})
+		// kilocode_change end
 	})
 })

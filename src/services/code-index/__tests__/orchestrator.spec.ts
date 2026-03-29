@@ -59,9 +59,10 @@ vi.mock("../../i18n", () => ({
 	},
 }))
 
-const { indexFileMock, deleteFilesMock, isReadyMock } = vi.hoisted(() => ({
+const { indexFileMock, deleteFilesMock, clearIndexMock, isReadyMock } = vi.hoisted(() => ({
 	indexFileMock: vi.fn(),
 	deleteFilesMock: vi.fn(),
+	clearIndexMock: vi.fn(),
 	isReadyMock: vi.fn(),
 }))
 
@@ -94,6 +95,7 @@ vi.mock("../../neo4j/relationship-indexer", () => ({
 	RelationshipIndexer: class {
 		indexFile = indexFileMock
 		deleteFiles = deleteFilesMock
+		clearIndex = clearIndexMock
 		isReady = isReadyMock
 	},
 }))
@@ -154,6 +156,7 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 			markIndexingIncomplete: vi.fn(),
 			markIndexingComplete: vi.fn(),
 			clearCollection: vi.fn().mockResolvedValue(undefined),
+			deleteCollection: vi.fn().mockResolvedValue(undefined),
 		}
 
 		scanner = {
@@ -194,6 +197,39 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 		expect(stateManager.setSystemState).toHaveBeenCalled()
 		const lastCall = stateManager.setSystemState.mock.calls[stateManager.setSystemState.mock.calls.length - 1]
 		expect(lastCall[0]).toBe("Error")
+	})
+
+	it("should clear Neo4j graph and both caches when clearing index data", async () => {
+		configManager = {
+			isFeatureConfigured: true,
+			isNeo4jEnabled: true,
+			neo4jConfig: {
+				uri: "bolt://test:7687",
+				username: "neo4j",
+				password: "test-password",
+				database: "neo4j",
+			},
+		}
+		connectMock.mockResolvedValue(undefined)
+		initializeMock.mockResolvedValue(false)
+		isReadyMock.mockResolvedValue(true)
+
+		const orchestrator = new CodeIndexOrchestrator(
+			configManager,
+			stateManager,
+			workspacePath,
+			cacheManager,
+			vectorStore,
+			scanner,
+			fileWatcher,
+		)
+
+		await orchestrator.clearIndexData()
+
+		expect(vectorStore.deleteCollection).toHaveBeenCalledTimes(1)
+		expect(clearIndexMock).toHaveBeenCalledTimes(1)
+		expect(cacheManager.clearCacheFile).toHaveBeenCalledTimes(1)
+		expect(cacheManager.clearNeo4jCacheFile).toHaveBeenCalledTimes(1)
 	})
 
 	it("should call clearCollection() and clear cache when an error occurs after initialize() succeeds (indexing started)", async () => {

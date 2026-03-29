@@ -94,6 +94,7 @@ import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { calculateApiCostAnthropic, calculateApiCostOpenAI } from "../../shared/cost"
 import { getWorkspacePath } from "../../utils/path"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import type { PlannedToolCall, ToolBatchResult, ToolCallCandidate } from "@roo-code/types"
 
 // prompts
 import { formatResponse } from "../prompts/responses"
@@ -113,6 +114,12 @@ import { manageContext, willManageContext } from "../context-management"
 import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
 import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
+import {
+	OrchestrationDispatcher,
+	type OrchestrationDispatchCallbacks,
+	type OrchestrationDispatchOutcome,
+} from "../orchestration/OrchestrationDispatcher"
+import { OrchestrationPolicy } from "../orchestration/policy/OrchestrationPolicy"
 import {
 	type ApiMessage,
 	readApiMessages,
@@ -141,6 +148,7 @@ import { ensureLocalKilorulesDirExists } from "../context/instructions/kilo-rule
 import { processUserContentMentions } from "../mentions/processUserContentMentions"
 import { getMessagesSinceLastSummary, summarizeConversation, getEffectiveApiHistory } from "../condense"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
+import { HelperModelRouter } from "../helper-routing/HelperModelRouter"
 
 import { isAnyRecognizedKiloCodeError, isPaymentRequiredError } from "../../shared/kilocode/errorUtils"
 import { getAppUrl } from "@roo-code/types"
@@ -148,6 +156,7 @@ import { getKilocodeDefaultModel } from "../../api/providers/kilocode/getKilocod
 import { addOrMergeUserContent } from "./kilocode"
 import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 import { MessageManager } from "../message-manager"
+import { handleProblematicProcessRestart } from "./problematicProcessRestart"
 import { validateAndFixToolResultIds } from "./validateToolResultIds"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
@@ -176,8 +185,9 @@ export interface TaskOptions extends CreateTaskOptions {
 	onCreated?: (task: Task) => void
 	initialTodos?: TodoItem[]
 	workspacePath?: string
+	delegationDepth?: number
 	/** Initial status for the task's history item (e.g., "active" for child tasks) */
-	initialStatus?: "active" | "delegated" | "completed"
+	initialStatus?: "active" | "delegated" | "completed" | "aborted" // kilocode_change
 }
 
 type UserContent = Array<Anthropic.ContentBlockParam> // kilocode_change
@@ -201,6 +211,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	readonly parentTask: Task | undefined
 	readonly taskNumber: number
 	readonly workspacePath: string
+	readonly delegationDepth: number
 
 	/**
 	 * The mode associated with this task. Persisted across sessions
@@ -459,10 +470,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private cloudSyncedMessageTimestamps: Set<number> = new Set()
 
 	// Initial status for the task's history item (set at creation time to avoid race conditions)
-	private readonly initialStatus?: "active" | "delegated" | "completed"
+	private readonly initialStatus?: "active" | "delegated" | "completed" | "aborted" // kilocode_change
 
 	// MessageManager for high-level message operations (lazy initialized)
 	private _messageManager?: MessageManager
+	// kilocode_change start
+	private readonly orchestrationPolicy = new OrchestrationPolicy()
+	private readonly orchestrationDispatcher = new OrchestrationDispatcher()
+	// kilocode_change end
 
 	constructor({
 		context, // kilocode_change
@@ -485,6 +500,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		onCreated,
 		initialTodos,
 		workspacePath,
+		delegationDepth,
 		initialStatus,
 	}: TaskOptions) {
 		super()
@@ -512,6 +528,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.taskIsFavorited = historyItem?.isFavorited // kilocode_change
 		this.rootTaskId = historyItem ? historyItem.rootTaskId : rootTask?.taskId
 		this.parentTaskId = historyItem ? historyItem.parentTaskId : parentTask?.taskId
+		this.delegationDepth = historyItem?.delegationDepth ?? delegationDepth ?? 0
 		this.childTaskId = undefined
 
 		this.metadata = {
@@ -1308,6 +1325,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				taskId: this.taskId,
 				rootTaskId: this.rootTaskId,
 				parentTaskId: this.parentTaskId,
+				delegationDepth: this.delegationDepth,
 				taskNumber: this.taskNumber,
 				messages: this.clineMessages,
 				globalStoragePath: this.globalStoragePath,
@@ -1775,22 +1793,27 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const state = await this.providerRef.deref()?.getState()
 		// These properties may not exist in the state type yet, but are used for condensing configuration
 		const customCondensingPrompt = state?.customCondensingPrompt
-		const condensingApiConfigId = state?.condensingApiConfigId
-		const listApiConfigMeta = state?.listApiConfigMeta
 
-		// Determine API handler to use
 		let condensingApiHandler: ApiHandler | undefined
-		if (condensingApiConfigId && listApiConfigMeta && Array.isArray(listApiConfigMeta)) {
-			// Find matching config by ID
-			const matchingConfig = listApiConfigMeta.find((config) => config.id === condensingApiConfigId)
-			if (matchingConfig) {
-				const profile = await this.providerRef.deref()?.providerSettingsManager.getProfile({
-					id: condensingApiConfigId,
+		const provider = this.providerRef.deref()
+		if (state && provider) {
+			try {
+				const route = await HelperModelRouter.selectConfig({
+					job: "condense",
+					state: {
+						apiConfiguration: state.apiConfiguration,
+						condensingApiConfigId: state.condensingApiConfigId,
+						listApiConfigMeta: state.listApiConfigMeta,
+					},
+					providerSettingsManager: provider.providerSettingsManager,
 				})
-				// Ensure profile and apiProvider exist before trying to build handler
-				if (profile && profile.apiProvider) {
-					condensingApiHandler = buildApiHandler(profile)
+				if (route.source !== "primary" && route.config.apiProvider) {
+					condensingApiHandler = buildApiHandler(route.config)
 				}
+			} catch (error) {
+				provider.log(
+					`Helper routing failed for condense; using primary model: ${error instanceof Error ? error.message : String(error)}`,
+				)
 			}
 		}
 
@@ -2156,7 +2179,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.isInitialized = true
 
-		const { response, text, images } = await this.ask(askType) // Calls `postStateToWebview`.
+		const { response, text = "", images = [] } = await this.ask(askType) // Calls `postStateToWebview`.
 
 		let responseText: string | undefined
 		let responseImages: string[] | undefined
@@ -2690,10 +2713,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					),
 				)
 
-				const { response, text, images } = await this.ask(
-					"mistake_limit_reached",
-					t("common:errors.mistake_limit_guidance"),
-				)
+				// kilocode_change start
+				const provider = this.providerRef.deref() as any
+				const state = provider ? await provider.getState?.() : undefined
+				const shouldAutoRestartProblematicProcess = state?.autoRestartProblematicProcesses === true
+
+				if (shouldAutoRestartProblematicProcess && (await this.handleProblematicProcessRestart())) {
+					return false
+				}
+
+				const {
+					response,
+					text = "",
+					images = [],
+				} = await this.ask("mistake_limit_reached", t("common:errors.mistake_limit_guidance"))
+
+				if (response === "yesButtonClicked" && (await this.handleProblematicProcessRestart({ force: true }))) {
+					return false
+				}
+				// kilocode_change end
 
 				if (response === "messageResponse") {
 					currentUserContent.push(
@@ -4298,25 +4336,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Get condensing configuration for automatic triggers.
 		const customCondensingPrompt = state?.customCondensingPrompt
-		const condensingApiConfigId = state?.condensingApiConfigId
-		const listApiConfigMeta = state?.listApiConfigMeta
-
-		// Determine API handler to use for condensing.
 		let condensingApiHandler: ApiHandler | undefined
-
-		if (condensingApiConfigId && listApiConfigMeta && Array.isArray(listApiConfigMeta)) {
-			// Find matching config by ID
-			const matchingConfig = listApiConfigMeta.find((config) => config.id === condensingApiConfigId)
-
-			if (matchingConfig) {
-				const profile = await this.providerRef.deref()?.providerSettingsManager.getProfile({
-					id: condensingApiConfigId,
+		const provider = this.providerRef.deref()
+		if (state && provider) {
+			try {
+				const route = await HelperModelRouter.selectConfig({
+					job: "condense",
+					state: {
+						apiConfiguration: state.apiConfiguration,
+						condensingApiConfigId: state.condensingApiConfigId,
+						listApiConfigMeta: state.listApiConfigMeta,
+					},
+					providerSettingsManager: provider.providerSettingsManager,
 				})
-
-				// Ensure profile and apiProvider exist before trying to build handler.
-				if (profile && profile.apiProvider) {
-					condensingApiHandler = buildApiHandler(profile)
+				if (route.source !== "primary" && route.config.apiProvider) {
+					condensingApiHandler = buildApiHandler(route.config)
 				}
+			} catch (error) {
+				provider.log(
+					`Helper routing failed for condense; using primary model: ${error instanceof Error ? error.message : String(error)}`,
+				)
 			}
 		}
 
@@ -4325,7 +4364,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		// Update last request time right before making the request so that subsequent
-		// requests — even from new subtasks — will honour the provider's rate-limit.
+		// requests вЂ” even from new subtasks вЂ” will honour the provider's rate-limit.
 		//
 		// NOTE: When recursivelyMakeClineRequests handles rate limiting, it sets the
 		// timestamp earlier to include the environment details build. We still set it
@@ -5025,6 +5064,72 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return this._taskToolProtocol
 	}
 
+	// kilocode_change start
+	public getUserIntent(): string {
+		return this.metadata.task ?? ""
+	}
+
+	public async getOrchestrationFlags(): Promise<{ hasBackgroundCapacity: boolean; hasHelperRouting: boolean }> {
+		const state = await this.providerRef.deref()?.getState()
+
+		return {
+			hasBackgroundCapacity: Boolean(state?.parallelAgentsEnabled && (state?.parallelAgentCount ?? 1) > 0),
+			hasHelperRouting: Boolean(
+				state?.enhancementApiConfigId || state?.condensingApiConfigId || state?.terminalCommandApiConfigId,
+			),
+		}
+	}
+
+	public decideExecutionMode(candidateToolCalls: ToolCallCandidate[]) {
+		return this.orchestrationPolicy.decide({
+			taskId: this.taskId,
+			rootTaskId: this.rootTaskId ?? this.taskId,
+			userIntent: this.getUserIntent(),
+			candidateToolCalls,
+			hasBackgroundCapacity: false,
+			hasHelperRouting: false,
+		})
+	}
+
+	public async decideExecutionModeWithContext(candidateToolCalls: ToolCallCandidate[]) {
+		const flags = await this.getOrchestrationFlags()
+
+		return this.orchestrationPolicy.decide({
+			taskId: this.taskId,
+			rootTaskId: this.rootTaskId ?? this.taskId,
+			userIntent: this.getUserIntent(),
+			candidateToolCalls,
+			hasBackgroundCapacity: flags.hasBackgroundCapacity,
+			hasHelperRouting: flags.hasHelperRouting,
+		})
+	}
+
+	public async dispatchOrchestrationExecution(
+		candidateToolCalls: ToolCallCandidate[],
+		callbacks: OrchestrationDispatchCallbacks,
+	): Promise<OrchestrationDispatchOutcome> {
+		const decision = await this.decideExecutionModeWithContext(candidateToolCalls)
+
+		return this.orchestrationDispatcher.dispatch(decision, candidateToolCalls, callbacks)
+	}
+
+	public async executeSafeToolBatch(
+		candidateToolCalls: ToolCallCandidate[],
+		executor: (call: PlannedToolCall) => Promise<string>,
+	): Promise<ToolBatchResult | undefined> {
+		const dispatched = await this.dispatchOrchestrationExecution(candidateToolCalls, {
+			executeToolBatch: executor,
+			executeSubagent: async () => undefined,
+		})
+
+		if (!dispatched.handled || dispatched.route !== "subtooling") {
+			return undefined
+		}
+
+		return dispatched.batchResult
+	}
+	// kilocode_change end
+
 	/**
 	 * Provides convenient access to high-level message operations.
 	 * Uses lazy initialization - the MessageManager is only created when first accessed.
@@ -5088,6 +5193,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			console.debug("Browser panel not available for update:", error)
 		}
 	}
+
+	// kilocode_change start
+	private async handleProblematicProcessRestart(options: { force?: boolean } = {}): Promise<boolean> {
+		return handleProblematicProcessRestart(this, options)
+	}
+	// kilocode_change end
 
 	/**
 	 * Process any queued messages by dequeuing and submitting them.

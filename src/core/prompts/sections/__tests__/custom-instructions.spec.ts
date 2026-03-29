@@ -771,24 +771,13 @@ describe("addCustomInstructions", () => {
 		expect(result).not.toContain("# Agent Rules Standard (AGENTS.md):")
 	})
 
-	it("should fall back to global WorkFlowAI template AGENTS.md when workspace AGENTS.md is missing", async () => {
+	it("should not fall back to global WorkFlowAI template AGENTS.md when workspace AGENTS.md is missing", async () => {
 		// Simulate no .roo/rules-test-mode directory
 		statMock.mockRejectedValueOnce({ code: "ENOENT" })
 
 		// Workspace AGENTS.md/AGENT.md do not exist
 		lstatMock.mockRejectedValue({ code: "ENOENT" })
-
-		readFileMock.mockImplementation((filePath: PathLike) => {
-			const pathStr = filePath.toString()
-			const normalizedPath = pathStr.replace(/\\/g, "/")
-
-			// Return content for the global template path only
-			if (normalizedPath.includes("/workflowai/templates/project-root/AGENTS.md")) {
-				return Promise.resolve("Template agent rules from global WorkFlowAI assets")
-			}
-
-			return Promise.reject({ code: "ENOENT" })
-		})
+		readFileMock.mockRejectedValue({ code: "ENOENT" })
 
 		const result = await addCustomInstructions(
 			"mode instructions",
@@ -805,10 +794,9 @@ describe("addCustomInstructions", () => {
 			},
 		)
 
-		expect(result).toContain("# Agent Rules Standard (AGENTS.md) from")
-		expect(result).toContain("Template agent rules from global WorkFlowAI assets")
-		// Ensure we attempted to read the template file.
-		expect(readFileMock).toHaveBeenCalledWith(expect.stringContaining("workflowai"), "utf-8")
+		expect(result).toContain("Global Instructions:\nglobal instructions")
+		expect(result).toContain("Mode-specific Instructions:\nmode instructions")
+		expect(result).not.toContain("# Agent Rules Standard (AGENTS.md) from")
 	})
 
 	it("should stay silent when both workspace and template AGENTS.md are missing", async () => {

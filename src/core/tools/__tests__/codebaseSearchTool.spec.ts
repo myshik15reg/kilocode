@@ -5,10 +5,20 @@ import { codebaseSearchTool } from "../CodebaseSearchTool"
 import { formatResponse } from "../../prompts/responses"
 import { Task } from "../../task/Task"
 import { CodeIndexManager } from "../../../services/code-index/manager"
+import { ManagedIndexer } from "../../../services/code-index/managed/ManagedIndexer" // kilocode_change
 
 vi.mock("../../../services/code-index/manager", () => ({
 	CodeIndexManager: {
 		getInstance: vi.fn(),
+	},
+}))
+
+vi.mock("../../../services/code-index/managed/ManagedIndexer", () => ({
+	ManagedIndexer: {
+		getInstance: vi.fn().mockReturnValue({
+			isEnabled: vi.fn().mockReturnValue(false),
+			search: vi.fn(),
+		}),
 	},
 }))
 
@@ -32,7 +42,7 @@ describe("codebaseSearchTool", () => {
 			providerRef: {
 				deref: vi.fn().mockReturnValue({ context: {} }),
 			} as any,
-		}
+		} as any
 
 		askApproval = vi.fn().mockResolvedValue(true)
 		handleError = vi.fn()
@@ -131,5 +141,50 @@ describe("codebaseSearchTool", () => {
 				},
 			},
 		})
+	})
+
+	it("sanitizes managed search failures and avoids logging sensitive error details", async () => {
+		// FIX: 2026-02-19-reviewer-managed-search-log-redaction (TestAnalyzer)
+		const managerMock = {
+			isFeatureEnabled: true,
+			isFeatureConfigured: true,
+			getCurrentStatus: vi.fn().mockReturnValue({
+				systemStatus: "Indexing" as const,
+				message: "Processing files",
+				processedItems: 10,
+				totalItems: 100,
+				currentItemUnit: "files",
+			}),
+			searchIndex: vi.fn(),
+		}
+
+		vi.mocked(CodeIndexManager.getInstance).mockReturnValue(managerMock as any)
+
+		const sensitiveError = new Error("request failed: https://user:pass@secret.example.com:1234/path?token=abc")
+		vi.mocked(ManagedIndexer.getInstance).mockReturnValue({
+			isEnabled: vi.fn().mockReturnValue(true),
+			search: vi.fn().mockRejectedValue(sensitiveError),
+		} as any)
+
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+
+		const block = {
+			type: "tool_use" as const,
+			name: "codebase_search" as const,
+			params: { query: "example" },
+			partial: false,
+		}
+
+		await codebaseSearchTool.handle(mockTask as Task, block, {
+			askApproval,
+			handleError,
+			pushToolResult,
+			removeClosingTag,
+			toolProtocol,
+		})
+
+		const loggedMessages = logSpy.mock.calls.map((call) => String(call[0])).join("\n")
+		expect(loggedMessages).not.toContain("secret.example.com")
+		expect(loggedMessages).not.toContain("token=abc")
 	})
 })

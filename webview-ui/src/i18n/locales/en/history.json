@@ -46,5 +46,18 @@
 		"mostRelevant": "Most Relevant"
 	},
 	"viewAllHistory": "View all",
-	"shareSession": "Share Session"
+	"shareSession": "Share Session",
+	"focusedRoot": "Running",
+	"backgroundRoot": "Running",
+	"parent": "Parent",
+	"child": "Child",
+	"children": "Children",
+	"active": "Active",
+	"delegated": "Delegated",
+	"error": "Error",
+	"statusRunning": "Running",
+	"statusDone": "Done",
+	"statusStopped": "Stopped",
+	"statusError": "Error",
+	"runningRoots": "Running"
 }

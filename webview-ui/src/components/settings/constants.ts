@@ -104,4 +104,4 @@ export const PROVIDERS = [
 	{ value: "baseten", label: "Baseten", proxy: false },
 ].sort((a, b) => a.label.localeCompare(b.label))
 
-PROVIDERS.unshift({ value: "kilocode", label: "Kilo Gateway", proxy: false }) // kilocode_change
+PROVIDERS.unshift({ value: "kilocode", label: "AlfaCode Gateway", proxy: false }) // kilocode_change

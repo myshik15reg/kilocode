@@ -878,7 +878,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		[clineAsk, startNewTask, isStreaming],
 	)
 
-	const handleTaskCloseButtonClick = useCallback(() => startNewTask(), [startNewTask]) // kilocode_change
+	const handleTaskCloseButtonClick = useCallback(() => vscode.postMessage({ type: "closeTaskToHistory" }), []) // kilocode_change
 
 	const { info: model } = useSelectedModel(apiConfiguration)
 

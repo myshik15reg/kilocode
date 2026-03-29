@@ -13,6 +13,9 @@ import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { sanitizeUnifiedDiff, computeDiffStats } from "../diff/stats"
 import type { ToolUse } from "../../shared/tools"
 import { trackContribution } from "../../services/contribution-tracking/ContributionTrackingService" // kilocode_change
+// kilocode_change start
+import { annotateWithHashline, expandHashlineReferences, stripHashlinePrefixes } from "./helpers/hashline"
+// kilocode_change end
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -290,8 +293,13 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 				}
 			}
 
-			const oldLF = normalizeToLF(old_string)
-			const newLF = normalizeToLF(new_string)
+			// kilocode_change start
+			const oldLF =
+				!isNewFile && currentContentLF !== null
+					? expandHashlineReferences(currentContentLF, normalizeToLF(old_string))
+					: normalizeToLF(old_string)
+			const newLF = normalizeToLF(stripHashlinePrefixes(new_string))
+			// kilocode_change end
 			const expectedReplacements = Math.max(1, expected_replacements)
 
 			// Validate replacement operation
@@ -332,7 +340,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 							if (!anyMatches) {
 								task.consecutiveMistakeCount++
 								task.didToolFailInCurrentTurn = true
-								const formattedError = `No match found in file: ${absolutePath}\n\n<error_details>\nThe provided old_string could not be found using exact, whitespace-tolerant, or token-based matching.\n\nRecovery suggestions:\n1. Use read_file to confirm the file's current contents\n2. Ensure old_string matches exactly (including whitespace/indentation and line endings)\n3. Provide more surrounding context in old_string to make the match unique\n4. If the file has changed since you constructed old_string, re-read and retry\n</error_details>`
+								const formattedError = `No match found in file: ${absolutePath}\n\n<error_details>\nThe provided old_string could not be found using exact, whitespace-tolerant, or token-based matching.\n\nRecovery suggestions:\n1. Use read_file to confirm the file's current contents\n2. Ensure old_string matches exactly (including whitespace/indentation and line endings)\n3. Provide more surrounding context in old_string to make the match unique\n4. If the file has changed since you constructed old_string, re-read and retry\n\nSelective hashline preview:\n${annotateWithHashline(currentContentLF)}\n</error_details>`
 								await finalizePartialToolAskIfNeeded(relPath)
 								await recordFailureForPathAndMaybeEscalate(relPath, formattedError)
 								task.recordToolError("edit_file", formattedError)
@@ -344,7 +352,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 							if (exactOccurrences > 0) {
 								task.consecutiveMistakeCount++
 								task.didToolFailInCurrentTurn = true
-								const formattedError = `Occurrence count mismatch in file: ${absolutePath}\n\n<error_details>\nExpected ${expectedReplacements} occurrence(s) but found ${exactOccurrences} exact match(es).\n\nRecovery suggestions:\n1. Provide a more specific old_string so it matches exactly once\n2. If you intend to replace all occurrences, set expected_replacements to ${exactOccurrences}\n3. Use read_file to confirm the exact text and counts\n</error_details>`
+								const formattedError = `Occurrence count mismatch in file: ${absolutePath}\n\n<error_details>\nExpected ${expectedReplacements} occurrence(s) but found ${exactOccurrences} exact match(es).\n\nRecovery suggestions:\n1. Provide a more specific old_string so it matches exactly once\n2. If you intend to replace all occurrences, set expected_replacements to ${exactOccurrences}\n3. Use read_file to confirm the exact text and counts\n\nSelective hashline preview:\n${annotateWithHashline(currentContentLF)}\n</error_details>`
 								await finalizePartialToolAskIfNeeded(relPath)
 								await recordFailureForPathAndMaybeEscalate(relPath, formattedError)
 								task.recordToolError("edit_file", formattedError)
@@ -354,7 +362,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 
 							task.consecutiveMistakeCount++
 							task.didToolFailInCurrentTurn = true
-							const formattedError = `Occurrence count mismatch in file: ${absolutePath}\n\n<error_details>\nExpected ${expectedReplacements} occurrence(s), but matching found ${wsOccurrences} (whitespace-tolerant) and ${tokenOccurrences} (token-based).\n\nRecovery suggestions:\n1. Provide more surrounding context in old_string to make the match unique\n2. If multiple replacements are intended, adjust expected_replacements to the intended count\n3. Use read_file to confirm the current file contents and refine the match\n</error_details>`
+							const formattedError = `Occurrence count mismatch in file: ${absolutePath}\n\n<error_details>\nExpected ${expectedReplacements} occurrence(s), but matching found ${wsOccurrences} (whitespace-tolerant) and ${tokenOccurrences} (token-based).\n\nRecovery suggestions:\n1. Provide more surrounding context in old_string to make the match unique\n2. If multiple replacements are intended, adjust expected_replacements to the intended count\n3. Use read_file to confirm the current file contents and refine the match\n\nSelective hashline preview:\n${annotateWithHashline(currentContentLF)}\n</error_details>`
 							await finalizePartialToolAskIfNeeded(relPath)
 							await recordFailureForPathAndMaybeEscalate(relPath, formattedError)
 							task.recordToolError("edit_file", formattedError)

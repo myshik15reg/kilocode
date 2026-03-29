@@ -1,5 +1,5 @@
 {
-	"greeting": "歡迎使用 AlfaCode assistant！",
+	"greeting": "歡迎使用 AlfaCode！",
 	"task": {
 		"title": "工作",
 		"expand": "展開工作",
@@ -22,12 +22,12 @@
 		"sharePublicly": "公開分享",
 		"sharePubliclyDescription": "任何擁有連結的人都可存取",
 		"connectToCloud": "連線至雲端",
-		"connectToCloudDescription": "登入 AlfaCode assistant Cloud 以分享工作",
+		"connectToCloudDescription": "登入 AlfaCode Cloud 以分享工作",
 		"sharingDisabledByOrganization": "組織已停用分享功能",
 		"shareSuccessOrganization": "組織連結已複製到剪貼簿",
 		"shareSuccessPublic": "公開連結已複製到剪貼簿",
-		"openInCloud": "在 Roo Code Cloud 中開啟工作",
-		"openInCloudIntro": "從任何地方繼續監控或與 Roo 互動。掃描、點選或複製即可開啟。",
+		"openInCloud": "在 AlfaCode Cloud 中開啟工作",
+		"openInCloudIntro": "從任何地方繼續監控或與 AlfaCode 互動。掃描、點選或複製即可開啟。",
 		"openApiHistory": "開啟 API 歷史紀錄",
 		"openUiHistory": "開啟 UI 歷史紀錄"
 	},
@@ -120,7 +120,7 @@
 		},
 		"modelAgnostic": {
 			"title": "自備模型，無加價無鎖定",
-			"description": "使用自己的供應商金鑰，甚至可執行本機推論 - Roo 不額外收費"
+			"description": "使用自己的供應商金鑰，甚至可執行本機推論 - AlfaCode 不額外收費"
 		}
 	},
 	"selectMode": "選擇互動模式",
@@ -131,7 +131,7 @@
 		"title": "模式",
 		"marketplace": "模式市集",
 		"settings": "模式設定",
-		"description": "專門量身打造 AlfaCode assistant 行為的角色。",
+		"description": "專門量身打造 AlfaCode 行為的角色。",
 		"searchPlaceholder": "搜尋模式...",
 		"noResults": "找不到結果",
 		"organizationModes": "組織模式"
@@ -161,14 +161,14 @@
 		"rateLimitWait": "速率限制",
 		"errorTitle": "供應商錯誤 {{code}}",
 		"errorMessage": {
-			"docs": "說明文件",
-			"goToSettings": "設定",
 			"400": "供應商無法按照此方式處理請求。請停止工作並嘗試其他方法。",
 			"401": "無法向供應商進行身份驗證。請檢查您的 API 金鑰設定。",
 			"402": "您的帳戶資金／額度似乎已用盡。請前往供應商增加額度以繼續。",
 			"403": "無權存取。您的 API 金鑰有效，但供應商拒絕完成此請求。",
 			"429": "請求次數過多。供應商已對您的請求進行速率限制。請在下一次 API 呼叫前稍候。",
 			"500": "供應商伺服器錯誤。伺服器端發生問題，您的請求沒有問題。",
+			"docs": "說明文件",
+			"goToSettings": "設定",
 			"connection": "連線錯誤。請確保您有可用的網際網路連線。",
 			"unknown": "未知 API 錯誤。點選詳細內容以了解更多資訊。",
 			"claudeCodeNotAuthenticated": "您需要登入才能使用 Claude Code。前往設定並點選「登入 Claude Code」以進行驗證。"
@@ -209,52 +209,52 @@
 		}
 	},
 	"instructions": {
-		"wantsToFetch": "AlfaCode assistant 想要取得詳細指示以協助目前工作"
+		"wantsToFetch": "AlfaCode 想要取得詳細指示以協助目前工作"
 	},
 	"fileOperations": {
-		"wantsToRead": "AlfaCode assistant 想要讀取此檔案",
-		"wantsToReadMultiple": "AlfaCode assistant 想要讀取多個檔案",
-		"wantsToReadAndXMore": "AlfaCode assistant 想要讀取此檔案以及另外 {{count}} 個檔案",
-		"wantsToReadOutsideWorkspace": "AlfaCode assistant 想要讀取此工作區外的檔案",
-		"didRead": "AlfaCode assistant 已讀取此檔案",
-		"wantsToEdit": "AlfaCode assistant 想要編輯此檔案",
-		"wantsToEditOutsideWorkspace": "AlfaCode assistant 想要編輯此工作區外的檔案",
-		"wantsToEditProtected": "AlfaCode assistant 想要編輯受保護的設定檔案",
-		"wantsToApplyBatchChanges": "AlfaCode assistant 想要對多個檔案套用變更",
-		"wantsToGenerateImage": "AlfaCode assistant 想要產生圖片",
-		"wantsToGenerateImageOutsideWorkspace": "AlfaCode assistant 想要在工作區外產生圖片",
-		"wantsToGenerateImageProtected": "AlfaCode assistant 想要在受保護位置產生圖片",
-		"didGenerateImage": "AlfaCode assistant 已產生圖片",
-		"wantsToCreate": "AlfaCode assistant 想要建立新檔案",
-		"wantsToSearchReplace": "AlfaCode assistant 想要在此檔案中搜尋和取代",
-		"didSearchReplace": "AlfaCode assistant 已在此檔案執行搜尋和取代",
-		"wantsToInsert": "AlfaCode assistant 想要在此檔案中插入內容",
-		"wantsToInsertWithLineNumber": "AlfaCode assistant 想要在此檔案第 {{lineNumber}} 行插入內容",
-		"wantsToInsertAtEnd": "AlfaCode assistant 想要在此檔案尾端新增內容",
-		"wantsToDelete": "AlfaCode assistant 想要刪除此檔案",
-		"wantsToDeleteDirectory": "AlfaCode assistant 想要刪除此目錄"
+		"wantsToRead": "AlfaCode 想要讀取此檔案",
+		"wantsToReadMultiple": "AlfaCode 想要讀取多個檔案",
+		"wantsToReadAndXMore": "AlfaCode 想要讀取此檔案以及另外 {{count}} 個檔案",
+		"wantsToReadOutsideWorkspace": "AlfaCode 想要讀取此工作區外的檔案",
+		"didRead": "AlfaCode 已讀取此檔案",
+		"wantsToEdit": "AlfaCode 想要編輯此檔案",
+		"wantsToEditOutsideWorkspace": "AlfaCode 想要編輯此工作區外的檔案",
+		"wantsToEditProtected": "AlfaCode 想要編輯受保護的設定檔案",
+		"wantsToApplyBatchChanges": "AlfaCode 想要對多個檔案套用變更",
+		"wantsToGenerateImage": "AlfaCode 想要產生圖片",
+		"wantsToGenerateImageOutsideWorkspace": "AlfaCode 想要在工作區外產生圖片",
+		"wantsToGenerateImageProtected": "AlfaCode 想要在受保護位置產生圖片",
+		"didGenerateImage": "AlfaCode 已產生圖片",
+		"wantsToCreate": "AlfaCode 想要建立新檔案",
+		"wantsToSearchReplace": "AlfaCode 想要在此檔案中搜尋和取代",
+		"didSearchReplace": "AlfaCode 已在此檔案執行搜尋和取代",
+		"wantsToInsert": "AlfaCode 想要在此檔案中插入內容",
+		"wantsToInsertWithLineNumber": "AlfaCode 想要在此檔案第 {{lineNumber}} 行插入內容",
+		"wantsToInsertAtEnd": "AlfaCode 想要在此檔案尾端新增內容",
+		"wantsToDelete": "AlfaCode 想要刪除此檔案",
+		"wantsToDeleteDirectory": "AlfaCode 想要刪除此目錄"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "AlfaCode assistant 想要檢視此目錄中最上層的檔案",
-		"didViewTopLevel": "AlfaCode assistant 已檢視此目錄中最上層的檔案",
-		"wantsToViewTopLevelOutsideWorkspace": "AlfaCode assistant 想要檢視此目錄（工作區外）中最上層的檔案",
-		"didViewTopLevelOutsideWorkspace": "AlfaCode assistant 已檢視此目錄（工作區外）中最上層的檔案",
-		"wantsToViewRecursive": "AlfaCode assistant 想要遞迴檢視此目錄中的所有檔案",
-		"didViewRecursive": "AlfaCode assistant 已遞迴檢視此目錄中的所有檔案",
-		"wantsToViewRecursiveOutsideWorkspace": "AlfaCode assistant 想要遞迴檢視此目錄（工作區外）中的所有檔案",
-		"didViewRecursiveOutsideWorkspace": "AlfaCode assistant 已遞迴檢視此目錄（工作區外）中的所有檔案",
-		"wantsToViewDefinitions": "AlfaCode assistant 想要檢視此目錄中使用的原始碼定義名稱",
-		"didViewDefinitions": "AlfaCode assistant 已檢視此目錄中使用的原始碼定義名稱",
-		"wantsToViewDefinitionsOutsideWorkspace": "AlfaCode assistant 想要檢視此目錄（工作區外）中使用的原始碼定義名稱",
-		"didViewDefinitionsOutsideWorkspace": "AlfaCode assistant 已檢視此目錄（工作區外）中使用的原始碼定義名稱",
-		"wantsToSearch": "AlfaCode assistant 想要在此目錄中搜尋 <code>{{regex}}</code>",
-		"didSearch": "AlfaCode assistant 已在此目錄中搜尋 <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "AlfaCode assistant 想要在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "AlfaCode assistant 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>"
+		"wantsToViewTopLevel": "AlfaCode 想要檢視此目錄中最上層的檔案",
+		"didViewTopLevel": "AlfaCode 已檢視此目錄中最上層的檔案",
+		"wantsToViewTopLevelOutsideWorkspace": "AlfaCode 想要檢視此目錄（工作區外）中最上層的檔案",
+		"didViewTopLevelOutsideWorkspace": "AlfaCode 已檢視此目錄（工作區外）中最上層的檔案",
+		"wantsToViewRecursive": "AlfaCode 想要遞迴檢視此目錄中的所有檔案",
+		"didViewRecursive": "AlfaCode 已遞迴檢視此目錄中的所有檔案",
+		"wantsToViewRecursiveOutsideWorkspace": "AlfaCode 想要遞迴檢視此目錄（工作區外）中的所有檔案",
+		"didViewRecursiveOutsideWorkspace": "AlfaCode 已遞迴檢視此目錄（工作區外）中的所有檔案",
+		"wantsToViewDefinitions": "AlfaCode 想要檢視此目錄中使用的原始碼定義名稱",
+		"didViewDefinitions": "AlfaCode 已檢視此目錄中使用的原始碼定義名稱",
+		"wantsToViewDefinitionsOutsideWorkspace": "AlfaCode 想要檢視此目錄（工作區外）中使用的原始碼定義名稱",
+		"didViewDefinitionsOutsideWorkspace": "AlfaCode 已檢視此目錄（工作區外）中使用的原始碼定義名稱",
+		"wantsToSearch": "AlfaCode 想要在此目錄中搜尋 <code>{{regex}}</code>",
+		"didSearch": "AlfaCode 已在此目錄中搜尋 <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "AlfaCode 想要在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "AlfaCode 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>"
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "AlfaCode assistant 想要在程式碼庫中搜尋 <code>{{query}}</code>",
-		"wantsToSearchWithPath": "AlfaCode assistant 想要在 <code>{{path}}</code> 中搜尋程式碼庫 <code>{{query}}</code>",
+		"wantsToSearch": "AlfaCode 想要在程式碼庫中搜尋 <code>{{query}}</code>",
+		"wantsToSearchWithPath": "AlfaCode 想要在 <code>{{path}}</code> 中搜尋程式碼庫 <code>{{query}}</code>",
 		"didSearch_one": "找到 1 個結果",
 		"didSearch_other": "找到 {{count}} 個結果",
 		"resultTooltip": "相似度評分：{{score}}（點選以開啟檔案）"
@@ -280,24 +280,24 @@
 	"response": "回應",
 	"arguments": "參數",
 	"text": {
-		"rooSaid": "Kilo 說"
+		"rooSaid": "AlfaCode assistant 說"
 	},
 	"feedback": {
 		"youSaid": "您說"
 	},
 	"mcp": {
-		"wantsToUseTool": "AlfaCode assistant 想要在 {{serverName}} MCP 伺服器上使用工具",
-		"wantsToAccessResource": "AlfaCode assistant 想要存取 {{serverName}} MCP 伺服器上的資源"
+		"wantsToUseTool": "AlfaCode 想要在 {{serverName}} MCP 伺服器上使用工具",
+		"wantsToAccessResource": "AlfaCode 想要存取 {{serverName}} MCP 伺服器上的資源"
 	},
 	"modes": {
-		"wantsToSwitch": "AlfaCode assistant 想要切換至 {{mode}} 模式",
-		"wantsToSwitchWithReason": "AlfaCode assistant 想要切換至 {{mode}} 模式，原因：{{reason}}",
-		"didSwitch": "AlfaCode assistant 已切換至 {{mode}} 模式",
-		"didSwitchWithReason": "AlfaCode assistant 已切換至 {{mode}} 模式，原因：{{reason}}"
+		"wantsToSwitch": "AlfaCode 想要切換至 {{mode}} 模式",
+		"wantsToSwitchWithReason": "AlfaCode 想要切換至 {{mode}} 模式，原因：{{reason}}",
+		"didSwitch": "AlfaCode 已切換至 {{mode}} 模式",
+		"didSwitchWithReason": "AlfaCode 已切換至 {{mode}} 模式，原因：{{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "AlfaCode assistant 想要在 {{mode}} 模式下建立新的子任務",
-		"wantsToFinish": "AlfaCode assistant 想要完成此子任務",
+		"wantsToCreate": "AlfaCode 想要在 {{mode}} 模式下建立新的子任務",
+		"wantsToFinish": "AlfaCode 想要完成此子任務",
 		"newTaskContent": "子任務指示",
 		"completionContent": "子任務已完成",
 		"resultContent": "子任務結果",
@@ -305,7 +305,7 @@
 		"completionInstructions": "子任務已完成！您可以檢閱結果並提出修正或後續步驟。如果一切順利，請確認以將結果回傳給主任務。"
 	},
 	"questions": {
-		"hasQuestion": "AlfaCode assistant 有一個問題"
+		"hasQuestion": "AlfaCode 有一個問題"
 	},
 	"taskCompleted": "工作完成",
 	"error": "錯誤",
@@ -322,12 +322,12 @@
 		"copyToClipboard": "複製基本錯誤資訊",
 		"copied": "已複製！",
 		"diagnostics": "取得詳細錯誤資訊",
-		"proxyProvider": "看起來你在使用基於代理的提供商。請檢查其日誌，並確保它不會重寫 AlfaCode assistant 的請求。"
+		"proxyProvider": "看起來你在使用基於代理的提供商。請檢查其日誌，並確保它不會重寫 AlfaCode 的請求。"
 	},
 	"diffError": {
 		"title": "編輯失敗"
 	},
-	"troubleMessage": "AlfaCode assistant 遇到問題...",
+	"troubleMessage": "AlfaCode 遇到問題...",
 	"powershell": {
 		"issues": "似乎遇到 Windows PowerShell 問題，請參閱此說明文件"
 	},
@@ -350,19 +350,19 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} 已發布",
-		"support": "請在 <githubLink>GitHub</githubLink> 上給 Roo Code 星星支持我們。",
+		"title": "AlfaCode {{version}} 已發布",
+		"support": "請在 <githubLink>GitHub</githubLink> 上給 AlfaCode 星星支持我們。",
 		"stealthModel": {
-			"feature": "<bold>限時免費隱形模型</bold> - Code Supernova：現已升級為 <bold>1M Token 上下文視窗</bold>！一個支援影像輸入的多功能代理程式設計模型，透過 Roo Code Cloud 提供。",
+			"feature": "<bold>限時免費隱形模型</bold> - Code Supernova：現已升級為 <bold>1M Token 上下文視窗</bold>！一個支援影像輸入的多功能代理程式設計模型，透過 AlfaCode Cloud 提供。",
 			"note": "（注意：提示詞和回應會被模型建立者記錄並用於改進模型）",
-			"connectButton": "連線到 Roo Code Cloud",
-			"selectModel": "在設定中從 Roo Code Cloud 供應商選擇 <code>roo/code-supernova</code> 開始使用。",
+			"connectButton": "連線到 AlfaCode Cloud",
+			"selectModel": "在設定中從 AlfaCode Cloud 供應商選擇 <code>roo/code-supernova</code> 開始使用。",
 			"goToSettingsButton": "前往設定"
 		},
 		"release": {
 			"heading": "新增功能：",
 			"openaiCodexProvider": "新增 OpenAI - ChatGPT Plus/Pro 提供商，提供基於訂閱的 Codex 模型存取，無須按 Token 計費。",
-			"gpt52codexModel": "新的 gpt-5.2-codex 模型已新增至 Roo Code Router、標準 OpenAI 提供商等。",
+			"gpt52codexModel": "新的 gpt-5.2-codex 模型已新增至 AlfaCode Router、標準 OpenAI 提供商等。",
 			"bugFixes": "修復導致灰屏的記憶體洩漏、Gemini 思考簽名問題以及其他穩定性改進。"
 		},
 		"cloudAgents": {
@@ -390,7 +390,7 @@
 	"browser": {
 		"session": "瀏覽器工作階段",
 		"active": "活動中",
-		"rooWantsToUse": "AlfaCode assistant 想要使用瀏覽器",
+		"rooWantsToUse": "AlfaCode 想要使用瀏覽器",
 		"consoleLogs": "主控台記錄",
 		"noNewLogs": "（沒有新記錄）",
 		"screenshot": "瀏覽器螢幕擷圖",
@@ -438,18 +438,18 @@
 	"profileViolationWarning": "目前設定檔與您的組織設定不相容",
 	"shellIntegration": {
 		"title": "命令執行警告",
-		"description": "您的命令正在沒有 VSCode 終端機 Shell 整合的情況下執行。若要隱藏此警告，您可以在 <settingsLink>AlfaCode assistant 設定</settingsLink> 的<strong>終端機</strong>區塊中停用 Shell 整合，或使用下方的連結來排解 VSCode 終端機整合問題。",
+		"description": "您的命令正在沒有 VSCode 終端機 Shell 整合的情況下執行。若要隱藏此警告，您可以在 <settingsLink>AlfaCode 設定</settingsLink> 的<strong>終端機</strong>區塊中停用 Shell 整合，或使用下方的連結來排解 VSCode 終端機整合問題。",
 		"troubleshooting": "點選此處查看 Shell 整合文件。"
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "已達自動核准請求上限",
-			"description": "AlfaCode assistant 已達到 {{count}} 次 API 請求的自動核准上限。您想重設計數並繼續工作嗎？",
+			"description": "AlfaCode 已達到 {{count}} 次 API 請求的自動核准上限。您想重設計數並繼續工作嗎？",
 			"button": "重設並繼續"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "已達自動核准費用上限",
-			"description": "AlfaCode assistant 已達到 ${{count}} 的自動核准費用上限。您想重設費用並繼續工作嗎？",
+			"description": "AlfaCode 已達到 ${{count}} 的自動核准費用上限。您想重設費用並繼續工作嗎？",
 			"button": "重設並繼續"
 		}
 	},
@@ -464,7 +464,7 @@
 		"ariaLabel": "版本 {{version}} - 點選查看發布說明"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud 正在進化！",
+		"title": "AlfaCode Cloud 正在進化！",
 		"description": "在雲端執行 Roomote 遠端代理、隨時隨地存取您的工作、與他人協作等等。",
 		"joinWaitlist": "註冊以獲得最新更新。"
 	},
@@ -492,8 +492,8 @@
 		}
 	},
 	"slashCommand": {
-		"wantsToRun": "AlfaCode assistant 想要執行斜線指令",
-		"didRun": "AlfaCode assistant 執行了斜線指令"
+		"wantsToRun": "AlfaCode 想要執行斜線指令",
+		"didRun": "AlfaCode 執行了斜線指令"
 	},
 	"queuedMessages": {
 		"title": "佇列中的訊息",

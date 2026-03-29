@@ -1,6 +1,6 @@
 # Mode Registry (Single Source of Truth)
 
-> Единственный авторитетный реестр всех режимов WorkFlowAI.
+> Единственный авторитетный реестр всех режимов AlfaFlowAI.
 > Все другие документы ДОЛЖНЫ ссылаться сюда.
 
 ---
@@ -28,6 +28,12 @@
 | `*-dev`              | Development     | limited     | no        | full          | Language/framework specific     |
 | `*-architect`        | Architecture    | full        | no        | read+docs     | System design                   |
 | `1c-orchestrator`    | 1C:Enterprise   | full        | yes       | read+delegate | 1C coordination                 |
+
+### FAST PATH (Micro-change)
+
+Независимо от выбранного режима реализации, если запрос соответствует микро‑правке ("extract method", "обёртка", "быстро поправь фрагмент"), агент SHOULD следовать workflow: [`quick-fix.md`](../workflows/quick-fix.md:1).
+
+Правило: FAST PATH **не отменяет** "No Protocol, No Code" (repo changes всё равно требуют протокол), он задаёт порядок ответа: **patch first → verify**.
 
 **Deprecated:** `code-simplifier`, `error-detective`, `code-skeptic`, `test-analyzer` (see Deprecated Modes section)
 
@@ -318,8 +324,8 @@
 
 | Mode                         | Scope    | When to Use                |
 | ---------------------------- | -------- | -------------------------- |
-| `planning/research-codebase` | Internal | Исследование кодовой базы  |
-| `planning/research-web`      | External | Поиск внешней документации |
+| `planning-research-codebase` | Internal | Исследование кодовой базы  |
+| `planning-research-web`      | External | Поиск внешней документации |
 
 **Rule:** Read-only, не создают/изменяют файлы. Только возвращают findings.
 
@@ -364,7 +370,7 @@
 | `cicd`, `devops`      | `cli-master`, `git-workflow`                  |
 | `debug`, `code-fixer` | `cli-master`, `project-tests`                 |
 
-**Skills directory:** `~/.kilocode/skills/index.md`
+**Skills directory:** [`skills/index.md`](../skills/index.md)
 
 ---
 
@@ -443,4 +449,4 @@ refactorer → unit-tester → reviewer
 - [Orchestrator Guide](../rules/orchestrator-guide.md) — Agent Selection Matrix
 - [Roles](../rules/roles.md) — Core role definitions
 - [Skills Index](../skills/index.md) — Available skills
-- [CLI Compatibility](cli/CLAUDE.md) — Claude Code CLI instructions
+- [CLI Compatibility](../cli/CLAUDE.md) — Claude Code CLI instructions

@@ -80,6 +80,12 @@ export const toolParamNames = [
 	"start_line",
 	"end_line",
 	"todos",
+	// kilocode_change start
+	"execution",
+	"isolation",
+	"branchFromTaskId",
+	"branchStrategy",
+	// kilocode_change end
 	"prompt",
 	"image",
 	"files", // Native protocol parameter for read_file
@@ -118,6 +124,7 @@ export type NativeToolArgs = {
 	}
 	browser_action: BrowserActionParams
 	codebase_search: { query: string; path?: string }
+	web_search: { query: string }
 	fetch_instructions: { task: string }
 	generate_image: GenerateImageParams
 	run_slash_command: { command: string; args?: string }
@@ -247,7 +254,12 @@ export interface SwitchModeToolUse extends ToolUse<"switch_mode"> {
 
 export interface NewTaskToolUse extends ToolUse<"new_task"> {
 	name: "new_task"
-	params: Partial<Pick<Record<ToolParamName, string>, "mode" | "message" | "todos">>
+	params: Partial<
+		Pick<
+			Record<ToolParamName, string>,
+			"mode" | "message" | "todos" | "execution" | "isolation" | "branchFromTaskId" | "branchStrategy"
+		>
+	>
 }
 
 export interface RunSlashCommandToolUse extends ToolUse<"run_slash_command"> {
@@ -305,6 +317,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	new_task: "create new task",
 	new_rule: "create new rule",
 	codebase_search: "codebase search",
+	web_search: "web search",
 	update_todo_list: "update todo list",
 	run_slash_command: "run slash command",
 	generate_image: "generate images",
@@ -314,7 +327,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 // Define available tool groups.
 export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	read: {
-		tools: ["read_file", "fetch_instructions", "search_files", "list_files", "codebase_search"],
+		tools: ["read_file", "fetch_instructions", "search_files", "list_files", "codebase_search", "web_search"],
 	},
 	edit: {
 		tools: [

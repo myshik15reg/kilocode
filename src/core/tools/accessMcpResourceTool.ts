@@ -5,6 +5,7 @@ import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
+import { compactMcpResponse } from "./helpers/compactMcpResponse" // kilocode_change
 
 interface AccessMcpResourceParams {
 	server_name: string
@@ -59,7 +60,8 @@ export class AccessMcpResourceTool extends BaseTool<"access_mcp_resource"> {
 			await task.say("mcp_server_request_started")
 			const resourceResult = await task.providerRef.deref()?.getMcpHub()?.readResource(server_name, uri)
 
-			const resourceResultPretty =
+			// kilocode_change start
+			const resourceResultPretty = compactMcpResponse(
 				resourceResult?.contents
 					.map((item) => {
 						if (item.text) {
@@ -68,7 +70,9 @@ export class AccessMcpResourceTool extends BaseTool<"access_mcp_resource"> {
 						return ""
 					})
 					.filter(Boolean)
-					.join("\n\n") || "(Empty response)"
+					.join("\n\n") || "(Empty response)",
+			)
+			// kilocode_change end
 
 			// Handle images (image must contain mimetype and blob)
 			let images: string[] = []

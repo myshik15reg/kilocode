@@ -2,6 +2,7 @@ packages:
   - src
   - webview-ui
   - cli
+  - benchmark/*
   - apps/*
   - packages/*
   - jetbrains/host

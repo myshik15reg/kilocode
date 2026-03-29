@@ -1,6 +1,6 @@
 {
-	"greeting": "Ahoj, jsem AlfaCode assistant!",
-	"introduction": "<strong>AlfaCode assistant je přední autonomní agent pro kódování.</strong> Připrav se na architekturu, kódování, ladění a zvýšení své produktivity jako nikdy předtím. Pro pokračování AlfaCode assistant vyžaduje API klíč.",
+	"greeting": "Ahoj, jsem AlfaCode!",
+	"introduction": "<strong>AlfaCode je přední autonomní agent pro kódování.</strong> Připrav se na architekturu, kódování, ladění a zvýšení své produktivity jako nikdy předtím. Pro pokračování AlfaCode vyžaduje API klíč.",
 	"notice": "Pro začátek toto rozšíření potřebuje poskytovatele API.",
 	"start": "Pojďme na to!",
 	"routers": {
@@ -13,44 +13,44 @@
 		},
 		"roo": {
 			"description": "Nejlepší bezplatné modely na začátek",
-			"incentive": "Vyzkoušej Roo zdarma"
+			"incentive": "Vyzkoušej AlfaCode zdarma"
 		}
 	},
-	"chooseProvider": "Aby mohl dělat svá kouzla, AlfaCode assistant potřebuje API klíč.",
+	"chooseProvider": "Aby mohl dělat svá kouzla, AlfaCode potřebuje API klíč.",
 	"landing": {
-		"greeting": "Vítej v AlfaCode assistant!",
-		"introduction": "S řadou vestavěných a rozšiřitelných Modes ti AlfaCode assistant umožní plánovat, navrhovat architekturu, kódovat, ladit a zvýšit svou produktivitu jako nikdy předtím.",
-		"accountMention": "Pro začátek si vytvoř svůj účet AlfaCode assistant Cloud. Získej výkonné modely, ovládání webu, analytiku, podporu a další.",
+		"greeting": "Vítej v AlfaCode!",
+		"introduction": "S řadou vestavěných a rozšiřitelných Modes ti AlfaCode umožní plánovat, navrhovat architekturu, kódovat, ladit a zvýšit svou produktivitu jako nikdy předtím.",
+		"accountMention": "Pro začátek si vytvoř svůj účet AlfaCode Cloud. Získej výkonné modely, ovládání webu, analytiku, podporu a další.",
 		"getStarted": "Vytvořit účet AlfaCode",
 		"noAccount": "nebo použít bez účtu"
 	},
 	"providerSignup": {
 		"heading": "Vyber svého poskytovatele",
-		"chooseProvider": "Roo potřebuje poskytovatele LLM k fungování. Vyber jeden pro začátek, později můžeš přidat další.",
-		"rooCloudProvider": "Roo Code Cloud Provider",
-		"rooCloudDescription": "Nejjednodušší způsob použití Roo. Kurátorovaná směs bezplatných a placených modelů za nízkou cenu",
+		"chooseProvider": "AlfaCode potřebuje poskytovatele LLM k fungování. Vyber jeden pro začátek, později můžeš přidat další.",
+		"rooCloudProvider": "AlfaCode Cloud Provider",
+		"rooCloudDescription": "Nejjednodušší způsob použití AlfaCode. Kurátorovaná směs bezplatných a placených modelů za nízkou cenu",
 		"learnMore": "dozvědět se více",
 		"useAnotherProvider": "Použít jiného poskytovatele",
 		"useAnotherProviderDescription": "Zadejte API klíč a můžete začít.",
-		"noApiKeys": "Nechceš řešit klíče? Použij Roo Code Cloud Provider.",
-		"backToRoo": "Použít Roo Code Cloud Provider.",
+		"noApiKeys": "Nechceš řešit klíče? Použij AlfaCode Cloud Provider.",
+		"backToRoo": "Použít AlfaCode Cloud Provider.",
 		"goBack": "Zpět",
 		"finish": "Dokončit",
 		"getStarted": "Začít"
 	},
 	"waitingForCloud": {
-		"heading": "Přesměrovávám vás do Roo Code Cloud...",
+		"heading": "Přesměrovávám vás do AlfaCode Cloud...",
 		"description": "Dokončete registraci ve svém prohlížeči, poté se sem automaticky vrátíte.",
 		"noPrompt": "Pokud se nezobrazí výzva k otevření URL, <clickHere>klikněte zde</clickHere>.",
 		"havingTrouble": "Pokud jste dokončili registraci, ale máte problémy, <clickHere>klikněte zde</clickHere>.",
 		"pasteUrl": "Vložte zpětnou URL z vašeho prohlížeče:",
 		"docsLink": "Nefunguje? <DocsLink>Zkontroluj dokumentaci</DocsLink>.",
-		"invalidURL": "To nevypadá jako platná zpětná URL. Zkopíruj prosím to, co ukazuje Roo Code Cloud ve tvém prohlížeči.",
+		"invalidURL": "To nevypadá jako platná zpětná URL. Zkopíruj prosím to, co ukazuje AlfaCode Cloud ve tvém prohlížeči.",
 		"goBack": "Jít zpět"
 	},
 	"startRouter": "Doporučujeme použít LLM Router:",
 	"startCustom": "Nebo můžeš přinést svůj vlastní API klíč poskytovatele:",
-	"rooCloudProviderHeading": "Roo Code Cloud Provider",
+	"rooCloudProviderHeading": "AlfaCode Cloud Provider",
 	"rooCloudProviderBody": "Nejjednodušší způsob začátku s kurátorovanými modely",
 	"rooCloudProviderSignUp": "Registrovat se do cloudu",
 	"rooCloudProviderSignUpDesc": "Vytvořte si účet pro přístup ke cloudovým modelům",
@@ -64,8 +64,8 @@
 	"rooCloudProviderCoder": "Coder Agent",
 	"rooCloudProviderCoderDesc": "Specializovaný agent pro psaní a refaktoring kódu",
 	"telemetry": {
-		"helpImprove": "Pomoz vylepšit AlfaCode assistant",
-		"helpImproveMessage": "AlfaCode assistant sbírá data o chybách a používání, aby nám pomohl opravit chyby a vylepšit rozšíření. Tato telemetrie nesbírá kód, prompts ani osobní informace. Můžeš to vypnout v <settingsLink>nastavení</settingsLink>.",
+		"helpImprove": "Pomoz vylepšit AlfaCode",
+		"helpImproveMessage": "AlfaCode sbírá data o chybách a používání, aby nám pomohl opravit chyby a vylepšit rozšíření. Tato telemetrie nesbírá kód, prompts ani osobní informace. Můžeš to vypnout v <settingsLink>nastavení</settingsLink>.",
 		"changeSettings": "Toto můžete později změnit v dolní části <settingsLink>nastavení</settingsLink>"
 	},
 	"importSettings": "Importovat Nastavení"

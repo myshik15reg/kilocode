@@ -250,8 +250,10 @@ describe("ClineProvider flicker-free cancel", () => {
 		// Setup: Add a task to the stack first
 		;(provider as any).clineStack = [mockTask1]
 
-		// Spy on removeClineFromStack to verify it IS called
-		const removeClineFromStackSpy = vi.spyOn(provider, "removeClineFromStack").mockResolvedValue(undefined)
+		// Spy on background snapshotting to verify non-rehydration path cleanup happens
+		const snapshotCurrentStackToBackgroundSpy = vi
+			.spyOn(provider as any, "snapshotCurrentStackToBackground")
+			.mockImplementation(() => undefined)
 
 		// Create history item with different taskId
 		const historyItem: HistoryItem = {
@@ -268,16 +270,20 @@ describe("ClineProvider flicker-free cancel", () => {
 		// Act: Create task with different history item
 		await provider.createTaskWithHistoryItem(historyItem)
 
-		// Assert: removeClineFromStack should be called
-		expect(removeClineFromStackSpy).toHaveBeenCalled()
+		// Assert: stack was snapshotted and then replaced with the new task
+		expect(snapshotCurrentStackToBackgroundSpy).toHaveBeenCalled()
+		expect((provider as any).clineStack).toHaveLength(1)
+		expect((provider as any).clineStack[0]).toBe(mockTask2)
 	})
 
 	it("should handle empty stack gracefully during rehydration attempt", async () => {
 		// Setup: Empty stack
 		;(provider as any).clineStack = []
 
-		// Spy on removeClineFromStack
-		const removeClineFromStackSpy = vi.spyOn(provider, "removeClineFromStack").mockResolvedValue(undefined)
+		// Spy on background snapshotting
+		const snapshotCurrentStackToBackgroundSpy = vi
+			.spyOn(provider as any, "snapshotCurrentStackToBackground")
+			.mockImplementation(() => undefined)
 
 		// Create history item
 		const historyItem: HistoryItem = {
@@ -291,11 +297,13 @@ describe("ClineProvider flicker-free cancel", () => {
 			workspace: "/test/workspace",
 		}
 
-		// Act: Should not error and should call removeClineFromStack
+		// Act: Should not error and should instantiate a fresh task
 		await provider.createTaskWithHistoryItem(historyItem)
 
-		// Assert: removeClineFromStack should be called (no current task to rehydrate)
-		expect(removeClineFromStackSpy).toHaveBeenCalled()
+		// Assert: background snapshot path still runs and a task is created
+		expect(snapshotCurrentStackToBackgroundSpy).toHaveBeenCalled()
+		expect((provider as any).clineStack).toHaveLength(1)
+		expect((provider as any).clineStack[0]).toBe(mockTask2)
 	})
 
 	it("should maintain task stack integrity during flicker-free replacement", async () => {

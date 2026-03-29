@@ -242,7 +242,7 @@
 			},
 			"enableSmartInlineTaskKeybinding": {
 				"label": "Completamento Automatico Manuale ({{keybinding}})",
-				"description": "Hai bisogno di una correzione rapida, completamento o refactoring? Kilo userà il contesto circostante per offrire miglioramenti immediati, mantenendoti nel flusso. <DocsLink>Modifica scorciatoia</DocsLink>"
+				"description": "Hai bisogno di una correzione rapida, completamento o refactoring? AlfaCode assistant userà il contesto circostante per offrire miglioramenti immediati, mantenendoti nel flusso. <DocsLink>Modifica scorciatoia</DocsLink>"
 			},
 			"keybindingNotFound": "non trovato",
 			"configureAutocompleteProfile": "Usa qualsiasi modello andando nei profili e configurando un Profilo del Tipo di Profilo Autocompletamento.",
@@ -311,7 +311,7 @@
 	"toolCallStyle": {
 		"title": "Stile Chiamata Strumenti",
 		"description": "Scegli come formattare le chiamate agli strumenti nel prompt di sistema. JSON è attualmente sperimentale e destinato principalmente agli utenti interessati a contribuire al suo sviluppo.",
-		"automatic": "Lascia decidere a Kilo",
+		"automatic": "Lascia decidere a AlfaCode assistant",
 		"xml": "XML",
 		"json": "JSON"
 	},
@@ -355,7 +355,7 @@
 			"title": "Sintesi vocale",
 			"description": "La sintesi vocale non è disponibile. La sintesi vocale richiede sia FFmpeg che un provider OpenAI valido configurato. <moreInfoLink>Clicca qui per maggiori informazioni</moreInfoLink>.",
 			"openAiReason": "È necessario un provider OpenAI valido con una chiave API per utilizzare la trascrizione vocale.",
-			"ffmpegReason": "È necessario avere FFmpeg installato. <ffmpegLink>Clicca qui</ffmpegLink> per far sì che Kilo ti aiuti a installare FFmpeg.",
+			"ffmpegReason": "È necessario avere FFmpeg installato. <ffmpegLink>Clicca qui</ffmpegLink> per far sì che AlfaCode assistant ti aiuti a installare FFmpeg.",
 			"ffmpegMessage": "Aiutami a installare FFmpeg"
 		},
 		"misconfiguredState": "Non disponibile a causa della configurazione",

@@ -1,0 +1,24 @@
+{
+	"name": "@kilocode/code-index-benchmark",
+	"private": true,
+	"type": "module",
+	"version": "0.1.0",
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"dev": "tsx src/cli.ts",
+		"run": "node dist/cli.js"
+	},
+	"dependencies": {
+		"@qdrant/js-client-rest": "^1.16.2",
+		"commander": "^12.1.0",
+		"neo4j-driver": "^5.27.0",
+		"pino": "^9.6.0",
+		"pino-pretty": "^11.3.0",
+		"zod": "^3.25.0"
+	},
+	"devDependencies": {
+		"@types/node": "^20.11.0",
+		"tsx": "^4.19.3",
+		"typescript": "5.8.3"
+	}
+}

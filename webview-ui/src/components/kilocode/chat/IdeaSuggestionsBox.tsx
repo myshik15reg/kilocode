@@ -66,7 +66,7 @@ export const IdeaSuggestionsBox = () => {
 				}}>
 				<img
 					src={`${iconsBaseUri}/kilo-dark.svg`}
-					alt="Kilo Code"
+					alt="AlfaCode assistant"
 					className="w-full h-full object-contain"
 					style={{
 						opacity: 0.85,

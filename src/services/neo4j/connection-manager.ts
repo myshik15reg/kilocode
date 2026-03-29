@@ -1,12 +1,55 @@
 /**
  * Neo4j Connection Manager
- * 
+ *
  * Singleton class that manages Neo4j driver connections.
  * Ensures only one driver instance exists across the application.
  */
 
 import neo4j, { Driver, Session, auth } from "neo4j-driver"
 import type { Neo4jConfig } from "./interfaces"
+
+// kilocode_change start
+function redactNeo4jUriForLogs(uri: string): string {
+	if (!uri || typeof uri !== "string") {
+		return "(not set)"
+	}
+
+	try {
+		const url = new URL(uri)
+		url.username = ""
+		url.password = ""
+		url.search = ""
+		url.hash = ""
+		// Log only scheme + host:port to avoid leaking userinfo/query params.
+		return `${url.protocol}//${url.host}`
+	} catch {
+		// Fallback for invalid URLs: redact basic auth if present and strip query/hash.
+		return uri
+			.replace(/\/\/[^@/]+@/g, "//REDACTED@")
+			.replace(/\?.*$/, "?[REDACTED_QUERY]")
+			.replace(/#.*$/, "#[REDACTED_FRAGMENT]")
+	}
+}
+
+function isMissingNeo4jDatabaseError(error: unknown): boolean {
+	if (!error || typeof error !== "object") {
+		return false
+	}
+
+	const maybeCode = "code" in error ? (error as { code?: unknown }).code : undefined
+	const maybeMessage = "message" in error ? (error as { message?: unknown }).message : undefined
+
+	if (maybeCode === "Neo.ClientError.Database.DatabaseNotFound") {
+		return true
+	}
+
+	if (typeof maybeMessage !== "string") {
+		return false
+	}
+
+	return /database.*not found/i.test(maybeMessage) || /does not exist/i.test(maybeMessage)
+}
+// kilocode_change end
 
 export class Neo4jConnectionManager {
 	private static instance: Neo4jConnectionManager
@@ -77,22 +120,25 @@ export class Neo4jConnectionManager {
 			}
 
 			// Create new driver
-			this.driver = neo4j.driver(
-				config.uri,
-				auth.basic(config.username, config.password),
-				{
-					maxConnectionLifetime: 3600000, // 1 hour
-					maxConnectionPoolSize: 50,
-					connectionAcquisitionTimeout: config.connectionTimeout || 60000,
-					disableLosslessIntegers: true, // Use native JavaScript numbers
-				}
-			)
+			this.driver = neo4j.driver(config.uri, auth.basic(config.username, config.password), {
+				maxConnectionLifetime: 3600000, // 1 hour
+				maxConnectionPoolSize: 50,
+				connectionAcquisitionTimeout: config.connectionTimeout || 60000,
+				disableLosslessIntegers: true, // Use native JavaScript numbers
+			})
 
 			// Verify connectivity
 			await this.driver.verifyConnectivity()
 
+			// kilocode_change start
+			await this.ensureDatabaseExists(config)
+			// kilocode_change end
+
 			this.config = config
-			console.log(`[Neo4j] Connected to ${config.uri}`)
+			// FIX: 2026-02-19-reviewer-neo4j-uri-log-redaction (TestAnalyzer)
+			// Root cause: логирование raw `config.uri` могло раскрывать userinfo/query (credentials/tokens).
+			// Решение: редактируем URI перед логированием (scheme + host:port).
+			console.log(`[Neo4j] Connected to ${redactNeo4jUriForLogs(config.uri)}`)
 		} catch (error) {
 			this.driver = null
 			this.config = null
@@ -172,7 +218,7 @@ export class Neo4jConnectionManager {
 	public async executeQuery<T = Record<string, unknown>>(
 		query: string,
 		params: Record<string, unknown> = {},
-		database?: string
+		database?: string,
 	): Promise<T[]> {
 		const session = this.getSession(database)
 		try {
@@ -180,9 +226,7 @@ export class Neo4jConnectionManager {
 			return result.records.map((record) => record.toObject() as T)
 		} catch (error) {
 			console.error("[Neo4j] Query execution failed:", error)
-			throw new Error(
-				`Neo4j query failed: ${error instanceof Error ? error.message : String(error)}`
-			)
+			throw new Error(`Neo4j query failed: ${error instanceof Error ? error.message : String(error)}`)
 		} finally {
 			await session.close()
 		}
@@ -195,19 +239,13 @@ export class Neo4jConnectionManager {
 	 * @param database Optional database name
 	 * @throws Error if write transaction fails
 	 */
-	public async executeWrite(
-		query: string,
-		params: Record<string, unknown> = {},
-		database?: string
-	): Promise<void> {
+	public async executeWrite(query: string, params: Record<string, unknown> = {}, database?: string): Promise<void> {
 		const session = this.getSession(database)
 		try {
 			await session.executeWrite((tx) => tx.run(query, params))
 		} catch (error) {
 			console.error("[Neo4j] Write transaction failed:", error)
-			throw new Error(
-				`Neo4j write failed: ${error instanceof Error ? error.message : String(error)}`
-			)
+			throw new Error(`Neo4j write failed: ${error instanceof Error ? error.message : String(error)}`)
 		} finally {
 			await session.close()
 		}
@@ -224,7 +262,7 @@ export class Neo4jConnectionManager {
 	public async executeRead<T = Record<string, unknown>>(
 		query: string,
 		params: Record<string, unknown> = {},
-		database?: string
+		database?: string,
 	): Promise<T[]> {
 		const session = this.getSession(database)
 		try {
@@ -232,9 +270,7 @@ export class Neo4jConnectionManager {
 			return result.records.map((record) => record.toObject() as T)
 		} catch (error) {
 			console.error("[Neo4j] Read transaction failed:", error)
-			throw new Error(
-				`Neo4j read failed: ${error instanceof Error ? error.message : String(error)}`
-			)
+			throw new Error(`Neo4j read failed: ${error instanceof Error ? error.message : String(error)}`)
 		} finally {
 			await session.close()
 		}
@@ -267,4 +303,62 @@ export class Neo4jConnectionManager {
 			throw new Error("Connection timeout: Another connection is taking too long")
 		}
 	}
+
+	// kilocode_change start
+	private async ensureDatabaseExists(config: Neo4jConfig): Promise<void> {
+		const requestedDatabase = config.database?.trim()
+
+		if (!this.driver || !requestedDatabase || requestedDatabase === "neo4j") {
+			return
+		}
+
+		const session = this.driver.session({ database: requestedDatabase })
+		try {
+			await session.run("RETURN 1 AS n")
+			return
+		} catch (error) {
+			if (!isMissingNeo4jDatabaseError(error)) {
+				throw error
+			}
+		} finally {
+			await session.close()
+		}
+
+		const systemSession = this.driver.session({ database: "system" })
+		try {
+			await systemSession.run(`CREATE DATABASE \`${requestedDatabase.replace(/`/g, "``")}\` IF NOT EXISTS`)
+			console.log(`[Neo4j] Created database ${requestedDatabase}`)
+		} finally {
+			await systemSession.close()
+		}
+
+		await this.waitForDatabaseAvailability(requestedDatabase)
+	}
+
+	private async waitForDatabaseAvailability(database: string, timeoutMs = 10000): Promise<void> {
+		const deadline = Date.now() + timeoutMs
+
+		while (Date.now() < deadline) {
+			const session = this.driver?.session({ database })
+			try {
+				if (!session) {
+					throw new Error("Neo4j driver is not connected. Call connect() first.")
+				}
+
+				await session.run("RETURN 1 AS n")
+				return
+			} catch (error) {
+				if (!isMissingNeo4jDatabaseError(error)) {
+					throw error
+				}
+
+				await new Promise((resolve) => setTimeout(resolve, 250))
+			} finally {
+				await session?.close()
+			}
+		}
+
+		throw new Error(`Timed out waiting for Neo4j database ${database} to become available`)
+	}
+	// kilocode_change end
 }

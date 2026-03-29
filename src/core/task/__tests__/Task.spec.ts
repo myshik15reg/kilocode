@@ -13,6 +13,8 @@ import { Task } from "../Task"
 import { ClineProvider } from "../../webview/ClineProvider"
 import { ApiStreamChunk } from "../../../api/transform/stream"
 import { ContextProxy } from "../../config/ContextProxy"
+import { summarizeConversation } from "../../condense"
+import { HelperModelRouter } from "../../helper-routing/HelperModelRouter"
 import { processUserContentMentions } from "../../mentions/processUserContentMentions"
 import { MultiSearchReplaceDiffStrategy } from "../../diff/strategies/multi-search-replace"
 import { MultiFileSearchReplaceDiffStrategy } from "../../diff/strategies/multi-file-search-replace"
@@ -1953,7 +1955,16 @@ describe("Queued message processing after condense", () => {
 		const provider = new ClineProvider(ctx, output as any, "sidebar", new ContextProxy(ctx)) as any
 		provider.postMessageToWebview = vi.fn().mockResolvedValue(undefined)
 		provider.postStateToWebview = vi.fn().mockResolvedValue(undefined)
-		provider.getState = vi.fn().mockResolvedValue({})
+		provider.log = vi.fn()
+		provider.getState = vi.fn().mockResolvedValue({
+			apiConfiguration: {
+				apiProvider: "anthropic",
+				apiModelId: "claude-3-5-sonnet-20241022",
+				apiKey: "test-api-key",
+			},
+			condensingApiConfigId: "",
+			listApiConfigMeta: [],
+		})
 		return provider
 	}
 
@@ -2039,6 +2050,74 @@ describe("Queued message processing after condense", () => {
 		expect(spyB).toHaveBeenCalledWith("B message", undefined)
 		expect(taskB.messageQueueService.isEmpty()).toBe(true)
 	})
+
+	// kilocode_change start
+	it("falls back to the primary condense flow when helper routing selects primary", async () => {
+		const provider = createProvider()
+		provider.getState = vi.fn().mockResolvedValue({
+			apiConfiguration: apiConfig,
+			condensingApiConfigId: "helper-1",
+			listApiConfigMeta: [{ id: "helper-1", name: "Cheap helper" }],
+		})
+
+		const task = new Task({
+			provider,
+			apiConfiguration: apiConfig,
+			task: "initial task",
+			startTask: false,
+			context: provider.context,
+		})
+
+		vi.spyOn(task as any, "getSystemPrompt").mockResolvedValue("system")
+		vi.spyOn(HelperModelRouter, "selectConfig").mockResolvedValue({
+			job: "condense",
+			config: apiConfig,
+			source: "primary",
+			provider: "anthropic",
+			modelId: apiConfig.apiModelId,
+		})
+
+		await task.condenseContext()
+
+		expect(HelperModelRouter.selectConfig).toHaveBeenCalledWith({
+			job: "condense",
+			state: {
+				apiConfiguration: apiConfig,
+				condensingApiConfigId: "helper-1",
+				listApiConfigMeta: [{ id: "helper-1", name: "Cheap helper" }],
+			},
+			providerSettingsManager: provider.providerSettingsManager,
+		})
+		expect(vi.mocked(summarizeConversation).mock.calls.at(-1)?.[7]).toBeUndefined()
+	})
+
+	it("falls back to the primary condense flow when helper routing throws", async () => {
+		const provider = createProvider()
+		provider.getState = vi.fn().mockResolvedValue({
+			apiConfiguration: apiConfig,
+			condensingApiConfigId: "helper-1",
+			listApiConfigMeta: [{ id: "helper-1", name: "Cheap helper" }],
+		})
+
+		const task = new Task({
+			provider,
+			apiConfiguration: apiConfig,
+			task: "initial task",
+			startTask: false,
+			context: provider.context,
+		})
+
+		vi.spyOn(task as any, "getSystemPrompt").mockResolvedValue("system")
+		vi.spyOn(HelperModelRouter, "selectConfig").mockRejectedValue(new Error("helper offline"))
+
+		await task.condenseContext()
+
+		expect(provider.log).toHaveBeenCalledWith(
+			expect.stringContaining("Helper routing failed for condense; using primary model:"),
+		)
+		expect(vi.mocked(summarizeConversation).mock.calls.at(-1)?.[7]).toBeUndefined()
+	})
+	// kilocode_change end
 })
 
 describe("pushToolResultToUserContent", () => {

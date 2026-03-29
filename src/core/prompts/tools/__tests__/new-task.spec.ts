@@ -124,4 +124,15 @@ describe("getNewTaskDescription", () => {
 		const usagePattern = /<new_task>\s*<mode>.*<\/mode>\s*<message>.*<\/message>\s*<\/new_task>/s
 		expect(descriptionOff).toMatch(usagePattern)
 	})
+
+	it("should guide agent to prefer local execution for tiny steps", () => {
+		const description = getNewTaskDescription({
+			cwd: "/test",
+			supportsComputerUse: false,
+			settings: {},
+		})
+
+		expect(description).toContain("Prefer solving in the current task when the work is small")
+		expect(description).toContain("Prefer `new_task` when the work needs a different specialist mode")
+	})
 })

@@ -1,72 +1,43 @@
----
+﻿---
 name: 1c-workflow
-description: Specialized workflow for 1C:Enterprise development - roles, tools, testing with xUnitFor1C and Vanessa, quality gates.
+description: Entry skill for routing and coordinating 1C:Enterprise work across the relevant 1C specialist modes.
 ---
 
-# 1C Development Workflow
+# 1C Workflow
 
-> Workflow для разработки на платформе 1С:Предприятие.
+Use this skill as the main entrypoint for non-trivial 1C tasks.
 
-## Entry Point
+## Goal
 
-Для ЛЮБОЙ задачи 1C делегируй `1c-orchestrator`:
+Route 1C work through the correct 1C specialists while keeping context, testing, and quality expectations clear.
 
-```xml
-<new_task>
-<mode>1c-orchestrator</mode>
-<message>
-ЗАДАЧА: [описание]
-КОНФИГУРАЦИЯ: [имя]
-ПЛАТФОРМА: [8.3.x]
-</message>
-</new_task>
-```
+## Default entry mode
 
-## Process Mapping
+For substantial 1C tasks, start with `1c-orchestrator`.
+Use narrower 1C specialists once the task phase is clear.
 
-| AlfaFlow | 1C Mode | Purpose |
-|----------|---------|---------|
-| architect | 1c-architect | Solution design |
-| *-dev | 1c-developer | Implementation |
-| unit-tester | 1c-tester | xUnitFor1C |
-| e2e-tester | 1c-vanessa-tester | Vanessa Automation |
-| reviewer | 1c-quality-specialist | Code Review + АПК |
+## Typical routing
 
-## Quality Gates
+| Need                   | Preferred mode          |
+| ---------------------- | ----------------------- |
+| task coordination      | `1c-orchestrator`       |
+| business clarification | `1c-business-analyst`   |
+| system specification   | `1c-system-analyst`     |
+| design or architecture | `1c-architect`          |
+| implementation         | `1c-developer`          |
+| unit-style testing     | `1c-tester`             |
+| scenario testing       | `1c-vanessa-tester`     |
+| quality review         | `1c-quality-specialist` |
 
-| Gate | Requirement | Tool |
-|------|-------------|------|
-| Coverage | 100% | xUnitFor1C + Vanessa |
-| Lint | 0 errors | АПК / SonarQube |
-| Tests | All green | CI pipeline |
-| Review | Required | 1c-quality-specialist |
+## Core rules
 
-## Roles
+1. Keep 1C handoffs explicit and phase-based.
+2. Use protocol discipline for substantial 1C work.
+3. Verify both logic and critical business flows when risk justifies it.
+4. Load deep 1C references only when the task specifically needs them.
 
-### 1c-orchestrator
-- Coordinates 1C tasks
-- Delegates to specialists
-- No direct coding
+## Related sources
 
-### 1c-developer
-- BSL/SDBL implementation
-- Form development
-- Module creation
-
-### 1c-tester
-- xUnitFor1C tests
-- Vanessa-ADD scenarios
-- Coverage reporting
-
-### 1c-quality-specialist
-- Code review
-- АПК analysis
-- Standards compliance
-
-## Tools
-
-- **EDT** - Enterprise Development Tools
-- **АПК** - Автоматизированная проверка конфигураций
-- **xUnitFor1C** - Unit testing
-- **Vanessa** - BDD/Automation testing
-- **SonarQube** - Static analysis
+- 1C testing workflow: [`../../workflows/1c-testing-workflow.md`](../../workflows/1c-testing-workflow.md:1)
+- 1C full SDLC: [`../../workflows/1c-full-sdlc.md`](../../workflows/1c-full-sdlc.md:1)
+- 1C patterns index: [`../../patterns/1c/index.md`](../../patterns/1c/index.md:1)

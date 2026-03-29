@@ -2,7 +2,7 @@
 
 Describe what you want to build in the text area and press ⮐ Enter.
 
-<img src="images/hn-nextjs.png" width='200' alt="Prompting AlfaCode assistant to Build a Hacker News clone in Next.js" />
+<img src="images/hn-nextjs.png" width='200' alt="Prompting AlfaCode assistant to build a Hacker News clone in Next.js" />
 
 The more context you give, the better the result. Include things like your tech stack, key features, or file names.
 

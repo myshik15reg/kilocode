@@ -31,6 +31,7 @@ describe("webviewMessageHandler - Code Index Settings", () => {
 			log: vi.fn(),
 			contextProxy: {
 				getValue: vi.fn().mockReturnValue({}), // Return empty config by default
+				getSecret: vi.fn().mockReturnValue(undefined),
 				setValue: vi.fn().mockResolvedValue(undefined),
 				storeSecret: vi.fn().mockResolvedValue(undefined),
 				globalStorageUri: { fsPath: "/test/path" },
@@ -281,6 +282,49 @@ describe("webviewMessageHandler - Code Index Settings", () => {
 			await webviewMessageHandler(mockProvider as ClineProvider, message)
 
 			expect(clearNeo4jCache).toHaveBeenCalledTimes(1)
+		})
+
+		it("should clear semantic cache when vector store target changes", async () => {
+			;(mockProvider.context?.globalState?.get as any).mockImplementation((key: string) => {
+				if (key !== "codebaseIndexConfig") return undefined
+				return {
+					codebaseIndexVectorStoreProvider: "qdrant",
+					codebaseIndexVectorStoreName: "old-store",
+					codebaseIndexQdrantUrl: "http://old-qdrant:6333",
+				}
+			})
+			;(mockProvider.contextProxy?.getSecret as any).mockImplementation((key: string) => {
+				if (key === "codeIndexQdrantApiKey") return "old-api-key"
+				return undefined
+			})
+
+			const clearSemanticCache = vi.fn().mockResolvedValue(undefined)
+			;(mockProvider.getCurrentWorkspaceCodeIndexManager as any).mockReturnValue({
+				clearSemanticCache,
+				getCurrentStatus: vi.fn().mockReturnValue({}),
+				handleSettingsChange: vi.fn().mockResolvedValue(undefined),
+				isFeatureEnabled: true,
+				isFeatureConfigured: false,
+				isInitialized: true,
+				initialize: vi.fn().mockResolvedValue({ requiresRestart: false }),
+			})
+
+			const message = {
+				type: "saveCodeIndexSettingsAtomic",
+				codeIndexSettings: {
+					codebaseIndexVectorStoreProvider: "qdrant",
+					codebaseIndexVectorStoreName: "new-store",
+					codebaseIndexEnabled: true,
+					codebaseIndexQdrantUrl: "http://new-qdrant:6333",
+					codeIndexQdrantApiKey: "new-api-key",
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexEmbedderModelId: "text-embedding-3-small",
+				},
+			} as const
+
+			await webviewMessageHandler(mockProvider as ClineProvider, message)
+
+			expect(clearSemanticCache).toHaveBeenCalledTimes(1)
 		})
 		// kilocode_change end: Neo4j settings persistence
 	})

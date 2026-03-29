@@ -3,6 +3,7 @@ import { z } from "zod"
 import { RooCodeEventName } from "./events.js"
 import type { RooCodeSettings } from "./global-settings.js"
 import type { ClineMessage, QueuedMessage, TokenUsage } from "./message.js"
+import type { BranchTaskOptions, TaskHistoryStatus, TaskResumeControl } from "./task-control.js"
 import type { ToolUsage, ToolName } from "./tool.js"
 import type { StaticAppProperties, GitProperties, TelemetryProperties } from "./telemetry.js"
 import type { TodoItem } from "./todo.js"
@@ -23,8 +24,12 @@ export interface TaskProviderLike {
 		configuration?: RooCodeSettings,
 	): Promise<TaskLike>
 	cancelTask(): Promise<void>
+	pauseTask(taskId?: string, reason?: string): Promise<void>
 	clearTask(): Promise<void>
-	resumeTask(taskId: string): void
+	closeTaskToHistory(): Promise<void> // kilocode_change
+	// kilocode_change
+	resumeTask(taskId: string, control?: TaskResumeControl): void
+	branchTask(taskId: string, options?: BranchTaskOptions): Promise<TaskLike>
 
 	// Modes
 	getModes(): Promise<{ slug: string; name: string }[]>
@@ -95,8 +100,14 @@ export interface CreateTaskOptions {
 	consecutiveMistakeLimit?: number
 	experiments?: Record<string, boolean>
 	initialTodos?: TodoItem[]
+	delegationDepth?: number // kilocode_change
+	detachFromParentRoot?: boolean // kilocode_change
+	execution?: "auto" | "foreground" | "background"
+	isolation?: "auto" | "shared" | "worktree"
+	branchFromTaskId?: string
+	branchStrategy?: BranchTaskOptions["branchStrategy"]
 	/** Initial status for the task's history item (e.g., "active" for child tasks) */
-	initialStatus?: "active" | "delegated" | "completed"
+	initialStatus?: TaskHistoryStatus // kilocode_change
 }
 
 export enum TaskStatus {

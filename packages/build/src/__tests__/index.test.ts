@@ -1,5 +1,9 @@
 // npx vitest run src/__tests__/index.test.ts
 
+import * as fs from "fs"
+import * as os from "os"
+import * as path from "path"
+
 import { generatePackageJson } from "../index.js"
 
 describe("generatePackageJson", () => {
@@ -218,5 +222,51 @@ describe("generatePackageJson", () => {
 			},
 			scripts: {},
 		})
+	})
+})
+
+describe("copyPaths", () => {
+	it("retries transient copy failures before succeeding", async () => {
+		const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "roo-build-copy-"))
+		const srcDir = path.join(tempRoot, "src")
+		const dstDir = path.join(tempRoot, "dst")
+		const srcFile = path.join(srcDir, "input.txt")
+		const dstFile = path.join(dstDir, "output.txt")
+
+		fs.mkdirSync(srcDir, { recursive: true })
+		fs.mkdirSync(dstDir, { recursive: true })
+		fs.writeFileSync(srcFile, "copied")
+
+		const originalFs = await vi.importActual<typeof import("fs")>("fs")
+		let copyAttempts = 0
+
+		vi.resetModules()
+		vi.doMock("fs", () => ({
+			...originalFs,
+			copyFileSync: ((from: fs.PathLike, to: fs.PathLike, mode?: number) => {
+				if (String(from) === srcFile && String(to) === dstFile) {
+					copyAttempts += 1
+					if (copyAttempts === 1) {
+						const error = new Error("busy") as NodeJS.ErrnoException
+						error.code = "EBUSY"
+						throw error
+					}
+				}
+
+				return originalFs.copyFileSync(from, to, mode)
+			}) as typeof fs.copyFileSync,
+		}))
+
+		try {
+			const { copyPaths } = await import("../esbuild.js")
+			copyPaths([["input.txt", "output.txt"]], srcDir, dstDir)
+
+			expect(fs.readFileSync(dstFile, "utf8")).toBe("copied")
+			expect(copyAttempts).toBe(2)
+		} finally {
+			vi.doUnmock("fs")
+			vi.resetModules()
+			fs.rmSync(tempRoot, { recursive: true, force: true })
+		}
 	})
 })

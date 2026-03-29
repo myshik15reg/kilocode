@@ -6,11 +6,13 @@ export const IssueFooter: React.FC = () => {
 	return (
 		<div className="text-xs text-vscode-descriptionForeground p-3">
 			<Trans i18nKey="marketplace:footer.issueText">
+				{/* kilocode_change start */}
 				<VSCodeLink
-					href="https://github.com/Kilo-Org/kilocode/issues/new?template=marketplace.yml"
+					href="https://github.com/Alfa-Org/alfacode/issues/new?template=marketplace.yml"
 					style={{ display: "inline", fontSize: "inherit" }}>
 					Open a GitHub issue
 				</VSCodeLink>
+				{/* kilocode_change end */}
 			</Trans>
 		</div>
 	)

@@ -1,40 +1,40 @@
-# Рабочий процесс: Инициализация проекта (project-setup)
+# Workflow: project-setup (инициализация consuming project)
 
-## Цель
-Быстро и корректно подготовить проект к работе с WorkFlowAI + KiloCode: создать структуру, заполнить Memory Bank, завести первый протокол.
+## Goal
 
-## Когда использовать
-- Новый проект (greenfield) или подключение workflow pack в существующий репозиторий (brownfield).
-- Перед первой задачей в проекте.
+Подготовить consuming project к применению AlfaFlowAI workflow-pack: создать структуру, заполнить Memory Bank, создать первый протокол.
 
-## Шаги
-1. **Скаффолдинг (файлы/папки)**
-   - Если pack установлен глобально: см. `~/.kilocode/workflows/global-install.md`.
-   - Инициализируй проект: `workflowai-init-project.ps1` (создаст Memory Bank, patterns/skills, `.protocols/`, `temp/`, `docs/`).
-   - Если нужны гейты качества (CI + PR checklist): запусти init с `-InitQualityGates` и следуй `~/.kilocode/workflows/quality-enforcement.md`.
+Нормативная переносимость: [`docs-standards.md`](../rules/docs-standards.md:1).
+SoT по скриптам и путям: [`scripts-entrypoints.md`](scripts-entrypoints.md:1).
 
-2. **Определи тип проекта (greenfield/brownfield)**
-   - Greenfield: репозиторий пустой или только общие docs.
-   - Brownfield: есть `.git`, зависимости (`package.json`, `pyproject.toml`, `go.mod`, …) или `src/`/`app/` с кодом.
-   - Если репозиторий “грязный” (`git status --porcelain` не пуст) — предупреди пользователя и согласуй порядок действий.
+## When to use
 
-3. **Заполни Memory Bank (интерактивно, вопросы по одному)**
-   - Заполни плейсхолдеры: `.kilocode/memory-bank/index.md`, затем `brief.md`, `product.md`, `tech.md`, `architecture.md`, `context.md`.
-   - Ограничься **1 вопросом за раз** и максимум **5 вопросами на раздел**, чтобы не перегружать пользователя.
-   - Всегда добивайся формулировок, которые можно проверить тестами/критериями (в т.ч. NFR).
+| Situation                   | Use this workflow |
+| --------------------------- | ----------------- |
+| First time in a project     | yes               |
+| Embed pack into repo        | yes               |
+| Global install already done | yes               |
 
-4. **Создай первый протокол**
-   - Запусти `~/.kilocode/workflows/protocol-new.md` и создай `.protocols/YYYY-MM-DD-name/`.
-   - (опционально) Скаффолдинг протокола скриптом: `scripts/workflowai-new-protocol.ps1` (при global install: `$HOME/~/.kilocode/workflowai/scripts/workflowai-new-protocol.ps1`).
-   - В `plan.md` используй статусы `[ ]` / `[~]` / `[x]` и добавь (если нужно) задачи "Manual verification" в конце фаз.
-   - Добавь ссылку на протокол в `.protocols/index.md` (если используете индекс протоколов).
+## Steps
 
-5. **Старт работы**
-   - Подтвердить чтение Memory Bank: `[MB: OK]`.
-   - Дальше — работа строго по `plan.md` и правилам из `AGENTS.md`.
+|   # | Step                                   | INPUT           | OUTPUT                                           | VERIFY                                                   |
+| --: | -------------------------------------- | --------------- | ------------------------------------------------ | -------------------------------------------------------- |
+|   1 | Choose integration model               | project context | `Embedded` or `Global`                           | решение фиксируется в `.kilocode/memory-bank/context.md` |
+|   2 | Scaffold structure                     | selected model  | `.kilocode/`, `.protocols/`, `temp/` exist       | entrypoints resolve by inspection                        |
+|   3 | Fill Memory Bank placeholders          | answers         | Memory Bank has no `<PLACEHOLDER>` for basics    | agent can read and confirm `[MB: OK]`                    |
+|   4 | Create first protocol                  | requirement     | `.protocols/YYYY-MM-DD-name/`                    | brief/plan exist and are non-empty                       |
+|   5 | (Optional) Add quality gates templates | chosen policy   | `./.github/` + `./scripts/` in consuming project | workflow points to existing scripts                      |
 
-## Ссылки
-- `~/.kilocode/rules/concepts.md`
-- `~/.kilocode/rules/memory-bank-instructions.md`
-- `~/.kilocode/workflows/protocol-new.md`
-- `~/.kilocode/workflows/global-install.md`
+## Notes (portable defaults)
+
+1. Integration options are defined in [`integration-guide.md`](../rules/integration-guide.md:1).
+2. Protocol creation workflow: [`protocol-new.md`](protocol-new.md:1).
+3. Quality gates enforcement workflow: [`quality-enforcement.md`](quality-enforcement.md:1).
+
+## References
+
+| Topic             | Link                                                                    |
+| ----------------- | ----------------------------------------------------------------------- |
+| Concepts          | [`concepts.md`](../rules/concepts.md:1)                                 |
+| Memory Bank rules | [`memory-bank-instructions.md`](../rules/memory-bank-instructions.md:1) |
+| Global install    | [`global-install.md`](global-install.md:1)                              |

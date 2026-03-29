@@ -16,7 +16,7 @@ Read Level 0 → identify task → read only relevant.
 
 ## Level 0: Always Read (~50 lines)
 
-**File:** `~/.kilocode/QUICK.md` or Memory Bank index
+**File:** `.kilocode/QUICK.md` or Memory Bank index
 
 - Confirmation: `[MB: OK]`
 - Protocol requirement
@@ -27,33 +27,38 @@ Read Level 0 → identify task → read only relevant.
 ## Level 1: Task-Specific
 
 ### Development Task
+
 ```
-~/.kilocode/QUICK.md
+.kilocode/QUICK.md
 .kilocode/memory-bank/brief.md
 .protocols/.../plan.md
 ```
 
 ### Testing Task
+
 ```
-~/.kilocode/QUICK.md
+.kilocode/QUICK.md
 /testing-detailed skill
 ```
 
 ### Security Task
+
 ```
-~/.kilocode/QUICK.md
+.kilocode/QUICK.md
 /security-audit skill
 ```
 
 ### Orchestration Task
+
 ```
-~/.kilocode/QUICK.md
+.kilocode/QUICK.md
 /orchestrator-guide skill
 ```
 
 ## Level 2: Deep Dive (on demand)
 
 Only when explicitly needed:
+
 - Full architecture docs
 - Complete API specs
 - Historical context

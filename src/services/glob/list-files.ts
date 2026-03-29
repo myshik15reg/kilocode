@@ -654,6 +654,12 @@ async function execRipgrep(rgPath: string, args: string[], limit: number): Promi
 		const rgProcess = childProcess.spawn(rgPath, args)
 		let output = ""
 		let results: string[] = []
+		// kilocode_change start
+		const stdoutDecoder = new TextDecoder("utf-8")
+		const stderrDecoder = new TextDecoder("utf-8")
+		const decodeUtf8Chunk = (chunk: string | Uint8Array, decoder: TextDecoder) =>
+			typeof chunk === "string" ? chunk : decoder.decode(chunk, { stream: true })
+		// kilocode_change end
 
 		// Set timeout to avoid hanging
 		const timeoutId = setTimeout(() => {
@@ -663,8 +669,9 @@ async function execRipgrep(rgPath: string, args: string[], limit: number): Promi
 		}, 10_000)
 
 		// Process stdout data as it comes in
-		rgProcess.stdout.on("data", (data) => {
-			output += data.toString()
+		rgProcess.stdout.on("data", (data: string | Uint8Array) => {
+			// kilocode_change - decode UTF-8 as a stream to preserve multibyte characters across chunk boundaries
+			output += decodeUtf8Chunk(data, stdoutDecoder)
 			processRipgrepOutput()
 
 			// Kill the process if we've reached the limit
@@ -675,14 +682,25 @@ async function execRipgrep(rgPath: string, args: string[], limit: number): Promi
 		})
 
 		// Process stderr but don't fail on non-zero exit codes
-		rgProcess.stderr.on("data", (data) => {
-			console.error(`ripgrep stderr: ${data}`)
+		rgProcess.stderr.on("data", (data: string | Uint8Array) => {
+			const decodedStderr = decodeUtf8Chunk(data, stderrDecoder)
+			if (decodedStderr) {
+				console.error(`ripgrep stderr: ${decodedStderr}`)
+			}
 		})
 
 		// Handle process completion
 		rgProcess.on("close", (code) => {
 			// Clear the timeout to avoid memory leaks
 			clearTimeout(timeoutId)
+
+			// kilocode_change start
+			output += stdoutDecoder.decode()
+			const stderrTail = stderrDecoder.decode()
+			if (stderrTail) {
+				console.error(`ripgrep stderr: ${stderrTail}`)
+			}
+			// kilocode_change end
 
 			// Process any remaining output
 			processRipgrepOutput(true)

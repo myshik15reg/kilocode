@@ -1,6 +1,6 @@
 // pnpm --filter @roo-code/vscode-webview test src/components/settings/__tests__/SettingsView.spec.tsx
 
-import { render, screen, fireEvent, within } from "@/utils/test-utils"
+import { render, screen, fireEvent, within, waitFor } from "@/utils/test-utils"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import { vscode } from "@/utils/vscode"
@@ -137,111 +137,126 @@ vi.mock("../../../components/common/Tab", () => ({
 	},
 }))
 
-vi.mock("@/components/ui", () => ({
-	...vi.importActual("@/components/ui"),
-	Popover: ({ children }: any) => <div data-testid="popover">{children}</div>,
-	PopoverTrigger: ({ children }: any) => <div data-testid="popover-trigger">{children}</div>,
-	PopoverContent: ({ children }: any) => <div data-testid="popover-content">{children}</div>,
-	Command: ({ children }: any) => <div data-testid="command">{children}</div>,
-	CommandInput: ({ value, onValueChange }: any) => (
-		<input data-testid="command-input" value={value} onChange={(e) => onValueChange(e.target.value)} />
-	),
-	CommandGroup: ({ children }: any) => <div data-testid="command-group">{children}</div>,
-	CommandItem: ({ children, onSelect }: any) => (
-		<div data-testid="command-item" onClick={onSelect}>
-			{children}
-		</div>
-	),
-	CommandList: ({ children }: any) => <div data-testid="command-list">{children}</div>,
-	CommandEmpty: ({ children }: any) => <div data-testid="command-empty">{children}</div>,
-	Slider: ({ value, onValueChange, "data-testid": dataTestId }: any) => (
-		<input
-			type="range"
-			value={value?.[0] ?? 0}
-			onChange={(e) => onValueChange?.([parseFloat(e.target.value)])}
-			data-testid={dataTestId}
-		/>
-	),
-	// kilocode_change start
-	DropdownMenu: ({ children }: any) => <div data-testid="dropdown-menu">{children}</div>,
-	DropdownMenuTrigger: ({ children }: any) => <div data-testid="dropdown-menu-trigger">{children}</div>,
-	DropdownMenuContent: ({ children }: any) => <div data-testid="dropdown-menu-content">{children}</div>,
-	DropdownMenuItem: ({ children, onClick }: any) => (
-		<div data-testid="dropdown-menu-item" onClick={onClick}>
-			{children}
-		</div>
-	),
-	// kilocode_change end
-	Button: ({ children, onClick, variant, className, "data-testid": dataTestId }: any) => (
-		<button onClick={onClick} data-variant={variant} className={className} data-testid={dataTestId}>
-			{children}
-		</button>
-	),
-	StandardTooltip: ({ children, content }: any) => <div title={content}>{children}</div>,
-	Input: ({ value, onChange, placeholder, "data-testid": dataTestId }: any) => (
-		<input type="text" value={value} onChange={onChange} placeholder={placeholder} data-testid={dataTestId} />
-	),
-	Select: ({ children, value, onValueChange }: any) => (
-		<div data-testid="select" data-value={value}>
-			<button onClick={() => onValueChange && onValueChange("test-change")}>{value}</button>
-			{children}
-		</div>
-	),
-	SelectContent: ({ children }: any) => <div data-testid="select-content">{children}</div>,
-	SelectGroup: ({ children }: any) => <div data-testid="select-group">{children}</div>,
-	SelectItem: ({ children, value }: any) => (
-		<div data-testid={`select-item-${value}`} data-value={value}>
-			{children}
-		</div>
-	),
-	SelectTrigger: ({ children }: any) => <div data-testid="select-trigger">{children}</div>,
-	SelectValue: ({ placeholder }: any) => <div data-testid="select-value">{placeholder}</div>,
-	SelectSeparator: () => <div data-testid="select-separator" />, // kilocode_change
-	SearchableSelect: ({ value, onValueChange, options, placeholder }: any) => (
-		<select value={value} onChange={(e) => onValueChange(e.target.value)} data-testid="searchable-select">
-			{placeholder && <option value="">{placeholder}</option>}
-			{options?.map((opt: any) => (
-				<option key={opt.value} value={opt.value}>
-					{opt.label}
-				</option>
-			))}
-		</select>
-	),
-	AlertDialog: ({ children, open }: any) => (
-		<div data-testid="alert-dialog" data-open={open}>
-			{children}
-		</div>
-	),
-	AlertDialogContent: ({ children }: any) => <div data-testid="alert-dialog-content">{children}</div>,
-	AlertDialogHeader: ({ children }: any) => <div data-testid="alert-dialog-header">{children}</div>,
-	AlertDialogTitle: ({ children }: any) => <div data-testid="alert-dialog-title">{children}</div>,
-	AlertDialogDescription: ({ children }: any) => <div data-testid="alert-dialog-description">{children}</div>,
-	AlertDialogFooter: ({ children }: any) => <div data-testid="alert-dialog-footer">{children}</div>,
-	AlertDialogAction: ({ children, onClick }: any) => (
-		<button data-testid="alert-dialog-action" onClick={onClick}>
-			{children}
-		</button>
-	),
-	AlertDialogCancel: ({ children, onClick }: any) => (
-		<button data-testid="alert-dialog-cancel" onClick={onClick}>
-			{children}
-		</button>
-	),
-	// Add Collapsible components
-	Collapsible: ({ children, open }: any) => (
-		<div className="collapsible-mock" data-open={open}>
-			{children}
-		</div>
-	),
-	CollapsibleTrigger: ({ children, className, onClick }: any) => (
-		<div className={`collapsible-trigger-mock ${className || ""}`} onClick={onClick}>
-			{children}
-		</div>
-	),
-	CollapsibleContent: ({ children, className }: any) => (
-		<div className={`collapsible-content-mock ${className || ""}`}>{children}</div>
-	),
-}))
+vi.mock("@/components/ui", async () => {
+	const actual = await vi.importActual<typeof import("@/components/ui")>("@/components/ui")
+
+	return {
+		...actual,
+		Badge: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+		Popover: ({ children }: any) => <div data-testid="popover">{children}</div>,
+		PopoverTrigger: ({ children }: any) => <div data-testid="popover-trigger">{children}</div>,
+		PopoverContent: ({ children }: any) => <div data-testid="popover-content">{children}</div>,
+		Command: ({ children }: any) => <div data-testid="command">{children}</div>,
+		CommandInput: ({ value, onValueChange }: any) => (
+			<input data-testid="command-input" value={value} onChange={(e) => onValueChange(e.target.value)} />
+		),
+		CommandGroup: ({ children }: any) => <div data-testid="command-group">{children}</div>,
+		CommandItem: ({ children, onSelect }: any) => (
+			<div data-testid="command-item" onClick={onSelect}>
+				{children}
+			</div>
+		),
+		CommandList: ({ children }: any) => <div data-testid="command-list">{children}</div>,
+		CommandEmpty: ({ children }: any) => <div data-testid="command-empty">{children}</div>,
+		Slider: ({ value, onValueChange, "data-testid": dataTestId, min, max, step }: any) => (
+			<input
+				type="range"
+				value={value?.[0] ?? 0}
+				min={min}
+				max={max}
+				step={step}
+				onChange={(e) => onValueChange?.([parseFloat(e.target.value)])}
+				data-testid={dataTestId}
+			/>
+		),
+		// kilocode_change start
+		DropdownMenu: ({ children }: any) => <div data-testid="dropdown-menu">{children}</div>,
+		DropdownMenuTrigger: ({ children }: any) => <div data-testid="dropdown-menu-trigger">{children}</div>,
+		DropdownMenuContent: ({ children }: any) => <div data-testid="dropdown-menu-content">{children}</div>,
+		DropdownMenuItem: ({ children, onClick }: any) => (
+			<div data-testid="dropdown-menu-item" onClick={onClick}>
+				{children}
+			</div>
+		),
+		// kilocode_change end
+		Button: ({ children, onClick, variant, className, disabled, "data-testid": dataTestId }: any) => (
+			<button
+				onClick={onClick}
+				data-variant={variant}
+				className={className}
+				disabled={disabled}
+				data-testid={dataTestId}>
+				{children}
+			</button>
+		),
+		StandardTooltip: ({ children, content }: any) => <div title={content}>{children}</div>,
+		Input: ({ value, onChange, placeholder, "data-testid": dataTestId }: any) => (
+			<input type="text" value={value} onChange={onChange} placeholder={placeholder} data-testid={dataTestId} />
+		),
+		Select: ({ children, value, onValueChange, "data-testid": dataTestId }: any) => (
+			<select
+				data-testid={dataTestId || "select"}
+				value={value}
+				onChange={(e) => onValueChange?.(e.target.value)}>
+				{children}
+			</select>
+		),
+		SelectContent: ({ children }: any) => <>{children}</>,
+		SelectGroup: ({ children }: any) => <div data-testid="select-group">{children}</div>,
+		SelectItem: ({ children, value }: any) => (
+			<option data-testid={`select-item-${value}`} value={value}>
+				{children}
+			</option>
+		),
+		SelectTrigger: () => null,
+		SelectValue: () => null,
+		SelectSeparator: () => <div data-testid="select-separator" />, // kilocode_change
+		SearchableSelect: ({ value, onValueChange, options, placeholder }: any) => (
+			<select value={value} onChange={(e) => onValueChange(e.target.value)} data-testid="searchable-select">
+				{placeholder && <option value="">{placeholder}</option>}
+				{options?.map((opt: any) => (
+					<option key={opt.value} value={opt.value}>
+						{opt.label}
+					</option>
+				))}
+			</select>
+		),
+		AlertDialog: ({ children, open }: any) => (
+			<div data-testid="alert-dialog" data-open={open}>
+				{children}
+			</div>
+		),
+		AlertDialogContent: ({ children }: any) => <div data-testid="alert-dialog-content">{children}</div>,
+		AlertDialogHeader: ({ children }: any) => <div data-testid="alert-dialog-header">{children}</div>,
+		AlertDialogTitle: ({ children }: any) => <div data-testid="alert-dialog-title">{children}</div>,
+		AlertDialogDescription: ({ children }: any) => <div data-testid="alert-dialog-description">{children}</div>,
+		AlertDialogFooter: ({ children }: any) => <div data-testid="alert-dialog-footer">{children}</div>,
+		AlertDialogAction: ({ children, onClick }: any) => (
+			<button data-testid="alert-dialog-action" onClick={onClick}>
+				{children}
+			</button>
+		),
+		AlertDialogCancel: ({ children, onClick }: any) => (
+			<button data-testid="alert-dialog-cancel" onClick={onClick}>
+				{children}
+			</button>
+		),
+		// Add Collapsible components
+		Collapsible: ({ children, open }: any) => (
+			<div className="collapsible-mock" data-open={open}>
+				{children}
+			</div>
+		),
+		CollapsibleTrigger: ({ children, className, onClick }: any) => (
+			<div className={`collapsible-trigger-mock ${className || ""}`} onClick={onClick}>
+				{children}
+			</div>
+		),
+		CollapsibleContent: ({ children, className }: any) => (
+			<div className={`collapsible-content-mock ${className || ""}`}>{children}</div>
+		),
+	}
+})
 
 // Mock window.postMessage to trigger state hydration
 const mockPostMessage = (state: any) => {
@@ -334,6 +349,135 @@ describe("SettingsView - Sound Settings", () => {
 
 		// Volume slider should not be visible when sound is disabled
 		expect(within(content).queryByTestId("sound-volume-slider")).not.toBeInTheDocument()
+	})
+
+	it("keeps saved out-of-band settings after extension state refresh", async () => {
+		const { activateTab, getSettingsContent } = renderSettingsView()
+
+		activateTab("notifications")
+
+		const content = getSettingsContent()
+		const ttsCheckbox = within(content).getByTestId("tts-enabled-checkbox")
+		fireEvent.click(ttsCheckbox)
+		expect(ttsCheckbox).toBeChecked()
+
+		fireEvent.click(screen.getByTestId("save-button"))
+
+		expect(vscode.postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "updateSettings",
+				updatedSettings: expect.objectContaining({
+					ttsEnabled: true,
+				}),
+			}),
+		)
+
+		mockPostMessage({})
+
+		await waitFor(() => {
+			expect(screen.getByTestId("save-button")).toBeDisabled()
+		})
+	})
+
+	it("keeps saved AlfaCode settings after extension state refresh", async () => {
+		const { activateTab, getSettingsContent } = renderSettingsView({
+			parallelAgentsEnabled: false,
+			parallelAgentCount: 2,
+			autoRestartProblematicProcesses: false,
+			problematicProcessRestartLimit: 1,
+			autoCondenseContext: true,
+			autoCondenseContextPercent: 85,
+			contextRoutingEnabled: true,
+			contextRoutingFastThresholdPercent: 35,
+			contextRoutingDeepThresholdPercent: 65,
+			condensingApiConfigId: "",
+			terminalCommandApiConfigId: "",
+		})
+
+		activateTab("alfaCode")
+
+		const content = getSettingsContent()
+		const parallelCheckbox = within(content).getByTestId("alfacode-parallel-agents-enabled-checkbox")
+		fireEvent.click(parallelCheckbox)
+		expect(parallelCheckbox).toBeChecked()
+
+		const saveButton = screen.getByTestId("save-button")
+		fireEvent.click(saveButton)
+
+		expect(vscode.postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "updateSettings",
+				updatedSettings: expect.objectContaining({
+					parallelAgentsEnabled: true,
+				}),
+			}),
+		)
+
+		mockPostMessage({
+			parallelAgentsEnabled: true,
+			parallelAgentCount: 2,
+			autoRestartProblematicProcesses: false,
+			problematicProcessRestartLimit: 1,
+			autoCondenseContext: true,
+			autoCondenseContextPercent: 85,
+			contextRoutingEnabled: true,
+			contextRoutingFastThresholdPercent: 35,
+			contextRoutingDeepThresholdPercent: 65,
+			condensingApiConfigId: "",
+			terminalCommandApiConfigId: "",
+		})
+
+		await waitFor(() => {
+			expect(within(getSettingsContent()).getByTestId("alfacode-parallel-agents-enabled-checkbox")).toBeChecked()
+			expect(screen.getByTestId("save-button")).toBeDisabled()
+		})
+	})
+
+	it("saves AlfaCode agent count and restart limit without rollback", () => {
+		const { activateTab, getSettingsContent } = renderSettingsView({
+			parallelAgentsEnabled: false,
+			parallelAgentCount: 2,
+			autoRestartProblematicProcesses: false,
+			problematicProcessRestartLimit: 1,
+			autoCondenseContext: true,
+			autoCondenseContextPercent: 85,
+			contextRoutingEnabled: true,
+			contextRoutingFastThresholdPercent: 35,
+			contextRoutingDeepThresholdPercent: 65,
+			condensingApiConfigId: "",
+			terminalCommandApiConfigId: "",
+		})
+
+		activateTab("alfaCode")
+		const content = getSettingsContent()
+
+		fireEvent.click(within(content).getByTestId("alfacode-parallel-agents-enabled-checkbox"))
+		fireEvent.change(within(content).getByTestId("alfacode-parallel-agent-count-slider"), {
+			target: { value: "250" },
+		})
+		fireEvent.click(within(content).getByTestId("alfacode-auto-restart-problematic-processes-checkbox"))
+		fireEvent.change(within(content).getByTestId("alfacode-problematic-process-restart-limit-slider"), {
+			target: { value: "7" },
+		})
+
+		const saveButton = screen.getByTestId("save-button")
+		fireEvent.click(saveButton)
+
+		const updateSettingsCall = vi
+			.mocked(vscode.postMessage)
+			.mock.calls.find(([message]) => message?.type === "updateSettings")
+
+		expect(updateSettingsCall?.[0]).toEqual(
+			expect.objectContaining({
+				type: "updateSettings",
+				updatedSettings: expect.objectContaining({
+					parallelAgentsEnabled: true,
+					parallelAgentCount: 250,
+					autoRestartProblematicProcesses: true,
+					problematicProcessRestartLimit: 7,
+				}),
+			}),
+		)
 	})
 
 	it("toggles tts setting and sends message to VSCode", () => {

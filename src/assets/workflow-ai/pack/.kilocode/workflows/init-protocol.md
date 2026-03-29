@@ -4,7 +4,7 @@ This workflow should be run in **Code** mode (it creates files).
 
 ## Goal
 
-Scaffold a new protocol folder under `.protocols/` for a non-trivial task.
+Scaffold a new protocol folder under the current workspace `.protocols/` for a non-trivial task.
 
 ## Steps
 
@@ -22,3 +22,8 @@ Scaffold a new protocol folder under `.protocols/` for a non-trivial task.
     - Rename the folder to include `UZNUMBER-` right after the date
     - Update any references to the old protocol path in notes/docs
 5. Confirm by printing the created path and files.
+
+## Boundary
+
+- Create live protocol folders only in the current workspace.
+- Do not create or update live task folders inside the WorkFlowAI template pack.

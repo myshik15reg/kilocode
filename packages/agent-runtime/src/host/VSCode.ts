@@ -878,7 +878,11 @@ export class Uri {
 	}
 
 	get fsPath(): string {
-		return this.path
+		// `Uri.parse()` uses WHATWG URL parser which percent-encodes characters
+		// (e.g. spaces -> %20). For filesystem operations we need decoded paths.
+		// This is especially important on Windows where `%20` would point to a
+		// different (non-existent) path.
+		return decodeURIComponent(this.path) // kilocode_change
 	}
 
 	toString(): string {

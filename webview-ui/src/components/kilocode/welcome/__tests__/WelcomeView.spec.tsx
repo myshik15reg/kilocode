@@ -56,7 +56,9 @@ vi.mock("../../../utils/vscode", () => ({
 	},
 }))
 
-const renderWelcomeView = (extensionState: Partial<ReturnType<typeof ExtensionStateContext.useExtensionState>> = {}) => {
+const renderWelcomeView = (
+	extensionState: Partial<ReturnType<typeof ExtensionStateContext.useExtensionState>> = {},
+) => {
 	const useExtensionStateMock = vi.spyOn(ExtensionStateContext, "useExtensionState")
 	useExtensionStateMock.mockReturnValue({
 		apiConfiguration: {},
@@ -75,7 +77,7 @@ const renderWelcomeView = (extensionState: Partial<ReturnType<typeof ExtensionSt
 	)
 }
 
-describe("WelcomeView (KiloCode)", () => {
+describe("WelcomeView (AlfaCode auth)", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})
@@ -93,7 +95,7 @@ describe("WelcomeView (KiloCode)", () => {
 		expect(screen.queryByTestId("button-link")).not.toBeInTheDocument()
 	})
 
-	it("shows sign-in link only when the KiloCode provider is selected but missing a token", () => {
+	it("shows sign-in link only when the AlfaCode provider is selected but missing a token", () => {
 		renderWelcomeView({
 			apiConfiguration: { apiProvider: "kilocode" },
 		} as any)
@@ -105,4 +107,3 @@ describe("WelcomeView (KiloCode)", () => {
 		expect(screen.queryByTestId("button-primary")).not.toBeInTheDocument()
 	})
 })
-

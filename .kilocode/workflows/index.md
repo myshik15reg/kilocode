@@ -1,72 +1,55 @@
-# Рабочие процессы (WorkFlowAI пакет для Kilo Code)
+# Workflows index
 
-Этот каталог — библиотека воркфлоу. В Kilo Code можно запускать файл как воркфлоу через `/имя-файла.md`.
+Этот каталог — библиотека workflows. В Alfa Code можно запускать файл как workflow через `/имя-файла.md`.
 
-## С чего начать
+Нормативная рамка документации: [`docs-standards.md`](../rules/docs-standards.md:1).
+Меню процессов: [`quickref.md`](quickref.md:1).
 
-- [`first-time-setup.md`](first-time-setup.md) — **НАЧНИ ЗДЕСЬ** если первый раз в WorkFlowAI.
-- [`quickref.md`](quickref.md) — краткая шпаргалка по выбору процесса и режимов.
-- [`overview.md`](overview.md) — карта процессов и рекомендации по применению.
-- [`context-priming.md`](context-priming.md) — 2-step контекст-прайминг + краткая сводка (context capsule).
-- [`project-setup.md`](project-setup.md) — подключение пакета к проекту (с нуля или в существующий репозиторий).
-- [`global-install.md`](global-install.md) — установка пакета глобально в `~/~/.kilocode/` (Windows/PowerShell-first).
+## Start here
 
-## Протоколы (обязательны для любых задач)
+| Purpose                   | Workflow                                             |
+| ------------------------- | ---------------------------------------------------- |
+| Onboarding                | [`first-time-setup.md`](first-time-setup.md:1)       |
+| Process map               | [`overview.md`](overview.md:1)                       |
+| Operational menu          | [`quickref.md`](quickref.md:1)                       |
+| FAST PATH (micro-change)  | [`quick-fix.md`](quick-fix.md:1)                     |
+| Scripts entrypoints (SoT) | [`scripts-entrypoints.md`](scripts-entrypoints.md:1) |
 
-- [`protocol-new.md`](protocol-new.md) — создать новый протокол.
-- [`protocol-resume.md`](protocol-resume.md) — продолжить протокол.
-- [`protocol-review-merge.md`](protocol-review-merge.md) — ревью, слияние и закрытие протокола.
-- [`protocol-examples.md`](protocol-examples.md) — примеры протоколов.
+## Protocols (repo changes)
 
-## Оркестрация и управление задачами
+| Purpose            | Workflow                                                 |
+| ------------------ | -------------------------------------------------------- |
+| Create protocol    | [`protocol-new.md`](protocol-new.md:1)                   |
+| Resume protocol    | [`protocol-resume.md`](protocol-resume.md:1)             |
+| Review/merge/close | [`protocol-review-merge.md`](protocol-review-merge.md:1) |
+| Examples           | [`protocol-examples.md`](protocol-examples.md:1)         |
 
-- [`agent-orchestration.md`](agent-orchestration.md) — декомпозиция и координация (multi-agent).
-- [`beads-task-tracking.md`](beads-task-tracking.md) — трекинг долгих задач.
-- [`orchestration-troubleshooting.md`](orchestration-troubleshooting.md) — устранение проблем оркестрации и процесса.
+## Orchestration
 
-## Качество и безопасность
+| Purpose                       | Workflow                                                                 |
+| ----------------------------- | ------------------------------------------------------------------------ |
+| Multi-agent coordination      | [`agent-orchestration.md`](agent-orchestration.md:1)                     |
+| Long task tracking            | [`beads-task-tracking.md`](beads-task-tracking.md:1)                     |
+| Troubleshooting orchestration | [`orchestration-troubleshooting.md`](orchestration-troubleshooting.md:1) |
 
-- [`quality-enforcement.md`](quality-enforcement.md) — гейты качества (CI/PR) и контроль соблюдения правил.
-- [`waiver-workflow.md`](waiver-workflow.md) — процесс исключений из правил (редко и осознанно).
-- [`dependency-management.md`](dependency-management.md) — обновления зависимостей и security-практики.
-- [`scorecard.md`](scorecard.md) — самооценка качества пакета (процессы/правила).
-- [`metrics.md`](metrics.md) — метрики (опционально).
+## Quality and security
 
-## Разработка и эксплуатация
+| Purpose                       | Workflow                                                 |
+| ----------------------------- | -------------------------------------------------------- |
+| Enforce quality gates (CI/PR) | [`quality-enforcement.md`](quality-enforcement.md:1)     |
+| Waiver (rare)                 | [`waiver-workflow.md`](waiver-workflow.md:1)             |
+| Dependency updates            | [`dependency-management.md`](dependency-management.md:1) |
 
-- [`deep-analysis.md`](deep-analysis.md) — глубокий анализ репозитория/кода.
-- [`refactoring-workflow.md`](refactoring-workflow.md) — системный рефакторинг.
-- [`documentation-workflow.md`](documentation-workflow.md) — цикл документации.
-- [`text-normalization.md`](text-normalization.md) — нормализация кавычек/кодировки и уборка мусора.
-- [`migration-workflow.md`](migration-workflow.md) — миграции базы данных.
-- [`deployment-workflow.md`](deployment-workflow.md) — деплой.
-- [`hotfix-emergency.md`](hotfix-emergency.md) — инциденты и прод-аварии.
+## Operations
 
-## Troubleshooting
-
-- [`failure-recovery.md`](failure-recovery.md) — восстановление после ошибок (git, quality gates, process).
-- [`quick-diagnosis.md`](quick-diagnosis.md) — быстрый триаж проблем (build, tests, lint, runtime).
-
-## Спецификации OpenSpec (если используется)
-
-- [`openspec-change-workflow.md`](openspec-change-workflow.md) — жизненный цикл изменения.
-- [`openspec-proposal.md`](openspec-proposal.md) — стадия предложения.
-- [`openspec-apply.md`](openspec-apply.md) — реализация.
-- [`openspec-archive.md`](openspec-archive.md) — архивирование.
+| Purpose         | Workflow                                             |
+| --------------- | ---------------------------------------------------- |
+| Incident/hotfix | [`hotfix-emergency.md`](hotfix-emergency.md:1)       |
+| Deployment      | [`deployment-workflow.md`](deployment-workflow.md:1) |
 
 ## 1C:Enterprise
 
-Специализированные процессы для платформы 1С:Предприятие. Интегрированы с основным AlfaFlow.
-
-- [`~/.kilocode/rules/1c-workflow.md`](../rules/1c-workflow.md) — основной workflow 1C (роли, циклы, интеграция с AlfaFlow).
-- [`1c-testing-workflow.md`](1c-testing-workflow.md) — тестирование 1C (xUnitFor1C + Vanessa Automation).
-- [`~/.kilocode/patterns/1c/index.md`](../patterns/1c/index.md) — паттерны 1C.
-
-**Точка входа:** Для любой задачи 1C делегируй `1c-orchestrator`.
-
-## Утилиты
-
-- [`create-new-skill.md`](create-new-skill.md) — создание нового навыка (skill).
-- [`update-indexes.md`](update-indexes.md) — обновление индексных файлов.
-- [`vibe-coding.md`](vibe-coding.md) — контролируемое исследование/прототипирование.
-- [`styleguide.md`](styleguide.md) — подключение и применение styleguide/patterns.
+| Purpose       | Link                                                 |
+| ------------- | ---------------------------------------------------- |
+| 1C entrypoint | [`1c-workflow.md`](../rules/1c-workflow.md:1)        |
+| 1C testing    | [`1c-testing-workflow.md`](1c-testing-workflow.md:1) |

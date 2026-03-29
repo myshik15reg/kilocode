@@ -1,5 +1,5 @@
 {
-	"greeting": "AlfaCode assistant は何をお手伝いできますか？",
+	"greeting": "AlfaCode は何をお手伝いできますか？",
 	"task": {
 		"title": "タスク",
 		"expand": "タスクを展開",
@@ -22,12 +22,12 @@
 		"sharePublicly": "公開で共有",
 		"sharePubliclyDescription": "リンクを持つ誰でもアクセスできます",
 		"connectToCloud": "クラウドに接続",
-		"connectToCloudDescription": "タスクを共有するためにAlfaCode assistant Cloudにサインイン",
+		"connectToCloudDescription": "タスクを共有するためにAlfaCode Cloudにサインイン",
 		"sharingDisabledByOrganization": "組織により共有が無効化されています",
 		"shareSuccessOrganization": "組織リンクをクリップボードにコピーしました",
 		"shareSuccessPublic": "公開リンクをクリップボードにコピーしました",
-		"openInCloud": "Roo Code Cloudでタスクを開く",
-		"openInCloudIntro": "どこからでもRooの監視や操作を続けられます。スキャン、クリック、またはコピーして開いてください。",
+		"openInCloud": "AlfaCode Cloudでタスクを開く",
+		"openInCloudIntro": "どこからでもAlfaCodeの監視や操作を続けられます。スキャン、クリック、またはコピーして開いてください。",
 		"openApiHistory": "API履歴を開く",
 		"openUiHistory": "UI履歴を開く"
 	},
@@ -130,7 +130,7 @@
 		"title": "モード",
 		"marketplace": "モードマーケットプレイス",
 		"settings": "モード設定",
-		"description": "AlfaCode assistantの動作をカスタマイズする専門的なペルソナ。",
+		"description": "AlfaCodeの動作をカスタマイズする専門的なペルソナ。",
 		"searchPlaceholder": "モードを検索...",
 		"noResults": "結果が見つかりません",
 		"organizationModes": "組織モード"
@@ -145,7 +145,7 @@
 	"diffError": {
 		"title": "編集に失敗しました"
 	},
-	"troubleMessage": "AlfaCode assistantに問題が発生しています...",
+	"troubleMessage": "AlfaCodeに問題が発生しています...",
 	"apiRequest": {
 		"title": "APIリクエスト",
 		"failed": "APIリクエスト失敗",
@@ -155,14 +155,14 @@
 		"rateLimitWait": "レート制限中",
 		"errorTitle": "プロバイダーエラー {{code}}",
 		"errorMessage": {
-			"docs": "ドキュメント",
-			"goToSettings": "設定",
 			"400": "プロバイダーはリクエストをそのまま処理できませんでした。タスクを停止して別のアプローチを試してください。",
 			"401": "プロバイダーで認証できませんでした。API キーの設定を確認してください。",
 			"402": "アカウントの資金/クレジットが不足しているようです。プロバイダーに移動してさらに追加してください。",
 			"403": "認可されていません。API キーは有効ですが、プロバイダーがこのリクエストの完了を拒否しました。",
 			"429": "リクエストが多すぎます。プロバイダーによってレート制限されています。次の API 呼び出しの前にお待ちください。",
 			"500": "プロバイダー サーバー エラー。プロバイダー側に問題があり、リクエスト自体に問題はありません。",
+			"docs": "ドキュメント",
+			"goToSettings": "設定",
 			"unknown": "不明な API エラーです。詳細をクリックして詳細情報を確認してください。",
 			"connection": "接続エラー。インターネット接続が機能していることを確認してください。",
 			"claudeCodeNotAuthenticated": "Claude Codeを使用するにはサインインが必要です。設定に移動して「Claude Codeにサインイン」をクリックして認証してください。"
@@ -188,48 +188,48 @@
 		"current": "現在"
 	},
 	"instructions": {
-		"wantsToFetch": "AlfaCode assistantは現在のタスクを支援するための詳細な指示を取得したい"
+		"wantsToFetch": "AlfaCodeは現在のタスクを支援するための詳細な指示を取得したい"
 	},
 	"fileOperations": {
-		"wantsToRead": "AlfaCode assistantはこのファイルを読みたい",
-		"wantsToReadOutsideWorkspace": "AlfaCode assistantはワークスペース外のこのファイルを読みたい",
-		"didRead": "AlfaCode assistantはこのファイルを読みました",
-		"wantsToEdit": "AlfaCode assistantはこのファイルを編集したい",
-		"wantsToEditOutsideWorkspace": "AlfaCode assistantはワークスペース外のこのファイルを編集したい",
-		"wantsToEditProtected": "AlfaCode assistantは保護された設定ファイルを編集したい",
-		"wantsToCreate": "AlfaCode assistantは新しいファイルを作成したい",
-		"wantsToSearchReplace": "AlfaCode assistantはこのファイルで検索と置換を行う",
-		"didSearchReplace": "AlfaCode assistantはこのファイルで検索と置換を実行しました",
-		"wantsToInsert": "AlfaCode assistantはこのファイルにコンテンツを挿入したい",
-		"wantsToInsertWithLineNumber": "AlfaCode assistantはこのファイルの{{lineNumber}}行目にコンテンツを挿入したい",
-		"wantsToInsertAtEnd": "AlfaCode assistantはこのファイルの末尾にコンテンツを追加したい",
-		"wantsToReadAndXMore": "AlfaCode assistant はこのファイルと他に {{count}} 個のファイルを読み込もうとしています",
-		"wantsToReadMultiple": "AlfaCode assistantは複数のファイルを読み取ろうとしています",
-		"wantsToApplyBatchChanges": "AlfaCode assistantは複数のファイルに変更を適用したい",
-		"wantsToGenerateImage": "AlfaCode assistantは画像を生成したい",
-		"wantsToGenerateImageOutsideWorkspace": "AlfaCode assistantはワークスペース外で画像を生成したい",
-		"wantsToGenerateImageProtected": "AlfaCode assistantは保護された場所で画像を生成したい",
-		"didGenerateImage": "AlfaCode assistantは画像を生成しました",
-		"wantsToDelete": "AlfaCode assistantはこのファイルを削除したい",
-		"wantsToDeleteDirectory": "AlfaCode assistantはこのディレクトリを削除したい"
+		"wantsToRead": "AlfaCodeはこのファイルを読みたい",
+		"wantsToReadOutsideWorkspace": "AlfaCodeはワークスペース外のこのファイルを読みたい",
+		"didRead": "AlfaCodeはこのファイルを読みました",
+		"wantsToEdit": "AlfaCodeはこのファイルを編集したい",
+		"wantsToEditOutsideWorkspace": "AlfaCodeはワークスペース外のこのファイルを編集したい",
+		"wantsToEditProtected": "AlfaCodeは保護された設定ファイルを編集したい",
+		"wantsToCreate": "AlfaCodeは新しいファイルを作成したい",
+		"wantsToSearchReplace": "AlfaCodeはこのファイルで検索と置換を行う",
+		"didSearchReplace": "AlfaCodeはこのファイルで検索と置換を実行しました",
+		"wantsToInsert": "AlfaCodeはこのファイルにコンテンツを挿入したい",
+		"wantsToInsertWithLineNumber": "AlfaCodeはこのファイルの{{lineNumber}}行目にコンテンツを挿入したい",
+		"wantsToInsertAtEnd": "AlfaCodeはこのファイルの末尾にコンテンツを追加したい",
+		"wantsToReadAndXMore": "AlfaCode はこのファイルと他に {{count}} 個のファイルを読み込もうとしています",
+		"wantsToReadMultiple": "AlfaCodeは複数のファイルを読み取ろうとしています",
+		"wantsToApplyBatchChanges": "AlfaCodeは複数のファイルに変更を適用したい",
+		"wantsToGenerateImage": "AlfaCodeは画像を生成したい",
+		"wantsToGenerateImageOutsideWorkspace": "AlfaCodeはワークスペース外で画像を生成したい",
+		"wantsToGenerateImageProtected": "AlfaCodeは保護された場所で画像を生成したい",
+		"didGenerateImage": "AlfaCodeは画像を生成しました",
+		"wantsToDelete": "AlfaCodeはこのファイルを削除したい",
+		"wantsToDeleteDirectory": "AlfaCodeはこのディレクトリを削除したい"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "AlfaCode assistantはこのディレクトリのトップレベルファイルを表示したい",
-		"didViewTopLevel": "AlfaCode assistantはこのディレクトリのトップレベルファイルを表示しました",
-		"wantsToViewRecursive": "AlfaCode assistantはこのディレクトリのすべてのファイルを再帰的に表示したい",
-		"didViewRecursive": "AlfaCode assistantはこのディレクトリのすべてのファイルを再帰的に表示しました",
-		"wantsToViewDefinitions": "AlfaCode assistantはこのディレクトリで使用されているソースコード定義名を表示したい",
-		"didViewDefinitions": "AlfaCode assistantはこのディレクトリで使用されているソースコード定義名を表示しました",
-		"wantsToSearch": "AlfaCode assistantはこのディレクトリで <code>{{regex}}</code> を検索したい",
-		"didSearch": "AlfaCode assistantはこのディレクトリで <code>{{regex}}</code> を検索しました",
-		"wantsToSearchOutsideWorkspace": "AlfaCode assistantはこのディレクトリ（ワークスペース外）で <code>{{regex}}</code> を検索したい",
-		"didSearchOutsideWorkspace": "AlfaCode assistantはこのディレクトリ（ワークスペース外）で <code>{{regex}}</code> を検索しました",
-		"wantsToViewTopLevelOutsideWorkspace": "AlfaCode assistantはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示したい",
-		"didViewTopLevelOutsideWorkspace": "AlfaCode assistantはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示しました",
-		"wantsToViewRecursiveOutsideWorkspace": "AlfaCode assistantはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示したい",
-		"didViewRecursiveOutsideWorkspace": "AlfaCode assistantはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示しました",
-		"wantsToViewDefinitionsOutsideWorkspace": "AlfaCode assistantはこのディレクトリ（ワークスペース外）で使用されているソースコード定義名を表示したい",
-		"didViewDefinitionsOutsideWorkspace": "AlfaCode assistantはこのディレクトリ（ワークスペース外）で使用されているソースコード定義名を表示しました"
+		"wantsToViewTopLevel": "AlfaCodeはこのディレクトリのトップレベルファイルを表示したい",
+		"didViewTopLevel": "AlfaCodeはこのディレクトリのトップレベルファイルを表示しました",
+		"wantsToViewRecursive": "AlfaCodeはこのディレクトリのすべてのファイルを再帰的に表示したい",
+		"didViewRecursive": "AlfaCodeはこのディレクトリのすべてのファイルを再帰的に表示しました",
+		"wantsToViewDefinitions": "AlfaCodeはこのディレクトリで使用されているソースコード定義名を表示したい",
+		"didViewDefinitions": "AlfaCodeはこのディレクトリで使用されているソースコード定義名を表示しました",
+		"wantsToSearch": "AlfaCodeはこのディレクトリで <code>{{regex}}</code> を検索したい",
+		"didSearch": "AlfaCodeはこのディレクトリで <code>{{regex}}</code> を検索しました",
+		"wantsToSearchOutsideWorkspace": "AlfaCodeはこのディレクトリ（ワークスペース外）で <code>{{regex}}</code> を検索したい",
+		"didSearchOutsideWorkspace": "AlfaCodeはこのディレクトリ（ワークスペース外）で <code>{{regex}}</code> を検索しました",
+		"wantsToViewTopLevelOutsideWorkspace": "AlfaCodeはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示したい",
+		"didViewTopLevelOutsideWorkspace": "AlfaCodeはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示しました",
+		"wantsToViewRecursiveOutsideWorkspace": "AlfaCodeはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示したい",
+		"didViewRecursiveOutsideWorkspace": "AlfaCodeはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示しました",
+		"wantsToViewDefinitionsOutsideWorkspace": "AlfaCodeはこのディレクトリ（ワークスペース外）で使用されているソースコード定義名を表示したい",
+		"didViewDefinitionsOutsideWorkspace": "AlfaCodeはこのディレクトリ（ワークスペース外）で使用されているソースコード定義名を表示しました"
 	},
 	"commandOutput": "コマンド出力",
 	"commandExecution": {
@@ -251,24 +251,24 @@
 	"response": "応答",
 	"arguments": "引数",
 	"text": {
-		"rooSaid": "Rooの発言"
+		"rooSaid": "AlfaCodeの発言"
 	},
 	"feedback": {
 		"youSaid": "あなたの発言"
 	},
 	"mcp": {
-		"wantsToUseTool": "AlfaCode assistant{{serverName}}でツールを使用したい",
-		"wantsToAccessResource": "AlfaCode assistant{{serverName}}のリソースにアクセスしたい"
+		"wantsToUseTool": "AlfaCode{{serverName}}でツールを使用したい",
+		"wantsToAccessResource": "AlfaCode{{serverName}}のリソースにアクセスしたい"
 	},
 	"modes": {
-		"wantsToSwitch": "AlfaCode assistantは<code>{{mode}}</code>モードに切り替えたい",
-		"wantsToSwitchWithReason": "AlfaCode assistantは次の理由で<code>{{mode}}</code>モードに切り替えたい: {{reason}}",
-		"didSwitch": "AlfaCode assistantは<code>{{mode}}</code>モードに切り替えました",
-		"didSwitchWithReason": "AlfaCode assistantは次の理由で<code>{{mode}}</code>モードに切り替えました: {{reason}}"
+		"wantsToSwitch": "AlfaCodeは<code>{{mode}}</code>モードに切り替えたい",
+		"wantsToSwitchWithReason": "AlfaCodeは次の理由で<code>{{mode}}</code>モードに切り替えたい: {{reason}}",
+		"didSwitch": "AlfaCodeは<code>{{mode}}</code>モードに切り替えました",
+		"didSwitchWithReason": "AlfaCodeは次の理由で<code>{{mode}}</code>モードに切り替えました: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "AlfaCode assistant<code>{{mode}}</code>モードで新しいサブタスクを作成したい",
-		"wantsToFinish": "AlfaCode assistantはこのサブタスクを終了したい",
+		"wantsToCreate": "AlfaCode<code>{{mode}}</code>モードで新しいサブタスクを作成したい",
+		"wantsToFinish": "AlfaCodeはこのサブタスクを終了したい",
 		"newTaskContent": "サブタスク指示",
 		"completionContent": "サブタスク完了",
 		"resultContent": "サブタスク結果",
@@ -276,7 +276,7 @@
 		"completionInstructions": "サブタスク完了！結果を確認し、修正や次のステップを提案できます。問題なければ、親タスクに結果を返すために確認してください。"
 	},
 	"questions": {
-		"hasQuestion": "AlfaCode assistantは質問があります"
+		"hasQuestion": "AlfaCodeは質問があります"
 	},
 	"taskCompleted": "タスク完了",
 	"modelResponseIncomplete": "モデルの応答が不完全",
@@ -292,7 +292,7 @@
 		"copyToClipboard": "クリップボードにコピー",
 		"copied": "コピーしました！",
 		"diagnostics": "詳細なエラー情報を取得",
-		"proxyProvider": "プロキシベースのプロバイダーを使用しているようです。ログを確認し、Rooのリクエストを書き換えていないことを確認してください。"
+		"proxyProvider": "プロキシベースのプロバイダーを使用しているようです。ログを確認し、AlfaCodeのリクエストを書き換えていないことを確認してください。"
 	},
 	"powershell": {
 		"issues": "Windows PowerShellに問題があるようです。こちらを参照してください"
@@ -339,19 +339,19 @@
 		"timerPrefix": "自動承認が有効です。{{seconds}}秒後に選択中…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} リリース",
-		"support": "<githubLink>GitHub</githubLink>でスターを付けてRoo Codeを応援してください。",
+		"title": "AlfaCode {{version}} リリース",
+		"support": "<githubLink>GitHub</githubLink>でスターを付けてAlfaCodeを応援してください。",
 		"stealthModel": {
-			"feature": "<bold>期間限定無料ステルスモデル</bold> - Code Supernova：<bold>1Mトークンコンテキストウィンドウ</bold>にアップグレード！画像入力をサポートする多目的エージェントコーディングモデル、Roo Code Cloud 経由で利用可能。",
+			"feature": "<bold>期間限定無料ステルスモデル</bold> - Code Supernova：<bold>1Mトークンコンテキストウィンドウ</bold>にアップグレード！画像入力をサポートする多目的エージェントコーディングモデル、AlfaCode Cloud 経由で利用可能。",
 			"note": "(注意：プロンプトと補完はモデル作成者によってログに記録され、モデルの改善に使用されます)",
-			"connectButton": "Roo Code Cloud に接続",
-			"selectModel": "設定で Roo Code Cloud プロバイダーから <code>roo/code-supernova</code> を選択して開始してください。",
+			"connectButton": "AlfaCode Cloud に接続",
+			"selectModel": "設定で AlfaCode Cloud プロバイダーから <code>roo/code-supernova</code> を選択して開始してください。",
 			"goToSettingsButton": "設定に移動"
 		},
 		"release": {
 			"heading": "新機能:",
 			"openaiCodexProvider": "OpenAI - ChatGPT Plus/ProプロバイダーがCodexモデルへのサブスクリプションベースのアクセスを提供します（トークン単価なし）。",
-			"gpt52codexModel": "新しいgpt-5.2-codexモデルがRoo Code Router、標準OpenAIプロバイダーなどに追加されました。",
+			"gpt52codexModel": "新しいgpt-5.2-codexモデルがAlfaCode Router、標準OpenAIプロバイダーなどに追加されました。",
 			"bugFixes": "灰色画面を引き起こすメモリリーク、Gemini思考署名の問題、および多くの安定性改善を修正しました。"
 		},
 		"cloudAgents": {
@@ -371,7 +371,7 @@
 	"browser": {
 		"session": "ブラウザセッション",
 		"active": "アクティブ",
-		"rooWantsToUse": "AlfaCode assistantはブラウザを使用したい",
+		"rooWantsToUse": "AlfaCodeはブラウザを使用したい",
 		"consoleLogs": "コンソールログ",
 		"noNewLogs": "(新しいログはありません)",
 		"screenshot": "ブラウザのスクリーンショット",
@@ -419,24 +419,24 @@
 	"profileViolationWarning": "現在のプロファイルは組織の設定と互換性がありません",
 	"shellIntegration": {
 		"title": "コマンド実行警告",
-		"description": "コマンドはVSCodeターミナルシェル統合なしで実行されています。この警告を非表示にするには、<settingsLink>AlfaCode assistant設定</settingsLink>の<strong>Terminal</strong>セクションでシェル統合を無効にするか、以下のリンクを使用してVSCodeターミナル統合のトラブルシューティングを行ってください。",
+		"description": "コマンドはVSCodeターミナルシェル統合なしで実行されています。この警告を非表示にするには、<settingsLink>AlfaCode設定</settingsLink>の<strong>Terminal</strong>セクションでシェル統合を無効にするか、以下のリンクを使用してVSCodeターミナル統合のトラブルシューティングを行ってください。",
 		"troubleshooting": "シェル統合のドキュメントはこちらをクリック"
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "自動承認リクエスト制限に達しました",
-			"description": "AlfaCode assistantは{{count}}件のAPI自動承認リクエスト制限に達しました。カウントをリセットしてタスクを続行しますか？",
+			"description": "AlfaCodeは{{count}}件のAPI自動承認リクエスト制限に達しました。カウントをリセットしてタスクを続行しますか？",
 			"button": "リセットして続行"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "自動承認コスト制限に達しました",
-			"description": "AlfaCode assistantは自動承認されたコスト制限の${{count}}に達しました。コストをリセットしてタスクを続行しますか？",
+			"description": "AlfaCodeは自動承認されたコスト制限の${{count}}に達しました。コストをリセットしてタスクを続行しますか？",
 			"button": "リセットして続ける"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "AlfaCode assistantはコードベースで <code>{{query}}</code> を検索したい",
-		"wantsToSearchWithPath": "AlfaCode assistantは <code>{{path}}</code> 内のコードベースで <code>{{query}}</code> を検索したい",
+		"wantsToSearch": "AlfaCodeはコードベースで <code>{{query}}</code> を検索したい",
+		"wantsToSearchWithPath": "AlfaCodeは <code>{{path}}</code> 内のコードベースで <code>{{query}}</code> を検索したい",
 		"didSearch_one": "1件の結果が見つかりました",
 		"didSearch_other": "{{count}}件の結果が見つかりました",
 		"resultTooltip": "類似度スコア: {{score}} (クリックしてファイルを開く)"
@@ -460,7 +460,7 @@
 		"ariaLabel": "バージョン {{version}} - クリックしてリリースノートを表示"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud が進化中！",
+		"title": "AlfaCode Cloud が進化中！",
 		"description": "クラウドでリモートエージェントを実行し、どこからでもタスクにアクセスし、他の人と協力し、その他多くの機能を利用できます。",
 		"joinWaitlist": "最新のアップデートを受け取るためにサインアップしてください。"
 	},
@@ -501,8 +501,8 @@
 		"clickToEdit": "クリックしてメッセージを編集"
 	},
 	"slashCommand": {
-		"wantsToRun": "AlfaCode assistantはスラッシュコマンドを実行したい",
-		"didRun": "AlfaCode assistantはスラッシュコマンドを実行しました"
+		"wantsToRun": "AlfaCodeはスラッシュコマンドを実行したい",
+		"didRun": "AlfaCodeはスラッシュコマンドを実行しました"
 	},
 	"todo": {
 		"partial": "{{total}}件中{{completed}}件のTo-Doが完了",

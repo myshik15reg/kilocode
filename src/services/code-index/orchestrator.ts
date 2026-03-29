@@ -461,6 +461,28 @@ export class CodeIndexOrchestrator {
 				this.stateManager.setSystemState("Error", `Failed to clear vector collection: ${error.message}`)
 			}
 
+			// kilocode_change start
+			try {
+				if (this.configManager.isNeo4jEnabled) {
+					const neo4jReady = await this.ensureNeo4jConnectedAndInitialized()
+					if (neo4jReady) {
+						const relationshipIndexer = this.getOrCreateRelationshipIndexer()
+						if (relationshipIndexer) {
+							await relationshipIndexer.clearIndex()
+						}
+					}
+				}
+			} catch (error: any) {
+				console.error("[CodeIndexOrchestrator] Failed to clear Neo4j graph:", error)
+				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+					location: "clearIndexData.neo4j",
+				})
+				this.stateManager.setSystemState("Error", `Failed to clear Neo4j graph: ${error.message}`)
+			}
+			// kilocode_change end
+
 			await this.cacheManager.clearCacheFile()
 			await this.cacheManager.clearNeo4jCacheFile()
 

@@ -56,6 +56,12 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 					}),
 				}),
 			},
+			dispatchOrchestrationExecution: vi.fn().mockResolvedValue({
+				handled: false,
+				route: "direct",
+				decision: { kind: "direct", reason: "direct", confidence: "high" },
+				reason: "direct",
+			}),
 			say: vi.fn().mockResolvedValue(undefined),
 			ask: vi.fn().mockResolvedValue({ response: "yesButtonClicked" }),
 		}
@@ -273,4 +279,268 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 		expect(toolResult.is_error).toBe(true)
 		expect(toolResult.content).toContain("due to user rejecting a previous tool")
 	})
+
+	it("returns one summary for safe read-only batch", async () => {
+		mockTask.metadata = { task: "Collect context", images: [] }
+		mockTask.dispatchOrchestrationExecution = vi.fn().mockResolvedValue({
+			handled: true,
+			route: "subtooling",
+			decision: { kind: "subtooling", reason: "batch", confidence: "high" },
+			batchResult: {
+				requestId: "request-1",
+				status: "completed",
+				results: [
+					{ callId: "tool-1", tool: "read_file", content: "file content", success: true },
+					{ callId: "tool-2", tool: "list_files", content: "files list", success: true },
+				],
+				errors: [],
+				summary: "Tool batch completed successfully (2 calls).",
+			},
+		})
+
+		mockTask.api.getModel = () => ({ id: "test-model", info: { includedTools: [] } })
+		mockTask.assistantMessageContent = [
+			{
+				type: "tool_use",
+				id: "tool-1",
+				name: "read_file",
+				params: {},
+				nativeArgs: { files: [{ path: "a.ts" }] },
+				partial: false,
+			},
+			{
+				type: "tool_use",
+				id: "tool-2",
+				name: "list_files",
+				params: { path: "." },
+				nativeArgs: { path: ".", recursive: false },
+				partial: false,
+			},
+		]
+
+		await presentAssistantMessage(mockTask)
+
+		expect(mockTask.dispatchOrchestrationExecution).toHaveBeenCalled()
+		expect(
+			mockTask.userMessageContent.some(
+				(item: any) => item.type === "text" && item.text.includes("Tool batch completed successfully"),
+			),
+		).toBe(true)
+	})
+
+	it("maps safe batch tool errors back to the matching tool_result entries", async () => {
+		mockTask.metadata = { task: "Collect context", images: [] }
+		mockTask.dispatchOrchestrationExecution = vi.fn().mockResolvedValue({
+			handled: true,
+			route: "subtooling",
+			decision: { kind: "subtooling", reason: "batch", confidence: "high" },
+			batchResult: {
+				requestId: "request-err-1",
+				status: "completed",
+				results: [{ callId: "tool-1", tool: "read_file", content: "file content", success: true }],
+				errors: [{ callId: "tool-2", tool: "search_files", message: "Search failed" }],
+				summary: "Tool batch completed with 1 error.",
+			},
+		})
+
+		mockTask.api.getModel = () => ({ id: "test-model", info: { includedTools: [] } })
+		mockTask.assistantMessageContent = [
+			{
+				type: "tool_use",
+				id: "tool-1",
+				name: "read_file",
+				params: { path: "a.ts" },
+				nativeArgs: { path: "a.ts" },
+				partial: false,
+			},
+			{
+				type: "tool_use",
+				id: "tool-2",
+				name: "search_files",
+				params: { regex: "TODO", path: "src" },
+				nativeArgs: { regex: "TODO", path: "src" },
+				partial: false,
+			},
+		]
+
+		await presentAssistantMessage(mockTask)
+
+		expect(mockTask.userMessageContent).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					type: "tool_result",
+					tool_use_id: "tool-1",
+					content: "file content",
+					is_error: false,
+				}),
+				expect.objectContaining({
+					type: "tool_result",
+					tool_use_id: "tool-2",
+					content: "Search failed",
+					is_error: true,
+				}),
+				expect.objectContaining({ type: "text", text: "Tool batch completed with 1 error." }),
+			]),
+		)
+	})
+
+	// kilocode_change start
+	it("binds research batch results back to each tool_result for context-gathering flow", async () => {
+		mockTask.metadata = { task: "Research parser issue", images: [] }
+		mockTask.dispatchOrchestrationExecution = vi.fn().mockResolvedValue({
+			handled: true,
+			route: "subtooling",
+			decision: { kind: "subtooling", reason: "batch", confidence: "high" },
+			batchResult: {
+				requestId: "request-research-1",
+				status: "completed",
+				results: [
+					{ callId: "tool-1", tool: "read_file", content: "parser source", success: true },
+					{ callId: "tool-2", tool: "search_files", content: "found TODOs", success: true },
+					{ callId: "tool-3", tool: "list_files", content: "src/core/parser", success: true },
+				],
+				errors: [],
+				summary: "Tool batch completed successfully (3 calls).",
+			},
+		})
+
+		mockTask.api.getModel = () => ({ id: "test-model", info: { includedTools: [] } })
+		mockTask.assistantMessageContent = [
+			{
+				type: "tool_use",
+				id: "tool-1",
+				name: "read_file",
+				params: { path: "src/core/parser.ts" },
+				nativeArgs: { path: "src/core/parser.ts" },
+				partial: false,
+			},
+			{
+				type: "tool_use",
+				id: "tool-2",
+				name: "search_files",
+				params: { regex: "TODO", path: "src" },
+				nativeArgs: { regex: "TODO", path: "src" },
+				partial: false,
+			},
+			{
+				type: "tool_use",
+				id: "tool-3",
+				name: "list_files",
+				params: { path: "src/core", recursive: true },
+				nativeArgs: { path: "src/core", recursive: true },
+				partial: false,
+			},
+		]
+
+		await presentAssistantMessage(mockTask)
+
+		expect(mockTask.dispatchOrchestrationExecution).toHaveBeenCalledTimes(1)
+		expect(mockTask.userMessageContent).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					type: "tool_result",
+					tool_use_id: "tool-1",
+					content: "parser source",
+					is_error: false,
+				}),
+				expect.objectContaining({
+					type: "tool_result",
+					tool_use_id: "tool-2",
+					content: "found TODOs",
+					is_error: false,
+				}),
+				expect.objectContaining({
+					type: "tool_result",
+					tool_use_id: "tool-3",
+					content: "src/core/parser",
+					is_error: false,
+				}),
+				expect.objectContaining({ type: "text", text: "Tool batch completed successfully (3 calls)." }),
+			]),
+		)
+		expect(mockTask.didAlreadyUseTool).toBe(true)
+	})
+
+	it("binds a dispatched subagent launch to the matching tool_result entry", async () => {
+		mockTask.metadata = { task: "Delegate parser research", images: [] }
+		mockTask.dispatchOrchestrationExecution = vi.fn().mockResolvedValue({
+			handled: true,
+			route: "subagent",
+			decision: { kind: "subagent", reason: "background delegation", confidence: "high" },
+			result: {
+				callId: "tool-1",
+				tool: "new_task",
+				content: "Delegated to child task child-bg",
+			},
+		})
+
+		mockTask.api.getModel = () => ({ id: "test-model", info: { includedTools: [] } })
+		mockTask.assistantMessageContent = [
+			{
+				type: "tool_use",
+				id: "tool-1",
+				name: "new_task",
+				params: { mode: "code", message: "Research", execution: "background" },
+				nativeArgs: { mode: "code", message: "Research", execution: "background" },
+				partial: false,
+			},
+		]
+
+		await presentAssistantMessage(mockTask)
+
+		expect(mockTask.dispatchOrchestrationExecution).toHaveBeenCalledTimes(1)
+		expect(mockTask.userMessageContent).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					type: "tool_result",
+					tool_use_id: "tool-1",
+					content: "Delegated to child task child-bg",
+					is_error: false,
+				}),
+			]),
+		)
+		expect(mockTask.didAlreadyUseTool).toBe(true)
+	})
+
+	it("preserves native direct flow when orchestration explicitly declines handling", async () => {
+		const toolCallId = "tool_call_direct_fallback"
+		mockTask.dispatchOrchestrationExecution = vi.fn().mockResolvedValue({
+			handled: false,
+			route: "direct",
+			decision: { kind: "direct", reason: "fallback", confidence: "high" },
+			reason: "fallback",
+		})
+		mockTask.assistantMessageContent = [
+			{
+				type: "tool_use",
+				id: toolCallId,
+				name: "nonexistent_tool",
+				params: { some: "param" },
+				partial: false,
+			},
+		]
+
+		await presentAssistantMessage(mockTask)
+
+		expect(mockTask.dispatchOrchestrationExecution).toHaveBeenCalledWith(
+			[{ callId: toolCallId, tool: "nonexistent_tool", arguments: { some: "param" } }],
+			expect.objectContaining({
+				executeToolBatch: expect.any(Function),
+				executeSubagent: expect.any(Function),
+			}),
+		)
+
+		expect(mockTask.userMessageContent).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					type: "tool_result",
+					tool_use_id: toolCallId,
+					is_error: true,
+					content: expect.stringContaining("nonexistent_tool"),
+				}),
+			]),
+		)
+		expect(mockTask.say).toHaveBeenCalledWith("error", "unknownToolError")
+	})
+	// kilocode_change end
 })

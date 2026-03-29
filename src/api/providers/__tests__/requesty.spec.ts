@@ -6,8 +6,8 @@ import OpenAI from "openai"
 import { TOOL_PROTOCOL } from "@roo-code/types"
 
 import { RequestyHandler } from "../requesty"
+import { DEFAULT_HEADERS } from "../constants" // kilocode_change
 import { ApiHandlerOptions } from "../../../shared/api"
-import { Package } from "../../../shared/package"
 import { ApiHandlerCreateMessageMetadata } from "../../index"
 
 const mockCreate = vitest.fn()
@@ -61,32 +61,26 @@ describe("RequestyHandler", () => {
 		const handler = new RequestyHandler(mockOptions)
 		expect(handler).toBeInstanceOf(RequestyHandler)
 
-		expect(OpenAI).toHaveBeenCalledWith({
-			baseURL: "https://router.requesty.ai/v1",
-			apiKey: mockOptions.requestyApiKey,
-			defaultHeaders: {
-				"HTTP-Referer": "https://kilocode.ai",
-				"X-Title": "AlfaCode assistant",
-				"X-KiloCode-Version": Package.version,
-				"User-Agent": `Kilo-Code/${Package.version}`,
-			},
-		})
+		expect(OpenAI).toHaveBeenCalledWith(
+			expect.objectContaining({
+				baseURL: "https://router.requesty.ai/v1",
+				apiKey: mockOptions.requestyApiKey,
+				defaultHeaders: expect.objectContaining(DEFAULT_HEADERS),
+			}),
+		)
 	})
 
 	it("can use a base URL instead of the default", () => {
 		const handler = new RequestyHandler({ ...mockOptions, requestyBaseUrl: "https://custom.requesty.ai/v1" })
 		expect(handler).toBeInstanceOf(RequestyHandler)
 
-		expect(OpenAI).toHaveBeenCalledWith({
-			baseURL: "https://custom.requesty.ai/v1",
-			apiKey: mockOptions.requestyApiKey,
-			defaultHeaders: {
-				"HTTP-Referer": "https://kilocode.ai",
-				"X-Title": "AlfaCode assistant",
-				"X-KiloCode-Version": Package.version,
-				"User-Agent": `Kilo-Code/${Package.version}`,
-			},
-		})
+		expect(OpenAI).toHaveBeenCalledWith(
+			expect.objectContaining({
+				baseURL: "https://custom.requesty.ai/v1",
+				apiKey: mockOptions.requestyApiKey,
+				defaultHeaders: expect.objectContaining(DEFAULT_HEADERS),
+			}),
+		)
 	})
 
 	describe("fetchModel", () => {

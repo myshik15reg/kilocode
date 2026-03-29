@@ -1,6 +1,8 @@
 // kilocode_change - new file
 import * as vscode from "vscode"
 
+import { Package } from "../shared/package" // kilocode_change
+
 /**
  * Check for potential ANTHROPIC_API_KEY conflicts with Claude Code provider.
  * Shows a warning if the environment variable is set while using Claude Code provider.
@@ -12,7 +14,7 @@ export function checkAnthropicApiKeyConflict(): void {
 		return
 	}
 
-	const config = vscode.workspace.getConfiguration("kilo-code")
+	const config = vscode.workspace.getConfiguration(Package.name) // kilocode_change
 	const provider = config.get<string>("apiProvider")
 
 	if (provider === "claude-code") {

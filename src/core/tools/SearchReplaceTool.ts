@@ -12,6 +12,9 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { sanitizeUnifiedDiff, computeDiffStats } from "../diff/stats"
 import type { ToolUse } from "../../shared/tools"
+// kilocode_change start
+import { annotateWithHashline, expandHashlineReferences, stripHashlinePrefixes } from "./helpers/hashline"
+// kilocode_change end
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -117,9 +120,11 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 				return
 			}
 
+			// kilocode_change start
 			// Normalize line endings in search/replace strings to match file content
-			const normalizedOldString = old_string.replace(/\r\n/g, "\n")
-			const normalizedNewString = new_string.replace(/\r\n/g, "\n")
+			const normalizedOldString = expandHashlineReferences(fileContent, old_string.replace(/\r\n/g, "\n"))
+			const normalizedNewString = stripHashlinePrefixes(new_string).replace(/\r\n/g, "\n")
+			// kilocode_change end
 
 			// Check for exact match (literal string, not regex)
 			const matchCount = fileContent.split(normalizedOldString).length - 1
@@ -127,9 +132,10 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 			if (matchCount === 0) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("search_replace", "no_match")
+				const hashlinePreview = annotateWithHashline(fileContent)
 				pushToolResult(
 					formatResponse.toolError(
-						`No match found for the specified 'old_string'. Please ensure it matches the file contents exactly, including whitespace and indentation.`,
+						`No match found for the specified 'old_string'. Please ensure it matches the file contents exactly, including whitespace and indentation.\n\nSelective hashline preview:\n${hashlinePreview}`,
 						toolProtocol,
 					),
 				)
@@ -139,9 +145,10 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 			if (matchCount > 1) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("search_replace", "multiple_matches")
+				const hashlinePreview = annotateWithHashline(fileContent)
 				pushToolResult(
 					formatResponse.toolError(
-						`Found ${matchCount} matches for the specified 'old_string'. This tool can only replace ONE occurrence at a time. Please provide more context (3-5 lines before and after) to uniquely identify the specific instance you want to change.`,
+						`Found ${matchCount} matches for the specified 'old_string'. This tool can only replace ONE occurrence at a time. Please provide more context (3-5 lines before and after) to uniquely identify the specific instance you want to change.\n\nSelective hashline preview:\n${hashlinePreview}`,
 						toolProtocol,
 					),
 				)

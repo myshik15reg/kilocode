@@ -1,4 +1,4 @@
-// npx vitest run src/core/tools/__tests__/ToolRepetitionDetector.spec.ts
+﻿// npx vitest run src/core/tools/__tests__/ToolRepetitionDetector.spec.ts
 
 import type { ToolName } from "@roo-code/types"
 
@@ -681,6 +681,49 @@ describe("ToolRepetitionDetector", () => {
 			// Different cwd in nativeArgs should make these different
 			expect(detector.check(tool1).allowExecution).toBe(true)
 			expect(detector.check(tool2).allowExecution).toBe(true)
+		})
+
+		it("should treat equivalent whitespace-only param differences as repetition", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			const tool1 = createToolUse("execute_command", "execute_command", { command: "pnpm test" })
+			const tool2 = createToolUse("execute_command", "execute_command", { command: "  pnpm test  " })
+
+			expect(detector.check(tool1).allowExecution).toBe(true)
+			expect(detector.check(tool2).allowExecution).toBe(true)
+			const result = detector.check(tool2)
+			expect(result.allowExecution).toBe(false)
+		})
+
+		it("should treat JSON-string and object arguments as equivalent repetition when normalized", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			const tool1: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool" as ToolName,
+				params: {
+					server_name: "context7",
+					tool_name: "resolve",
+					arguments: '{"id":1,"query":"abc"}',
+				},
+				partial: false,
+			}
+
+			const tool2: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool" as ToolName,
+				params: {
+					server_name: "context7",
+					tool_name: "resolve",
+					arguments: JSON.stringify({ query: "abc", id: 1 }),
+				},
+				partial: false,
+			}
+
+			expect(detector.check(tool1).allowExecution).toBe(true)
+			expect(detector.check(tool2).allowExecution).toBe(true)
+			const result = detector.check(tool2)
+			expect(result.allowExecution).toBe(false)
 		})
 
 		it("should handle tools with only params (no nativeArgs)", () => {

@@ -73,3 +73,10 @@ qdrant_storage/
 ./plans/
 
 roo-cli-*.tar.gz*
+
+temp/
+
+# WorkFlowAI live workspace state
+.protocols/*/
+!.protocols/README.md
+!.protocols/index.md

@@ -126,20 +126,21 @@ export const KiloCode = ({
 				organizationAllowList={organizationAllowList}
 			/>
 
-			{/* KILOCODE-TESTER warnings setting - only visible for @kilo.ai users */}
+			{/* kilocode_change start: rebrand visible tester warnings copy */}
 			{isKiloCodeAiUser && (
 				<div className="mb-4">
-					<label className="block font-medium mb-2">Disable KILOCODE-TESTER warnings</label>
+					<label className="block font-medium mb-2">Disable AlfaCode assistant tester warnings</label>
 					<div className="text-sm text-vscode-descriptionForeground mb-2">
 						{areKilocodeWarningsDisabled
 							? `Warnings disabled until ${new Date(apiConfiguration.kilocodeTesterWarningsDisabledUntil || 0).toLocaleString()}`
-							: "KILOCODE-TESTER warnings are currently enabled"}
+							: "AlfaCode assistant tester warnings are currently enabled"}
 					</div>
 					<Button variant="secondary" onClick={handleToggleTesterWarnings} className="text-sm">
 						{areKilocodeWarningsDisabled ? "Enable warnings now" : "Disable warnings for 1 day"}
 					</Button>
 				</div>
 			)}
+			{/* kilocode_change end */}
 		</>
 	)
 }

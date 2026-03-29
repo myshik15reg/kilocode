@@ -31,7 +31,10 @@ CRITICAL REQUIREMENTS:
    - Set expected_replacements to the exact count you expect to replace
    - ALL occurrences will be replaced
 
-4. NO ESCAPING: Provide the literal text - do not escape special characters.`
+4. NO ESCAPING: Provide the literal text - do not escape special characters.
+
+5. HASHLINE REFERENCES: If a recovery preview shows tagged lines like \`#HL 42:abc|...\`, you may pass those tagged lines back inside \`old_string\`. Valid \`#HL\` references are resolved to the file's exact current line text before matching, and \`#HL ...|\` prefixes are stripped from \`new_string\`.
+`
 
 const edit_file = {
 	type: "function",

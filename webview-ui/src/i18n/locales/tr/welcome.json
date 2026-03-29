@@ -1,6 +1,6 @@
 {
-	"greeting": "Merhaba, ben AlfaCode assistant!",
-	"introduction": "<strong>AlfaCode assistant, önde gelen otonom kodlama aracıdır.</strong> Daha önce hiç görmediğin şekilde mimari tasarım yapmaya, kod yazmaya, hata ayıklamaya ve üretkenliğini artırmaya hazırlan. Devam etmek için AlfaCode assistant'un bir API anahtarına ihtiyacı var.",
+	"greeting": "Merhaba, ben AlfaCode!",
+	"introduction": "<strong>AlfaCode, önde gelen otonom kodlama aracıdır.</strong> Daha önce hiç görmediğin şekilde mimari tasarım yapmaya, kod yazmaya, hata ayıklamaya ve üretkenliğini artırmaya hazırlan. Devam etmek için AlfaCode'un bir API anahtarına ihtiyacı var.",
 	"notice": "Başlamak için bu eklentinin bir API sağlayıcısına ihtiyacı var.",
 	"start": "Hadi başlayalım!",
 	"routers": {
@@ -13,45 +13,45 @@
 		},
 		"roo": {
 			"description": "Başlamak için en iyi ücretsiz modeller",
-			"incentive": "Roo'yu ücretsiz dene"
+			"incentive": "AlfaCode'yu ücretsiz dene"
 		}
 	},
-	"chooseProvider": "Sihirini yapabilmesi için AlfaCode assistant'nun bir API anahtarına ihtiyacı var.",
+	"chooseProvider": "Sihirini yapabilmesi için AlfaCode'nun bir API anahtarına ihtiyacı var.",
 	"landing": {
-		"greeting": "AlfaCode assistant'a Hoş Geldin!",
-		"introduction": "Yerleşik ve genişletilebilir Modlar yelpazesiyle AlfaCode assistant, daha önce hiç olmadığı gibi planlama, mimari tasarım, kodlama, hata ayıklama ve üretkenliğini artırmanı sağlar.",
-		"accountMention": "Başlamak için AlfaCode assistant Cloud hesabını oluştur. Güçlü modeller, web kontrolü, analizler, destek ve daha fazlasını al.",
+		"greeting": "AlfaCode'a Hoş Geldin!",
+		"introduction": "Yerleşik ve genişletilebilir Modlar yelpazesiyle AlfaCode, daha önce hiç olmadığı gibi planlama, mimari tasarım, kodlama, hata ayıklama ve üretkenliğini artırmanı sağlar.",
+		"accountMention": "Başlamak için AlfaCode Cloud hesabını oluştur. Güçlü modeller, web kontrolü, analizler, destek ve daha fazlasını al.",
 		"getStarted": "AlfaCode Hesabı Oluştur",
 		"noAccount": "veya hesap olmadan kullan"
 	},
 	"providerSignup": {
 		"heading": "Sağlayıcınızı seçin",
-		"chooseProvider": "Roo'nun çalışması için bir LLM sağlayıcısına ihtiyacı var. Başlamak için bir tane seç, sonra daha fazlasını ekleyebilirsin.",
-		"rooCloudProvider": "Roo Code Cloud Sağlayıcı",
-		"rooCloudDescription": "Başlamak için en kolay yol Roo Code Cloud Sağlayıcısı'nı kullanmaktır: ücretsiz ve ücretli modellerin dikkatli seçilmiş bir karışımı, düşük maliyette.",
+		"chooseProvider": "AlfaCode'nun çalışması için bir LLM sağlayıcısına ihtiyacı var. Başlamak için bir tane seç, sonra daha fazlasını ekleyebilirsin.",
+		"rooCloudProvider": "AlfaCode Cloud Sağlayıcı",
+		"rooCloudDescription": "Başlamak için en kolay yol AlfaCode Cloud Sağlayıcısı'nı kullanmaktır: ücretsiz ve ücretli modellerin dikkatli seçilmiş bir karışımı, düşük maliyette.",
 		"learnMore": "Daha fazla bilgi",
 		"useAnotherProvider": "Üçüncü taraf Sağlayıcı",
 		"useAnotherProviderDescription": "Bir API anahtarı gir ve başla.",
 		"noApiKeys": "API anahtarları ve ayrı hesaplarla uğraşmak istemez misin?",
-		"backToRoo": "Roo Code Cloud Sağlayıcısını seç.",
+		"backToRoo": "AlfaCode Cloud Sağlayıcısını seç.",
 		"goBack": "Geri",
 		"finish": "Bitir"
 	},
 	"waitingForCloud": {
-		"heading": "Roo Code Cloud'a giriş yapılıyor...",
-		"description": "Seni Roo Code Cloud'a kaydolmak için tarayıcına göndereceğiz. Sonra seni buraya geri getireceğiz.",
+		"heading": "AlfaCode Cloud'a giriş yapılıyor...",
+		"description": "Seni AlfaCode Cloud'a kaydolmak için tarayıcına göndereceğiz. Sonra seni buraya geri getireceğiz.",
 		"noPrompt": "Bir URL açmanız istenmezse, <clickHere>buraya tıklayın</clickHere>.",
 		"havingTrouble": "Kaydı tamamladıysanız ama sorun yaşıyorsanız, <clickHere>buraya tıklayın</clickHere>.",
 		"pasteUrl": "Tarayıcınızda gösterilen geri arama URL'sini yapıştırın:",
 		"docsLink": "Çalışmıyor mu? <DocsLink>Belgeleri kontrol edin</DocsLink>.",
-		"invalidURL": "Bu geçerli bir geri arama URL'si gibi görünmüyor. Roo Code Cloud'un tarayıcınızda gösterdiğini kopyalayın.",
+		"invalidURL": "Bu geçerli bir geri arama URL'si gibi görünmüyor. AlfaCode Cloud'un tarayıcınızda gösterdiğini kopyalayın.",
 		"goBack": "Geri"
 	},
 	"startRouter": "Bir LLM yönlendiricisi kullanmanızı öneririz:",
 	"startCustom": "Veya kendi API anahtarınızı getirebilirsiniz:",
 	"telemetry": {
-		"helpImprove": "AlfaCode assistant'u Geliştirmeye Yardım Et",
-		"helpImproveMessage": "AlfaCode assistant, hataları düzeltmemize ve eklentiyi geliştirmemize yardımcı olmak için hata ve kullanım verileri toplar. Bu telemetri kod, prompts veya kişisel bilgi toplamaz. Bunu <settingsLink>ayarlar</settingsLink>da kapatabilirsin."
+		"helpImprove": "AlfaCode'u Geliştirmeye Yardım Et",
+		"helpImproveMessage": "AlfaCode, hataları düzeltmemize ve eklentiyi geliştirmemize yardımcı olmak için hata ve kullanım verileri toplar. Bu telemetri kod, prompts veya kişisel bilgi toplamaz. Bunu <settingsLink>ayarlar</settingsLink>da kapatabilirsin."
 	},
 	"importSettings": "Ayarları İçe Aktar"
 }

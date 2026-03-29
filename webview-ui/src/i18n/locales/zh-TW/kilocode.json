@@ -111,7 +111,7 @@
 	"toolCallStyle": {
 		"title": "工具呼叫樣式",
 		"description": "選擇系統提示中工具呼叫的格式化方式。JSON 目前為實驗性功能，主要供有興趣參與開發的使用者使用。",
-		"automatic": "讓 Kilo 決定",
+		"automatic": "讓 AlfaCode assistant 決定",
 		"xml": "XML",
 		"json": "JSON"
 	},
@@ -354,7 +354,7 @@
 			"title": "语音转文字",
 			"openAiReason": "您需要一个有效的 OpenAI 提供商和 API 密钥才能使用语音转录功能。",
 			"description": "语音转文字功能不可用。语音转文字需要同时配置 FFmpeg 和有效的 OpenAI 提供商。<moreInfoLink>点击此处了解更多信息</moreInfoLink>。",
-			"ffmpegReason": "您需要安装 FFmpeg。<ffmpegLink>点击这里</ffmpegLink>让 Kilo 帮助您安装 FFmpeg。",
+			"ffmpegReason": "您需要安装 FFmpeg。<ffmpegLink>点击这里</ffmpegLink>让 AlfaCode assistant 帮助您安装 FFmpeg。",
 			"ffmpegMessage": "帮我安装 FFmpeg"
 		},
 		"misconfiguredState": "因配置问题而不可用",

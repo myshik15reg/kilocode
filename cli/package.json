@@ -1,7 +1,7 @@
 {
 	"name": "@kilocode/cli",
 	"version": "0.26.1",
-	"description": "Terminal User Interface for Kilo Code",
+	"description": "Terminal User Interface for AlfaCode assistant",
 	"type": "module",
 	"main": "dist/index.js",
 	"bin": {
@@ -110,7 +110,7 @@
 		"puppeteer-chromium-resolver": "^24.0.3",
 		"puppeteer-core": "^24.34.0",
 		"react": "^19.2.3",
-		"react-devtools-core": "^7.0.1",
+		"react-devtools-core": "^6.1.5",
 		"react-error-boundary": "^6.0.3",
 		"reconnecting-eventsource": "^1.6.4",
 		"sanitize-filename": "^1.6.3",
@@ -162,7 +162,7 @@
 		"rimraf": "^6.1.2",
 		"strip-ansi": "^7.1.2",
 		"tsx": "^4.21.0",
-		"typescript": "^5.9.3",
+		"typescript": "5.8.3",
 		"typescript-eslint": "^8.52.0",
 		"vitest": "^4.0.16"
 	},

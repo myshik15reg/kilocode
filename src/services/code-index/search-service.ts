@@ -15,6 +15,16 @@ import type { HybridSearchResult } from "../neo4j/interfaces"
 export class CodeIndexSearchService {
 	private hybridSearchService: HybridSearchService | null = null
 	private rerankAvailability?: { enabled: boolean; configured: boolean; modelId?: string; baseUrl?: string }
+	private static readonly LANGUAGE_HINT_EXTENSIONS: Array<{ hints: string[]; extensions: string[] }> = [
+		{ hints: ["typescript", " ts ", "tsx"], extensions: [".ts", ".tsx"] },
+		{ hints: ["javascript", " js ", "jsx"], extensions: [".js", ".jsx", ".mjs", ".cjs"] },
+		{ hints: ["python", " py "], extensions: [".py"] },
+		{ hints: ["java"], extensions: [".java"] },
+		{
+			hints: ["1c", "1СЃ", "onec", "bsl", "1c:enterprise", "1СЃ:РїСЂРµРґРїСЂРёСЏС‚РёРµ"],
+			extensions: [".bsl", ".os"],
+		},
+	]
 
 	constructor(
 		private readonly configManager: CodeIndexConfigManager,
@@ -22,20 +32,23 @@ export class CodeIndexSearchService {
 		private readonly embedder: IEmbedder,
 		private readonly vectorStore: IVectorStore,
 	) {
-		// Initialize hybrid search if Neo4j is enabled
-		if (this.configManager.isNeo4jEnabled) {
-			this.hybridSearchService = new HybridSearchService(
-				this.embedder,
-				this.vectorStore,
-				undefined,
-				this.configManager.currentRerankConfig,
-			)
+		// kilocode_change start
+		// Keep semantic Qdrant search independent. Neo4j and reranker are optional layers
+		// that can be used together or separately.
+		const rerankConfig = this.configManager.currentRerankConfig
+		if (this.configManager.isNeo4jEnabled || rerankConfig?.enabled) {
+			this.hybridSearchService = new HybridSearchService(this.embedder, this.vectorStore, undefined, rerankConfig)
 			this.rerankAvailability = this.hybridSearchService.getRerankAvailability()
 		}
+		// kilocode_change end
 	}
 
 	// kilocode_change start
 	public updateRerankConfig(rerankConfig?: CodeIndexConfigManager["currentRerankConfig"]): void {
+		if (!this.hybridSearchService && (this.configManager.isNeo4jEnabled || rerankConfig?.enabled)) {
+			this.hybridSearchService = new HybridSearchService(this.embedder, this.vectorStore, undefined, rerankConfig)
+		}
+
 		if (this.hybridSearchService) {
 			this.hybridSearchService.updateRerankConfig(rerankConfig)
 			this.rerankAvailability = this.hybridSearchService.getRerankAvailability()
@@ -66,26 +79,34 @@ export class CodeIndexSearchService {
 		}
 
 		try {
-			// Use hybrid search if Neo4j is enabled
-			if (this.configManager.isNeo4jEnabled && this.hybridSearchService) {
+			// kilocode_change start
+			// Use optional enhancers when enabled. Without them, semantic search remains the baseline.
+			if (
+				(this.configManager.isNeo4jEnabled || this.configManager.currentRerankConfig?.enabled) &&
+				this.hybridSearchService
+			) {
 				const isHybridAvailable = await this.hybridSearchService.isAvailable()
-				if (isHybridAvailable) {
+				if (isHybridAvailable || this.configManager.currentRerankConfig.enabled) {
 					const hybridResults = await this.hybridSearchService.search(query, {
 						maxResults,
 						minScore,
 						directoryPrefix,
 					})
 					// Convert hybrid results to vector store results for backward compatibility
-					return hybridResults.map((result) => ({
-						id: result.id ?? `${result.filePath}:${result.startLine}`,
-						filePath: result.filePath,
-						codeChunk: result.codeChunk,
-						startLine: result.startLine,
-						endLine: result.endLine,
-						score: result.combinedScore, // Use combined score
-					}))
+					return this.applyLanguageHintBoost(
+						query,
+						hybridResults.map((result) => ({
+							id: result.id ?? `${result.filePath}:${result.startLine}`,
+							filePath: result.filePath,
+							codeChunk: result.codeChunk,
+							startLine: result.startLine,
+							endLine: result.endLine,
+							score: result.combinedScore, // Use combined score
+						})),
+					)
 				}
 			}
+			// kilocode_change end
 
 			// Fallback to semantic-only search
 			return await this.performSemanticSearch(query, directoryPrefix, minScore, maxResults)
@@ -179,8 +200,34 @@ export class CodeIndexSearchService {
 
 		// Perform search
 		const results = await this.vectorStore.search(vector, normalizedPrefix, minScore, maxResults)
-		return results
+		return this.applyLanguageHintBoost(query, results)
 	}
+
+	// kilocode_change start
+	private applyLanguageHintBoost(query: string, results: VectorStoreSearchResult[]): VectorStoreSearchResult[] {
+		const normalizedQuery = ` ${query.toLowerCase()} `
+		const matchedExtensions = CodeIndexSearchService.LANGUAGE_HINT_EXTENSIONS.find(({ hints }) =>
+			hints.some((hint) => normalizedQuery.includes(hint)),
+		)?.extensions
+
+		if (!matchedExtensions?.length) {
+			return results
+		}
+
+		return [...results].sort((left, right) => {
+			const leftScore = this.getLanguageBoostedScore(left, matchedExtensions)
+			const rightScore = this.getLanguageBoostedScore(right, matchedExtensions)
+			return rightScore - leftScore
+		})
+	}
+
+	private getLanguageBoostedScore(result: VectorStoreSearchResult, matchedExtensions: string[]): number {
+		const filePath = result.filePath?.toLowerCase() ?? ""
+		const extension = path.extname(filePath)
+		const boost = matchedExtensions.includes(extension) ? 0.2 : 0
+		return result.score + boost
+	}
+	// kilocode_change end
 
 	/**
 	 * Check if hybrid search is available

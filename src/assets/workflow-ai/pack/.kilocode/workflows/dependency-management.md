@@ -1,179 +1,48 @@
-# Рабочий процесс: Управление зависимостями (dependency-management)
+﻿# Workflow: dependency-management
 
-> Критично: зависимости - часть поверхности атаки и частая причина регрессий. Обновляй их управляемо: малыми шагами, с проверками и прозрачным риском.
+## Goal
 
-## Цель
-- Быстро закрывать уязвимости (CVE/alert'ы).
-- Поддерживать техническое здоровье зависимостей (без постоянного отставания по мажорным/минорным версиям).
-- Делать обновления безопасно: отдельная ветка, маленькие изменения, тесты/линт после каждого шага.
+Update dependencies in a controlled way that reduces security and compatibility risk without creating unnecessary churn.
 
-## Когда использовать
-Обязательно:
-- пришёл security alert (Dependabot/Snyk/npm audit и т.п.),
-- перед релизом, если давно не обновлялись зависимости,
-- планируется major-обновление ключевой библиотеки/рантайма.
+## Use when
 
-Регулярно:
-- 1 раз в спринт: patch/minor обновления,
-- 1 раз в квартал: ревизия отставания по мажорным версиям.
+- security alerts require action
+- a dependency is blocking work or supportability
+- routine patch or minor maintenance is scheduled
+- a major upgrade is planned and needs explicit risk handling
 
-Не нужно:
-- просто обновить всё до `latest` без причины,
-- объединять несвязанные обновления в один PR.
+## Core rules
 
-## Принципы
-- Сначала triage (важность/эксплуатируемость/влияние), потом изменения.
-- Один PR - одна понятная группа обновлений (или одна крупная миграция).
-- После каждого шага: тесты + линт + локальная проверка сценариев.
-- Для критической уязвимости в проде: используй `hotfix-emergency.md`.
+1. Prefer small, reviewable update batches.
+2. Separate routine patch/minor updates from major migrations when possible.
+3. Verify after each meaningful change.
+4. Treat dependency updates as behavior-affecting changes, not as blind version bumps.
 
-## Шаги
+## Recommended flow
 
-### 1) Аудит (что именно сломано/уязвимо)
-Выбери команды под стек проекта.
+| Step | Outcome                                          |
+| ---- | ------------------------------------------------ |
+| 1    | identify which dependency and why it must change |
+| 2    | classify patch, minor, or major risk             |
+| 3    | update the smallest safe set                     |
+| 4    | run the relevant tests and checks                |
+| 5    | record notable compatibility or rollback notes   |
 
-Node.js:
-```powershell
-npm audit
-npm outdated
+## Risk guidance
 
-pnpm audit
-pnpm outdated
+- patch updates: usually the lowest-risk routine path
+- minor updates: verify feature and integration boundaries
+- major updates: treat as a migration task, not a casual bump
 
-yarn audit
-yarn outdated
-```
+## Anti-patterns
 
-Примечание: `npm outdated`/`pnpm outdated`/`yarn outdated` иногда возвращают ненулевой код выхода. Ориентируйся на вывод; при автоматизации обрабатывай `$LASTEXITCODE` явно.
+- upgrade everything to latest without a reason
+- mix unrelated dependency families in one risky batch
+- ignore changelog or release-note impact for major updates
+- merge without targeted verification
 
-Python:
-```powershell
-python -m pip list --outdated
-pip-audit
-```
+## Related flows
 
-Примечание: `pip-audit` тоже может возвращать ненулевой код выхода (например, если найдены уязвимости). Ориентируйся на вывод; при автоматизации обрабатывай `$LASTEXITCODE` явно.
-
-.NET:
-```powershell
-dotnet list package --outdated
-dotnet list package --vulnerable
-```
-
-Rust:
-```powershell
-cargo audit
-```
-
-### 2) Triage (приоритизация)
-Классифицируй изменения:
-- P0: критическая уязвимость с высоким риском эксплуатации (fix ASAP, возможно hotfix).
-- P1: высокая уязвимость/важная зависимость (fix в ближайшие дни).
-- P2: плановое обновление (в течение месяца/квартала).
-- P3: косметика/дев-зависимости (по возможности, но не ценой риска).
-
-Если P0 влияет на прод и требует срочного выпуска -> переходи в `hotfix-emergency.md`.
-
-### 3) План обновления (особенно для major)
-Мини-шаблон (в протокол/PR-описание):
-```text
-Цель: обновить PKG с X до Y
-Причина: CVE/совместимость/устарело/подготовка к миграции
-Риски: несовместимые изменения, влияние на производительность, влияние на API
-План:
-1) подготовка/чтение журнала изменений (changelog)
-2) обновление
-3) фиксы компиляции/типов
-4) фиксы рантайма
-5) обновление тестов
-6) прогон гейтов качества
-7) PR + ревью + (опционально) канареечная раскатка (canary)
-```
-
-### 4) Реализация (малые шаги)
-1) Создай ветку:
-```bash
-git checkout -b chore/deps-YYYYMMDD-short
-```
-
-2) Обнови один пакет (или небольшой набор):
-```bash
-npm update PKG
-pnpm up PKG
-yarn upgrade PKG
-```
-
-3) Если нужно чистое переустановление:
-```bash
-rm -rf node_modules package-lock.json pnpm-lock.yaml yarn.lock
-```
-
-PowerShell-эквивалент:
-```powershell
-Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
-Remove-Item -Force package-lock.json,pnpm-lock.yaml,yarn.lock -ErrorAction SilentlyContinue
-```
-
-4) Установи зависимости:
-```bash
-npm ci
-pnpm install --frozen-lockfile
-yarn install --frozen-lockfile
-```
-
-5) Сразу прогони проверки:
-```bash
-npm test
-npm run lint
-npm run typecheck
-```
-
-6) Исправляй проблемы и делай маленькие коммиты:
-```bash
-git add -A
-git commit -m "chore(deps): update PKG"
-```
-
-Повтори шаги 2-6 для следующего пакета/этапа миграции.
-
-### 5) Проверка поведения (дымовая/регрессионная)
-- Прогони сценарии, которые реально используют обновляемые зависимости.
-- Если это сервис/прод: подумай про канареечный релиз (`canary`) или поэтапную раскатку (`rollout`) (см. `deployment-workflow.md`).
-
-### 6) PR и закрытие
-- Описать риск и план тестирования прямо в PR.
-- Для больших обновлений - приложить список файлов/модулей, которые затронуты.
-- После слияния (merge): если появились новые правила/паттерны - обнови Memory Bank.
-
-## Оркестрация (если обновление сложное)
-Рекомендованные подзадачи:
-- `security-auditor`: оценка эксплуатируемости/риска и минимального безопасного апдейта.
-- `*-dev`: правки кода под breaking changes.
-- `unit-tester`/`integration-tester`: регрессионные тесты под изменённое поведение.
-- `reviewer`: финальная проверка качества/безопасности.
-
-## Частые проблемы и решения
-
-### Конфликт `peer dependencies`
-Симптом: npm/yarn ругается на несовместимые версии.
-Действия:
-- обнови зависимость-родителя до версии, поддерживающей ваш стек,
-- если нет - фиксируй через `overrides`/`resolutions` (осознанно и временно),
-- зафиксируй решение в протоколе и создай тикет на полноценное исправление.
-
-### Сломанный lockfile/кеш
-Симптом: модули не находятся, CI падает странно.
-Действия: сделай чистую установку (clean install) (см. шаг 4) и убедись, что lockfile закоммичен.
-
-### Регрессия после обновления
-Симптом: тесты/рантайм падают.
-Действия:
-- откатиться на последнюю рабочую версию пакета и обновлять поэтапно,
-- читать changelog/миграционный гайд и фиксировать точечные breaking changes,
-- усилить тесты вокруг проблемного места.
-
-## Ссылки
-- `~/.kilocode/workflows/hotfix-emergency.md`
-- `~/.kilocode/workflows/deployment-workflow.md`
-- `~/.kilocode/workflows/refactoring-workflow.md`
-- `~/.kilocode/workflows/quality-enforcement.md`
+- emergency security or production path: [`hotfix-emergency.md`](hotfix-emergency.md:1)
+- migration-scale upgrade: [`migration-workflow.md`](migration-workflow.md:1)
+- quality enforcement: [`quality-enforcement.md`](quality-enforcement.md:1)

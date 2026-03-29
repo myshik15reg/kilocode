@@ -1,22 +1,28 @@
-# Artifacts and Storage
+# Artifacts and Storage (SoT)
 
-This guide standardizes where workflow artifacts and temporary files live.
+Назначение: стандартизировать, где живут артефакты задач и где должен жить источник истины (SoT/evidence).
 
-## Rules
-- `.protocols/<protocol>/` holds task-specific artifacts and logs.
-- Use `.protocols/<protocol>/artifacts/` for research, decisions, and evidence.
-- `temp/` is scratch space (scripts, caches, short-lived files). Clean after the task.
-- `temp/screenshot/` stores temporary UI evidence.
-- `docs/` is optional in *consuming projects*; this template keeps its docs under `~/.kilocode/`.
+Нормативная рамка: [`docs-standards.md`](docs-standards.md:1).
 
-## Artifact Output Map
-- Architecture decisions (ADR): `.protocols/<protocol>/artifacts/decisions/ADR-0001-<topic>.md`
-- Solution research: `.protocols/<protocol>/artifacts/research/YYYYMMDD-HHMMSS-<topic>.md`
-- Task decomposition: `.protocols/<protocol>/artifacts/tasks/README.md` + `task-001-<name>.md`
-- Creative sessions: `.protocols/<protocol>/artifacts/creative/YYYYMMDD-HHMMSS-<topic>.md`
-- Evidence (screenshots/logs): `.protocols/<protocol>/artifacts/evidence/`
+## Core rules
 
-## Naming Conventions
-- Use lowercase slugs with hyphens.
-- Keep slugs short and descriptive.
-- Use timestamps when creating multiple artifacts in a day.
+| Type                                | Location                           | Lifetime                             |
+| ----------------------------------- | ---------------------------------- | ------------------------------------ |
+| Task artifacts                      | `.protocols/<protocol>/artifacts/` | временно, удаляется с протоколом     |
+| Stable evidence                     | `.kilocode/evidence/`              | стабильно, ссылаться можно из правил |
+| Stable extracts (sanitized sources) | `.kilocode/sources/`               | стабильно                            |
+| Scratch                             | `temp/`                            | временно                             |
+
+## Artifact output map (recommended)
+
+| Artifact                     | Location                                                            |
+| ---------------------------- | ------------------------------------------------------------------- |
+| Architecture decisions (ADR) | `.protocols/<protocol>/artifacts/decisions/ADR-0001-topic.md`       |
+| Research                     | `.protocols/<protocol>/artifacts/research/YYYYMMDD-HHMMSS-topic.md` |
+| Evidence (logs/screenshots)  | `.protocols/<protocol>/artifacts/evidence/`                         |
+
+## Stability rule
+
+1. Rules/SoT MUST NOT зависеть от `temp/`.
+2. Rules/SoT MUST NOT зависеть от исторических протоколов.
+3. Любая ссылка из `.kilocode/` на evidence MUST вести в `.kilocode/evidence/`.

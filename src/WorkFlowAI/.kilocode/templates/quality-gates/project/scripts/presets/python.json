@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "description": "Preset for Python repos (pip).",
+  "steps": [
+    { "name": "Install", "command": "python", "args": ["-m", "pip", "install", "-r", "requirements.txt"] },
+    { "name": "Guardrails", "command": "pwsh", "args": ["-File", "./scripts/workflowai-guardrails.ps1", "-ProjectPath", ".", "-CheckKiloCodeChangeMarkers"] },
+    { "name": "Lint", "command": "python", "args": ["-m", "ruff", "check", "."] },
+    { "name": "Tests+Coverage", "command": "python", "args": ["-m", "pytest", "--cov", ".", "--cov-fail-under=100"] }
+  ]
+}

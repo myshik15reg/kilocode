@@ -788,6 +788,63 @@ describe("McpHub", () => {
 			expect(mockTransport.close).toHaveBeenCalled()
 			expect(mockClient.close).toHaveBeenCalled()
 		})
+
+		// kilocode_change start
+		it("should decode split UTF-8 stderr chunks before appending MCP error history", async () => {
+			const stdioModule = await import("@modelcontextprotocol/sdk/client/stdio.js")
+			const StdioClientTransport = stdioModule.StdioClientTransport as ReturnType<typeof vi.fn>
+			const stderrHandlers: Record<string, ((value?: any) => void) | undefined> = {}
+
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				stderr: {
+					on: vi.fn((event: string, handler: (value?: any) => void) => {
+						stderrHandlers[event] = handler
+					}),
+				},
+				onerror: null,
+				onclose: null,
+			}
+
+			StdioClientTransport.mockImplementation(() => mockTransport)
+
+			const clientModule = await import("@modelcontextprotocol/sdk/client/index.js")
+			const Client = clientModule.Client as ReturnType<typeof vi.fn>
+			const mockClient = {
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue("test instructions"),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+				getServerCapabilities: vi.fn().mockResolvedValue({ tools: {} }),
+			}
+			Client.mockImplementation(() => mockClient)
+
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"stderr-decoding-server": {
+							type: "stdio",
+							command: "node",
+							args: ["test.js"],
+						},
+					},
+				}),
+			)
+
+			const hub = new McpHub(mockProvider as ClineProvider)
+			await new Promise((resolve) => setTimeout(resolve, 100))
+
+			stderrHandlers.data?.(new Uint8Array([0xd0]))
+			stderrHandlers.data?.(new Uint8Array([0x96]))
+			stderrHandlers.close?.()
+			await new Promise((resolve) => setTimeout(resolve, 0))
+
+			const connection = hub.connections.find((conn) => conn.server.name === "stderr-decoding-server")
+			expect(connection).toBeDefined()
+			expect(connection?.server.errorHistory?.at(-1)?.message).toContain("Ж")
+		})
+		// kilocode_change end
 	})
 
 	describe("toggleToolAlwaysAllow", () => {

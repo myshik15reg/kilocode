@@ -210,8 +210,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Введи користувацький шлях зберігання історії розмов, залиш порожнім для використання розташування за замовчуванням",
-		"path_placeholder": "D:\\KiloCodeStorage",
-		"enter_absolute_path": "Будь ласка, введи абсолютний шлях (наприклад, D:\\KiloCodeStorage або /home/user/storage)",
+		"path_placeholder": "D:\\AlfaCodeAssistantStorage",
+		"enter_absolute_path": "Будь ласка, введи абсолютний шлях (наприклад, D:\\AlfaCodeAssistantStorage або /home/user/storage)",
 		"enter_valid_path": "Будь ласка, введи дійсний шлях"
 	},
 	"input": {

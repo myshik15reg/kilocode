@@ -70,8 +70,8 @@ class ErrorBoundary extends Component<ErrorProps, ErrorState> {
 					{t("errorBoundary.title")} (v{version})
 				</h2>
 				<p className="mb-4">
-					{t("errorBoundary.reportText")}{" "}
-					<a href="https://github.com/Kilo-Org/kilocode/issues" target="_blank" rel="noreferrer">
+					{t("errorBoundary.reportText")} {/* kilocode_change */}
+					<a href="https://github.com/Alfa-Org/alfacode/issues" target="_blank" rel="noreferrer">
 						{t("errorBoundary.githubText")}
 					</a>
 				</p>

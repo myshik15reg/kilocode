@@ -304,7 +304,7 @@
 	"toolCallStyle": {
 		"title": "Estil de Crida d'Eina",
 		"description": "Tria com es formaten les crides d'eina al prompt del sistema. JSON és actualment experimental i està principalment destinat a usuaris interessats a contribuir al seu desenvolupament.",
-		"automatic": "Deixa que Kilo decideixi",
+		"automatic": "Deixa que AlfaCode assistant decideixi",
 		"xml": "XML",
 		"json": "JSON"
 	},
@@ -355,7 +355,7 @@
 			"title": "Veu a text",
 			"description": "La conversió de veu a text no està disponible. La conversió de veu a text requereix tant FFmpeg com un proveïdor d'OpenAI vàlid configurat. <moreInfoLink>Feu clic aquí per a més informació</moreInfoLink>.",
 			"openAiReason": "Necessiteu un proveïdor d'OpenAI vàlid amb una clau API per utilitzar la transcripció de veu.",
-			"ffmpegReason": "Necessites tenir instal·lat FFmpeg. <ffmpegLink>Fes clic aquí</ffmpegLink> perquè Kilo t'ajudi a instal·lar FFmpeg.",
+			"ffmpegReason": "Necessites tenir instal·lat FFmpeg. <ffmpegLink>Fes clic aquí</ffmpegLink> perquè AlfaCode assistant t'ajudi a instal·lar FFmpeg.",
 			"ffmpegMessage": "Ajuda'm a instal·lar FFmpeg"
 		},
 		"misconfiguredState": "No disponible per la configuració",

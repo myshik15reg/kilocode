@@ -94,6 +94,23 @@ describe("CodeIndexConfigManager", () => {
 	})
 
 	describe("loadConfiguration", () => {
+		it("should remain unconfigured when vectorStoreName is not set in workspaceState", async () => {
+			mockContextProxy.getWorkspaceState.mockResolvedValue(undefined)
+			mockContextProxy.getGlobalState.mockReturnValue({
+				codebaseIndexEnabled: true,
+				codebaseIndexQdrantUrl: "http://qdrant.local",
+				codebaseIndexEmbedderProvider: "openai",
+			})
+			setupSecretMocks({
+				codeIndexOpenAiKey: "test-openai-key",
+			})
+
+			const result = await configManager.loadConfiguration()
+
+			expect(result.currentConfig.isConfigured).toBe(false)
+			expect(configManager.getConfig().vectorStoreName).toBe("")
+		})
+
 		it("should load default configuration when no state exists", async () => {
 			mockContextProxy.getGlobalState.mockReturnValue(undefined)
 			mockContextProxy.getSecret.mockReturnValue(undefined)
@@ -1700,6 +1717,7 @@ describe("CodeIndexConfigManager", () => {
 
 	describe("isConfigured", () => {
 		it("should return true when OpenAI provider is properly configured", async () => {
+			mockContextProxy.getWorkspaceState.mockResolvedValue("test-vector-store")
 			mockContextProxy.getGlobalState.mockReturnValue({
 				codebaseIndexEnabled: true,
 				codebaseIndexEmbedderProvider: "openai",
@@ -1728,6 +1746,7 @@ describe("CodeIndexConfigManager", () => {
 		})
 
 		it("should return true when Ollama provider is properly configured", async () => {
+			mockContextProxy.getWorkspaceState.mockResolvedValue("test-vector-store")
 			mockContextProxy.getGlobalState.mockReturnValue({
 				codebaseIndexEnabled: true,
 				codebaseIndexEmbedderProvider: "ollama",
@@ -1882,6 +1901,7 @@ describe("CodeIndexConfigManager", () => {
 
 			describe("OpenRouter provider dimension handling", () => {
 				it("should correctly handle OpenRouter mistral model dimensions across restarts", async () => {
+					mockContextProxy.getWorkspaceState.mockResolvedValue("test-vector-store")
 					// Mock getModelDimension to return correct dimensions for OpenRouter models
 					mockedGetModelDimension.mockImplementation((provider, modelId) => {
 						if (provider === "openrouter") {
@@ -2013,6 +2033,7 @@ describe("CodeIndexConfigManager", () => {
 							codeIndexOpenAiKey: "test-openai-key",
 						})
 
+						configManager = new CodeIndexConfigManager(mockContextProxy)
 						await configManager.loadConfiguration()
 
 						const config = configManager.getConfig()

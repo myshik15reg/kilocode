@@ -1,10 +1,13 @@
-import { memo } from "react"
+import { memo, useMemo } from "react"
 
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 
 // import { useTaskSearch } from "./useTaskSearch" // kilocode_change
 import TaskItem from "./TaskItem"
+import HistoryTreeGutter from "./HistoryTreeGutter"
+import { buildTaskTreeRows, getAutoExpandedTaskIds, getRootTaskDescendantSummaryMap } from "./taskTree"
 import { useTaskHistory } from "@/kilocode/hooks/useTaskHistory"
 
 const HistoryPreview = ({ taskHistoryVersion }: { taskHistoryVersion: number } /*kilocode_change*/) => {
@@ -18,9 +21,20 @@ const HistoryPreview = ({ taskHistoryVersion }: { taskHistoryVersion: number } /
 		},
 		taskHistoryVersion,
 	)
-	const tasks = data?.historyItems ?? []
+	const tasks = useMemo(() => data?.historyItems ?? [], [data?.historyItems])
 	// kilocode_change end
 	const { t } = useAppTranslation()
+	const { activeRootTaskIds = [], focusedRootTaskId, taskHistory = [] } = useExtensionState()
+	const historyRootItems = useMemo(() => (taskHistory.length > 0 ? taskHistory : tasks), [taskHistory, tasks])
+	const autoExpandedTaskIds = useMemo(
+		() => getAutoExpandedTaskIds(historyRootItems, { focusedTaskId: focusedRootTaskId, activeRootTaskIds }),
+		[historyRootItems, focusedRootTaskId, activeRootTaskIds],
+	)
+	const rootTaskSummaryMap = useMemo(() => getRootTaskDescendantSummaryMap(historyRootItems), [historyRootItems]) // kilocode_change
+	const previewRows = useMemo(
+		() => buildTaskTreeRows(tasks, autoExpandedTaskIds).slice(0, 4),
+		[tasks, autoExpandedTaskIds],
+	)
 
 	const handleViewAllHistory = () => {
 		vscode.postMessage({ type: "switchTab", tab: "history" })
@@ -37,10 +51,33 @@ const HistoryPreview = ({ taskHistoryVersion }: { taskHistoryVersion: number } /
 					{t("history:viewAllHistory")}
 				</button>
 			</div>
-			{tasks.length !== 0 && (
+			{previewRows.length !== 0 && (
 				<>
-					{tasks.slice(0, 4).map((item) => (
-						<TaskItem key={item.id} item={item} variant="compact" />
+					{previewRows.map((row) => (
+						<div key={row.item.id} className="flex items-stretch gap-2">
+							<HistoryTreeGutter
+								depth={row.depth}
+								hasChildren={row.hasChildren}
+								isExpanded={row.isExpanded}
+								ancestorHasNextSiblings={row.ancestorHasNextSiblings}
+								isLastSibling={row.isLastSibling}
+								className="pt-0.5"
+							/>
+							<TaskItem
+								item={
+									row.depth === 0
+										? (historyRootItems.find((item) => item.id === row.item.id) ?? row.item)
+										: row.item
+								}
+								taskHistory={historyRootItems}
+								variant="compact"
+								isActiveRootTask={activeRootTaskIds.includes(row.item.id)}
+								isFocusedRootTask={focusedRootTaskId === row.item.id}
+								runningRootTaskIds={[]}
+								descendantSummary={row.depth === 0 ? rootTaskSummaryMap.get(row.item.id) : undefined}
+								className={row.depth > 0 ? "ml-1 flex-1 min-w-0" : "flex-1 min-w-0"}
+							/>
+						</div>
 					))}
 				</>
 			)}

@@ -6,10 +6,13 @@ description: Identify, analyze, and resolve performance bottlenecks.
 # Performance Optimization Skill
 
 ## Purpose
+
 This skill provides systematic approaches to identify, analyze, and resolve performance bottlenecks in applications, ensuring optimal speed, responsiveness, and resource utilization.
 
 ## Triggers
+
 Use this skill when:
+
 - Application performance is slow
 - High resource consumption detected
 - User complaints about speed
@@ -18,10 +21,12 @@ Use this skill when:
 - Before production deployment
 
 ## Context
+
 Before optimizing performance, this skill reads:
+
 - `.kilocode/memory-bank/tech.md` - Technology stack and constraints
 - `.kilocode/memory-bank/architecture.md` - Architecture patterns
-- `~/.kilocode/patterns/` - Language-specific optimization patterns
+- `../../patterns/` - Language-specific optimization patterns
 
 ## Workflow
 
@@ -30,6 +35,7 @@ Before optimizing performance, this skill reads:
 #### Establish Baseline Metrics
 
 **Key Performance Indicators (KPIs):**
+
 - Response time (API endpoints)
 - Time to First Byte (TTFB)
 - Time to Interactive (TTI)
@@ -62,6 +68,7 @@ db.collection.find().explain("executionStats")
 #### Profile the Application
 
 **Node.js/JavaScript:**
+
 ```bash
 # CPU Profiling
 node --prof app.js
@@ -73,6 +80,7 @@ node --inspect app.js
 ```
 
 **Python:**
+
 ```python
 # CPU Profiling
 import cProfile
@@ -94,6 +102,7 @@ def my_function():
 ```
 
 **Rust:**
+
 ```bash
 # Profiling with cargo-flamegraph
 cargo install flamegraph
@@ -110,20 +119,22 @@ cargo bench
 **1. Database Performance**
 
 **N+1 Query Problem:**
+
 ```typescript
 // ❌ BAD: N+1 queries (1 + N queries)
-const users = await User.findAll();
+const users = await User.findAll()
 for (const user of users) {
-  user.posts = await Post.findAll({ where: { userId: user.id } });
+	user.posts = await Post.findAll({ where: { userId: user.id } })
 }
 
 // ✅ GOOD: Single query with join (1 query)
 const users = await User.findAll({
-  include: [Post]
-});
+	include: [Post],
+})
 ```
 
 **Missing Indexes:**
+
 ```sql
 -- ❌ Slow: Full table scan
 SELECT * FROM users WHERE email = 'test@example.com';
@@ -134,6 +145,7 @@ SELECT * FROM users WHERE email = 'test@example.com';
 ```
 
 **Inefficient Queries:**
+
 ```sql
 -- ❌ BAD: Loading all columns
 SELECT * FROM users WHERE id = 1;
@@ -152,132 +164,137 @@ SELECT * FROM products WHERE to_tsvector('english', name) @@ to_tsquery('widget'
 **2. Memory Issues**
 
 **Memory Leaks:**
+
 ```typescript
 // ❌ BAD: Event listener not removed
 class Component {
-  constructor() {
-    window.addEventListener('resize', this.handleResize);
-  }
-  // Leak: listener never removed!
+	constructor() {
+		window.addEventListener("resize", this.handleResize)
+	}
+	// Leak: listener never removed!
 }
 
 // ✅ GOOD: Proper cleanup
 class Component {
-  constructor() {
-    this.handleResize = this.handleResize.bind(this);
-    window.addEventListener('resize', this.handleResize);
-  }
+	constructor() {
+		this.handleResize = this.handleResize.bind(this)
+		window.addEventListener("resize", this.handleResize)
+	}
 
-  destroy() {
-    window.removeEventListener('resize', this.handleResize);
-  }
+	destroy() {
+		window.removeEventListener("resize", this.handleResize)
+	}
 }
 ```
 
 **Large Object Retention:**
+
 ```typescript
 // ❌ BAD: Keeping large objects in memory
-const cache = new Map();
+const cache = new Map()
 
 function processData(id: string) {
-  if (!cache.has(id)) {
-    cache.set(id, loadHugeDataset(id)); // Never cleared!
-  }
-  return cache.get(id);
+	if (!cache.has(id)) {
+		cache.set(id, loadHugeDataset(id)) // Never cleared!
+	}
+	return cache.get(id)
 }
 
 // ✅ GOOD: LRU cache with size limit
-import LRU from 'lru-cache';
+import LRU from "lru-cache"
 
 const cache = new LRU({
-  max: 100,
-  maxAge: 1000 * 60 * 60 // 1 hour
-});
+	max: 100,
+	maxAge: 1000 * 60 * 60, // 1 hour
+})
 
 function processData(id: string) {
-  if (!cache.has(id)) {
-    cache.set(id, loadHugeDataset(id));
-  }
-  return cache.get(id);
+	if (!cache.has(id)) {
+		cache.set(id, loadHugeDataset(id))
+	}
+	return cache.get(id)
 }
 ```
 
 **3. CPU-Intensive Operations**
 
 **Inefficient Algorithms:**
+
 ```typescript
 // ❌ BAD: O(n²) complexity
 function findDuplicates(arr: number[]): number[] {
-  const duplicates = [];
-  for (let i = 0; i < arr.length; i++) {
-    for (let j = i + 1; j < arr.length; j++) {
-      if (arr[i] === arr[j] && !duplicates.includes(arr[i])) {
-        duplicates.push(arr[i]);
-      }
-    }
-  }
-  return duplicates;
+	const duplicates = []
+	for (let i = 0; i < arr.length; i++) {
+		for (let j = i + 1; j < arr.length; j++) {
+			if (arr[i] === arr[j] && !duplicates.includes(arr[i])) {
+				duplicates.push(arr[i])
+			}
+		}
+	}
+	return duplicates
 }
 
 // ✅ GOOD: O(n) complexity
 function findDuplicates(arr: number[]): number[] {
-  const seen = new Set<number>();
-  const duplicates = new Set<number>();
+	const seen = new Set<number>()
+	const duplicates = new Set<number>()
 
-  for (const num of arr) {
-    if (seen.has(num)) {
-      duplicates.add(num);
-    } else {
-      seen.add(num);
-    }
-  }
+	for (const num of arr) {
+		if (seen.has(num)) {
+			duplicates.add(num)
+		} else {
+			seen.add(num)
+		}
+	}
 
-  return Array.from(duplicates);
+	return Array.from(duplicates)
 }
 ```
 
 **4. Network Performance**
 
 **Too Many Requests:**
+
 ```typescript
 // ❌ BAD: Sequential requests
 async function loadUserData(userId: string) {
-  const user = await fetch(`/api/users/${userId}`);
-  const posts = await fetch(`/api/users/${userId}/posts`);
-  const comments = await fetch(`/api/users/${userId}/comments`);
-  return { user, posts, comments };
+	const user = await fetch(`/api/users/${userId}`)
+	const posts = await fetch(`/api/users/${userId}/posts`)
+	const comments = await fetch(`/api/users/${userId}/comments`)
+	return { user, posts, comments }
 }
 
 // ✅ GOOD: Parallel requests
 async function loadUserData(userId: string) {
-  const [user, posts, comments] = await Promise.all([
-    fetch(`/api/users/${userId}`),
-    fetch(`/api/users/${userId}/posts`),
-    fetch(`/api/users/${userId}/comments`)
-  ]);
-  return { user, posts, comments };
+	const [user, posts, comments] = await Promise.all([
+		fetch(`/api/users/${userId}`),
+		fetch(`/api/users/${userId}/posts`),
+		fetch(`/api/users/${userId}/comments`),
+	])
+	return { user, posts, comments }
 }
 
 // ✅ EVEN BETTER: Single endpoint with aggregated data
 async function loadUserData(userId: string) {
-  return fetch(`/api/users/${userId}?include=posts,comments`);
+	return fetch(`/api/users/${userId}?include=posts,comments`)
 }
 ```
 
 **Large Payloads:**
+
 ```typescript
 // ❌ BAD: No pagination
 async function getUsers() {
-  return fetch('/api/users'); // Could return 100k records!
+	return fetch("/api/users") // Could return 100k records!
 }
 
 // ✅ GOOD: Pagination
 async function getUsers(page = 1, limit = 50) {
-  return fetch(`/api/users?page=${page}&limit=${limit}`);
+	return fetch(`/api/users?page=${page}&limit=${limit}`)
 }
 
 // ✅ GOOD: Compression
-app.use(compression()); // Gzip/Brotli compression
+app.use(compression()) // Gzip/Brotli compression
 ```
 
 ### Step 3: Apply Optimizations
@@ -285,6 +302,7 @@ app.use(compression()); // Gzip/Brotli compression
 #### Database Optimizations
 
 **1. Add Indexes**
+
 ```sql
 -- Identify slow queries
 SELECT query, calls, mean_exec_time
@@ -302,140 +320,149 @@ CREATE INDEX idx_posts_user_created ON posts(user_id, created_at);
 ```
 
 **2. Query Optimization**
+
 ```typescript
 // ❌ BAD: Loading all data
-const users = await db.users.findAll();
+const users = await db.users.findAll()
 
 // ✅ GOOD: Pagination and selective fields
 const users = await db.users.findAll({
-  attributes: ['id', 'name', 'email'],
-  limit: 50,
-  offset: page * 50,
-  order: [['created_at', 'DESC']]
-});
+	attributes: ["id", "name", "email"],
+	limit: 50,
+	offset: page * 50,
+	order: [["created_at", "DESC"]],
+})
 ```
 
 **3. Caching**
+
 ```typescript
-import Redis from 'ioredis';
-const redis = new Redis();
+import Redis from "ioredis"
+const redis = new Redis()
 
 async function getUser(id: string): Promise<User> {
-  // Check cache first
-  const cached = await redis.get(`user:${id}`);
-  if (cached) {
-    return JSON.parse(cached);
-  }
+	// Check cache first
+	const cached = await redis.get(`user:${id}`)
+	if (cached) {
+		return JSON.parse(cached)
+	}
 
-  // Cache miss: fetch from database
-  const user = await db.users.findById(id);
+	// Cache miss: fetch from database
+	const user = await db.users.findById(id)
 
-  // Store in cache
-  await redis.set(
-    `user:${id}`,
-    JSON.stringify(user),
-    'EX', 3600 // Expire in 1 hour
-  );
+	// Store in cache
+	await redis.set(
+		`user:${id}`,
+		JSON.stringify(user),
+		"EX",
+		3600, // Expire in 1 hour
+	)
 
-  return user;
+	return user
 }
 ```
 
 **4. Connection Pooling**
+
 ```typescript
 // ❌ BAD: New connection per request
 const db = new Database({
-  host: 'localhost',
-  database: 'myapp'
-});
+	host: "localhost",
+	database: "myapp",
+})
 
 // ✅ GOOD: Connection pool
 const pool = new Pool({
-  host: 'localhost',
-  database: 'myapp',
-  max: 20,          // Maximum connections
-  min: 5,           // Minimum connections
-  idle: 10000       // Connection idle timeout
-});
+	host: "localhost",
+	database: "myapp",
+	max: 20, // Maximum connections
+	min: 5, // Minimum connections
+	idle: 10000, // Connection idle timeout
+})
 ```
 
 #### Backend Optimizations
 
 **1. Async Processing**
+
 ```typescript
 // ❌ BAD: Synchronous heavy operation
-app.post('/api/users', async (req, res) => {
-  const user = await createUser(req.body);
-  await sendWelcomeEmail(user); // Blocks response!
-  await updateAnalytics(user);  // Blocks response!
-  res.json(user);
-});
+app.post("/api/users", async (req, res) => {
+	const user = await createUser(req.body)
+	await sendWelcomeEmail(user) // Blocks response!
+	await updateAnalytics(user) // Blocks response!
+	res.json(user)
+})
 
 // ✅ GOOD: Queue background jobs
-app.post('/api/users', async (req, res) => {
-  const user = await createUser(req.body);
+app.post("/api/users", async (req, res) => {
+	const user = await createUser(req.body)
 
-  // Queue background jobs (don't wait)
-  queue.add('send-email', { userId: user.id });
-  queue.add('update-analytics', { userId: user.id });
+	// Queue background jobs (don't wait)
+	queue.add("send-email", { userId: user.id })
+	queue.add("update-analytics", { userId: user.id })
 
-  res.json(user);
-});
+	res.json(user)
+})
 ```
 
 **2. Memoization**
+
 ```typescript
 // ❌ BAD: Recalculating expensive operation
 function fibonacci(n: number): number {
-  if (n <= 1) return n;
-  return fibonacci(n - 1) + fibonacci(n - 2);
+	if (n <= 1) return n
+	return fibonacci(n - 1) + fibonacci(n - 2)
 }
 
 // ✅ GOOD: Memoized
-const memo = new Map<number, number>();
+const memo = new Map<number, number>()
 
 function fibonacci(n: number): number {
-  if (n <= 1) return n;
+	if (n <= 1) return n
 
-  if (memo.has(n)) {
-    return memo.get(n)!;
-  }
+	if (memo.has(n)) {
+		return memo.get(n)!
+	}
 
-  const result = fibonacci(n - 1) + fibonacci(n - 2);
-  memo.set(n, result);
-  return result;
+	const result = fibonacci(n - 1) + fibonacci(n - 2)
+	memo.set(n, result)
+	return result
 }
 ```
 
 **3. Lazy Loading**
+
 ```typescript
 // ❌ BAD: Loading all modules upfront
-import { HugeModule } from './huge-module';
-import { AnotherHugeModule } from './another-huge';
+import { HugeModule } from "./huge-module"
+import { AnotherHugeModule } from "./another-huge"
 
 // ✅ GOOD: Dynamic imports
 async function processData() {
-  const { HugeModule } = await import('./huge-module');
-  return new HugeModule().process();
+	const { HugeModule } = await import("./huge-module")
+	return new HugeModule().process()
 }
 ```
 
 **4. Rate Limiting & Throttling**
+
 ```typescript
-import rateLimit from 'express-rate-limit';
+import rateLimit from "express-rate-limit"
 
 // Prevent abuse
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // Max 100 requests per window
-});
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	max: 100, // Max 100 requests per window
+})
 
-app.use('/api/', limiter);
+app.use("/api/", limiter)
 ```
 
 #### Frontend Optimizations
 
 **1. Code Splitting**
+
 ```typescript
 // ❌ BAD: Everything in one bundle
 import Dashboard from './Dashboard';
@@ -457,6 +484,7 @@ const Settings = lazy(() => import('./Settings'));
 ```
 
 **2. Image Optimization**
+
 ```typescript
 // ❌ BAD: Large unoptimized images
 <img src="photo.jpg" alt="Photo" />
@@ -471,6 +499,7 @@ const Settings = lazy(() => import('./Settings'));
 ```
 
 **3. Virtualization for Long Lists**
+
 ```typescript
 // ❌ BAD: Rendering 10,000 items
 {items.map(item => <Item key={item.id} item={item} />)}
@@ -491,6 +520,7 @@ import { FixedSizeList } from 'react-window';
 ```
 
 **4. Debouncing & Throttling**
+
 ```typescript
 // ❌ BAD: Search on every keystroke
 <input onChange={e => search(e.target.value)} />
@@ -503,6 +533,7 @@ const debouncedSearch = debounce(search, 300);
 ```
 
 **5. React Optimizations**
+
 ```typescript
 // ❌ BAD: Re-rendering unnecessarily
 function Parent() {
@@ -554,29 +585,29 @@ function Parent() {
 ```typescript
 // Benchmark helper
 class PerformanceBenchmark {
-  private start: number = 0;
+	private start: number = 0
 
-  begin() {
-    this.start = performance.now();
-  }
+	begin() {
+		this.start = performance.now()
+	}
 
-  end(label: string) {
-    const duration = performance.now() - this.start;
-    console.log(`${label}: ${duration.toFixed(2)}ms`);
-    return duration;
-  }
+	end(label: string) {
+		const duration = performance.now() - this.start
+		console.log(`${label}: ${duration.toFixed(2)}ms`)
+		return duration
+	}
 }
 
 // Usage
-const benchmark = new PerformanceBenchmark();
+const benchmark = new PerformanceBenchmark()
 
-benchmark.begin();
-await slowOperation();
-benchmark.end('Slow operation');
+benchmark.begin()
+await slowOperation()
+benchmark.end("Slow operation")
 
-benchmark.begin();
-await optimizedOperation();
-benchmark.end('Optimized operation');
+benchmark.begin()
+await optimizedOperation()
+benchmark.end("Optimized operation")
 ```
 
 #### Metrics to Track
@@ -585,6 +616,7 @@ benchmark.end('Optimized operation');
 ## Performance Improvement Report
 
 ### Baseline Metrics (Before)
+
 - API Response Time: 850ms
 - Database Query Time: 420ms
 - Memory Usage: 512 MB
@@ -593,6 +625,7 @@ benchmark.end('Optimized operation');
 - Lighthouse Score: 62/100
 
 ### Optimized Metrics (After)
+
 - API Response Time: 120ms (-85%)
 - Database Query Time: 45ms (-89%)
 - Memory Usage: 256 MB (-50%)
@@ -601,6 +634,7 @@ benchmark.end('Optimized operation');
 - Lighthouse Score: 94/100 (+52%)
 
 ### Optimizations Applied
+
 1. Added database indexes (3 indexes)
 2. Implemented Redis caching
 3. Fixed N+1 query issues (5 locations)
@@ -614,45 +648,49 @@ benchmark.end('Optimized operation');
 ### Node.js / Express
 
 **1. Enable Compression**
+
 ```typescript
-import compression from 'compression';
-app.use(compression());
+import compression from "compression"
+app.use(compression())
 ```
 
 **2. Use Cluster Mode**
+
 ```typescript
-import cluster from 'cluster';
-import os from 'os';
+import cluster from "cluster"
+import os from "os"
 
 if (cluster.isPrimary) {
-  const numCPUs = os.cpus().length;
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
-  }
+	const numCPUs = os.cpus().length
+	for (let i = 0; i < numCPUs; i++) {
+		cluster.fork()
+	}
 } else {
-  // Worker process
-  startServer();
+	// Worker process
+	startServer()
 }
 ```
 
 **3. Stream Large Responses**
+
 ```typescript
 // ❌ BAD: Load entire file in memory
-app.get('/download', (req, res) => {
-  const file = fs.readFileSync('large-file.zip');
-  res.send(file);
-});
+app.get("/download", (req, res) => {
+	const file = fs.readFileSync("large-file.zip")
+	res.send(file)
+})
 
 // ✅ GOOD: Stream the file
-app.get('/download', (req, res) => {
-  const stream = fs.createReadStream('large-file.zip');
-  stream.pipe(res);
-});
+app.get("/download", (req, res) => {
+	const stream = fs.createReadStream("large-file.zip")
+	stream.pipe(res)
+})
 ```
 
 ### Python / FastAPI
 
 **1. Use Async/Await**
+
 ```python
 # ❌ Synchronous (blocking)
 @app.get("/users")
@@ -668,6 +706,7 @@ async def get_users():
 ```
 
 **2. Background Tasks**
+
 ```python
 from fastapi import BackgroundTasks
 
@@ -681,6 +720,7 @@ async def create_user(user: UserCreate, background_tasks: BackgroundTasks):
 ### Rust
 
 **1. Use Release Mode**
+
 ```bash
 # ❌ Debug build (slow)
 cargo build
@@ -690,6 +730,7 @@ cargo build --release
 ```
 
 **2. Parallel Processing**
+
 ```rust
 use rayon::prelude::*;
 
@@ -709,45 +750,45 @@ let results: Vec<_> = data.par_iter()
 ### Production Monitoring
 
 **Application Performance Monitoring (APM):**
+
 ```typescript
 // New Relic
-import newrelic from 'newrelic';
+import newrelic from "newrelic"
 
 // DataDog
-import tracer from 'dd-trace';
-tracer.init();
+import tracer from "dd-trace"
+tracer.init()
 
 // Custom metrics
-import prometheus from 'prom-client';
+import prometheus from "prom-client"
 const httpRequestDuration = new prometheus.Histogram({
-  name: 'http_request_duration_seconds',
-  help: 'Duration of HTTP requests in seconds',
-  labelNames: ['method', 'route', 'status_code']
-});
+	name: "http_request_duration_seconds",
+	help: "Duration of HTTP requests in seconds",
+	labelNames: ["method", "route", "status_code"],
+})
 ```
 
 ### Logging Performance Issues
 
 ```typescript
-import winston from 'winston';
+import winston from "winston"
 
 const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.json(),
-  transports: [
-    new winston.transports.File({ filename: 'performance.log' })
-  ]
-});
+	level: "info",
+	format: winston.format.json(),
+	transports: [new winston.transports.File({ filename: "performance.log" })],
+})
 
 // Log slow queries
 function logSlowQuery(query: string, duration: number) {
-  if (duration > 1000) { // > 1 second
-    logger.warn('Slow query detected', {
-      query,
-      duration,
-      timestamp: new Date().toISOString()
-    });
-  }
+	if (duration > 1000) {
+		// > 1 second
+		logger.warn("Slow query detected", {
+			query,
+			duration,
+			timestamp: new Date().toISOString(),
+		})
+	}
 }
 ```
 
@@ -772,6 +813,7 @@ function logSlowQuery(query: string, duration: number) {
 ## Checklist
 
 ### Performance Audit Checklist
+
 - [ ] Profile application (CPU, Memory)
 - [ ] Identify bottlenecks
 - [ ] Check database query performance

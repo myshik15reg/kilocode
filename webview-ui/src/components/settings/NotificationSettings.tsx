@@ -1,22 +1,21 @@
 import { HTMLAttributes } from "react" // kilocode_change
 import { useAppTranslation } from "@/i18n/TranslationContext"
+import { vscode } from "@/utils/vscode"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { SearchableSetting } from "./SearchableSetting"
-import { Slider } from "../ui"
-import { vscode } from "../../utils/vscode"
-import { Button } from "vscrui"
+import { Button, Slider } from "../ui"
 
 type NotificationSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	ttsEnabled?: boolean
 	ttsSpeed?: number
 	soundEnabled?: boolean
 	soundVolume?: number
-	systemNotificationsEnabled?: boolean // kilocode_change
-	areSettingsCommitted?: boolean // kilocode_change
+	systemNotificationsEnabled?: boolean
+	areSettingsCommitted?: boolean // kilocode_change - kept for compatibility
 	setCachedStateField: SetCachedStateField<
 		"ttsEnabled" | "ttsSpeed" | "soundEnabled" | "soundVolume" | "systemNotificationsEnabled"
 	>
@@ -27,14 +26,12 @@ export const NotificationSettings = ({
 	ttsSpeed,
 	soundEnabled,
 	soundVolume,
-	systemNotificationsEnabled, // kilocode_change
-	areSettingsCommitted, // kilocode_change
+	systemNotificationsEnabled,
 	setCachedStateField,
 	...props
 }: NotificationSettingsProps) => {
 	const { t } = useAppTranslation()
 
-	// kilocode_change start
 	const onTestNotificationClick = () => {
 		vscode.postMessage({
 			type: "showSystemNotification",
@@ -45,7 +42,6 @@ export const NotificationSettings = ({
 			alwaysAllow: true,
 		})
 	}
-	// kilocode_change end
 
 	return (
 		<div {...props}>
@@ -130,28 +126,25 @@ export const NotificationSettings = ({
 					</div>
 				)}
 
-				{/* kilocode_change start */}
-				<div>
+				<SearchableSetting
+					settingId="notifications-system"
+					section="notifications"
+					label={t("kilocode:settings.systemNotifications.label")}>
 					<VSCodeCheckbox
 						checked={systemNotificationsEnabled}
 						onChange={(e: any) => setCachedStateField("systemNotificationsEnabled", e.target.checked)}
 						data-testid="system-notifications-enabled-checkbox">
 						<span className="font-medium">{t("kilocode:settings.systemNotifications.label")}</span>
 					</VSCodeCheckbox>
-					<div className="text-vscode-descriptionForeground text-sm mt-1">
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-2">
 						{t("kilocode:settings.systemNotifications.description")}
 					</div>
-				</div>
-				{systemNotificationsEnabled && (
-					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
-						<Button
-							className="w-fit text-vscode-button-background hover:text-vscode-button-hoverBackground"
-							onClick={onTestNotificationClick}>
+					{systemNotificationsEnabled && (
+						<Button data-testid="test-system-notification" onClick={onTestNotificationClick}>
 							{t("kilocode:settings.systemNotifications.testButton")}
 						</Button>
-					</div>
-				)}
-				{/* kilocode_change end */}
+					)}
+				</SearchableSetting>
 			</Section>
 		</div>
 	)

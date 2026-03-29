@@ -2,7 +2,7 @@ import { HTMLAttributes } from "react"
 import React from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { FoldVertical, Gauge } from "lucide-react"
+import { FoldVertical } from "lucide-react" // kilocode_change
 
 import { cn } from "@/lib/utils"
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Button } from "@/components/ui"
@@ -19,6 +19,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	contextRoutingEnabled: boolean
 	contextRoutingFastThresholdPercent: number
 	contextRoutingDeepThresholdPercent: number
+	condensingApiConfigId?: string
 	listApiConfigMeta: any[]
 	maxOpenTabsContext: number
 	maxWorkspaceFiles: number
@@ -42,6 +43,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "contextRoutingEnabled"
 		| "contextRoutingFastThresholdPercent"
 		| "contextRoutingDeepThresholdPercent"
+		| "condensingApiConfigId"
 		| "maxOpenTabsContext"
 		| "maxWorkspaceFiles"
 		| "showRooIgnoredFiles"
@@ -67,6 +69,7 @@ export const ContextManagementSettings = ({
 	contextRoutingEnabled,
 	contextRoutingFastThresholdPercent,
 	contextRoutingDeepThresholdPercent,
+	condensingApiConfigId,
 	listApiConfigMeta,
 	maxOpenTabsContext,
 	maxWorkspaceFiles,
@@ -496,6 +499,43 @@ export const ContextManagementSettings = ({
 				</SearchableSetting>
 				{autoCondenseContext && (
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
+						{/* kilocode_change start */}
+						<SearchableSetting
+							settingId="context-condensing-api-configuration"
+							section="contextManagement"
+							label={t("settings:contextManagement.condensingApiConfiguration.label")}>
+							<span className="block font-medium mb-1">
+								{t("settings:contextManagement.condensingApiConfiguration.label")}
+							</span>
+							<Select
+								value={condensingApiConfigId || "-"}
+								onValueChange={(value) =>
+									setCachedStateField("condensingApiConfigId", value === "-" ? "" : value)
+								}
+								data-testid="condensing-api-config-select">
+								<SelectTrigger className="w-full">
+									<SelectValue
+										placeholder={t(
+											"settings:contextManagement.condensingApiConfiguration.useCurrentConfig",
+										)}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="-">
+										{t("settings:contextManagement.condensingApiConfiguration.useCurrentConfig")}
+									</SelectItem>
+									{(listApiConfigMeta || []).map((config) => (
+										<SelectItem key={config.id} value={config.id}>
+											{config.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								{t("settings:contextManagement.condensingApiConfiguration.description")}
+							</div>
+						</SearchableSetting>
+						{/* kilocode_change end */}
 						<div className="flex items-center gap-4 font-bold">
 							<FoldVertical size={16} />
 							<div>{t("settings:contextManagement.condensingThreshold.label")}</div>
@@ -563,67 +603,6 @@ export const ContextManagementSettings = ({
 											threshold: autoCondenseContextPercent,
 										})
 									: t("settings:contextManagement.condensingThreshold.profileDescription")}
-							</div>
-						</div>
-					</div>
-				)}
-			</Section>
-			<Section className="pt-2">
-				<VSCodeCheckbox
-					checked={contextRoutingEnabled}
-					onChange={(e: any) => setCachedStateField("contextRoutingEnabled", e.target.checked)}
-					data-testid="context-routing-enabled-checkbox">
-					<span className="font-medium">{t("settings:contextManagement.contextRouting.name")}</span>
-				</VSCodeCheckbox>
-				<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
-					{t("settings:contextManagement.contextRouting.description")}
-				</div>
-				{contextRoutingEnabled && (
-					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
-						<div className="flex items-center gap-4 font-bold">
-							<Gauge size={16} />
-							<div>{t("settings:contextManagement.contextRouting.thresholdsLabel")}</div>
-						</div>
-						<div>
-							<span className="block font-medium mb-1">
-								{t("settings:contextManagement.contextRouting.fastLabel")}
-							</span>
-							<div className="flex items-center gap-2">
-								<Slider
-									min={10}
-									max={100}
-									step={1}
-									value={[contextRoutingFastThresholdPercent]}
-									onValueChange={([value]) =>
-										setCachedStateField("contextRoutingFastThresholdPercent", value)
-									}
-									data-testid="context-routing-fast-threshold-slider"
-								/>
-								<span className="w-20">{contextRoutingFastThresholdPercent}%</span>
-							</div>
-							<div className="text-vscode-descriptionForeground text-sm mt-1">
-								{t("settings:contextManagement.contextRouting.fastDescription")}
-							</div>
-						</div>
-						<div>
-							<span className="block font-medium mb-1">
-								{t("settings:contextManagement.contextRouting.deepLabel")}
-							</span>
-							<div className="flex items-center gap-2">
-								<Slider
-									min={10}
-									max={100}
-									step={1}
-									value={[contextRoutingDeepThresholdPercent]}
-									onValueChange={([value]) =>
-										setCachedStateField("contextRoutingDeepThresholdPercent", value)
-									}
-									data-testid="context-routing-deep-threshold-slider"
-								/>
-								<span className="w-20">{contextRoutingDeepThresholdPercent}%</span>
-							</div>
-							<div className="text-vscode-descriptionForeground text-sm mt-1">
-								{t("settings:contextManagement.contextRouting.deepDescription")}
 							</div>
 						</div>
 					</div>

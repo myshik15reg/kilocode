@@ -71,6 +71,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 	const hasImages = selectedImages.length > 0
 	const isEmpty = !hasText && !hasImages
 	const isSessionCompleted = sessionStatus === "done" || sessionStatus === "error" || sessionStatus === "stopped"
+	// kilocode_change start
+	const sendActionTitle = isSessionCompleted ? t("chatInput.resumeTitle") : t("chatInput.sendTitle")
+	// kilocode_change end
 
 	// Send is disabled when empty (no text AND no images)
 	// Note: Users CAN queue multiple messages while one is sending (for running sessions)
@@ -374,9 +377,9 @@ If any step fails, ask the user for help.`
 									</button>
 								</StandardTooltip>
 							)}
-							<StandardTooltip content={t("chatInput.sendTitle")}>
+							<StandardTooltip content={sendActionTitle}>
 								<button
-									aria-label={t("chatInput.sendTitle")}
+									aria-label={sendActionTitle}
 									disabled={sendDisabled}
 									onClick={handleSend}
 									className={cn(

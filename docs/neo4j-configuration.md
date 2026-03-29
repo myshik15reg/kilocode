@@ -19,9 +19,9 @@
 
 ### What is Neo4j?
 
-Neo4j is a leading graph database that stores data as nodes and relationships, making it ideal for representing and querying complex, interconnected data structures. In Kilocode, Neo4j serves as an optional vector store provider for codebase indexing, working alongside Qdrant to provide enhanced code understanding capabilities.
+Neo4j is a leading graph database that stores data as nodes and relationships, making it ideal for representing and querying complex, interconnected data structures. In AlfaCode assistant, Neo4j serves as an optional vector store provider for codebase indexing, working alongside Qdrant to provide enhanced code understanding capabilities.
 
-### Why Use Neo4j in Kilocode?
+### Why Use Neo4j in AlfaCode assistant?
 
 **Benefits of Neo4j for Code Indexing:**
 
@@ -32,7 +32,7 @@ Neo4j is a leading graph database that stores data as nodes and relationships, m
 
 ### How Neo4j Works with Qdrant
 
-Kilocode uses a **hybrid indexing approach**:
+AlfaCode assistant uses a **hybrid indexing approach**:
 
 - **Qdrant** - Primary vector database for semantic similarity search
 - **Neo4j** - Optional graph database for relationship-based queries and code structure analysis
@@ -49,12 +49,12 @@ Kilocode uses a **hybrid indexing approach**:
 
 ### Supported Protocols
 
-Kilocode supports the following connection protocols:
+AlfaCode assistant supports the following connection protocols:
 
-| Protocol | Description | Use Case |
-|----------|-------------|----------|
-| `bolt://` | Standard unencrypted connection | Local development |
-| `neo4j://` | Neo4j routing protocol | Neo4j clusters |
+| Protocol     | Description                       | Use Case               |
+| ------------ | --------------------------------- | ---------------------- |
+| `bolt://`    | Standard unencrypted connection   | Local development      |
+| `neo4j://`   | Neo4j routing protocol            | Neo4j clusters         |
 | `neo4j+s://` | Encrypted connection with SSL/TLS | Production, Neo4j Aura |
 
 ### System Requirements
@@ -113,10 +113,10 @@ docker run \
 
 ## Configuration via UI
 
-### Step 1: Open Kilocode Settings
+### Step 1: Open AlfaCode assistant Settings
 
 1. Open VSCode Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
-2. Type "Kilocode: Settings"
+2. Type "AlfaCode assistant: Settings"
 3. Press Enter to open the Settings panel
 
 ### Step 2: Locate Neo4j Configuration Section
@@ -138,6 +138,7 @@ The connection address to your Neo4j server.
 - **Format:** `protocol://host:port`
 
 **Examples:**
+
 - Local: `bolt://localhost:7687`
 - Remote: `bolt://192.168.1.100:7687`
 - Aura: `neo4j+s://xxxxxxxx.databases.neo4j.io`
@@ -194,17 +195,17 @@ Before completing setup, verify your connection:
 
 **Connection Statuses:**
 
-| Status | Indicator | Meaning |
-|--------|-----------|---------|
-| Not connected | ⚪ Gray | No connection attempt made |
-| Connecting... | 🟡 Yellow (spinning) | Testing connection in progress |
-| Connected | 🟢 Green | Successfully connected to Neo4j |
-| Connection failed | 🔴 Red | Connection error (see message) |
+| Status            | Indicator            | Meaning                         |
+| ----------------- | -------------------- | ------------------------------- |
+| Not connected     | ⚪ Gray              | No connection attempt made      |
+| Connecting...     | 🟡 Yellow (spinning) | Testing connection in progress  |
+| Connected         | 🟢 Green             | Successfully connected to Neo4j |
+| Connection failed | 🔴 Red               | Connection error (see message)  |
 
 ### Step 6: Save Configuration
 
 1. Review all settings
-2. Note the warning: *"⚠️ Changing Neo4j settings will require reindexing your codebase."*
+2. Note the warning: _"⚠️ Changing Neo4j settings will require reindexing your codebase."_
 3. Settings are automatically saved as you type
 4. Connection test is independent of saving
 
@@ -217,16 +218,19 @@ Before completing setup, verify your connection:
 The Neo4j URI must meet the following criteria:
 
 ✅ **Valid URI formats:**
+
 - `bolt://localhost:7687`
 - `neo4j://localhost:7687`
 - `neo4j+s://xxxxx.databases.neo4j.io`
 
 ❌ **Invalid URI formats:**
+
 - `http://localhost:7687` (wrong protocol)
 - `localhost:7687` (missing protocol)
 - Empty or whitespace-only
 
 **Error Messages:**
+
 - "URI must start with bolt://, neo4j://, or neo4j+s://"
 - "URI cannot be empty"
 
@@ -249,6 +253,7 @@ The Neo4j URI must meet the following criteria:
 #### Validation Errors
 
 When validation fails:
+
 - Error message appears in red below the field
 - "Test Connection" button is disabled
 - Settings can still be saved (but connection will fail)
@@ -256,18 +261,22 @@ When validation fails:
 #### Connection Test Errors
 
 **"Password is required for connection test"**
+
 - **Cause:** No password set and field is empty
 - **Solution:** Enter password and click "Set Password"
 
 **"Connection failed: Authentication failed"**
+
 - **Cause:** Incorrect username or password
 - **Solution:** Verify credentials and update password
 
 **"Connection failed: Connection refused"**
+
 - **Cause:** Neo4j server not running or wrong URI
 - **Solution:** Check server status and URI
 
 **"Connection failed: SSL required"**
+
 - **Cause:** Server requires SSL but using `bolt://`
 - **Solution:** Use `neo4j+s://` protocol
 
@@ -285,15 +294,17 @@ When validation fails:
 - Linux: Secret Service API / libsecret
 
 **What is NOT stored:**
+
 - Passwords are never saved in settings files
 - Passwords are never committed to version control
 - Passwords are never logged or transmitted insecurely
 
 ### Why SecretStorage?
 
-Traditional VSCode settings are stored in plain text JSON files. For security, Kilocode uses VSCode's SecretStorage API:
+Traditional VSCode settings are stored in plain text JSON files. For security, AlfaCode assistant uses VSCode's SecretStorage API:
 
 ✅ **Advantages:**
+
 - Operating system encryption
 - Isolated per-user storage
 - No accidental exposure in settings
@@ -303,7 +314,7 @@ Traditional VSCode settings are stored in plain text JSON files. For security, K
 
 To delete a stored password:
 
-1. Uninstall Kilocode extension (or clear extension storage)
+1. Uninstall AlfaCode assistant (or clear extension storage)
 2. Reinstall or reconfigure
 
 Alternatively, simply set a new password to overwrite the existing one.
@@ -335,7 +346,7 @@ Changing any Neo4j configuration setting requires reindexing your codebase:
 **Manual Reindexing:**
 
 1. Open VSCode Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
-2. Type "Kilocode: Reindex Codebase"
+2. Type "AlfaCode assistant: Reindex Codebase"
 3. Press Enter to start reindexing
 4. Wait for completion (progress shown in status bar)
 
@@ -351,11 +362,11 @@ Changing any Neo4j configuration setting requires reindexing your codebase:
 
 ### Performance Considerations
 
-| Codebase Size | Estimated Time | Notes |
-|---------------|----------------|-------|
-| Small (<1000 files) | 1-2 minutes | Fast initial setup |
-| Medium (1000-5000 files) | 5-10 minutes | Recommended coffee break ☕ |
-| Large (5000+ files) | 15+ minutes | Consider incremental indexing |
+| Codebase Size            | Estimated Time | Notes                         |
+| ------------------------ | -------------- | ----------------------------- |
+| Small (<1000 files)      | 1-2 minutes    | Fast initial setup            |
+| Medium (1000-5000 files) | 5-10 minutes   | Recommended coffee break ☕   |
+| Large (5000+ files)      | 15+ minutes    | Consider incremental indexing |
 
 ---
 
@@ -366,11 +377,13 @@ Changing any Neo4j configuration setting requires reindexing your codebase:
 #### Problem: "Connection refused" or "Cannot connect"
 
 **Possible Causes:**
+
 1. Neo4j server not running
 2. Incorrect URI or port
 3. Firewall blocking connection
 
 **Solutions:**
+
 - Verify Neo4j server is running (check Neo4j Desktop or `docker ps`)
 - Test connection with Neo4j Browser (`http://localhost:7474`)
 - Check firewall rules allow port 7687
@@ -379,11 +392,13 @@ Changing any Neo4j configuration setting requires reindexing your codebase:
 #### Problem: "Authentication failed"
 
 **Possible Causes:**
+
 1. Wrong username or password
 2. User account doesn't exist
 3. Account locked due to failed attempts
 
 **Solutions:**
+
 - Verify username (default is `neo4j`)
 - Reset password via Neo4j Desktop or `neo4j-admin`
 - Check Neo4j server logs for authentication errors
@@ -392,10 +407,12 @@ Changing any Neo4j configuration setting requires reindexing your codebase:
 #### Problem: "Database does not exist"
 
 **Possible Causes:**
+
 1. Database name misspelled
 2. Database not created in Neo4j
 
 **Solutions:**
+
 - Verify database name (default is `neo4j`)
 - Create database via Neo4j Browser: `CREATE DATABASE yourdbname`
 - Check available databases: `SHOW DATABASES`
@@ -405,11 +422,13 @@ Changing any Neo4j configuration setting requires reindexing your codebase:
 #### Problem: "Certificate verification failed"
 
 **Possible Causes:**
+
 1. Self-signed certificate not trusted
 2. Certificate expired
 3. Hostname mismatch
 
 **Solutions:**
+
 - For development: Use `bolt://` instead of `neo4j+s://`
 - For production: Ensure valid SSL certificate
 - For Aura: Verify connection string is correct
@@ -419,17 +438,19 @@ Changing any Neo4j configuration setting requires reindexing your codebase:
 #### Problem: Slow indexing or queries
 
 **Possible Causes:**
+
 1. Large codebase
 2. Insufficient Neo4j memory
 3. Network latency (remote connections)
 4. Unoptimized Neo4j configuration
 
 **Solutions:**
+
 - Increase Neo4j heap size in `neo4j.conf`:
-  ```
-  dbms.memory.heap.initial_size=2G
-  dbms.memory.heap.max_size=4G
-  ```
+    ```
+    dbms.memory.heap.initial_size=2G
+    dbms.memory.heap.max_size=4G
+    ```
 - Use local Neo4j instance for development
 - Optimize Neo4j with proper indexes
 - Monitor Neo4j performance via Neo4j Browser
@@ -437,24 +458,27 @@ Changing any Neo4j configuration setting requires reindexing your codebase:
 ### General Troubleshooting Steps
 
 1. **Check Neo4j Server Logs**
-   - Desktop: Settings → Open Folder → logs
-   - Docker: `docker logs neo4j`
+
+    - Desktop: Settings → Open Folder → logs
+    - Docker: `docker logs neo4j`
 
 2. **Verify Connection with Neo4j Browser**
-   - Navigate to `http://localhost:7474`
-   - Test same credentials manually
 
-3. **Check Kilocode Extension Logs**
-   - VSCode Output panel
-   - Select "Kilocode" from dropdown
+    - Navigate to `http://localhost:7474`
+    - Test same credentials manually
+
+3. **Check AlfaCode assistant logs**
+
+    - VSCode Output panel
+    - Select "AlfaCode assistant" from dropdown
 
 4. **Test Network Connectivity**
-   ```bash
-   # Test if port is open
-   telnet localhost 7687
-   # Or use nc (netcat)
-   nc -zv localhost 7687
-   ```
+    ```bash
+    # Test if port is open
+    telnet localhost 7687
+    # Or use nc (netcat)
+    nc -zv localhost 7687
+    ```
 
 ---
 
@@ -472,18 +496,21 @@ Password: your-dev-password
 ```
 
 **Setup Steps:**
+
 1. Install Neo4j Desktop
 2. Create new database
 3. Set password during creation
 4. Start database
-5. Use settings above in Kilocode
+5. Use the settings above in AlfaCode assistant
 
 **Pros:**
+
 - ✅ Easy setup with GUI
 - ✅ No network configuration needed
 - ✅ Built-in Neo4j Browser
 
 **Cons:**
+
 - ❌ Manual startup required
 - ❌ Local only (not accessible remotely)
 
@@ -499,19 +526,22 @@ Password: your-aura-password
 ```
 
 **Setup Steps:**
+
 1. Create Neo4j Aura account
 2. Create new AuraDB instance
 3. Save generated password
 4. Copy connection URI
-5. Configure in Kilocode
+5. Configure in AlfaCode assistant
 
 **Pros:**
+
 - ✅ Fully managed (no maintenance)
 - ✅ Automatic backups
 - ✅ SSL/TLS by default
 - ✅ Scalable
 
 **Cons:**
+
 - ❌ Costs money (free tier available)
 - ❌ Internet connection required
 - ❌ Potential latency
@@ -531,7 +561,8 @@ docker run -d \
   neo4j:latest
 ```
 
-**Kilocode Configuration:**
+**AlfaCode assistant configuration:**
+
 ```
 URI:      bolt://localhost:7687
 Username: neo4j
@@ -540,12 +571,14 @@ Password: devpassword
 ```
 
 **Pros:**
+
 - ✅ Isolated environment
 - ✅ Easy to reset/recreate
 - ✅ Consistent across team
 - ✅ Version control (via docker-compose)
 
 **Cons:**
+
 - ❌ Requires Docker knowledge
 - ❌ Additional resource usage
 
@@ -562,7 +595,8 @@ docker run -d \
   neo4j:latest
 ```
 
-**Kilocode Configuration:**
+**AlfaCode assistant configuration:**
+
 ```
 URI:      bolt://192.168.1.100:7687
 Username: neo4j
@@ -584,6 +618,7 @@ Password: cluster-password
 ```
 
 **Cluster Benefits:**
+
 - High availability
 - Load balancing
 - Automatic failover
@@ -594,21 +629,21 @@ Password: cluster-password
 
 ## Glossary (EN/RU)
 
-| English Term | Russian Term | Description |
-|--------------|--------------|-------------|
-| Graph Database | Графовая база данных | Database that uses graph structures for queries |
-| Node | Узел | Entity in a graph (e.g., class, function) |
-| Relationship | Связь, отношение | Connection between nodes |
-| Vector Store | Векторное хранилище | Database optimized for embeddings |
-| Indexing | Индексация | Process of analyzing and storing code |
-| Reindexing | Переиндексация | Rebuilding the index from scratch |
-| URI | URI (Uniform Resource Identifier) | Connection address |
-| SSL/TLS | SSL/TLS | Encryption protocol |
-| SecretStorage | Безопасное хранилище | Encrypted credential storage |
-| Bolt Protocol | Протокол Bolt | Neo4j's binary protocol |
-| Codebase | Кодовая база | Collection of source code files |
-| Semantic Search | Семантический поиск | Search based on meaning |
-| Traversal | Обход графа | Following relationships in graph |
+| English Term    | Russian Term                      | Description                                     |
+| --------------- | --------------------------------- | ----------------------------------------------- |
+| Graph Database  | Графовая база данных              | Database that uses graph structures for queries |
+| Node            | Узел                              | Entity in a graph (e.g., class, function)       |
+| Relationship    | Связь, отношение                  | Connection between nodes                        |
+| Vector Store    | Векторное хранилище               | Database optimized for embeddings               |
+| Indexing        | Индексация                        | Process of analyzing and storing code           |
+| Reindexing      | Переиндексация                    | Rebuilding the index from scratch               |
+| URI             | URI (Uniform Resource Identifier) | Connection address                              |
+| SSL/TLS         | SSL/TLS                           | Encryption protocol                             |
+| SecretStorage   | Безопасное хранилище              | Encrypted credential storage                    |
+| Bolt Protocol   | Протокол Bolt                     | Neo4j's binary protocol                         |
+| Codebase        | Кодовая база                      | Collection of source code files                 |
+| Semantic Search | Семантический поиск               | Search based on meaning                         |
+| Traversal       | Обход графа                       | Following relationships in graph                |
 
 ---
 
@@ -617,10 +652,10 @@ Password: cluster-password
 - 📖 [Neo4j Official Documentation](https://neo4j.com/docs/)
 - 🎓 [Neo4j GraphAcademy](https://neo4j.com/graphacademy/) - Free courses
 - 💬 [Neo4j Community Forum](https://community.neo4j.com/)
-- 🐛 [Report Kilocode Issues](https://github.com/your-org/kilocode/issues)
+- 🐛 [Report AlfaCode assistant issues](https://github.com/Alfa-Org/alfacode/issues)
 
 ---
 
 **Last Updated:** December 2025  
 **Version:** 1.0  
-**Kilocode Extension Version:** Compatible with v1.0+
+**AlfaCode assistant version:** Compatible with v1.0+

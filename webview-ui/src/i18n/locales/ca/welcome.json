@@ -1,6 +1,6 @@
 {
-	"greeting": "Hola, sóc AlfaCode assistant!",
-	"introduction": "<strong>AlfaCode assistant és el principal agent de codificació autònom.</strong> Prepara't per arquitectar, codificar, depurar i augmentar la teva productivitat com mai abans. Per continuar, AlfaCode assistant necessita una clau API.",
+	"greeting": "Hola, sóc AlfaCode!",
+	"introduction": "<strong>AlfaCode és el principal agent de codificació autònom.</strong> Prepara't per arquitectar, codificar, depurar i augmentar la teva productivitat com mai abans. Per continuar, AlfaCode necessita una clau API.",
 	"notice": "Per començar, aquesta extensió necessita un proveïdor d'API.",
 	"start": "Som-hi!",
 	"routers": {
@@ -13,45 +13,45 @@
 		},
 		"roo": {
 			"description": "Els millors models gratuïts per començar",
-			"incentive": "Prova Roo gratis"
+			"incentive": "Prova AlfaCode gratis"
 		}
 	},
-	"chooseProvider": "Per fer la seva màgia, AlfaCode assistant necessita una clau API.",
+	"chooseProvider": "Per fer la seva màgia, AlfaCode necessita una clau API.",
 	"landing": {
-		"greeting": "Benvingut a AlfaCode assistant!",
-		"introduction": "Amb una gamma de Modes integrats i ampliables, AlfaCode assistant et permet planificar, arquitectar, codificar, depurar i augmentar la teva productivitat com mai abans.",
-		"accountMention": "Per començar, crea el teu compte AlfaCode assistant Cloud. Obtén models potents, control web, analítica, suport i molt més.",
+		"greeting": "Benvingut a AlfaCode!",
+		"introduction": "Amb una gamma de Modes integrats i ampliables, AlfaCode et permet planificar, arquitectar, codificar, depurar i augmentar la teva productivitat com mai abans.",
+		"accountMention": "Per començar, crea el teu compte AlfaCode Cloud. Obtén models potents, control web, analítica, suport i molt més.",
 		"getStarted": "Crea compte AlfaCode",
 		"noAccount": "o utilitza sense compte"
 	},
 	"providerSignup": {
 		"heading": "Tria el teu proveïdor",
-		"chooseProvider": "Roo necessita un proveïdor de LLM per funcionar. Tria-ne un per començar, pots afegir-ne més tard.",
-		"rooCloudProvider": "Proveïdor de Roo Code Cloud",
-		"rooCloudDescription": "La manera més fàcil de començar és amb el Proveïdor Roo Code Cloud: una mescla acurada de models gratuïts i de pagament a baix cost.",
+		"chooseProvider": "AlfaCode necessita un proveïdor de LLM per funcionar. Tria-ne un per començar, pots afegir-ne més tard.",
+		"rooCloudProvider": "Proveïdor de AlfaCode Cloud",
+		"rooCloudDescription": "La manera més fàcil de començar és amb el Proveïdor AlfaCode Cloud: una mescla acurada de models gratuïts i de pagament a baix cost.",
 		"learnMore": "Més informació",
 		"useAnotherProvider": "Proveïdor de tercers",
 		"useAnotherProviderDescription": "Entra una clau API i comença.",
 		"noApiKeys": "No vols tractar amb claus API i comptes separats?",
-		"backToRoo": "Tria el Proveïdor Roo Code Cloud.",
+		"backToRoo": "Tria el Proveïdor AlfaCode Cloud.",
 		"goBack": "Enrere",
 		"finish": "Finalitza"
 	},
 	"waitingForCloud": {
-		"heading": "Connexió a Roo Code Cloud...",
-		"description": "Et portarem al teu navegador per registrar-te a Roo Code Cloud. Després et portarem aquí per acabar.",
+		"heading": "Connexió a AlfaCode Cloud...",
+		"description": "Et portarem al teu navegador per registrar-te a AlfaCode Cloud. Després et portarem aquí per acabar.",
 		"noPrompt": "Si no se't demana que obris una URL, <clickHere>fes clic aquí</clickHere>.",
 		"havingTrouble": "Si has acabat de registrar-te però tens problemes, <clickHere>fes clic aquí</clickHere>.",
 		"pasteUrl": "Enganxa l'URL de devolució de trucada des del teu navegador:",
 		"docsLink": "No funciona? <DocsLink>Consulta la documentació</DocsLink>.",
-		"invalidURL": "Això no sembla una URL de devolució de trucada vàlida. Si us plau, copia el que Roo Code Cloud està mostrant al teu navegador.",
+		"invalidURL": "Això no sembla una URL de devolució de trucada vàlida. Si us plau, copia el que AlfaCode Cloud està mostrant al teu navegador.",
 		"goBack": "Enrere"
 	},
 	"startRouter": "Recomanem utilitzar un encaminador LLM:",
 	"startCustom": "O pots portar la teva pròpia clau API:",
 	"telemetry": {
-		"helpImprove": "Ajuda a millorar AlfaCode assistant",
-		"helpImproveMessage": "AlfaCode assistant recull dades d'errors i ús per ajudar-nos a corregir errors i millorar l'extensió. Aquesta telemetria no recull codi, prompts o informació personal. Pots desactivar això a la <settingsLink>configuració</settingsLink>."
+		"helpImprove": "Ajuda a millorar AlfaCode",
+		"helpImproveMessage": "AlfaCode recull dades d'errors i ús per ajudar-nos a corregir errors i millorar l'extensió. Aquesta telemetria no recull codi, prompts o informació personal. Pots desactivar això a la <settingsLink>configuració</settingsLink>."
 	},
 	"importSettings": "Importa la configuració"
 }

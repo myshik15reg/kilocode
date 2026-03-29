@@ -2,7 +2,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { renderHook, act } from "@testing-library/react"
 import { Provider, useAtomValue } from "jotai"
 import { useAgentManagerMessages } from "../useAgentManagerMessages"
-import { sessionsArrayAtom, selectedSessionIdAtom, type AgentSession } from "../../atoms/sessions"
+import {
+	sessionsArrayAtom,
+	selectedSessionIdAtom,
+	sessionGroupEventsAtom,
+	sessionGroupMessagesAtom,
+	rootTaskMessagesAtom,
+	selectedSessionAtom,
+	type AgentSession,
+} from "../../atoms/sessions"
+import { selectedSessionMachineStateAtom } from "../../atoms/stateMachine"
 
 function createSession(id: string, status: AgentSession["status"] = "running"): AgentSession {
 	return {
@@ -214,5 +223,252 @@ describe("useAgentManagerMessages", () => {
 		// Session should still exist but with updated status
 		expect(result.current.sessions).toHaveLength(1)
 		expect(result.current.sessions[0].status).toBe("stopped")
+	})
+
+	it("rehydrates paused recoverable sessions after reload", async () => {
+		const wrapper = ({ children }: { children: React.ReactNode }) => <Provider>{children}</Provider>
+
+		const { result } = renderHook(
+			() => {
+				useAgentManagerMessages()
+				return {
+					sessions: useAtomValue(sessionsArrayAtom),
+					selected: useAtomValue(selectedSessionAtom),
+					machineState: useAtomValue(selectedSessionMachineStateAtom),
+				}
+			},
+			{ wrapper },
+		)
+
+		act(() => {
+			dispatchStateMessage(
+				[
+					{
+						...createSession("paused-1", "stopped"),
+						lifecycleStatus: "paused",
+						recoveryState: "recoverable",
+						pendingReaction: "resume",
+						needsAttention: true,
+						taskId: "paused-1",
+					},
+				],
+				"paused-1",
+			)
+		})
+
+		expect(result.current.selected?.sessionId).toBe("paused-1")
+		expect(result.current.machineState).toBe("paused")
+	})
+
+	// kilocode_change start
+	it("does not rehydrate done sessions as recoverable when stale recoverable flags are present", async () => {
+		const wrapper = ({ children }: { children: React.ReactNode }) => <Provider>{children}</Provider>
+
+		const { result } = renderHook(
+			() => {
+				useAgentManagerMessages()
+				return {
+					sessions: useAtomValue(sessionsArrayAtom),
+					selected: useAtomValue(selectedSessionAtom),
+					machineState: useAtomValue(selectedSessionMachineStateAtom),
+				}
+			},
+			{ wrapper },
+		)
+
+		act(() => {
+			dispatchStateMessage(
+				[
+					{
+						...createSession("done-1", "done"),
+						lifecycleStatus: "paused",
+						recoveryState: "recoverable",
+						pendingReaction: "resume",
+						needsAttention: true,
+						taskId: "done-1",
+					},
+				],
+				"done-1",
+			)
+		})
+
+		expect(result.current.selected?.sessionId).toBe("done-1")
+		expect(result.current.sessions[0]?.status).toBe("done")
+		expect(result.current.machineState).toBeNull()
+	})
+	// kilocode_change end
+
+	it("does not re-dispatch recoverable rehydrate events for the same paused session", async () => {
+		const wrapper = ({ children }: { children: React.ReactNode }) => <Provider>{children}</Provider>
+
+		const { result } = renderHook(
+			() => {
+				useAgentManagerMessages()
+				return {
+					selected: useAtomValue(selectedSessionAtom),
+					machineState: useAtomValue(selectedSessionMachineStateAtom),
+				}
+			},
+			{ wrapper },
+		)
+
+		const pausedSession = {
+			...createSession("paused-2", "stopped"),
+			lifecycleStatus: "paused",
+			recoveryState: "recoverable",
+			pendingReaction: "resume",
+			needsAttention: true,
+			taskId: "paused-2",
+		} as AgentSession
+
+		act(() => {
+			dispatchStateMessage([pausedSession], "paused-2")
+			dispatchStateMessage([pausedSession], "paused-2")
+		})
+
+		expect(result.current.selected?.sessionId).toBe("paused-2")
+		expect(result.current.machineState).toBe("paused")
+	})
+
+	it("moves a recoverable session back to streaming after resume state sync", async () => {
+		const wrapper = ({ children }: { children: React.ReactNode }) => <Provider>{children}</Provider>
+
+		const { result } = renderHook(
+			() => {
+				useAgentManagerMessages()
+				return {
+					selected: useAtomValue(selectedSessionAtom),
+					machineState: useAtomValue(selectedSessionMachineStateAtom),
+				}
+			},
+			{ wrapper },
+		)
+
+		act(() => {
+			dispatchStateMessage(
+				[
+					{
+						...createSession("paused-3", "stopped"),
+						lifecycleStatus: "paused",
+						recoveryState: "recoverable",
+						pendingReaction: "resume",
+						needsAttention: true,
+						taskId: "paused-3",
+					},
+				],
+				"paused-3",
+			)
+		})
+
+		expect(result.current.selected?.sessionId).toBe("paused-3")
+		expect(result.current.machineState).toBe("paused")
+
+		act(() => {
+			dispatchStateMessage(
+				[
+					{
+						...createSession("paused-3", "running"),
+						lifecycleStatus: "active",
+						activityState: "active",
+						recoveryState: undefined,
+						pendingReaction: undefined,
+						needsAttention: false,
+						taskId: "paused-3",
+					},
+				],
+				"paused-3",
+			)
+		})
+
+		expect(result.current.selected?.sessionId).toBe("paused-3")
+		expect(result.current.machineState).toBe("streaming")
+	})
+})
+
+it("should store latest group messages", async () => {
+	const wrapper = ({ children }: { children: React.ReactNode }) => <Provider>{children}</Provider>
+	const { result } = renderHook(
+		() => {
+			useAgentManagerMessages()
+			return { groupMessages: useAtomValue(sessionGroupMessagesAtom) }
+		},
+		{ wrapper },
+	)
+	act(() => {
+		window.dispatchEvent(
+			new MessageEvent("message", {
+				data: {
+					type: "agentManager.groupMessage",
+					messageId: "msg-1",
+					groupId: "group-1",
+					sourceSessionId: "session-1",
+					sourceLabel: "Planner",
+					content: "Only send delta summary",
+					includeSender: false,
+					timestamp: 1,
+				},
+			}),
+		)
+	})
+	expect(result.current.groupMessages["group-1"]).toMatchObject({
+		sourceLabel: "Planner",
+		content: "Only send delta summary",
+	})
+})
+
+it("should store latest group events", async () => {
+	const wrapper = ({ children }: { children: React.ReactNode }) => <Provider>{children}</Provider>
+	const { result } = renderHook(
+		() => {
+			useAgentManagerMessages()
+			return { groupEvents: useAtomValue(sessionGroupEventsAtom) }
+		},
+		{ wrapper },
+	)
+	act(() => {
+		window.dispatchEvent(
+			new MessageEvent("message", {
+				data: {
+					type: "agentManager.groupEvent",
+					groupId: "group-1",
+					sessionId: "session-1",
+					eventType: "running",
+					summary: "Worker active",
+					timestamp: 1,
+				},
+			}),
+		)
+	})
+	expect(result.current.groupEvents["group-1"]).toMatchObject({ eventType: "running", summary: "Worker active" })
+})
+
+it("should store latest root-task messages", async () => {
+	const wrapper = ({ children }: { children: React.ReactNode }) => <Provider>{children}</Provider>
+	const { result } = renderHook(
+		() => {
+			useAgentManagerMessages()
+			return { rootTaskMessages: useAtomValue(rootTaskMessagesAtom) }
+		},
+		{ wrapper },
+	)
+	act(() => {
+		window.dispatchEvent(
+			new MessageEvent("message", {
+				data: {
+					type: "agentManager.rootTaskMessage",
+					messageId: "root-msg-1",
+					rootTaskId: "root-task-1",
+					sourceSessionId: "session-1",
+					sourceLabel: "Planner",
+					content: "Share only delta summary",
+					includeSender: false,
+					timestamp: 1,
+				},
+			}),
+		)
+	})
+	expect(result.current.rootTaskMessages["root-task-1"]).toMatchObject({
+		sourceLabel: "Planner",
+		content: "Share only delta summary",
 	})
 })

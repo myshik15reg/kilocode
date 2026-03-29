@@ -86,7 +86,9 @@ const Content = () => {
 						<h4 className="m-0 pb-2 flex-1">Managed Code Indexing</h4>
 					</div>
 					<p className="my-0 pr-4 text-sm w-full mb-3">
-						<VSCodeLink href={href}>Configure on kilo.ai</VSCodeLink>
+						{/* kilocode_change start */}
+						<VSCodeLink href={href}>Configure in AlfaCode Cloud</VSCodeLink>
+						{/* kilocode_change end */}
 					</p>
 				</div>
 
@@ -108,7 +110,9 @@ const Content = () => {
 					<h4 className="m-0 pb-2 flex-1">Managed Code Indexing</h4>
 				</div>
 				<p className="my-0 pr-4 text-sm w-full mb-3">
-					<VSCodeLink href={href}>Configure on kilo.ai</VSCodeLink>
+					{/* kilocode_change start */}
+					<VSCodeLink href={href}>Configure in AlfaCode Cloud</VSCodeLink>
+					{/* kilocode_change end */}
 				</p>
 			</div>
 

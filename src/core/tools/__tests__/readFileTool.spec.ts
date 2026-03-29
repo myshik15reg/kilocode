@@ -1,4 +1,4 @@
-// npx vitest src/core/tools/__tests__/readFileTool.spec.ts
+﻿// npx vitest src/core/tools/__tests__/readFileTool.spec.ts
 
 import * as path from "path"
 
@@ -30,6 +30,7 @@ vi.mock("../../../integrations/misc/read-lines")
 const fsPromises = vi.hoisted(() => ({
 	readFile: vi.fn(),
 	stat: vi.fn().mockResolvedValue({ size: 1024 }),
+	open: vi.fn(),
 }))
 vi.mock("fs/promises", () => fsPromises)
 
@@ -164,7 +165,7 @@ beforeEach(() => {
 	})
 
 	// Reset readFileWithTokenBudget mock with default implementation
-	mockReadFileWithTokenBudget.mockClear()
+	mockReadFileWithTokenBudget.mockReset()
 	mockReadFileWithTokenBudget.mockImplementation(async (_filePath: string, _options: any) => {
 		// Default: return the mockInputContent with 5 lines
 		const lines = mockInputContent ? mockInputContent.split("\n") : []
@@ -309,6 +310,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 
 		// Mock fsPromises.stat to return a file (not directory) by default
 		fsPromises.stat.mockResolvedValue({
+			size: 1024,
 			isDirectory: () => false,
 			isFile: () => true,
 			isSymbolicLink: () => false,
@@ -627,6 +629,9 @@ describe("read_file tool output structure", () => {
 			isFile: () => true,
 			isSymbolicLink: () => false,
 		} as any)
+		if (typeof (fsPromises.open as any)?.mockReset === "function") {
+			;(fsPromises.open as any).mockReset()
+		}
 		fsPromises.readFile.mockClear()
 
 		// Use shared mock setup function
@@ -659,12 +664,15 @@ describe("read_file tool output structure", () => {
 	async function executeReadFileTool(
 		params: {
 			args?: string
+			start_line?: string
+			end_line?: string
 		} = {},
 		options: {
 			totalLines?: number
 			maxReadFileLine?: number
 			isBinary?: boolean
 			validateAccess?: boolean
+			allowVeryLargeReads?: boolean
 		} = {},
 	): Promise<ToolResponse | undefined> {
 		// Configure mocks based on test scenario
@@ -672,8 +680,14 @@ describe("read_file tool output structure", () => {
 		const maxReadFileLine = options.maxReadFileLine ?? 500
 		const isBinary = options.isBinary ?? false
 		const validateAccess = options.validateAccess ?? true
+		const allowVeryLargeReads = options.allowVeryLargeReads ?? false
 
-		mockProvider.getState.mockResolvedValue({ maxReadFileLine, maxImageFileSize: 20, maxTotalImageSize: 20 })
+		mockProvider.getState.mockResolvedValue({
+			maxReadFileLine,
+			maxImageFileSize: 20,
+			maxTotalImageSize: 20,
+			allowVeryLargeReads,
+		})
 		mockedCountFileLines.mockResolvedValue(totalLines)
 		mockedIsBinaryFile.mockResolvedValue(isBinary)
 		mockCline.rooIgnoreController.validateAccess = vi.fn().mockReturnValue(validateAccess)
@@ -703,6 +717,8 @@ describe("read_file tool output structure", () => {
 	}
 
 	describe("Basic Structure Tests", () => {
+		const mockedReadLines = vi.mocked(readLines)
+
 		it("should produce native output with proper format", async () => {
 			// Setup
 			const numberedContent = "1 | Line 1\n2 | Line 2\n3 | Line 3\n4 | Line 4\n5 | Line 5"
@@ -764,6 +780,142 @@ describe("read_file tool output structure", () => {
 			expect(result).toBe(`File: ${testFilePath}\nNote: File is empty`)
 		})
 
+		it("should skip very large files when very large reads are disabled", async () => {
+			fsPromises.stat.mockResolvedValueOnce({
+				size: 3 * 1024 * 1024,
+				isDirectory: () => false,
+				isFile: () => true,
+				isSymbolicLink: () => false,
+			} as any)
+
+			mockProvider.getState.mockResolvedValue({
+				maxReadFileLine: -1,
+				maxImageFileSize: 20,
+				maxTotalImageSize: 20,
+				allowVeryLargeReads: false,
+			})
+
+			const result = await executeReadFileTool()
+
+			expect(result).toContain(`File: ${testFilePath}`)
+			expect(result).toContain("Showing a bounded preview for test/file.txt because it is very large")
+			expect(result).toContain("Lines 1-200:")
+			expect(mockReadFileWithTokenBudget).not.toHaveBeenCalled()
+			expect(mockedCountFileLines).not.toHaveBeenCalled()
+			expect(mockedReadLines).toHaveBeenLastCalledWith(expect.stringContaining("test\\file.txt"), 199, 0)
+		})
+
+		it("should skip very long single-line files even with line ranges when very large reads are disabled", async () => {
+			const longLineProbe = Buffer.alloc(64 * 1024, "a")
+			const closeMock = vi.fn().mockResolvedValue(undefined)
+			const readMock = vi
+				.fn()
+				.mockImplementation(async (buffer: Buffer, offset: number, length: number, position: number) => {
+					const source =
+						position === 0 && length === longLineProbe.length
+							? longLineProbe
+							: Buffer.from("prefix-content-preview")
+					source.copy(buffer, 0, 0, Math.min(length, source.length))
+					return { bytesRead: Math.min(length, source.length), buffer }
+				})
+			;(fsPromises.open as any) = vi.fn().mockResolvedValue({
+				read: readMock,
+				close: closeMock,
+			} as any)
+
+			fsPromises.stat.mockResolvedValueOnce({
+				size: 128 * 1024,
+				isDirectory: () => false,
+				isFile: () => true,
+				isSymbolicLink: () => false,
+			} as any)
+
+			mockProvider.getState.mockResolvedValue({
+				maxReadFileLine: 500,
+				maxImageFileSize: 20,
+				maxTotalImageSize: 20,
+				allowVeryLargeReads: false,
+			})
+
+			const result = await executeReadFileTool(
+				{
+					start_line: "1",
+					end_line: "10",
+				},
+				{},
+			)
+
+			expect(result).toContain(`File: ${testFilePath}`)
+			expect(result).toContain(
+				"Showing a bounded preview for test/file.txt because it appears to be a very large single-line or minified file",
+			)
+			expect(result).toContain("Line 1 (truncated preview):")
+			expect(result).toContain("prefix-content-preview")
+			expect(mockReadFileWithTokenBudget).not.toHaveBeenCalled()
+			expect(mockedCountFileLines).not.toHaveBeenCalled()
+			expect(readMock).toHaveBeenCalledTimes(2)
+			expect(closeMock).toHaveBeenCalled()
+		})
+
+		it("should still use normal line ranges for very large files when explicit ranges are provided", async () => {
+			fsPromises.stat.mockResolvedValueOnce({
+				size: 3 * 1024 * 1024,
+				isDirectory: () => false,
+				isFile: () => true,
+				isSymbolicLink: () => false,
+			} as any)
+
+			mockedReadLines.mockResolvedValue("Scoped line 10\nScoped line 11")
+
+			mockProvider.getState.mockResolvedValue({
+				maxReadFileLine: 500,
+				maxImageFileSize: 20,
+				maxTotalImageSize: 20,
+				allowVeryLargeReads: false,
+			})
+
+			const result = await executeReadFileTool({
+				args: `<file><path>${testFilePath}</path><line_range>10-11</line_range></file>`,
+			})
+
+			expect(result).toContain(`File: ${testFilePath}`)
+			expect(result).toContain("Lines 10-11:")
+			expect(result).toContain("10 | Scoped line 10")
+			expect(result).not.toContain("Showing a bounded preview")
+			expect(mockedReadLines).toHaveBeenLastCalledWith(expect.stringContaining("test\\file.txt"), 10, 9)
+			expect(mockReadFileWithTokenBudget).not.toHaveBeenCalled()
+		})
+
+		it("should allow full budgeted reads for very large files when override is enabled", async () => {
+			mockedReadLines.mockClear()
+			fsPromises.stat.mockResolvedValueOnce({
+				size: 3 * 1024 * 1024,
+				isDirectory: () => false,
+				isFile: () => true,
+				isSymbolicLink: () => false,
+			} as any)
+
+			mockReadFileWithTokenBudget.mockResolvedValueOnce({
+				content: fileContent,
+				tokenCount: fileContent.length / 4,
+				lineCount: 5,
+				complete: true,
+			})
+
+			const result = await executeReadFileTool(
+				{},
+				{
+					maxReadFileLine: -1,
+					allowVeryLargeReads: true,
+				},
+			)
+
+			expect(result).toContain(`File: ${testFilePath}`)
+			expect(result).toContain("Lines 1-5:")
+			expect(result).not.toContain("Showing a bounded preview")
+			expect(mockReadFileWithTokenBudget).toHaveBeenCalledTimes(1)
+			expect(mockedReadLines).not.toHaveBeenCalled()
+		})
 		describe("Total Image Memory Limit", () => {
 			const testImages = [
 				{ path: "test/image1.png", sizeKB: 5120 }, // 5MB
@@ -1340,7 +1492,7 @@ describe("read_file tool output structure", () => {
 				expect(textPart).toContain("test/img5.png")
 
 				// Verify memory tracking worked correctly
-				// The notice should show current memory usage around 20MB (4 * 4900KB ≈ 19.14MB, displayed as 20.1MB)
+				// The notice should show current memory usage around 20MB (4 * 4900KB в‰€ 19.14MB, displayed as 20.1MB)
 				expect(textPart).toMatch(/Current: \d+(\.\d+)? MB/)
 			})
 

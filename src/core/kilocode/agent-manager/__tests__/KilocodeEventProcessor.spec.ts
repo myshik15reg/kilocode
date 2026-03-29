@@ -11,6 +11,7 @@ function createDeps() {
 	} as unknown as RuntimeProcessHandler
 	const registry = {
 		updateSessionStatus: vi.fn(),
+		updateSession: vi.fn(),
 	} as unknown as AgentRegistry
 	const sessionMessages = new Map<string, ClineMessage[]>()
 	const firstApiReqStarted = new Map<string, boolean>()
@@ -84,6 +85,31 @@ describe("KilocodeEventProcessor", () => {
 		processor.handle(sessionId, apiStarted)
 
 		expect(deps.postStateEvent).toHaveBeenCalledWith(sessionId, { eventType: "api_req_started" })
+		expect((deps.registry as any).updateSession).toHaveBeenCalledWith(
+			sessionId,
+			expect.objectContaining({ activityState: "streaming", lifecycleStatus: "active" }),
+		)
+	})
+
+	it("marks resume asks as recoverable paused state", () => {
+		const deps = createDeps()
+		const processor = new KilocodeEventProcessor(deps)
+
+		processor.handle(sessionId, {
+			streamEventType: "kilocode",
+			payload: { type: "ask", ask: "resume_task" },
+		})
+
+		expect((deps.registry as any).updateSession).toHaveBeenCalledWith(
+			sessionId,
+			expect.objectContaining({
+				lifecycleStatus: "paused",
+				activityState: "paused",
+				needsAttention: true,
+				recoveryState: "recoverable",
+				pendingReaction: "resume",
+			}),
+		)
 	})
 
 	it("calls postStateEvent with ask_followup when followup ask is received", () => {

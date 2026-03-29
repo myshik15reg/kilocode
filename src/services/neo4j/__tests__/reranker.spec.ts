@@ -17,7 +17,7 @@ describe("BgeReranker", () => {
 		;(globalThis as { fetch?: unknown }).fetch = vi.fn().mockResolvedValue({
 			ok: true,
 			json: vi.fn().mockResolvedValue({
-				data: [{ index: 0, relevance_score: 0.91 }],
+				results: [{ index: 0, score: 0.91 }],
 			}),
 		})
 
@@ -63,7 +63,7 @@ describe("BgeReranker", () => {
 	it("should throw when rerank response has no usable scores", async () => {
 		;(globalThis as { fetch?: unknown }).fetch = vi.fn().mockResolvedValue({
 			ok: true,
-			json: vi.fn().mockResolvedValue({ data: [] }),
+			json: vi.fn().mockResolvedValue({ results: [] }),
 		})
 
 		const reranker = new BgeReranker({

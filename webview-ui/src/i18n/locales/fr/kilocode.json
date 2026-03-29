@@ -116,7 +116,7 @@
 	"toolCallStyle": {
 		"title": "Style d'Appel d'Outil",
 		"description": "Choisissez comment les appels d'outils sont formatés dans le prompt système. JSON est actuellement expérimental et principalement destiné aux utilisateurs intéressés à contribuer à son développement.",
-		"automatic": "Laisser Kilo décider",
+		"automatic": "Laisser AlfaCode assistant décider",
 		"xml": "XML",
 		"json": "JSON"
 	},
@@ -354,7 +354,7 @@
 			"title": "Reconnaissance vocale",
 			"description": "La reconnaissance vocale est indisponible. La reconnaissance vocale nécessite à la fois FFmpeg et un fournisseur OpenAI valide configuré. <moreInfoLink>Cliquez ici pour plus d'informations</moreInfoLink>.",
 			"openAiReason": "Vous avez besoin d'un fournisseur OpenAI valide avec une clé API pour utiliser la transcription vocale.",
-			"ffmpegReason": "Vous devez installer FFmpeg. <ffmpegLink>Cliquez ici</ffmpegLink> pour que Kilo vous aide à installer FFmpeg.",
+			"ffmpegReason": "Vous devez installer FFmpeg. <ffmpegLink>Cliquez ici</ffmpegLink> pour que AlfaCode assistant vous aide à installer FFmpeg.",
 			"ffmpegMessage": "Aidez-moi à installer FFmpeg"
 		},
 		"misconfiguredState": "Indisponible en raison de la configuration",

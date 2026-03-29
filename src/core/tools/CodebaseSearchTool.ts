@@ -306,7 +306,11 @@ ${result.codeChunk ? `Code Chunk: ${result.codeChunk}\n` : ""}`,
 		pushToolResult(output)
 		return true
 	} catch (e) {
-		console.log(`[codebaseSearchTool]: Managed search failed with error: ${e}`)
+		// FIX: 2026-02-19-reviewer-managed-search-log-redaction (TestAnalyzer)
+		// Root cause: логирование raw error (`${e}`) могло раскрывать чувствительные данные (URL/paths) из исключения.
+		// Решение: не логируем message/stack. Логируем только категорию (error.name) без содержимого.
+		const errorName = e instanceof Error && typeof e.name === "string" && e.name.trim() !== "" ? e.name : "Error"
+		console.log(`[codebaseSearchTool]: Managed search failed (${errorName})`)
 		return false
 	}
 }

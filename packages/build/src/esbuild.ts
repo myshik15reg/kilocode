@@ -16,12 +16,47 @@ function copyDir(srcDir: string, dstDir: string, count: number): number {
 			count = copyDir(srcPath, dstPath, count)
 		} else {
 			count = count + 1
-			fs.copyFileSync(srcPath, dstPath)
+			copyFileWithRetrySync(srcPath, dstPath) // kilocode_change
 		}
 	}
 
 	return count
 }
+
+function sleepSync(delay: number): void {
+	const start = Date.now()
+	while (Date.now() - start < delay) {
+		/* Busy wait */
+	}
+}
+
+function isRetryableCopyError(error: unknown): error is NodeJS.ErrnoException {
+	return (
+		error instanceof Error &&
+		"code" in error &&
+		(error.code === "EBUSY" || error.code === "EPERM" || error.code === "EACCES")
+	)
+}
+
+// kilocode_change start
+function copyFileWithRetrySync(srcPath: string, dstPath: string, maxRetries: number = 5): void {
+	for (let attempt = 1; attempt <= maxRetries; attempt++) {
+		try {
+			fs.copyFileSync(srcPath, dstPath)
+			return
+		} catch (error) {
+			if (!isRetryableCopyError(error) || attempt === maxRetries) {
+				throw error
+			}
+
+			const baseDelay = process.platform === "win32" ? 200 : 100
+			const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), 2000)
+			console.warn(`[copyPaths] Attempt ${attempt} failed for ${srcPath}, retrying in ${delay}ms...`)
+			sleepSync(delay)
+		}
+	}
+}
+// kilocode_change end
 
 function rmDir(dirPath: string, maxRetries: number = 5): void {
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -68,13 +103,7 @@ function rmDir(dirPath: string, maxRetries: number = 5): void {
 			const baseDelay = process.platform === "win32" ? 200 : 100
 			const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), 2000) // Cap at 2s
 			console.warn(`[rmDir] Attempt ${attempt} failed for ${dirPath}, retrying in ${delay}ms...`)
-
-			// Synchronous sleep for simplicity in build scripts.
-			const start = Date.now()
-
-			while (Date.now() - start < delay) {
-				/* Busy wait */
-			}
+			sleepSync(delay) // kilocode_change
 		}
 	}
 }
@@ -98,7 +127,7 @@ export function copyPaths(copyPaths: [string, string, CopyPathOptions?][], srcDi
 				const count = copyDir(path.join(srcDir, srcRelPath), path.join(dstDir, dstRelPath), 0)
 				console.log(`[copyPaths] Copied ${count} files from ${srcRelPath} to ${dstRelPath}`)
 			} else {
-				fs.copyFileSync(path.join(srcDir, srcRelPath), path.join(dstDir, dstRelPath))
+				copyFileWithRetrySync(path.join(srcDir, srcRelPath), path.join(dstDir, dstRelPath)) // kilocode_change
 				console.log(`[copyPaths] Copied ${srcRelPath} to ${dstRelPath}`)
 			}
 		} catch (error) {

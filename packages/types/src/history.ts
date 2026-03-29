@@ -1,4 +1,13 @@
 import { z } from "zod"
+import {
+	activityItemSchema,
+	branchStrategySchema,
+	taskExecutionPreferenceSchema,
+	taskIsolationModeSchema,
+	taskLifecycleStateSchema,
+	techDebtItemSchema,
+} from "./orchestration.js"
+import { taskHistoryStatusSchema, taskStopReasonSchema } from "./task-control.js"
 
 /**
  * HistoryItem
@@ -8,6 +17,7 @@ export const historyItemSchema = z.object({
 	id: z.string(),
 	rootTaskId: z.string().optional(),
 	parentTaskId: z.string().optional(),
+	delegationDepth: z.number().int().nonnegative().optional(), // kilocode_change
 	number: z.number(),
 	ts: z.number(),
 	task: z.string(),
@@ -31,12 +41,33 @@ export const historyItemSchema = z.object({
 	 */
 	toolProtocol: z.enum(["xml", "native"]).optional(),
 	apiConfigName: z.string().optional(), // Provider profile name for sticky profile feature
-	status: z.enum(["active", "completed", "delegated"]).optional(),
+	status: taskHistoryStatusSchema.optional(), // kilocode_change
 	delegatedToId: z.string().optional(), // Last child this parent delegated to
 	childIds: z.array(z.string()).optional(), // All children spawned by this task
 	awaitingChildId: z.string().optional(), // Child currently awaited (set when delegated)
 	completedByChildId: z.string().optional(), // Child that completed and resumed this parent
 	completionResultSummary: z.string().optional(), // Summary from completed child
+	lastStopReason: taskStopReasonSchema.optional(), // kilocode_change
+	lastStopSummary: z.string().optional(), // kilocode_change
+	restartCount: z.number().int().nonnegative().optional(), // kilocode_change
+	restartSourceTaskId: z.string().optional(), // kilocode_change
+	statusUpdatedAt: z.number().int().nonnegative().optional(), // kilocode_change
+	lastStatusViewedAt: z.number().int().nonnegative().optional(), // kilocode_change
+	execution: taskExecutionPreferenceSchema.optional(),
+	isolation: taskIsolationModeSchema.optional(),
+	lifecycleState: taskLifecycleStateSchema.optional(),
+	pauseReason: z.string().optional(),
+	pausedAt: z.number().int().nonnegative().optional(),
+	resumeContextSummary: z.string().optional(),
+	branchFromTaskId: z.string().optional(),
+	branchFromMessageTs: z.number().int().nonnegative().optional(),
+	branchSummary: z.string().optional(),
+	branchStrategy: branchStrategySchema.optional(),
+	activity: z.array(activityItemSchema).optional(),
+	techDebtItems: z.array(techDebtItemSchema).optional(),
+	// kilocode_change start
+	sessionAutoRestartEnabled: z.boolean().optional(),
+	// kilocode_change end
 })
 
 export type HistoryItem = z.infer<typeof historyItemSchema>

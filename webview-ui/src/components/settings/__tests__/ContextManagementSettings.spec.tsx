@@ -47,15 +47,24 @@ vi.mock("@/components/ui", () => ({
 			{children}
 		</button>
 	),
-	Select: ({ children, ...props }: any) => (
-		<div role="combobox" {...props}>
+	Select: ({ children, value, onValueChange, "data-testid": dataTestId, ...props }: any) => (
+		<select
+			role="combobox"
+			value={value}
+			onChange={(e) => onValueChange?.(e.target.value)}
+			data-testid={dataTestId}
+			{...props}>
 			{children}
-		</div>
+		</select>
 	),
-	SelectTrigger: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-	SelectValue: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-	SelectContent: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-	SelectItem: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+	SelectTrigger: () => null,
+	SelectValue: () => null,
+	SelectContent: ({ children }: any) => <>{children}</>,
+	SelectItem: ({ children, value, ...props }: any) => (
+		<option value={value} {...props}>
+			{children}
+		</option>
+	),
 }))
 
 // Mock vscode utilities - this is necessary since we're not in a VSCode environment
@@ -206,7 +215,6 @@ describe("ContextManagementSettings", () => {
 		// Check for checkboxes
 		expect(screen.getByTestId("show-rooignored-files-checkbox")).toBeInTheDocument()
 		expect(screen.getByTestId("auto-condense-context-checkbox")).toBeInTheDocument()
-		expect(screen.getByTestId("context-routing-enabled-checkbox")).toBeInTheDocument()
 	})
 
 	describe("Edge cases for maxDiagnosticMessages", () => {
@@ -383,9 +391,9 @@ describe("ContextManagementSettings", () => {
 		const slider = screen.getByTestId("condense-threshold-slider")
 		expect(slider).toBeInTheDocument()
 
-		// Should render the profile select dropdown
+		// Should render condense model selector and threshold profile selector
 		const selects = screen.getAllByRole("combobox")
-		expect(selects).toHaveLength(1)
+		expect(selects).toHaveLength(2)
 	})
 
 	describe("Auto Condense Context functionality", () => {
@@ -418,8 +426,23 @@ describe("ContextManagementSettings", () => {
 
 			// Threshold settings should be visible
 			expect(screen.getByTestId("condense-threshold-slider")).toBeInTheDocument()
-			// One combobox for profile selection
-			expect(screen.getAllByRole("combobox")).toHaveLength(1)
+			// Two comboboxes: cheap condense profile + threshold profile
+			expect(screen.getAllByRole("combobox")).toHaveLength(2)
+		})
+
+		it("updates condensing api configuration", () => {
+			const mockSetCachedStateField = vi.fn()
+			const props = {
+				...autoCondenseProps,
+				condensingApiConfigId: "",
+				setCachedStateField: mockSetCachedStateField,
+			}
+			render(<ContextManagementSettings {...props} />)
+
+			const select = screen.getByTestId("condensing-api-config-select")
+			fireEvent.change(select, { target: { value: "config-2" } })
+
+			expect(mockSetCachedStateField).toHaveBeenCalledWith("condensingApiConfigId", "config-2")
 		})
 
 		it("updates auto condense context percent", () => {
@@ -440,52 +463,6 @@ describe("ContextManagementSettings", () => {
 		it("displays correct auto condense context percent value", () => {
 			render(<ContextManagementSettings {...autoCondenseProps} />)
 			expect(screen.getByText("75%")).toBeInTheDocument()
-		})
-	})
-
-	describe("Context Routing functionality", () => {
-		const contextRoutingProps = {
-			...defaultProps,
-			contextRoutingEnabled: true,
-			contextRoutingFastThresholdPercent: 55,
-			contextRoutingDeepThresholdPercent: 85,
-		}
-
-		it("shows routing thresholds when enabled", () => {
-			render(<ContextManagementSettings {...contextRoutingProps} />)
-
-			expect(screen.getByTestId("context-routing-fast-threshold-slider")).toBeInTheDocument()
-			expect(screen.getByTestId("context-routing-deep-threshold-slider")).toBeInTheDocument()
-		})
-
-		it("updates fast threshold when slider changes", () => {
-			const mockSetCachedStateField = vi.fn()
-			const props = { ...contextRoutingProps, setCachedStateField: mockSetCachedStateField }
-			render(<ContextManagementSettings {...props} />)
-
-			const slider = screen.getByTestId("context-routing-fast-threshold-slider")
-			fireEvent.change(slider, { target: { value: "60" } })
-
-			expect(mockSetCachedStateField).toHaveBeenCalledWith("contextRoutingFastThresholdPercent", 60)
-		})
-
-		it("updates deep threshold when slider changes", () => {
-			const mockSetCachedStateField = vi.fn()
-			const props = { ...contextRoutingProps, setCachedStateField: mockSetCachedStateField }
-			render(<ContextManagementSettings {...props} />)
-
-			const slider = screen.getByTestId("context-routing-deep-threshold-slider")
-			fireEvent.change(slider, { target: { value: "90" } })
-
-			expect(mockSetCachedStateField).toHaveBeenCalledWith("contextRoutingDeepThresholdPercent", 90)
-		})
-
-		it("does not render routing thresholds when disabled", () => {
-			const props = { ...defaultProps, contextRoutingEnabled: false }
-			render(<ContextManagementSettings {...props} />)
-
-			expect(screen.queryByTestId("context-routing-fast-threshold-slider")).not.toBeInTheDocument()
-			expect(screen.queryByTestId("context-routing-deep-threshold-slider")).not.toBeInTheDocument()
 		})
 	})
 

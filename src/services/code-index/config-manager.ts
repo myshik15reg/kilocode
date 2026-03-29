@@ -23,7 +23,6 @@ export class CodeIndexConfigManager {
 	private vectorStoreProvider: "lancedb" | "qdrant" = "qdrant"
 	private lancedbVectorStoreDirectory?: string
 	private vectorStoreName?: string
-	private vectorStoreNameWasLoaded: boolean = false // Track if vectorStoreName was loaded from workspaceState
 	// kilocode_change - end
 	private modelId?: string
 	private modelDimension?: number
@@ -76,7 +75,6 @@ export class CodeIndexConfigManager {
 		this.vectorStoreName = (await this.contextProxy.getWorkspaceState("codebaseIndexVectorStoreName")) as
 			| string
 			| undefined
-		this.vectorStoreNameWasLoaded = !!(this.vectorStoreName && this.vectorStoreName.trim() !== "")
 	}
 
 	// kilocode_change start: Kilo org indexing methods
@@ -206,11 +204,7 @@ export class CodeIndexConfigManager {
 		// kilocode_change - start
 		this.vectorStoreProvider = codebaseIndexVectorStoreProvider ?? "qdrant"
 		this.lancedbVectorStoreDirectory = codebaseIndexLancedbVectorStoreDirectory
-		// Note: vectorStoreName is loaded asynchronously in loadConfiguration()
-		// Only set to undefined if not already loaded (don't overwrite existing value)
-		if (this.vectorStoreName === undefined) {
-			this.vectorStoreName = undefined
-		}
+		this.vectorStoreName = this.vectorStoreName ?? codebaseIndexVectorStoreName
 		// kilocode_change - end
 		this.qdrantUrl = codebaseIndexQdrantUrl
 		this.qdrantApiKey = qdrantApiKey ?? ""
@@ -361,9 +355,6 @@ export class CodeIndexConfigManager {
 
 		// Load latest vectorStoreName from workspaceState (async operation)
 		await this.syncVectorStoreNameFromWorkspaceState()
-
-		// Do not auto-generate vectorStoreName.
-		// Missing/empty values must remain empty and be handled by isConfigured().
 
 		// Load new configuration from storage and update instance variables
 		this._loadAndSetConfiguration()
@@ -665,7 +656,7 @@ export class CodeIndexConfigManager {
 			// kilocode_change - start
 			vectorStoreProvider: this.vectorStoreProvider ?? "qdrant",
 			lancedbVectorStoreDirectoryPlaceholder: this.lancedbVectorStoreDirectory,
-			vectorStoreName: this.vectorStoreNameWasLoaded ? (this.vectorStoreName ?? "") : "",
+			vectorStoreName: this.vectorStoreName ?? "",
 			// kilocode_change - end
 			modelId: this.modelId,
 			modelDimension: this.modelDimension,

@@ -8,6 +8,11 @@ vi.mock("../../task/Task")
 vi.mock("../../tools/validateToolUse", () => ({
 	validateToolUse: vi.fn(),
 }))
+vi.mock("../../tools/GenerateImageTool", () => ({
+	generateImageTool: {
+		handle: vi.fn(),
+	},
+}))
 
 // Mock custom tool registry - must be done inline without external variable references
 vi.mock("@roo-code/core", () => ({
@@ -28,6 +33,7 @@ vi.mock("@roo-code/telemetry", () => ({
 
 import { TelemetryService } from "@roo-code/telemetry"
 import { customToolRegistry } from "@roo-code/core"
+import { generateImageTool } from "../../tools/GenerateImageTool"
 
 describe("presentAssistantMessage - Custom Tool Recording", () => {
 	let mockTask: any
@@ -44,8 +50,10 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			presentAssistantMessageLocked: false,
 			presentAssistantMessageHasPendingUpdates: false,
 			currentStreamingContentIndex: 0,
+			currentStreamingDidCheckpoint: false,
 			assistantMessageContent: [],
 			userMessageContent: [],
+			userMessageContentReady: false,
 			didCompleteReadingStream: false,
 			didRejectTool: false,
 			didAlreadyUseTool: false,
@@ -74,8 +82,15 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 					}),
 				}),
 			},
+			dispatchOrchestrationExecution: vi.fn().mockResolvedValue({
+				handled: false,
+				route: "direct",
+				decision: { kind: "direct", reason: "direct", confidence: "high" },
+				reason: "direct",
+			}),
 			say: vi.fn().mockResolvedValue(undefined),
-			ask: vi.fn().mockResolvedValue({ response: "yesButtonClicked" }),
+			checkpointSave: vi.fn().mockResolvedValue(undefined),
+			task: vi.fn().mockResolvedValue({ response: "yesButtonClicked" }),
 		}
 
 		// Add pushToolResultToUserContent method after mockTask is created so it can reference mockTask
@@ -178,6 +193,51 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			// Should record error as "custom_tool", not "failing_custom_tool"
 			expect(mockTask.recordToolError).toHaveBeenCalledWith("custom_tool", "Custom tool execution failed")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
+		})
+	})
+
+	describe("Custom tool argument validation", () => {
+		it("should surface parameter parsing failures without executing the custom tool", async () => {
+			const toolCallId = "tool_call_custom_parse_123"
+			const execute = vi.fn()
+			const parse = vi.fn(() => {
+				throw new Error("expected schema failure")
+			})
+			mockTask.assistantMessageContent = [
+				{
+					type: "tool_use",
+					id: toolCallId,
+					name: "validated_custom_tool",
+					params: { bad: "value" },
+					partial: false,
+				},
+			]
+
+			vi.mocked(customToolRegistry.get).mockReturnValue({
+				name: "validated_custom_tool",
+				description: "A validated custom tool",
+				parameters: { parse } as any,
+				execute,
+			})
+
+			await presentAssistantMessage(mockTask)
+
+			expect(parse).toHaveBeenCalledWith({ bad: "value" })
+			expect(execute).not.toHaveBeenCalled()
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"error",
+				'Custom tool "validated_custom_tool" argument validation failed: expected schema failure',
+			)
+			expect(mockTask.consecutiveMistakeCount).toBe(1)
+			expect(mockTask.userMessageContent).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						type: "tool_result",
+						tool_use_id: toolCallId,
+						content: expect.stringContaining("expected schema failure"),
+					}),
+				]),
+			)
 		})
 	})
 
@@ -356,6 +416,48 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			// Should not record usage for partial blocks
 			expect(mockTask.recordToolUsage).not.toHaveBeenCalled()
 			expect(TelemetryService.instance.captureToolUsage).not.toHaveBeenCalled()
+		})
+	})
+
+	describe("Checkpointed image generation", () => {
+		it("should checkpoint once before handling generate_image tool calls", async () => {
+			const toolCallId = "tool_call_generate_image_123"
+			vi.mocked(generateImageTool.handle).mockImplementation(async (_task, _block, callbacks) => {
+				callbacks.pushToolResult("image generated")
+			})
+			mockTask.assistantMessageContent = [
+				{
+					type: "tool_use",
+					id: toolCallId,
+					name: "generate_image",
+					params: { prompt: "Draw a logo" },
+					partial: false,
+				},
+			]
+
+			await presentAssistantMessage(mockTask)
+
+			expect(mockTask.checkpointSave).toHaveBeenCalledWith(true)
+			expect(mockTask.currentStreamingDidCheckpoint).toBe(true)
+			expect(generateImageTool.handle).toHaveBeenCalledWith(
+				mockTask,
+				expect.objectContaining({
+					id: toolCallId,
+					name: "generate_image",
+				}),
+				expect.objectContaining({
+					toolProtocol: "native",
+				}),
+			)
+			expect(mockTask.userMessageContent).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						type: "tool_result",
+						tool_use_id: toolCallId,
+						content: "image generated",
+					}),
+				]),
+			)
 		})
 	})
 })

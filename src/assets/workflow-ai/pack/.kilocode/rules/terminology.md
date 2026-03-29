@@ -1,27 +1,37 @@
-# Terminology (SoT)
+﻿# Terminology
 
 ## Normative language
 
-1. MUST означает обязательное требование.
-2. MUST NOT означает запрещённое действие.
-3. SHOULD означает рекомендацию; отклонение допускается только при явной причине, зафиксированной как evidence.
-4. MAY означает опциональное действие.
+1. `MUST` = mandatory requirement.
+2. `MUST NOT` = forbidden action.
+3. `SHOULD` = recommended default; deviations need a clear reason.
+4. `MAY` = optional action.
 
-## Terms
+## Core terms
 
-| Term                     | Definition                                                                                    | Notes                                                                                                                                                                           | Canonical refs                                                                                                         |
-| ------------------------ | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| mode                     | Режим работы агента (набор обязанностей, ограничений и инструментов).                         | Один `task` MUST выполняться в одном `mode` (Alfa Code: через `new_task`).                                                                                                      | [`AGENTS.md`](../../AGENTS.md:1), [`mode-selection/SKILL.md`](../skills/mode-selection/SKILL.md:1)                     |
-| agent                    | Исполнитель в конкретном `mode` (специалист или общий).                                       | В тексте документов AlfaFlowAI слова `mode` и `agent` SHOULD использоваться строго в этих значениях.                                                                            | [`mode-selection/SKILL.md`](../skills/mode-selection/SKILL.md:1)                                                       |
-| task                     | Единица работы с одним целью и одним Definition of Done.                                      | `task` MUST иметь протокол в `.protocols/` (кроме явно оговорённых режимов triage в `ask`).                                                                                     | [`protocol-new.md`](../workflows/protocol-new.md:1)                                                                    |
-| protocol                 | Рабочая папка задачи в `.protocols/YYYY-MM-DD-name/` (контекст, план, лог, артефакты).        | `protocol` MUST рассматриваться как временный workspace; результаты, которые должны пережить задачу, MUST быть перенесены в стабильные SoT/evidence пути до удаления протокола. | [`protocol-new.md`](../workflows/protocol-new.md:1), [`artifacts-and-storage.md`](../rules/artifacts-and-storage.md:1) |
-| handoff                  | Стандартизированная передача контекста при делегировании `task` другому `agent`.              | Любое делегирование MUST включать блок `CONTEXT HANDOFF` по SoT.                                                                                                                | [`context-handoff.md`](../patterns/orchestration/context-handoff.md:1)                                                 |
-| evidence                 | Проверяемое утверждение/факт с указанием источника (файл/строка, лог, артефакт, ссылка).      | Любая неочевидная рекомендация, решение, вывод аудита SHOULD сопровождаться evidence. Предположения MUST маркироваться как `ASSUMPTION`.                                        | [`evidence-rules.md`](evidence-rules.md:1)                                                                             |
-| scope                    | Явные границы задачи: что входит и что не входит.                                             | `scope` MUST быть указан в `brief.md` и в handoff (если делегируется).                                                                                                          | [`planning.md`](../rules-architect/planning.md:1)                                                                      |
-| AC (Acceptance Criteria) | Критерии приёмки в формате Given/When/Then, описывающие ожидаемое поведение.                  | AC MUST описывать наблюдаемый результат, а не способ реализации.                                                                                                                | [`planning.md`](../rules-architect/planning.md:1)                                                                      |
-| DoD (Definition of Done) | Критерии готовности результата задачи (качество, проверка, документация, закрытие протокола). | DoD MUST включать применимые quality gates и правила обновления документации.                                                                                                   | [`quality-gates.md`](quality-gates.md:1), [`quality-gates/SKILL.md`](../skills/quality-gates/SKILL.md:1)               |
+| Term         | Definition                                                  | Rule                                                                               |
+| ------------ | ----------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `mode`       | runtime role with responsibilities, limits, and tool access | one task runs in one mode at a time                                                |
+| `agent`      | a worker operating in a specific mode                       | specialist-first selection applies                                                 |
+| `task`       | one unit of work with one goal and one Definition of Done   | repo-changing tasks require a protocol unless an explicit exception says otherwise |
+| `protocol`   | temporary task workspace in `.protocols/YYYY-MM-DD-name/`   | long-lived results must move to stable paths before closure                        |
+| `handoff`    | structured delegation package for another mode              | use the canonical `=== CONTEXT HANDOFF ===` format                                 |
+| `evidence`   | verifiable support for a claim, decision, or finding        | facts should be source-backed                                                      |
+| `assumption` | unverified statement used temporarily                       | label it `ASSUMPTION:` and pair it with a safe default                             |
+| `scope`      | explicit in-scope and out-of-scope boundaries               | record it in planning and handoff                                                  |
+| `AC`         | acceptance criteria describing observable behavior          | prefer Given/When/Then when useful                                                 |
+| `DoD`        | completion criteria for the task                            | include required verification and docs updates                                     |
 
-## Canonical writing rules (terms)
+## Canonical references
 
-1. Документы MUST использовать термины из таблицы без переопределения значений.
-2. Если вводится новый термин, он MUST быть добавлен в этот словарь и использован единообразно.
+- Mode selection: [`../skills/mode-selection/SKILL.md`](../skills/mode-selection/SKILL.md:1)
+- Protocol creation: [`../workflows/protocol-new.md`](../workflows/protocol-new.md:1)
+- Handoff format: [`../patterns/orchestration/context-handoff.md`](../patterns/orchestration/context-handoff.md:1)
+- Evidence discipline: [`evidence-rules.md`](evidence-rules.md:1)
+- Artifact storage: [`artifacts-and-storage.md`](artifacts-and-storage.md:1)
+
+## Writing rules
+
+1. Reuse these terms consistently across rules, workflows, and skills.
+2. If a new term becomes normative, add it here before spreading it elsewhere.
+3. Do not redefine `protocol`, `task`, or `handoff` differently in local documents.

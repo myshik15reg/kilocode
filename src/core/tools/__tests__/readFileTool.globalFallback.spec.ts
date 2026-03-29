@@ -126,7 +126,8 @@ function createMockTask(options: { cwd: string }) {
 }
 
 function mockWorkspaceFolders(workspaceRoot: string) {
-	vi.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([{ uri: { fsPath: workspaceRoot } }] as any)
+	const resolvedRoot = path.resolve(workspaceRoot)
+	;(workspace as any).workspaceFolders = [{ uri: { fsPath: resolvedRoot } }] // kilocode_change
 }
 
 describe("read_file global fallback", () => {
@@ -200,7 +201,7 @@ describe("read_file global fallback", () => {
 		expect(fileExistsAtPathMock).toHaveBeenCalledWith(workspacePath)
 
 		expect(readFileWithTokenBudgetMock).toHaveBeenCalledWith(workspacePath, expect.any(Object))
-		expect(String(toolResult)).not.toContain(`Resolved from global Kilo Code directory: ${globalPath}`)
+		expect(String(toolResult)).not.toContain(`Resolved from global AlfaCode assistant directory: ${globalPath}`)
 
 		const askCall = mockTask.ask.mock.calls[0]
 		const approvalPayload = JSON.parse(askCall[1])
@@ -242,7 +243,7 @@ describe("read_file global fallback", () => {
 		})
 
 		expect(readFileWithTokenBudgetMock).toHaveBeenCalledWith(globalPath, expect.any(Object))
-		expect(String(toolResult)).toContain(`Resolved from global Kilo Code directory: ${globalPath}`)
+		expect(String(toolResult)).toContain(`Resolved from global AlfaCode assistant directory: ${globalPath}`)
 
 		const askCall = mockTask.ask.mock.calls[0]
 		const approvalPayload = JSON.parse(askCall[1])
@@ -284,7 +285,7 @@ describe("read_file global fallback", () => {
 		})
 
 		expect(readFileWithTokenBudgetMock).toHaveBeenCalledWith(globalPath, expect.any(Object))
-		expect(String(toolResult)).toContain(`Resolved from global Kilo Code directory: ${globalPath}`)
+		expect(String(toolResult)).toContain(`Resolved from global AlfaCode assistant directory: ${globalPath}`)
 
 		const askCall = mockTask.ask.mock.calls[0]
 		const approvalPayload = JSON.parse(askCall[1])
@@ -320,7 +321,7 @@ describe("read_file global fallback", () => {
 
 		expect(fileExistsAtPathMock).not.toHaveBeenCalled()
 		expect(readFileWithTokenBudgetMock).toHaveBeenCalledWith(workspacePath, expect.any(Object))
-		expect(String(toolResult)).not.toContain("Resolved from global Kilo Code directory:")
+		expect(String(toolResult)).not.toContain("Resolved from global AlfaCode assistant directory:")
 
 		const askCall = mockTask.ask.mock.calls[0]
 		const approvalPayload = JSON.parse(askCall[1])
@@ -375,12 +376,14 @@ describe("read_file global fallback", () => {
 		} as any)
 
 		expect(fsPromisesMock.stat).toHaveBeenCalledTimes(2)
-		expect(fsPromisesMock.mkdir).toHaveBeenCalledWith(path.resolve(workspaceRoot, ".kilocode/memory-bank"), {
-			recursive: true,
-		})
-		expect(fsPromisesMock.mkdir).toHaveBeenCalledWith(path.resolve(workspaceRoot, ".protocols"), {
-			recursive: true,
-		})
+		const memoryBankCreate = fsPromisesMock.mkdir.mock.calls.find(
+			([dirPath]) => typeof dirPath === "string" && dirPath.endsWith(".kilocode\\memory-bank"),
+		)
+		const protocolsCreate = fsPromisesMock.mkdir.mock.calls.find(
+			([dirPath]) => typeof dirPath === "string" && dirPath.endsWith("\\.protocols"),
+		)
+		expect(memoryBankCreate?.[1]).toEqual({ recursive: true })
+		expect(protocolsCreate?.[1]).toEqual({ recursive: true })
 		expect(fsPromisesMock.copyFile).toHaveBeenCalled()
 		expect(readFileWithTokenBudgetMock).toHaveBeenCalledWith(workspacePath, expect.any(Object))
 
@@ -441,15 +444,18 @@ describe("read_file global fallback", () => {
 		} as any)
 
 		expect(fsPromisesMock.stat).toHaveBeenCalledTimes(2)
-		expect(fsPromisesMock.mkdir).toHaveBeenCalledWith(path.resolve(workspaceRoot, ".kilocode/memory-bank"), {
-			recursive: true,
-		})
-		expect(fsPromisesMock.mkdir).toHaveBeenCalledWith(path.resolve(workspaceRoot, ".roo/memory-bank"), {
-			recursive: true,
-		})
-		expect(fsPromisesMock.mkdir).toHaveBeenCalledWith(path.resolve(workspaceRoot, ".protocols"), {
-			recursive: true,
-		})
+		const memoryBankCreate = fsPromisesMock.mkdir.mock.calls.find(
+			([dirPath]) => typeof dirPath === "string" && dirPath.endsWith(".kilocode\\memory-bank"),
+		)
+		const legacyMemoryBankCreate = fsPromisesMock.mkdir.mock.calls.find(
+			([dirPath]) => typeof dirPath === "string" && dirPath.endsWith(".roo\\memory-bank"),
+		)
+		const protocolsCreate = fsPromisesMock.mkdir.mock.calls.find(
+			([dirPath]) => typeof dirPath === "string" && dirPath.endsWith("\\.protocols"),
+		)
+		expect(memoryBankCreate?.[1]).toEqual({ recursive: true })
+		expect(legacyMemoryBankCreate?.[1]).toEqual({ recursive: true })
+		expect(protocolsCreate?.[1]).toEqual({ recursive: true })
 		expect(fsPromisesMock.copyFile).toHaveBeenCalled()
 		expect(readFileWithTokenBudgetMock).toHaveBeenCalledWith(workspacePath, expect.any(Object))
 
@@ -540,7 +546,7 @@ describe("read_file global fallback", () => {
 		} as any)
 
 		expect(readFileWithTokenBudgetMock).toHaveBeenCalledWith(globalPath, expect.any(Object))
-		expect(String(toolResult)).toContain(`Resolved from global Kilo Code directory: ${globalPath}`)
+		expect(String(toolResult)).toContain(`Resolved from global AlfaCode assistant directory: ${globalPath}`)
 
 		const askCall = mockTask.ask.mock.calls[0]
 		const approvalPayload = JSON.parse(askCall[1])
@@ -582,7 +588,7 @@ describe("read_file global fallback", () => {
 		} as any)
 
 		expect(readFileWithTokenBudgetMock).toHaveBeenCalledWith(globalPath, expect.any(Object))
-		expect(String(toolResult)).toContain(`Resolved from global Kilo Code directory: ${globalPath}`)
+		expect(String(toolResult)).toContain(`Resolved from global AlfaCode assistant directory: ${globalPath}`)
 
 		const askCall = mockTask.ask.mock.calls[0]
 		const approvalPayload = JSON.parse(askCall[1])
@@ -618,7 +624,7 @@ describe("read_file global fallback", () => {
 
 		expect(fileExistsAtPathMock).not.toHaveBeenCalled()
 		expect(readFileWithTokenBudgetMock).toHaveBeenCalledWith(workspacePath, expect.any(Object))
-		expect(String(toolResult)).not.toContain("Resolved from global Kilo Code directory:")
+		expect(String(toolResult)).not.toContain("Resolved from global AlfaCode assistant directory:")
 	})
 
 	it("should not attempt global fallback for non-whitelisted paths", async () => {

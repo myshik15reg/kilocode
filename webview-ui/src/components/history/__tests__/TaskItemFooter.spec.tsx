@@ -1,6 +1,14 @@
-import { render, screen } from "@/utils/test-utils"
+import { fireEvent, render, screen } from "@/utils/test-utils"
 
 import TaskItemFooter from "../TaskItemFooter"
+
+const { postMessageMock } = vi.hoisted(() => ({
+	postMessageMock: vi.fn(),
+}))
+
+vi.mock("@/utils/vscode", () => ({
+	vscode: { postMessage: postMessageMock },
+}))
 
 vi.mock("@src/i18n/TranslationContext", () => ({
 	useAppTranslation: () => ({
@@ -82,4 +90,34 @@ describe("TaskItemFooter", () => {
 
 		expect(screen.queryByTestId("delete-task-button")).not.toBeInTheDocument()
 	})
+
+	// kilocode_change start
+	it("posts pause and branch actions from history orchestration controls", () => {
+		render(<TaskItemFooter item={mockItem} variant="full" />)
+
+		fireEvent.click(screen.getByLabelText("Pause task"))
+		fireEvent.click(screen.getByLabelText("Branch task"))
+
+		expect(postMessageMock).toHaveBeenNthCalledWith(1, { type: "pauseTask", text: "1" })
+		expect(postMessageMock).toHaveBeenNthCalledWith(2, { type: "branchTask", text: "1" })
+	})
+
+	it("shows resume control for paused orchestration items", () => {
+		render(<TaskItemFooter item={{ ...mockItem, lifecycleState: "paused" }} variant="full" />)
+
+		fireEvent.click(screen.getByLabelText("Resume task"))
+
+		expect(postMessageMock).toHaveBeenCalledWith({ type: "resumeTask", text: "1" })
+	})
+
+	it("hides pause, resume, and branch controls for completed history items", () => {
+		render(
+			<TaskItemFooter item={{ ...mockItem, status: "completed", lifecycleState: "completed" }} variant="full" />,
+		)
+
+		expect(screen.queryByLabelText("Pause task")).not.toBeInTheDocument()
+		expect(screen.queryByLabelText("Resume task")).not.toBeInTheDocument()
+		expect(screen.queryByLabelText("Branch task")).not.toBeInTheDocument()
+	})
+	// kilocode_change end
 })

@@ -116,7 +116,7 @@
 	"toolCallStyle": {
 		"title": "ツール呼び出しスタイル",
 		"description": "システムプロンプトでツール呼び出しをどのようにフォーマットするかを選択します。JSONは現在実験的であり、主にその開発に貢献することに興味のあるユーザーを対象としています。",
-		"automatic": "Kiloに任せる",
+		"automatic": "AlfaCode assistantに任せる",
 		"xml": "XML",
 		"json": "JSON"
 	},
@@ -249,7 +249,7 @@
 			},
 			"enableSmartInlineTaskKeybinding": {
 				"label": "手動オートコンプリート ({{keybinding}})",
-				"description": "素早い修正、補完、またはリファクタリングが必要？Kiloは周囲のコンテキストを使用して即座の改善を提供し、フローを維持します。<DocsLink>ショートカットを見る</DocsLink>"
+				"description": "素早い修正、補完、またはリファクタリングが必要？AlfaCode assistantは周囲のコンテキストを使用して即座の改善を提供し、フローを維持します。<DocsLink>ショートカットを見る</DocsLink>"
 			},
 			"keybindingNotFound": "見つかりません",
 			"configureAutocompleteProfile": "プロファイルに移動し、プロファイルタイプがオートコンプリートのプロファイルを設定することで、任意のモデルを使用できます。",
@@ -355,7 +355,7 @@
 			"title": "音声テキスト変換",
 			"description": "音声テキスト変換は利用できません。音声テキスト変換にはFFmpegと有効なOpenAIプロバイダーの両方が設定されている必要があります。<moreInfoLink>詳細はこちらをクリック</moreInfoLink>。",
 			"openAiReason": "音声文字起こしを使用するには、APIキーを持つ有効なOpenAIプロバイダーが必要です。",
-			"ffmpegReason": "FFmpegがインストールされている必要があります。<ffmpegLink>こちらをクリック</ffmpegLink>すると、KiloがFFmpegのインストールをサポートします。",
+			"ffmpegReason": "FFmpegがインストールされている必要があります。<ffmpegLink>こちらをクリック</ffmpegLink>すると、AlfaCode assistantがFFmpegのインストールをサポートします。",
 			"ffmpegMessage": "FFmpegのインストールを手伝ってください"
 		},
 		"misconfiguredState": "設定により利用不可",

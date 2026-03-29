@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from "vitest"
+import path from "node:path" // kilocode_change
 import { loadCustomModes, getSearchedPaths } from "../customModes.js"
 
 // Mock the logs service
@@ -80,7 +81,7 @@ describe("customModes", () => {
 			// Check project path structure
 			expect(paths[1]).toMatchObject({
 				type: "project",
-				path: "/test/workspace/.kilocodemodes",
+				path: path.join("/test/workspace", ".kilocodemodes"),
 				found: false,
 				modesCount: 0,
 			})
@@ -260,7 +261,7 @@ customModes:
 			await loadCustomModes("/my/custom/workspace")
 			const paths = getSearchedPaths()
 
-			expect(paths[1].path).toBe("/my/custom/workspace/.kilocodemodes")
+			expect(paths[1].path).toBe(path.join("/my/custom/workspace", ".kilocodemodes"))
 		})
 	})
 })

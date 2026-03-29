@@ -40,6 +40,7 @@ import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
+import { webSearchTool } from "../tools/WebSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 
@@ -51,6 +52,208 @@ import { newRuleTool } from "../tools/kilocode/newRuleTool"
 import { reportBugTool } from "../tools/kilocode/reportBugTool"
 import { condenseTool } from "../tools/kilocode/condenseTool"
 import { captureAskApproval } from "./kilocode/captureAskApprovalEvent"
+
+type OrchestrationExecutionContext = {
+	toolProtocol: "xml" | "native"
+	askApproval: (
+		type: ClineAsk,
+		partialMessage?: string,
+		progressStatus?: ToolProgressStatus,
+		isProtected?: boolean,
+	) => Promise<boolean>
+	handleError: (action: string, error: Error) => Promise<void>
+	removeClosingTag: (tag: ToolParamName, content?: string) => string
+}
+
+// kilocode_change start
+async function tryExecuteOrchestratedCandidates(
+	cline: Task,
+	startIndex: number,
+	context: OrchestrationExecutionContext,
+): Promise<boolean> {
+	const candidateBlocks: ToolUse[] = []
+
+	for (let index = startIndex; index < cline.assistantMessageContent.length; index++) {
+		const item = cline.assistantMessageContent[index]
+		if (item.type !== "tool_use" || item.partial) {
+			break
+		}
+		candidateBlocks.push(item as ToolUse)
+	}
+
+	if (candidateBlocks.length === 0) {
+		return false
+	}
+
+	const providerState = await cline.providerRef.deref()?.getState()
+	const customModes = providerState?.customModes ?? []
+	const mode = providerState?.mode ?? defaultModeSlug
+	const rawIncludedTools = cline.api.getModel()?.info?.includedTools
+	const { resolveToolAlias } = await import("../prompts/tools/filter-tools-for-mode")
+	const includedTools = rawIncludedTools?.map((tool) => resolveToolAlias(tool))
+
+	for (const candidate of candidateBlocks) {
+		validateToolUse(
+			candidate.name as ToolName,
+			mode,
+			customModes,
+			{ apply_diff: cline.diffEnabled },
+			candidate.params,
+			providerState?.experiments,
+			includedTools,
+		)
+	}
+
+	const candidateToolCalls = candidateBlocks.map((block) => ({
+		callId: block.id,
+		tool: block.name,
+		arguments:
+			(block.nativeArgs as Record<string, unknown> | undefined) ?? (block.params as Record<string, unknown>),
+	}))
+
+	const dispatched = await cline.dispatchOrchestrationExecution(candidateToolCalls, {
+		executeToolBatch: async (call) => {
+			const block = candidateBlocks.find((candidate) => candidate.id === call.callId && !candidate.partial)
+			if (!block) {
+				throw new Error(`Missing batch block for tool ${call.tool}`)
+			}
+
+			let captured = ""
+			const pushToolResult = (content: ToolResponse) => {
+				captured =
+					typeof content === "string"
+						? content
+						: content
+								.filter((item) => item.type === "text")
+								.map((item) => item.text)
+								.join("\n")
+			}
+
+			const callbacks = {
+				askApproval: context.askApproval,
+				taskApproval: context.askApproval,
+				handleError: context.handleError,
+				pushToolResult,
+				removeClosingTag: context.removeClosingTag,
+				toolProtocol: context.toolProtocol,
+				toolCallId: block.id,
+			}
+
+			switch (call.tool) {
+				case "read_file":
+					await readFileTool.handle(cline, block as ToolUse<"read_file">, callbacks)
+					break
+				case "list_files":
+					await listFilesTool.handle(cline, block as ToolUse<"list_files">, callbacks)
+					break
+				case "search_files":
+					await searchFilesTool.handle(cline, block as ToolUse<"search_files">, callbacks)
+					break
+				case "fetch_instructions":
+					await fetchInstructionsTool.handle(cline, block as ToolUse<"fetch_instructions">, callbacks)
+					break
+				case "codebase_search":
+					await codebaseSearchTool.handle(cline, block as ToolUse<"codebase_search">, callbacks)
+					break
+				case "web_search":
+					await webSearchTool.handle(cline, block as ToolUse<"web_search">, callbacks)
+					break
+				case "access_mcp_resource":
+					await accessMcpResourceTool.handle(cline, block as ToolUse<"access_mcp_resource">, callbacks)
+					break
+				default:
+					throw new Error(`Tool ${call.tool} is not eligible for safe batching.`)
+			}
+
+			return captured || "(tool did not return anything)"
+		},
+		executeSubagent: async (call) => {
+			const block = candidateBlocks.find((candidate) => candidate.id === call.callId && !candidate.partial)
+			if (!block) {
+				throw new Error(`Missing subagent block for tool ${call.tool}`)
+			}
+
+			let captured = ""
+			await newTaskTool.handle(cline, block as ToolUse<"new_task">, {
+				askApproval: context.askApproval,
+				taskApproval: context.askApproval,
+				handleError: context.handleError,
+				pushToolResult: (content: ToolResponse) => {
+					captured =
+						typeof content === "string"
+							? content
+							: content
+									.filter((item) => item.type === "text")
+									.map((item) => item.text)
+									.join("\n")
+				},
+				removeClosingTag: context.removeClosingTag,
+				toolProtocol: context.toolProtocol,
+				toolCallId: block.id,
+			})
+
+			return captured || undefined
+		},
+	})
+
+	if (!dispatched.handled) {
+		return false
+	}
+
+	if (dispatched.route === "subagent") {
+		const block =
+			candidateBlocks.find((candidate) => candidate.id === dispatched.result.callId) ?? candidateBlocks[0]
+
+		if (context.toolProtocol === TOOL_PROTOCOL.NATIVE && block?.id) {
+			cline.pushToolResultToUserContent({
+				type: "tool_result",
+				tool_use_id: block.id,
+				content: dispatched.result.content,
+				is_error: false,
+			})
+		} else if (block) {
+			cline.userMessageContent.push({
+				type: "text",
+				text: `${block.name} result:\n${dispatched.result.content}`,
+			})
+		}
+
+		cline.didAlreadyUseTool = true
+		return true
+	}
+
+	const batchResult = dispatched.batchResult
+
+	const resultByTool = new Map(batchResult.results.map((item) => [item.callId ?? item.tool, item.content]))
+	const errorByTool = new Map(batchResult.errors.map((item) => [item.callId ?? item.tool, item.message]))
+
+	for (const block of candidateBlocks) {
+		const key = block.id ?? block.name
+		if (context.toolProtocol === TOOL_PROTOCOL.NATIVE && block.id) {
+			cline.pushToolResultToUserContent({
+				type: "tool_result",
+				tool_use_id: block.id,
+				content: resultByTool.get(key) ?? errorByTool.get(key) ?? `No batch result for ${block.name}.`,
+				is_error: errorByTool.has(key),
+			})
+		} else {
+			cline.userMessageContent.push({
+				type: "text",
+				text: `${block.name} result:\n${resultByTool.get(key) ?? errorByTool.get(key) ?? "No result."}`,
+			})
+		}
+	}
+
+	cline.userMessageContent.push({
+		type: "text",
+		text: batchResult.summary,
+	})
+	cline.didAlreadyUseTool = true
+	cline.currentStreamingContentIndex += candidateBlocks.length - 1
+
+	return true
+}
+// kilocode_change end
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -935,6 +1138,17 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			if (
+				await tryExecuteOrchestratedCandidates(cline, cline.currentStreamingContentIndex, {
+					toolProtocol,
+					askApproval,
+					handleError,
+					removeClosingTag,
+				})
+			) {
+				break
+			}
+
 			await checkpointSaveAndMark(cline) // kilocode_change: moved out of switch
 			switch (block.name) {
 				case "write_to_file":
@@ -1081,6 +1295,15 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "codebase_search":
 					await codebaseSearchTool.handle(cline, block as ToolUse<"codebase_search">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+						toolProtocol,
+					})
+					break
+				case "web_search":
+					await webSearchTool.handle(cline, block as ToolUse<"web_search">, {
 						askApproval,
 						handleError,
 						pushToolResult,

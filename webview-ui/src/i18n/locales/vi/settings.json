@@ -62,7 +62,7 @@
 		"contact": {
 			"label": "Cần nói chuyện với chúng tôi? Viết"
 		},
-		"community": "Muốn nhận mẹo hoặc chỉ muốn giao lưu với những người dùng AlfaCode assistant khác? Tham gia <redditLink>reddit.com/r/kilocode</redditLink> hoặc <discordLink>kilo.ai/discord</discordLink>",
+		"community": "Muốn nhận mẹo hoặc chỉ muốn giao lưu với những người dùng AlfaCode assistant khác? Tham gia <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> hoặc <discordLink>alfacode.ai/discord</discordLink>",
 		"contactAndCommunity": "Liên Hệ & Cộng Đồng",
 		"manageSettings": "Quản Lý Cài Đặt",
 		"debugMode": {
@@ -558,8 +558,8 @@
 			"instructions": "Trong quá trình sử dụng, một hộp thoại sẽ xuất hiện và tin nhắn hiện tại sẽ được tự động sao chép vào clipboard. Bạn cần dán chúng vào các phiên bản web của AI (như ChatGPT hoặc Claude), sau đó sao chép phản hồi của AI trở lại hộp thoại và nhấp vào nút xác nhận."
 		},
 		"roo": {
-			"authenticatedMessage": "Đã xác thực an toàn thông qua tài khoản Roo Code Cloud của bạn.",
-			"connectButton": "Kết nối với Roo Code Cloud"
+			"authenticatedMessage": "Đã xác thực an toàn thông qua tài khoản AlfaCode assistant Cloud của bạn.",
+			"connectButton": "Kết nối với AlfaCode assistant Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -620,7 +620,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Giới hạn lỗi và lặp lại",
-			"description": "Số lỗi liên tiếp hoặc hành động lặp lại trước khi hiển thị hộp thoại 'Kilo đang gặp sự cố'. Đặt thành 0 để tắt cơ chế an toàn này (nó sẽ không bao giờ kích hoạt).",
+			"description": "Số lỗi liên tiếp hoặc hành động lặp lại trước khi hiển thị hộp thoại 'AlfaCode assistant đang gặp sự cố'. Đặt thành 0 để tắt cơ chế an toàn này (nó sẽ không bao giờ kích hoạt).",
 			"unlimitedDescription": "Đã bật thử lại không giới hạn (tự động tiếp tục). Hộp thoại sẽ không bao giờ xuất hiện.",
 			"warning": "⚠️ Đặt thành 0 cho phép thử lại không giới hạn, điều này có thể tiêu tốn mức sử dụng API đáng kể"
 		},
@@ -631,8 +631,7 @@
 			"high": "Cao",
 			"xhigh": "Rất cao",
 			"medium": "Trung bình",
-			"low": "Thấp",
-			"xhigh": "Rất cao"
+			"low": "Thấp"
 		},
 		"verbosity": {
 			"label": "Mức độ chi tiết đầu ra",
@@ -856,11 +855,11 @@
 		},
 		"outputLineLimit": {
 			"label": "Giới hạn đầu ra của terminal",
-			"description": "Giữ lại các dòng đầu tiên và cuối cùng và loại bỏ các dòng ở giữa để ở dưới giới hạn. Giảm xuống để tiết kiệm token; tăng lên để cung cấp cho Kilo thêm chi tiết ở giữa. Kilo thấy một trình giữ chỗ nơi nội dung bị bỏ qua.<0>Tìm hiểu thêm</0>"
+			"description": "Giữ lại các dòng đầu tiên và cuối cùng và loại bỏ các dòng ở giữa để ở dưới giới hạn. Giảm xuống để tiết kiệm token; tăng lên để cung cấp cho AlfaCode assistant thêm chi tiết ở giữa. AlfaCode assistant thấy một trình giữ chỗ nơi nội dung bị bỏ qua.<0>Tìm hiểu thêm</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Giới hạn ký tự terminal",
-			"description": "Ghi đè giới hạn dòng để tránh vấn đề bộ nhớ bằng cách áp đặt giới hạn cứng cho kích thước đầu ra. Nếu vượt quá, giữ đầu và cuối, hiển thị placeholder cho Kilo nơi nội dung bị bỏ qua. <0>Tìm hiểu thêm</0>"
+			"description": "Ghi đè giới hạn dòng để tránh vấn đề bộ nhớ bằng cách áp đặt giới hạn cứng cho kích thước đầu ra. Nếu vượt quá, giữ đầu và cuối, hiển thị placeholder cho AlfaCode assistant nơi nội dung bị bỏ qua. <0>Tìm hiểu thêm</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Timeout tích hợp shell terminal",
@@ -868,7 +867,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Sử dụng Terminal nội tuyến (được khuyến nghị)",
-			"description": "Chạy lệnh trong Terminal nội tuyến (trò chuyện) để bỏ qua hồ sơ/tích hợp shell để chạy nhanh hơn, đáng tin cậy hơn. Khi bị tắt, Kilo sử dụng terminal VS Code với hồ sơ shell, lời nhắc và plugin của bạn. <0>Tìm hiểu thêm</0>"
+			"description": "Chạy lệnh trong Terminal nội tuyến (trò chuyện) để bỏ qua hồ sơ/tích hợp shell để chạy nhanh hơn, đáng tin cậy hơn. Khi bị tắt, AlfaCode assistant sử dụng terminal VS Code với hồ sơ shell, lời nhắc và plugin của bạn. <0>Tìm hiểu thêm</0>"
 		},
 		"commandDelay": {
 			"label": "Delay lệnh terminal",
@@ -917,7 +916,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Bật chỉnh sửa qua diff",
-			"description": "Khi được bật, Kilo sẽ có thể chỉnh sửa tệp nhanh hơn và sẽ tự động từ chối ghi toàn bộ tệp bị cắt ngắn",
+			"description": "Khi được bật, AlfaCode assistant sẽ có thể chỉnh sửa tệp nhanh hơn và sẽ tự động từ chối ghi toàn bộ tệp bị cắt ngắn",
 			"strategy": {
 				"label": "Chiến lược diff",
 				"options": {
@@ -1005,7 +1004,7 @@
 		},
 		"MORPH_FAST_APPLY": {
 			"name": "Bật Fast Apply",
-			"description": "Khi được bật, AlfaCode assistant có thể chỉnh sửa tệp bằng Fast Apply với các mô hình chuyên biệt được tối ưu hóa cho việc sửa đổi mã. Yêu cầu Kilo Gateway Provider, OpenRouter hoặc khóa API Morph.",
+			"description": "Khi được bật, AlfaCode assistant có thể chỉnh sửa tệp bằng Fast Apply với các mô hình chuyên biệt được tối ưu hóa cho việc sửa đổi mã. Yêu cầu AlfaCode Gateway, OpenRouter hoặc khóa API Morph.",
 			"apiProvider": "Nhà cung cấp API",
 			"apiProviderList": {
 				"current": "Hiện tại"
@@ -1035,7 +1034,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Bật công cụ tùy chỉnh",
-			"description": "Khi được bật, Kilo có thể tải và sử dụng các công cụ TypeScript/JavaScript tùy chỉnh từ thư mục .kilocode/tools của dự án hoặc ~/.kilocode/tools cho các công cụ toàn cục. Lưu ý: các công cụ này sẽ được tự động phê duyệt.",
+			"description": "Khi được bật, AlfaCode assistant có thể tải và sử dụng các công cụ TypeScript/JavaScript tùy chỉnh từ thư mục .kilocode/tools của dự án hoặc ~/.kilocode/tools cho các công cụ toàn cục. Lưu ý: các công cụ này sẽ được tự động phê duyệt.",
 			"toolsHeader": "Công cụ tùy chỉnh có sẵn",
 			"noTools": "Không có công cụ tùy chỉnh nào được tải. Thêm tệp .ts hoặc .js vào thư mục .kilocode/tools của dự án hoặc ~/.kilocode/tools cho các công cụ toàn cục.",
 			"refreshButton": "Làm mới",
@@ -1087,8 +1086,8 @@
 		"allModels": "Tất cả mô hình"
 	},
 	"footer": {
-		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/Kilo-Org/kilocode</githubLink> hoặc tham gia <redditLink>reddit.com/r/kilocode</redditLink> hoặc <discordLink>kilo.ai/discord</discordLink>",
-		"support": "Đối với các câu hỏi về tài chính, vui lòng liên hệ Hỗ trợ khách hàng tại <supportLink>https://kilo.ai/support</supportLink>",
+		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/Alfa-Org/alfacode</githubLink> hoặc tham gia <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> hoặc <discordLink>alfacode.ai/discord</discordLink>",
+		"support": "Đối với các câu hỏi về tài chính, vui lòng liên hệ Hỗ trợ khách hàng tại <supportLink>https://alfacode.ai/support</supportLink>",
 		"telemetry": {
 			"label": "Cho phép báo cáo lỗi và sử dụng ẩn danh",
 			"description": "Giúp cải thiện AlfaCode assistant bằng cách gửi dữ liệu sử dụng ẩn danh và báo cáo lỗi. Không bao giờ gửi mã, lời nhắc hoặc thông tin cá nhân. Xem chính sách bảo mật của chúng tôi để biết thêm chi tiết."

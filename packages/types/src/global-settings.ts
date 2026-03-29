@@ -100,6 +100,10 @@ export const globalSettingsSchema = z.object({
 	allowedMaxCost: z.number().nullish(),
 	autoCondenseContext: z.boolean().optional(),
 	autoCondenseContextPercent: z.number().optional(),
+	autoRestartProblematicProcesses: z.boolean().optional(), // kilocode_change
+	problematicProcessRestartLimit: z.number().int().min(0).optional(), // kilocode_change
+	parallelAgentsEnabled: z.boolean().optional(), // kilocode_change
+	parallelAgentCount: z.number().int().min(1).optional(), // kilocode_change
 	// kilocode_change: 2026-01-24 Context routing thresholds
 	contextRoutingEnabled: z.boolean().optional(),
 	contextRoutingFastThresholdPercent: z.number().optional(),

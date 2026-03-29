@@ -1,6 +1,6 @@
 {
-	"greeting": "Hai, saya AlfaCode assistant!",
-	"introduction": "<strong>AlfaCode assistant adalah agen coding otonom terdepan.</strong> Bersiaplah untuk merancang, coding, debug, dan meningkatkan produktivitas seperti yang belum pernah Anda lihat sebelumnya. Untuk melanjutkan, AlfaCode assistant memerlukan API key.",
+	"greeting": "Hai, saya AlfaCode!",
+	"introduction": "<strong>AlfaCode adalah agen coding otonom terdepan.</strong> Bersiaplah untuk merancang, coding, debug, dan meningkatkan produktivitas seperti yang belum pernah Anda lihat sebelumnya. Untuk melanjutkan, AlfaCode memerlukan API key.",
 	"notice": "Untuk memulai, ekstensi ini memerlukan provider API.",
 	"start": "Ayo mulai!",
 	"routers": {
@@ -13,45 +13,45 @@
 		},
 		"roo": {
 			"description": "Model gratis terbaik untuk memulai",
-			"incentive": "Coba Roo gratis"
+			"incentive": "Coba AlfaCode gratis"
 		}
 	},
-	"chooseProvider": "Untuk melakukan keajaibannya, AlfaCode assistant membutuhkan API key.",
+	"chooseProvider": "Untuk melakukan keajaibannya, AlfaCode membutuhkan API key.",
 	"landing": {
-		"greeting": "Selamat datang di AlfaCode assistant!",
-		"introduction": "Dengan berbagai Mode bawaan dan dapat diperluas, AlfaCode assistant memungkinkan Anda merencanakan, merancang, coding, debug, dan meningkatkan produktivitas seperti yang belum pernah terjadi sebelumnya.",
-		"accountMention": "Untuk memulai, buat akun AlfaCode assistant Cloud Anda. Dapatkan model yang kuat, kontrol web, analitik, dukungan, dan banyak lagi.",
+		"greeting": "Selamat datang di AlfaCode!",
+		"introduction": "Dengan berbagai Mode bawaan dan dapat diperluas, AlfaCode memungkinkan Anda merencanakan, merancang, coding, debug, dan meningkatkan produktivitas seperti yang belum pernah terjadi sebelumnya.",
+		"accountMention": "Untuk memulai, buat akun AlfaCode Cloud Anda. Dapatkan model yang kuat, kontrol web, analitik, dukungan, dan banyak lagi.",
 		"getStarted": "Buat Akun AlfaCode",
 		"noAccount": "atau gunakan tanpa akun"
 	},
 	"providerSignup": {
 		"heading": "Pilih penyedia Anda",
-		"chooseProvider": "Roo memerlukan penyedia LLM untuk bekerja. Pilih satu untuk memulai, Anda dapat menambahkan lebih banyak nanti.",
-		"rooCloudProvider": "Penyedia Roo Code Cloud",
-		"rooCloudDescription": "Cara termudah untuk memulai adalah dengan Penyedia Roo Code Cloud: campuran model gratis dan berbayar yang dikurasi dengan hati-hati dengan biaya rendah.",
+		"chooseProvider": "AlfaCode memerlukan penyedia LLM untuk bekerja. Pilih satu untuk memulai, Anda dapat menambahkan lebih banyak nanti.",
+		"rooCloudProvider": "Penyedia AlfaCode Cloud",
+		"rooCloudDescription": "Cara termudah untuk memulai adalah dengan Penyedia AlfaCode Cloud: campuran model gratis dan berbayar yang dikurasi dengan hati-hati dengan biaya rendah.",
 		"learnMore": "Pelajari lebih lanjut",
 		"useAnotherProvider": "Penyedia Pihak Ketiga",
 		"useAnotherProviderDescription": "Masukkan kunci API dan mulai.",
 		"noApiKeys": "Tidak ingin berurusan dengan kunci API dan akun terpisah?",
-		"backToRoo": "Pilih Penyedia Roo Code Cloud.",
+		"backToRoo": "Pilih Penyedia AlfaCode Cloud.",
 		"goBack": "Kembali",
 		"finish": "Selesai"
 	},
 	"waitingForCloud": {
-		"heading": "Masuk ke Roo Code Cloud...",
-		"description": "Kami akan membawa Anda ke browser Anda untuk mendaftar Roo Code Cloud. Kemudian kami akan membawa Anda kembali ke sini untuk menyelesaikannya.",
+		"heading": "Masuk ke AlfaCode Cloud...",
+		"description": "Kami akan membawa Anda ke browser Anda untuk mendaftar AlfaCode Cloud. Kemudian kami akan membawa Anda kembali ke sini untuk menyelesaikannya.",
 		"noPrompt": "Jika Anda tidak diminta untuk membuka URL, <clickHere>klik di sini</clickHere>.",
 		"havingTrouble": "Jika Anda telah menyelesaikan pendaftaran tetapi mengalami masalah, <clickHere>klik di sini</clickHere>.",
 		"pasteUrl": "Tempel URL callback dari browser Anda:",
 		"docsLink": "Tidak bekerja? <DocsLink>Periksa dokumentasi</DocsLink>.",
-		"invalidURL": "Itu tidak terlihat seperti URL callback yang valid. Harap salin apa yang ditampilkan Roo Code Cloud di browser Anda.",
+		"invalidURL": "Itu tidak terlihat seperti URL callback yang valid. Harap salin apa yang ditampilkan AlfaCode Cloud di browser Anda.",
 		"goBack": "Kembali"
 	},
 	"startRouter": "Kami merekomendasikan menggunakan router LLM:",
 	"startCustom": "Atau Anda dapat membawa kunci API Anda sendiri:",
 	"telemetry": {
-		"helpImprove": "Bantu Tingkatkan AlfaCode assistant",
-		"helpImproveMessage": "AlfaCode assistant mengumpulkan data error dan penggunaan untuk membantu kami memperbaiki bug dan meningkatkan ekstensi. Telemetri ini tidak mengumpulkan kode, prompts, atau informasi pribadi. Anda dapat mematikan ini di <settingsLink>pengaturan</settingsLink>."
+		"helpImprove": "Bantu Tingkatkan AlfaCode",
+		"helpImproveMessage": "AlfaCode mengumpulkan data error dan penggunaan untuk membantu kami memperbaiki bug dan meningkatkan ekstensi. Telemetri ini tidak mengumpulkan kode, prompts, atau informasi pribadi. Anda dapat mematikan ini di <settingsLink>pengaturan</settingsLink>."
 	},
 	"importSettings": "Impor Pengaturan"
 }

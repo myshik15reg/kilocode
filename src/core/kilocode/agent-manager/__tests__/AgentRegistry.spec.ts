@@ -84,6 +84,48 @@ describe("AgentRegistry", () => {
 		expect(state.sessions[0].sessionId).toBe(session.sessionId)
 	})
 
+	it("stores lifecycle and recovery metadata for recoverable sessions", () => {
+		registry.createSession("session-1", "recoverable", undefined, {
+			taskId: "task-1",
+			lifecycleStatus: "paused",
+			activityState: "paused",
+			needsAttention: true,
+			recoveryState: "recoverable",
+			pendingReaction: "resume",
+			lastEventAt: 123,
+		})
+
+		const session = registry.getSession("session-1")
+		expect(session).toMatchObject({
+			taskId: "task-1",
+			lifecycleStatus: "paused",
+			activityState: "paused",
+			needsAttention: true,
+			recoveryState: "recoverable",
+			pendingReaction: "resume",
+			lastEventAt: 123,
+		})
+	})
+
+	it("updateSession patches task and recovery fields", () => {
+		registry.createSession("session-1", "recoverable")
+		registry.updateSession("session-1", {
+			taskId: "task-1",
+			rootTaskId: "root-1",
+			parentTaskId: "parent-1",
+			lifecycleStatus: "paused",
+			recoveryState: "recoverable",
+		})
+
+		expect(registry.getSession("session-1")).toMatchObject({
+			taskId: "task-1",
+			rootTaskId: "root-1",
+			parentTaskId: "parent-1",
+			lifecycleStatus: "paused",
+			recoveryState: "recoverable",
+		})
+	})
+
 	describe("pending session", () => {
 		it("setPendingSession creates a pending session", () => {
 			expect(registry.pendingSession).toBeNull()

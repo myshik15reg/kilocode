@@ -2,16 +2,16 @@
 	"title": "MCPサーバー",
 	"done": "完了",
 	"marketplace": "MCPマーケットプレイス",
-	"description": "<0>Model Context Protocol</0>は、ローカルで実行されているMCPサーバーとの通信を可能にし、AlfaCode assistantの機能を拡張するための追加ツールやリソースを提供します。<1>コミュニティによって作成されたサーバー</1>を使用したり、AlfaCode assistantにワークフロー専用の新しいツールを作成するよう依頼したりできます（例：「最新のnpmドキュメントを取得するツールを追加する」）。",
+	"description": "<0>Model Context Protocol</0>は、ローカルで実行されているMCPサーバーとの通信を可能にし、AlfaCodeの機能を拡張するための追加ツールやリソースを提供します。<1>コミュニティによって作成されたサーバー</1>を使用したり、AlfaCodeにワークフロー専用の新しいツールを作成するよう依頼したりできます（例：「最新のnpmドキュメントを取得するツールを追加する」）。",
 	"instructions": "手順",
 	"enableToggle": {
 		"title": "MCPサーバーを有効化",
-		"description": "これをONにすると、AlfaCode assistantが接続されたMCPサーバーのツールを使えるようになるよ。AlfaCode assistantの機能が増える！追加ツールを使わないなら、APIトークンのコストを抑えるためにOFFにしてね。"
+		"description": "これをONにすると、AlfaCodeが接続されたMCPサーバーのツールを使えるようになるよ。AlfaCodeの機能が増える！追加ツールを使わないなら、APIトークンのコストを抑えるためにOFFにしてね。"
 	},
 	"enableServerCreation": {
 		"title": "MCPサーバー作成を有効化",
-		"description": "これをONにすると、AlfaCode assistantが<1>新しい</1>カスタムMCPサーバーを作るのを手伝ってくれるよ。<0>サーバー作成について詳しく</0>",
-		"hint": "ヒント: APIトークンのコストを抑えたいときは、AlfaCode assistantに新しいMCPサーバーを作らせないときにこの設定をOFFにしてね。"
+		"description": "これをONにすると、AlfaCodeが<1>新しい</1>カスタムMCPサーバーを作るのを手伝ってくれるよ。<0>サーバー作成について詳しく</0>",
+		"hint": "ヒント: APIトークンのコストを抑えたいときは、AlfaCodeに新しいMCPサーバーを作らせないときにこの設定をOFFにしてね。"
 	},
 	"editGlobalMCP": "グローバルMCPを編集",
 	"editProjectMCP": "プロジェクトMCPを編集",

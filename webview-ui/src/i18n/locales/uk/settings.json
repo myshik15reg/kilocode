@@ -1,1297 +1,1297 @@
 {
-	"back": "Повернутися до перегляду завдань",
+	"back": "����������� �� ��������� �������",
 	"search": {
-		"placeholder": "Пошук налаштувань...",
-		"noResults": "Налаштувань не знайдено"
+		"placeholder": "����� �����������...",
+		"noResults": "����������� �� ��������"
 	},
 	"common": {
-		"save": "Зберегти",
-		"done": "Готово",
-		"cancel": "Скасувати",
-		"reset": "Скинути",
-		"select": "Вибрати",
-		"add": "Додати заголовок",
-		"remove": "Видалити"
+		"save": "��������",
+		"done": "������",
+		"cancel": "���������",
+		"reset": "�������",
+		"select": "�������",
+		"add": "������ ���������",
+		"remove": "��������"
 	},
 	"header": {
-		"title": "Налаштування",
-		"saveButtonTooltip": "Зберегти зміни",
-		"nothingChangedTooltip": "Нічого не змінилося",
-		"doneButtonTooltip": "Відхилити незбережені зміни та закрити панель налаштувань"
+		"title": "������������",
+		"saveButtonTooltip": "�������� ����",
+		"nothingChangedTooltip": "ͳ���� �� ��������",
+		"doneButtonTooltip": "³������� ���������� ���� �� ������� ������ �����������"
 	},
 	"unsavedChangesDialog": {
-		"title": "Незбережені зміни",
-		"description": "Ви хочете відхилити зміни та продовжити?",
-		"cancelButton": "Скасувати",
-		"discardButton": "Відхилити зміни"
+		"title": "���������� ����",
+		"description": "�� ������ �������� ���� �� ����������?",
+		"cancelButton": "���������",
+		"discardButton": "³������� ����"
 	},
 	"sections": {
-		"providers": "Провайдери",
-		"modes": "Режими",
-		"mcp": "MCP сервери",
-		"autoApprove": "Автоматичне затвердження",
-		"browser": "Браузер",
-		"checkpoints": "Контрольні точки",
-		"display": "Дисплей",
-		"notifications": "Сповіщення",
-		"contextManagement": "Контекст",
-		"terminal": "Термінал",
-		"slashCommands": "Slash Команди",
+		"providers": "����������",
+		"modes": "������",
+		"mcp": "MCP �������",
+		"autoApprove": "����������� ������������",
+		"browser": "�������",
+		"checkpoints": "��������� �����",
+		"display": "�������",
+		"notifications": "���������",
+		"contextManagement": "��������",
+		"terminal": "�������",
+		"slashCommands": "Slash �������",
 		"prompts": "Prompts",
-		"ui": "Інтерфейс",
-		"experimental": "Експериментальне",
-		"language": "Мова",
-		"about": "Про AlfaCode assistant",
-		"autoPurge": "Авто-очищення",
-		"agentBehaviour": "Поведінка агента",
+		"ui": "���������",
+		"experimental": "����������������",
+		"language": "����",
+		"about": "��� AlfaCode assistant",
+		"autoPurge": "����-��������",
+		"agentBehaviour": "�������� ������",
 		"ghost": "Ghost"
 	},
 	"about": {
 		"debugMode": {
-			"label": "Увімкнути режим налагодження",
-			"description": "Увімкнути режим налагодження для відображення додаткових кнопок у заголовку завдання для перегляду історії розмов API та повідомлень UI як prettified JSON у тимчасових файлах."
+			"label": "�������� ����� ������������",
+			"description": "�������� ����� ������������ ��� ����������� ���������� ������ � ��������� �������� ��� ��������� ����� ������ API �� ���������� UI �� prettified JSON � ���������� ������."
 		},
-		"contactSupport": "Зв'язатися зі службою підтримки",
-		"contactSupportDesc": "Потребуєш допомоги? Зв'яжися з нашою службою підтримки клієнтів для отримання персоналізованої допомоги.",
-		"joinCommunity": "Приєднатися до спільноти",
-		"joinCommunityDesc": "Зв'яжись з іншими користувачами AlfaCode assistant, поділися порадами і отримай допомогу від спільноти.",
-		"contactAndCommunity": "Контакти та спільнота",
-		"manageSettings": "Керувати налаштуваннями",
+		"contactSupport": "��'������� � ������� ��������",
+		"contactSupportDesc": "�������� ��������? ��'����� � ����� ������� �������� �볺��� ��� ��������� �������������� ��������.",
+		"joinCommunity": "���������� �� ��������",
+		"joinCommunityDesc": "��'����� � ������ ������������� AlfaCode assistant, ������� �������� � ������� �������� �� ��������.",
+		"contactAndCommunity": "�������� �� ��������",
+		"manageSettings": "�������� ��������������",
 		"bugReport": {
-			"label": "Знайшов помилку?",
-			"link": "Повідом на GitHub"
+			"label": "������� �������?",
+			"link": "������ �� GitHub"
 		},
 		"featureRequest": {
-			"label": "Є ідея?",
-			"link": "Поділися з нами"
+			"label": "� ����?",
+			"link": "������� � ����"
 		},
 		"securityIssue": {
-			"label": "Виявив вразливість?",
-			"link": "Дотримуйся нашого процесу розкриття"
+			"label": "������ ����������?",
+			"link": "���������� ������ ������� ���������"
 		},
 		"contact": {
-			"label": "Потрібно поговорити з нами? Напиши"
+			"label": "������� ���������� � ����? ������"
 		},
-		"community": "Хочеш отримати поради або просто поспілкуватися з іншими користувачами Roo Code? Приєднуйся до <redditLink>reddit.com/r/kilocode</redditLink> або <discordLink>kilo.ai/discord</discordLink>"
+		"community": "����� �������� ������ ��� ������ ������������� � ������ ������������� AlfaCode assistant? ��������� �� <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> ��� <discordLink>alfacode.ai/discord</discordLink>"
 	},
 	"slashCommands": {
-		"description": "Керуйте своїми slash командами для швидкого виконання власних робочих процесів та дій. <DocsLink>Дізнатися більше</DocsLink>"
+		"description": "������� ����� slash ��������� ��� �������� ��������� ������� ������� ������� �� ��. <DocsLink>ĳ������� �����</DocsLink>"
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "Згортати повідомлення Thinking за замовчуванням",
-			"description": "Коли увімкнено, блоки thinking будуть згорнуті за замовчуванням, поки ви не взаємодієте з ними"
+			"label": "�������� ����������� Thinking �� �������������",
+			"description": "���� ��������, ����� thinking ������ ������� �� �������������, ���� �� �� �����䳺�� � ����"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "Вимагати {{primaryMod}}+Enter для надсилання повідомлень",
-			"description": "Коли увімкнено, ви повинні натискати {{primaryMod}}+Enter для надсилання повідомлень замість простого Enter"
+			"label": "�������� {{primaryMod}}+Enter ��� ���������� ����������",
+			"description": "���� ��������, �� ������ ��������� {{primaryMod}}+Enter ��� ���������� ���������� ������ �������� Enter"
 		}
 	},
 	"prompts": {
-		"description": "Налаштуйте допоміжні підказки, які використовуються для швидких дій, таких як покращення підказок, пояснення коду та виправлення проблем. Ці підказки допомагають AlfaCode assistant надавати кращу допомогу для типових завдань розробки."
+		"description": "���������� ������� �������, �� ���������������� ��� ������� ��, ����� �� ���������� �������, ��������� ���� �� ����������� �������. ֳ ������� ����������� AlfaCode assistant �������� ����� �������� ��� ������� ������� ��������."
 	},
 	"codeIndex": {
-		"title": "Індексація кодової бази",
-		"description": "Налаштуйте параметри індексації кодової бази для увімкнення семантичного пошуку вашого проекту. <0>Дізнатися більше</0>",
-		"statusTitle": "Статус",
-		"enableLabel": "Увімкнути індексацію кодової бази",
-		"enableDescription": "Увімкнути індексацію коду для покращеного пошуку та розуміння контексту",
-		"settingsTitle": "Налаштування індексації",
-		"disabledMessage": "Індексація кодової бази наразі вимкнена. Увімкніть її в глобальних налаштуваннях для конфігурації параметрів індексації.",
-		"profileLabel": "Постачальник вбудовувань",
-		"embedderProviderLabel": "Постачальник вбудовувань",
-		"selectProfilePlaceholder": "Виберіть постачальника",
+		"title": "���������� ������ ����",
+		"description": "���������� ��������� ���������� ������ ���� ��� ��������� ������������ ������ ������ �������. <0>ĳ������� �����</0>",
+		"statusTitle": "������",
+		"enableLabel": "�������� ���������� ������ ����",
+		"enableDescription": "�������� ���������� ���� ��� ����������� ������ �� �������� ���������",
+		"settingsTitle": "������������ ����������",
+		"disabledMessage": "���������� ������ ���� ����� ��������. ������� �� � ���������� ������������� ��� ����������� ��������� ����������.",
+		"profileLabel": "������������ �����������",
+		"embedderProviderLabel": "������������ �����������",
+		"selectProfilePlaceholder": "������� �������������",
 		"openaiProvider": "OpenAI",
 		"ollamaProvider": "Ollama",
 		"bedrockProvider": "Amazon Bedrock",
-		"bedrockRegionLabel": "Регіон AWS",
+		"bedrockRegionLabel": "����� AWS",
 		"bedrockRegionPlaceholder": "us-east-1",
-		"bedrockProfileLabel": "Профіль AWS",
+		"bedrockProfileLabel": "������ AWS",
 		"bedrockProfilePlaceholder": "default",
-		"bedrockProfileDescription": "Назва профілю AWS з ~/.aws/credentials (обов'язково).",
+		"bedrockProfileDescription": "����� ������ AWS � ~/.aws/credentials (����'������).",
 		"geminiProvider": "Gemini",
-		"geminiApiKeyLabel": "Ключ API:",
-		"geminiApiKeyPlaceholder": "Введіть ваш ключ API Gemini",
+		"geminiApiKeyLabel": "���� API:",
+		"geminiApiKeyPlaceholder": "������ ��� ���� API Gemini",
 		"mistralProvider": "Mistral",
-		"mistralApiKeyLabel": "Ключ API:",
-		"mistralApiKeyPlaceholder": "Введіть ваш ключ API Mistral",
+		"mistralApiKeyLabel": "���� API:",
+		"mistralApiKeyPlaceholder": "������ ��� ���� API Mistral",
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
-		"vercelAiGatewayApiKeyLabel": "Ключ API",
-		"vercelAiGatewayApiKeyPlaceholder": "Введіть ваш ключ API Vercel AI Gateway",
-		"bedrockConfigTitle": "Конфігурація Amazon Bedrock",
-		"bedrockConfigDesc": "Налаштуйте Amazon Bedrock для використання моделей вбудовувань AWS",
-		"bedrockEmbeddingModel": "Модель вбудовувань Bedrock",
-		"bedrockEmbeddingModelDesc": "Виберіть модель вбудовувань Amazon Bedrock для використання",
-		"bedrockEmbeddingModelPlaceholder": "Виберіть модель вбудовувань",
-		"bedrockAccessKeyId": "ID ключа доступу AWS",
-		"bedrockAccessKeyIdDesc": "Ваш ID ключа доступу AWS для Amazon Bedrock",
-		"bedrockAccessKeyIdPlaceholder": "Введіть ваш ID ключа доступу AWS",
-		"bedrockSecretAccessKey": "Секретний ключ доступу AWS",
-		"bedrockSecretAccessKeyDesc": "Ваш секретний ключ доступу AWS для Amazon Bedrock",
-		"bedrockSecretAccessKeyPlaceholder": "Введіть ваш секретний ключ доступу AWS",
-		"bedrockSessionToken": "Токен сесії AWS",
-		"bedrockSessionTokenDesc": "Необов'язковий токен сесії AWS для тимчасових облікових даних",
-		"bedrockSessionTokenPlaceholder": "Введіть ваш токен сесії AWS (необов'язково)",
+		"vercelAiGatewayApiKeyLabel": "���� API",
+		"vercelAiGatewayApiKeyPlaceholder": "������ ��� ���� API Vercel AI Gateway",
+		"bedrockConfigTitle": "����������� Amazon Bedrock",
+		"bedrockConfigDesc": "���������� Amazon Bedrock ��� ������������ ������� ����������� AWS",
+		"bedrockEmbeddingModel": "������ ����������� Bedrock",
+		"bedrockEmbeddingModelDesc": "������� ������ ����������� Amazon Bedrock ��� ������������",
+		"bedrockEmbeddingModelPlaceholder": "������� ������ �����������",
+		"bedrockAccessKeyId": "ID ����� ������� AWS",
+		"bedrockAccessKeyIdDesc": "��� ID ����� ������� AWS ��� Amazon Bedrock",
+		"bedrockAccessKeyIdPlaceholder": "������ ��� ID ����� ������� AWS",
+		"bedrockSecretAccessKey": "��������� ���� ������� AWS",
+		"bedrockSecretAccessKeyDesc": "��� ��������� ���� ������� AWS ��� Amazon Bedrock",
+		"bedrockSecretAccessKeyPlaceholder": "������ ��� ��������� ���� ������� AWS",
+		"bedrockSessionToken": "����� ��� AWS",
+		"bedrockSessionTokenDesc": "������'������� ����� ��� AWS ��� ���������� �������� �����",
+		"bedrockSessionTokenPlaceholder": "������ ��� ����� ��� AWS (������'������)",
 		"openRouterProvider": "OpenRouter",
-		"openRouterApiKeyLabel": "Ключ API OpenRouter",
-		"openRouterApiKeyPlaceholder": "Введіть ваш ключ API OpenRouter",
-		"openRouterProviderRoutingLabel": "Маршрутизація провайдера OpenRouter",
-		"openRouterProviderRoutingDescription": "OpenRouter направляє запити до найкращих доступних провайдерів для вашої моделі вбудовувань. За замовчуванням запити розподіляються між провідними провайдерами для максимального часу безвідмовної роботи. Однак ви можете вибрати конкретного провайдера для використання цієї моделі.",
-		"openaiCompatibleProvider": "Сумісний з OpenAI",
-		"openaiCompatibleResponsesProvider": "Сумісний з OpenAI (Responses)",
-		"openAiKeyLabel": "Ключ API OpenAI",
-		"openAiKeyPlaceholder": "Введіть ваш ключ API OpenAI",
-		"openaiKeyLabel": "Ключ OpenAI:",
-		"openAiCompatibleBaseUrlLabel": "Базовий URL",
-		"openaiCompatibleBaseUrlLabel": "Базовий URL:",
-		"openAiCompatibleApiKeyLabel": "Ключ API",
-		"openaiCompatibleApiKeyLabel": "Ключ API:",
-		"openAiCompatibleApiKeyPlaceholder": "Введіть ваш ключ API",
-		"openAiCompatibleModelDimensionLabel": "Розмірність вбудовування:",
-		"openAiCompatibleModelDimensionPlaceholder": "наприклад, 1536",
-		"modelDimensionLabel": "Розмірність моделі",
-		"openaiCompatibleModelDimensionLabel": "Розмірність вбудовування:",
-		"openaiCompatibleModelDimensionPlaceholder": "наприклад, 1536",
-		"openAiCompatibleModelDimensionDescription": "Розмірність вбудовування (розмір виводу) для вашої моделі. Перевірте документацію вашого постачальника для цього значення. Загальні значення: 384, 768, 1536, 3072.",
-		"openaiCompatibleModelDimensionDescription": "Розмірність вбудовування (розмір виводу) для вашої моделі. Перевірте документацію вашого постачальника для цього значення. Загальні значення: 384, 768, 1536, 3072.",
-		"modelLabel": "Модель",
-		"modelPlaceholder": "Введіть назву моделі",
-		"selectModel": "Виберіть модель",
-		"selectModelPlaceholder": "Виберіть модель",
+		"openRouterApiKeyLabel": "���� API OpenRouter",
+		"openRouterApiKeyPlaceholder": "������ ��� ���� API OpenRouter",
+		"openRouterProviderRoutingLabel": "������������� ���������� OpenRouter",
+		"openRouterProviderRoutingDescription": "OpenRouter ��������� ������ �� ��������� ��������� ���������� ��� ���� ����� �����������. �� ������������� ������ ������������� �� ��������� ������������ ��� ������������� ���� ���������� ������. ����� �� ������ ������� ����������� ���������� ��� ������������ ���� �����.",
+		"openaiCompatibleProvider": "������� � OpenAI",
+		"openaiCompatibleResponsesProvider": "������� � OpenAI (Responses)",
+		"openAiKeyLabel": "���� API OpenAI",
+		"openAiKeyPlaceholder": "������ ��� ���� API OpenAI",
+		"openaiKeyLabel": "���� OpenAI:",
+		"openAiCompatibleBaseUrlLabel": "������� URL",
+		"openaiCompatibleBaseUrlLabel": "������� URL:",
+		"openAiCompatibleApiKeyLabel": "���� API",
+		"openaiCompatibleApiKeyLabel": "���� API:",
+		"openAiCompatibleApiKeyPlaceholder": "������ ��� ���� API",
+		"openAiCompatibleModelDimensionLabel": "��������� ������������:",
+		"openAiCompatibleModelDimensionPlaceholder": "���������, 1536",
+		"modelDimensionLabel": "��������� �����",
+		"openaiCompatibleModelDimensionLabel": "��������� ������������:",
+		"openaiCompatibleModelDimensionPlaceholder": "���������, 1536",
+		"openAiCompatibleModelDimensionDescription": "��������� ������������ (����� ������) ��� ���� �����. �������� ������������ ������ ������������� ��� ����� ��������. ������� ��������: 384, 768, 1536, 3072.",
+		"openaiCompatibleModelDimensionDescription": "��������� ������������ (����� ������) ��� ���� �����. �������� ������������ ������ ������������� ��� ����� ��������. ������� ��������: 384, 768, 1536, 3072.",
+		"modelLabel": "������",
+		"modelPlaceholder": "������ ����� �����",
+		"selectModel": "������� ������",
+		"selectModelPlaceholder": "������� ������",
 		"ollamaUrlLabel": "URL Ollama:",
-		"ollamaBaseUrlLabel": "Базовий URL Ollama",
-		"vectorStoreProviderLabel": "Постачальник сховища векторів",
+		"ollamaBaseUrlLabel": "������� URL Ollama",
+		"vectorStoreProviderLabel": "������������ ������� �������",
 		"qdrantUrlLabel": "URL Qdrant",
-		"qdrantKeyLabel": "Ключ Qdrant:",
-		"qdrantApiKeyLabel": "Ключ API Qdrant",
-		"qdrantApiKeyPlaceholder": "Введіть ваш ключ API Qdrant (необов'язково)",
-		"lancedbVectorStoreDirectoryLabel": "Шлях до LanceDB Vector Store",
-		"lancedbVectorStoreDirectoryPlaceholder": "Введіть власний шлях до сховища векторів (необов'язково)",
-		"lancedbVectorStoreDirectoryDescription": "Шлях для зберігання бази даних LanceDB Vector. Якщо порожньо, використовується стандартне розташування globalStorageUri/vector.",
-		"setupConfigLabel": "Налаштування",
-		"advancedConfigLabel": "Розширена конфігурація",
-		"searchMinScoreLabel": "Поріг оцінки пошуку",
-		"searchMinScoreDescription": "Мінімальна оцінка схожості (0.0-1.0), необхідна для результатів пошуку. Нижчі значення повертають більше результатів, але можуть бути менш релевантними. Вищі значення повертають менше, але більш релевантних результатів.",
-		"searchMinScoreResetTooltip": "Скинути до значення за замовчуванням (0.4)",
-		"searchMaxResultsLabel": "Максимальна кількість результатів пошуку",
-		"searchMaxResultsDescription": "Максимальна кількість результатів пошуку для повернення при запиті до індексу кодової бази. Вищі значення надають більше контексту, але можуть включати менш релевантні результати.",
-		"rerankSectionLabel": "Реранкер",
-		"rerankEnableLabel": "Увімкнути реранкер",
-		"rerankEnableDescription": "Пересортування кандидатів із Qdrant крос-енкодером перед графовим розширенням. У разі недоступності використовується початковий порядок.",
-		"rerankCandidateLimitLabel": "Ліміт кандидатів для реранку",
-		"rerankTopKLabel": "Топ-K після реранку",
-		"rerankTimeoutMsLabel": "Таймаут реранку (мс)",
-		"resetToDefault": "Скинути до стандартних",
-		"startIndexingButton": "Почати індексацію",
-		"clearIndexDataButton": "Очистити дані індексу",
-		"unsavedSettingsMessage": "Будь ласка, збережіть налаштування перед початком процесу індексації.",
+		"qdrantKeyLabel": "���� Qdrant:",
+		"qdrantApiKeyLabel": "���� API Qdrant",
+		"qdrantApiKeyPlaceholder": "������ ��� ���� API Qdrant (������'������)",
+		"lancedbVectorStoreDirectoryLabel": "���� �� LanceDB Vector Store",
+		"lancedbVectorStoreDirectoryPlaceholder": "������ ������� ���� �� ������� ������� (������'������)",
+		"lancedbVectorStoreDirectoryDescription": "���� ��� ��������� ���� ����� LanceDB Vector. ���� ��������, ��������������� ���������� ������������ globalStorageUri/vector.",
+		"setupConfigLabel": "������������",
+		"advancedConfigLabel": "��������� �����������",
+		"searchMinScoreLabel": "���� ������ ������",
+		"searchMinScoreDescription": "̳������� ������ ������� (0.0-1.0), ��������� ��� ���������� ������. ����� �������� ���������� ����� ����������, ��� ������ ���� ���� ������������. ���� �������� ���������� �����, ��� ���� ����������� ����������.",
+		"searchMinScoreResetTooltip": "������� �� �������� �� ������������� (0.4)",
+		"searchMaxResultsLabel": "����������� ������� ���������� ������",
+		"searchMaxResultsDescription": "����������� ������� ���������� ������ ��� ���������� ��� ����� �� ������� ������ ����. ���� �������� ������� ����� ���������, ��� ������ �������� ���� ��������� ����������.",
+		"rerankSectionLabel": "��������",
+		"rerankEnableLabel": "�������� ��������",
+		"rerankEnableDescription": "�������������� ��������� �� Qdrant ����-��������� ����� �������� �����������. � ��� ������������ ��������������� ���������� �������.",
+		"rerankCandidateLimitLabel": "˳�� ��������� ��� �������",
+		"rerankTopKLabel": "���-K ���� �������",
+		"rerankTimeoutMsLabel": "������� ������� (��)",
+		"resetToDefault": "������� �� �����������",
+		"startIndexingButton": "������ ����������",
+		"clearIndexDataButton": "�������� ��� �������",
+		"unsavedSettingsMessage": "���� �����, �������� ������������ ����� �������� ������� ����������.",
 		"clearDataDialog": {
-			"title": "Ви впевнені?",
-			"description": "Цю дію неможливо скасувати. Це назавжди видалить дані індексу вашої кодової бази.",
-			"cancelButton": "Скасувати",
-			"confirmButton": "Очистити дані"
+			"title": "�� �������?",
+			"description": "�� �� ��������� ���������. �� �������� �������� ��� ������� ���� ������ ����.",
+			"cancelButton": "���������",
+			"confirmButton": "�������� ���"
 		},
 		"ollamaUrlPlaceholder": "http://localhost:11434",
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
 		"modelDimensionPlaceholder": "1536",
 		"qdrantUrlPlaceholder": "http://localhost:6333",
-		"saveError": "Не вдалося зберегти налаштування",
-		"modelDimensions": "({{dimension}} розмірностей)",
-		"saveSuccess": "Налаштування успішно збережено",
-		"saving": "Збереження...",
-		"saveSettings": "Зберегти",
+		"saveError": "�� ������� �������� ������������",
+		"modelDimensions": "({{dimension}} �����������)",
+		"saveSuccess": "������������ ������ ���������",
+		"saving": "����������...",
+		"saveSettings": "��������",
 		"indexingStatuses": {
-			"standby": "Очікування",
-			"indexing": "Індексація",
-			"indexed": "Проіндексовано",
-			"error": "Помилка"
+			"standby": "����������",
+			"indexing": "����������",
+			"indexed": "�������������",
+			"error": "�������"
 		},
-		"close": "Закрити",
+		"close": "�������",
 		"validation": {
-			"qdrantUrlRequired": "URL Qdrant є обов'язковим",
-			"invalidQdrantUrl": "Недійсний URL Qdrant",
-			"invalidOllamaUrl": "Недійсний URL Ollama",
-			"invalidBaseUrl": "Недійсний базовий URL",
-			"openaiApiKeyRequired": "Ключ API OpenAI є обов'язковим",
-			"modelSelectionRequired": "Вибір моделі є обов'язковим",
-			"apiKeyRequired": "Ключ API є обов'язковим",
-			"modelIdRequired": "ID моделі є обов'язковим",
-			"modelDimensionRequired": "Розмірність моделі є обов'язковою",
-			"geminiApiKeyRequired": "Ключ API Gemini є обов'язковим",
-			"mistralApiKeyRequired": "Ключ API Mistral є обов'язковим",
-			"ollamaBaseUrlRequired": "Базовий URL Ollama є обов'язковим",
-			"baseUrlRequired": "Базовий URL є обов'язковим",
-			"modelDimensionMinValue": "Розмірність моделі повинна бути більше 0",
-			"vercelAiGatewayApiKeyRequired": "Ключ API Vercel AI Gateway є обов'язковим",
-			"openRouterApiKeyRequired": "Ключ API OpenRouter є обов'язковим",
-			"bedrockRegionRequired": "Регіон AWS є обов'язковим",
-			"bedrockProfileRequired": "Профіль AWS є обов'язковий"
+			"qdrantUrlRequired": "URL Qdrant � ����'�������",
+			"invalidQdrantUrl": "�������� URL Qdrant",
+			"invalidOllamaUrl": "�������� URL Ollama",
+			"invalidBaseUrl": "�������� ������� URL",
+			"openaiApiKeyRequired": "���� API OpenAI � ����'�������",
+			"modelSelectionRequired": "���� ����� � ����'�������",
+			"apiKeyRequired": "���� API � ����'�������",
+			"modelIdRequired": "ID ����� � ����'�������",
+			"modelDimensionRequired": "��������� ����� � ����'�������",
+			"geminiApiKeyRequired": "���� API Gemini � ����'�������",
+			"mistralApiKeyRequired": "���� API Mistral � ����'�������",
+			"ollamaBaseUrlRequired": "������� URL Ollama � ����'�������",
+			"baseUrlRequired": "������� URL � ����'�������",
+			"modelDimensionMinValue": "��������� ����� ������� ���� ����� 0",
+			"vercelAiGatewayApiKeyRequired": "���� API Vercel AI Gateway � ����'�������",
+			"openRouterApiKeyRequired": "���� API OpenRouter � ����'�������",
+			"bedrockRegionRequired": "����� AWS � ����'�������",
+			"bedrockProfileRequired": "������ AWS � ����'�������"
 		},
-		"optional": "необов'язково",
-		"cancelling": "Скасування...",
-		"cancelIndexingButton": "Скасувати індексацію",
+		"optional": "������'������",
+		"cancelling": "����������...",
+		"cancelIndexingButton": "��������� ����������",
 		"neo4j": {
-			"enableDescription": "Вмикає графовий пошук і аналіз впливу змін на кодову базу за допомогою Neo4j. Працює з Qdrant для гібридного семантичного + графового пошуку."
+			"enableDescription": "����� �������� ����� � ����� ������ ��� �� ������ ���� �� ��������� Neo4j. ������ � Qdrant ��� ��������� ������������ + ��������� ������."
 		}
 	},
 	"autoApprove": {
-		"description": "Дозволити AlfaCode assistant автоматично виконувати операції без необхідності затвердження. Вмикайте ці налаштування, лише якщо ви повністю довіряєте ШІ та розумієте пов'язані з цим ризики безпеки.",
-		"toggleShortcut": "Ви можете налаштувати гарячу клавішу для цього налаштування <SettingsLink>у настройках вашого IDE</SettingsLink>.",
-		"enabled": "Автоматичне затвердження увімкнено",
+		"description": "��������� AlfaCode assistant ����������� ���������� �������� ��� ����������� ������������. �������� �� ������������, ���� ���� �� ������� �������� ز �� ����쳺�� ���'���� � ��� ������ �������.",
+		"toggleShortcut": "�� ������ ����������� ������ ������ ��� ����� ������������ <SettingsLink>� ���������� ������ IDE</SettingsLink>.",
+		"enabled": "����������� ������������ ��������",
 		"delete": {
-			"label": "Видалити",
-			"description": "Автоматично видаляти файли та каталоги без необхідності затвердження"
+			"label": "��������",
+			"description": "����������� �������� ����� �� �������� ��� ����������� ������������"
 		},
 		"readOnly": {
-			"label": "Читати",
-			"description": "Якщо ввімкнено, AlfaCode assistant автоматично переглядатиме вміст каталогу та читатиме файли, не вимагаючи від вас натискання кнопки «Схвалити».",
+			"label": "������",
+			"description": "���� ��������, AlfaCode assistant ����������� ������������� ���� �������� �� �������� �����, �� ��������� �� ��� ���������� ������ ���������.",
 			"outsideWorkspace": {
-				"label": "Включати файли поза робочим простором",
-				"description": "Дозволити AlfaCode assistant читати файли поза поточним робочим простором без необхідності затвердження."
+				"label": "�������� ����� ���� ������� ���������",
+				"description": "��������� AlfaCode assistant ������ ����� ���� �������� ������� ��������� ��� ����������� ������������."
 			}
 		},
 		"write": {
-			"label": "Писати",
-			"description": "Автоматично створювати та редагувати файли без необхідності затвердження",
-			"delayLabel": "Затримка після запису, щоб діагностика могла виявити потенційні проблеми",
+			"label": "������",
+			"description": "����������� ���������� �� ���������� ����� ��� ����������� ������������",
+			"delayLabel": "�������� ���� ������, ��� ���������� ����� ������� ��������� ��������",
 			"outsideWorkspace": {
-				"label": "Включати файли поза робочим простором",
-				"description": "Дозволити AlfaCode assistant створювати та редагувати файли поза поточним робочим простором без необхідності затвердження."
+				"label": "�������� ����� ���� ������� ���������",
+				"description": "��������� AlfaCode assistant ���������� �� ���������� ����� ���� �������� ������� ��������� ��� ����������� ������������."
 			},
 			"protected": {
-				"label": "Включати захищені файли",
-				"description": "Дозволити AlfaCode assistant створювати та редагувати захищені файли (наприклад, .kilocodeignore та файли конфігурації .kilocode/) без необхідності затвердження."
+				"label": "�������� ������� �����",
+				"description": "��������� AlfaCode assistant ���������� �� ���������� ������� ����� (���������, .kilocodeignore �� ����� ����������� .kilocode/) ��� ����������� ������������."
 			}
 		},
 		"browser": {
-			"label": "Браузер",
-			"description": "Автоматично виконувати дії браузера без необхідності затвердження. Примітка: застосовується лише тоді, коли модель підтримує використання комп’ютера"
+			"label": "�������",
+			"description": "����������� ���������� 䳿 �������� ��� ����������� ������������. �������: ������������� ���� ���, ���� ������ ������� ������������ ���������"
 		},
 		"retry": {
-			"label": "Повторити",
-			"description": "Автоматично повторювати невдалі запити API, коли сервер повертає відповідь про помилку",
-			"delayLabel": "Затримка перед повторним запитом"
+			"label": "���������",
+			"description": "����������� ����������� ������ ������ API, ���� ������ ������� ������� ��� �������",
+			"delayLabel": "�������� ����� ��������� �������"
 		},
 		"mcp": {
 			"label": "MCP",
-			"description": "Увімкнути автоматичне затвердження окремих інструментів MCP у поданні MCP Servers (потрібне як це налаштування, так і індивідуальний прапорець «Завжди дозволяти» інструмента)"
+			"description": "�������� ����������� ������������ ������� ����������� MCP � ������ MCP Servers (������� �� �� ������������, ��� � ������������� ��������� ������� ��������� �����������)"
 		},
 		"modeSwitch": {
-			"label": "Режим",
-			"description": "Автоматично перемикатися між різними режимами без необхідності затвердження"
+			"label": "�����",
+			"description": "����������� ������������ �� ������ �������� ��� ����������� ������������"
 		},
 		"subtasks": {
-			"label": "Підзавдання",
-			"description": "Дозволити створення та виконання підзавдань без необхідності затвердження"
+			"label": "ϳ���������",
+			"description": "��������� ��������� �� ��������� ��������� ��� ����������� ������������"
 		},
 		"followupQuestions": {
-			"label": "Питання",
-			"description": "Автоматично вибирати першу запропоновану відповідь на додаткові питання після налаштованого тайм-ауту",
-			"timeoutLabel": "Час очікування перед автоматичним вибором першої відповіді"
+			"label": "�������",
+			"description": "����������� �������� ����� ������������� ������� �� �������� ������� ���� ������������� ����-����",
+			"timeoutLabel": "��� ���������� ����� ������������ ������� ����� ������"
 		},
 		"execute": {
-			"label": "Виконати",
-			"description": "Автоматично виконувати дозволені команди терміналу без необхідності затвердження",
-			"allowedCommands": "Дозволені команди автоматичного виконання",
-			"allowedCommandsDescription": "Префікси команд, які можна автоматично виконати, коли ввімкнено «Завжди затверджувати операції виконання». Додайте * щоб дозволити всі команди (використовуйте з обережністю).",
-			"deniedCommands": "Заборонені команди",
-			"deniedCommandsDescription": "Префікси команд, які будуть автоматично відхилені без запиту на затвердження. У разі конфліктів із дозволеними командами пріоритет має найдовший збіг префіксу. Додайте * щоб заборонити всі команди.",
-			"commandPlaceholder": "Введіть префікс команди (наприклад, 'git ')",
-			"deniedCommandPlaceholder": "Введіть префікс команди для заборони (наприклад, 'rm -rf')",
-			"addButton": "Додати",
-			"autoDenied": "Команди з префіксом `{{prefix}}` були заборонені користувачем. Не обходьте це обмеження, виконуючи іншу команду."
+			"label": "��������",
+			"description": "����������� ���������� �������� ������� �������� ��� ����������� ������������",
+			"allowedCommands": "�������� ������� ������������� ���������",
+			"allowedCommandsDescription": "������� ������, �� ����� ����������� ��������, ���� �������� ������� ������������� �������� ����������. ������� * ��� ��������� �� ������� (�������������� � ����������).",
+			"deniedCommands": "��������� �������",
+			"deniedCommandsDescription": "������� ������, �� ������ ����������� ������� ��� ������ �� ������������. � ��� �������� �� ����������� ��������� �������� �� ��������� ��� �������. ������� * ��� ���������� �� �������.",
+			"commandPlaceholder": "������ ������ ������� (���������, 'git ')",
+			"deniedCommandPlaceholder": "������ ������ ������� ��� �������� (���������, 'rm -rf')",
+			"addButton": "������",
+			"autoDenied": "������� � �������� `{{prefix}}` ���� ��������� ������������. �� �������� �� ���������, ��������� ���� �������."
 		},
 		"showMenu": {
-			"label": "Показувати меню автоматичного затвердження в поданні чату",
-			"description": "Якщо ввімкнено, меню автоматичного затвердження відображатиметься внизу подання чату, що дозволить швидко отримати доступ до налаштувань автоматичного затвердження"
+			"label": "���������� ���� ������������� ������������ � ������ ����",
+			"description": "���� ��������, ���� ������������� ������������ ���������������� ����� ������� ����, �� ��������� ������ �������� ������ �� ����������� ������������� ������������"
 		},
 		"updateTodoList": {
-			"label": "Завдання",
-			"description": "Автоматично оновлювати список завдань без необхідності затвердження"
+			"label": "��������",
+			"description": "����������� ���������� ������ ������� ��� ����������� ������������"
 		},
 		"apiRequestLimit": {
-			"title": "Максимальна кількість запитів",
-			"unlimited": "Необмежено"
+			"title": "����������� ������� ������",
+			"unlimited": "����������"
 		},
 		"apiCostLimit": {
-			"title": "Максимальна вартість",
-			"unlimited": "Необмежено"
+			"title": "����������� �������",
+			"unlimited": "����������"
 		},
 		"maxLimits": {
-			"description": "Автоматично виконувати запити до цих лімітів перед запитом дозволу на продовження."
+			"description": "����������� ���������� ������ �� ��� ���� ����� ������� ������� �� �����������."
 		},
-		"toggleAriaLabel": "Перемкнути автоматичне затвердження",
-		"disabledAriaLabel": "Автоматичне затвердження вимкнено - спочатку виберіть параметри",
-		"selectOptionsFirst": "Виберіть принаймні один параметр нижче, щоб увімкнути автоматичне затвердження"
+		"toggleAriaLabel": "���������� ����������� ������������",
+		"disabledAriaLabel": "����������� ������������ �������� - �������� ������� ���������",
+		"selectOptionsFirst": "������� �������� ���� �������� �����, ��� �������� ����������� ������������"
 	},
 	"providers": {
-		"providerDocumentation": "Документація {{provider}}",
-		"configProfile": "Профіль конфігурації",
-		"description": "Збережіть різні конфігурації API для швидкого перемикання між провайдерами та налаштуваннями.",
-		"makeActiveProfile": "Зробити активним профілем",
-		"makeActiveTooltip": "Активуй цей профіль для використання в API-запитах",
-		"apiProvider": "Провайдер API",
-		"model": "Модель",
-		"nameEmpty": "Ім'я не може бути порожнім",
-		"nameExists": "Профіль із таким іменем уже існує",
-		"deleteProfile": "Видалити профіль",
-		"invalidArnFormat": "Недійсний формат ARN. Перевірте приклади вище.",
-		"enterNewName": "Введіть нове ім'я",
-		"addProfile": "Додати профіль",
-		"renameProfile": "Перейменувати профіль",
-		"newProfile": "Новий профіль конфігурації",
-		"enterProfileName": "Введіть ім'я профілю",
-		"createProfile": "Створити профіль",
-		"cannotDeleteOnlyProfile": "Неможливо видалити єдиний профіль",
-		"searchPlaceholder": "Шукати профілі",
-		"searchProviderPlaceholder": "Шукати провайдерів",
-		"noProviderMatchFound": "Провайдерів не знайдено",
-		"noMatchFound": "Збігів не знайдено",
-		"vscodeLmDescription": "API мовної моделі VS Code дозволяє запускати моделі, надані іншими розширеннями VS Code (включаючи, але не обмежуючись, GitHub Copilot). Найпростіший спосіб почати роботу — встановити розширення Copilot і Copilot Chat з VS Code Marketplace.",
-		"vscodeLmUnavailable": "Підтримка мовних моделей VS Code доступна лише у Visual Studio Code. Форки на кшталт VSCodium та інші можуть не працювати. Крім того, ця можливість недоступна в інструментах JetBrains.",
-		"vscodeLmUnavailableInstructions": "Переконайтеся, що ви використовуєте підтримуваний інструмент, і що VS Code Chat встановлено та ввімкнено",
-		"awsCustomArnUse": "Введіть дійсний ARN Amazon Bedrock для моделі, яку ви хочете використовувати. Приклади формату:",
-		"awsCustomArnDesc": "Переконайтеся, що регіон у ARN відповідає вибраному вами регіону AWS вище.",
-		"openRouterApiKey": "Ключ API OpenRouter",
-		"getOpenRouterApiKey": "Отримати ключ API OpenRouter",
+		"providerDocumentation": "������������ {{provider}}",
+		"configProfile": "������ �����������",
+		"description": "�������� ��� ����������� API ��� �������� ����������� �� ������������ �� ��������������.",
+		"makeActiveProfile": "������� �������� �������",
+		"makeActiveTooltip": "������� ��� ������ ��� ������������ � API-�������",
+		"apiProvider": "��������� API",
+		"model": "������",
+		"nameEmpty": "��'� �� ���� ���� �������",
+		"nameExists": "������ �� ����� ������ ��� ����",
+		"deleteProfile": "�������� ������",
+		"invalidArnFormat": "�������� ������ ARN. �������� �������� ����.",
+		"enterNewName": "������ ���� ��'�",
+		"addProfile": "������ ������",
+		"renameProfile": "������������� ������",
+		"newProfile": "����� ������ �����������",
+		"enterProfileName": "������ ��'� ������",
+		"createProfile": "�������� ������",
+		"cannotDeleteOnlyProfile": "��������� �������� ������ ������",
+		"searchPlaceholder": "������ �����",
+		"searchProviderPlaceholder": "������ ����������",
+		"noProviderMatchFound": "���������� �� ��������",
+		"noMatchFound": "���� �� ��������",
+		"vscodeLmDescription": "API ����� ����� VS Code �������� ��������� �����, ����� ������ ������������ VS Code (���������, ��� �� �����������, GitHub Copilot). ����������� ����� ������ ������ � ���������� ���������� Copilot � Copilot Chat � VS Code Marketplace.",
+		"vscodeLmUnavailable": "ϳ������� ������ ������� VS Code �������� ���� � Visual Studio Code. ����� �� ������ VSCodium �� ���� ������ �� ���������. ��� ����, �� ��������� ���������� � ������������ JetBrains.",
+		"vscodeLmUnavailableInstructions": "�������������, �� �� ������������� ������������ ����������, � �� VS Code Chat ����������� �� ��������",
+		"awsCustomArnUse": "������ ������ ARN Amazon Bedrock ��� �����, ��� �� ������ ���������������. �������� �������:",
+		"awsCustomArnDesc": "�������������, �� ����� � ARN ������� ��������� ���� ������ AWS ����.",
+		"openRouterApiKey": "���� API OpenRouter",
+		"getOpenRouterApiKey": "�������� ���� API OpenRouter",
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Key",
-		"getVercelAiGatewayApiKey": "Отримати Vercel AI Gateway API Key",
-		"apiKeyStorageNotice": "Ключі API надійно зберігаються в Secret Storage VSCode",
-		"glamaApiKey": "Ключ API Glama",
-		"getGlamaApiKey": "Отримати ключ API Glama",
+		"getVercelAiGatewayApiKey": "�������� Vercel AI Gateway API Key",
+		"apiKeyStorageNotice": "����� API ������ ����������� � Secret Storage VSCode",
+		"glamaApiKey": "���� API Glama",
+		"getGlamaApiKey": "�������� ���� API Glama",
 		"openAiCodexRateLimits": {
-			"title": "Ліміти використання для Codex{{planLabel}}",
-			"loading": "Завантаження лімітів використання...",
-			"loadError": "Не вдалося завантажити ліміти використання",
-			"retry": "Спробувати знову",
-			"usedPercent": "{{percent}}% використано",
-			"resetsIn": "Скинеться через {{time}}",
+			"title": "˳��� ������������ ��� Codex{{planLabel}}",
+			"loading": "������������ ���� ������������...",
+			"loadError": "�� ������� ����������� ���� ������������",
+			"retry": "���������� �����",
+			"usedPercent": "{{percent}}% �����������",
+			"resetsIn": "��������� ����� {{time}}",
 			"plan": {
 				"default": "",
 				"withType": " ({{planType}})"
 			},
 			"time": {
-				"now": "Зараз",
-				"notAvailable": "Недоступно"
+				"now": "�����",
+				"notAvailable": "����������"
 			},
 			"duration": {
-				"daysHours": "{{days}}д {{hours}}г",
-				"hoursMinutes": "{{hours}}г {{minutes}}хв",
-				"minutes": "{{minutes}}хв"
+				"daysHours": "{{days}}� {{hours}}�",
+				"hoursMinutes": "{{hours}}� {{minutes}}��",
+				"minutes": "{{minutes}}��"
 			},
 			"window": {
-				"usage": "Використання",
-				"fiveHour": "5-годинний ліміт",
-				"oneHour": "1-годинний ліміт",
-				"daily": "Денний ліміт",
-				"weekly": "Тижневий ліміт",
-				"days": "{{days}}д ліміт",
-				"hours": "{{hours}}г ліміт",
-				"minutes": "{{minutes}}хв ліміт"
+				"usage": "������������",
+				"fiveHour": "5-�������� ���",
+				"oneHour": "1-�������� ���",
+				"daily": "������ ���",
+				"weekly": "�������� ���",
+				"days": "{{days}}� ���",
+				"hours": "{{hours}}� ���",
+				"minutes": "{{minutes}}�� ���"
 			}
 		},
-		"useCustomBaseUrl": "Використовувати власний базовий URL",
-		"useReasoning": "Увімкнути міркування",
-		"useHostHeader": "Використовувати власний заголовок Host",
-		"useLegacyFormat": "Використовувати застарілий формат API OpenAI",
-		"customHeaders": "Власні заголовки",
-		"headerName": "Ім'я заголовка",
-		"headerValue": "Значення заголовка",
-		"noCustomHeaders": "Не визначено жодних власних заголовків. Натисніть кнопку + щоб додати.",
-		"requestyApiKey": "Ключ API Requesty",
+		"useCustomBaseUrl": "��������������� ������� ������� URL",
+		"useReasoning": "�������� ���������",
+		"useHostHeader": "��������������� ������� ��������� Host",
+		"useLegacyFormat": "��������������� ��������� ������ API OpenAI",
+		"customHeaders": "����� ���������",
+		"headerName": "��'� ���������",
+		"headerValue": "�������� ���������",
+		"noCustomHeaders": "�� ��������� ������ ������� ���������. �������� ������ + ��� ������.",
+		"requestyApiKey": "���� API Requesty",
 		"refreshModels": {
-			"label": "Оновити моделі",
-			"hint": "Будь ласка, знову відкрийте налаштування, щоб побачити останні моделі.",
-			"loading": "Оновлення списку моделей...",
-			"success": "Список моделей успішно оновлено!",
-			"error": "Не вдалося оновити список моделей. Спробуйте ще раз."
+			"label": "������� �����",
+			"hint": "���� �����, ����� �������� ������������, ��� �������� ������ �����.",
+			"loading": "��������� ������ �������...",
+			"success": "������ ������� ������ ��������!",
+			"error": "�� ������� ������� ������ �������. ��������� �� ���."
 		},
-		"getRequestyApiKey": "Отримати ключ API Requesty",
-		"getRequestyBaseUrl": "Базовий URL",
-		"requestyUseCustomBaseUrl": "Використовувати власний базовий URL",
-		"openRouterTransformsText": "Стискати підказки та ланцюжки повідомлень до розміру контексту (<a>Перетворення OpenRouter</a>)",
-		"anthropicApiKey": "Ключ API Anthropic",
-		"getAnthropicApiKey": "Отримати ключ API Anthropic",
-		"anthropicUseAuthToken": "Передавати ключ API Anthropic як заголовок Authorization замість X-Api-Key",
-		"anthropic1MContextBetaLabel": "Увімкнути контекстне вікно 1M (Beta)",
-		"anthropic1MContextBetaDescription": "Розширити контекстне вікно до 1 мільйона токенів для Claude Sonnet 4",
-		"vertex1MContextBetaLabel": "Увімкнути контекстне вікно 1M (Beta)",
-		"vertex1MContextBetaDescription": "Розширити контекстне вікно до 1 мільйона токенів для Claude Sonnet 4",
-		"awsBedrock1MContextBetaLabel": "Увімкнути контекстне вікно 1M (Beta)",
-		"awsBedrock1MContextBetaDescription": "Розширити контекстне вікно до 1 мільйона токенів для Claude Sonnet 4",
-		"anthropicUseAzureDeployment": "Використовувати ім'я розгортання Azure",
-		"anthropicAzureDeploymentPlaceholder": "Введіть ім'я розгортання...",
-		"basetenApiKey": "Ключ API Baseten",
-		"getBasetenApiKey": "Отримати ключ API Baseten",
-		"cerebrasApiKey": "Ключ API Cerebras",
-		"getCerebrasApiKey": "Отримати ключ API Cerebras",
-		"chutesApiKey": "Ключ API Chutes",
-		"getChutesApiKey": "Отримати ключ API Chutes",
-		"ioIntelligenceApiKey": "Ключ API IO Intelligence",
-		"ioIntelligenceApiKeyPlaceholder": "Введіть ваш ключ API IO Intelligence",
-		"getIoIntelligenceApiKey": "Отримати ключ API IO Intelligence",
-		"deepSeekApiKey": "Ключ API DeepSeek",
-		"getDeepSeekApiKey": "Отримати ключ API DeepSeek",
-		"featherlessApiKey": "Ключ API Featherless",
-		"getFeatherlessApiKey": "Отримати ключ API Featherless",
-		"fireworksApiKey": "Ключ API Fireworks",
-		"getFireworksApiKey": "Отримати ключ API Fireworks",
-		"syntheticApiKey": "Ключ API Synthetic",
-		"getSyntheticApiKey": "Отримати ключ API Synthetic",
-		"moonshotApiKey": "Ключ API Moonshot",
-		"getMoonshotApiKey": "Отримати ключ API Moonshot",
-		"moonshotBaseUrl": "Точка входу Moonshot",
-		"minimaxApiKey": "Ключ API MiniMax",
-		"getMiniMaxApiKey": "Отримати ключ API MiniMax",
-		"minimaxBaseUrl": "Точка входу MiniMax",
-		"zaiEntrypoint": "Точка входу Z AI",
-		"zaiEntrypointDescription": "Будь ласка, виберіть відповідну точку входу API залежно від вашого місцезнаходження. Якщо ви в Китаї, виберіть open.bigmodel.cn. Інакше виберіть api.z.ai.",
-		"geminiApiKey": "Ключ API Gemini",
-		"geminiUrlContext": "Включати URL у контекст",
-		"geminiUrlContextDescription": "Коли увімкнено, URL будуть включені в контекст при надсиланні запитів до Gemini",
-		"geminiGroundingSearch": "Увімкнути пошук заземлення",
-		"geminiGroundingSearchDescription": "Коли увімкнено, Gemini використовуватиме веб-пошук для надання актуальної інформації",
-		"getGroqApiKey": "Отримати ключ API Groq",
-		"groqApiKey": "Ключ API Groq",
-		"getGeminiApiKey": "Отримати ключ API Gemini",
-		"openAiApiKey": "Ключ API OpenAI",
-		"getHuggingFaceApiKey": "Отримати ключ API Hugging Face",
-		"huggingFaceApiKey": "Ключ API Hugging Face",
-		"getOvhCloudAiEndpointsApiKey": "Отримати ключ API OVHcloud AI Endpoints",
-		"ovhCloudAiEndpointsApiKey": "Ключ API OVHcloud AI Endpoints",
-		"ovhCloudAiEndpointsBaseUrl": "Базовий URL",
-		"getOvhCloudAiEndpointsBaseUrl": "Використовувати користувацький базовий URL",
-		"huggingFaceModelId": "ID моделі",
-		"huggingFaceLoading": "Завантаження...",
-		"huggingFaceModelsCount": "({{count}} моделей)",
-		"huggingFaceSelectModel": "Виберіть модель...",
-		"huggingFaceSearchModels": "Пошук моделей...",
-		"huggingFaceNoModelsFound": "Моделі не знайдено",
-		"huggingFaceProvider": "Постачальник",
-		"huggingFaceProviderAuto": "Автоматично",
-		"huggingFaceSelectProvider": "Виберіть постачальника...",
-		"huggingFaceSearchProviders": "Пошук постачальників...",
-		"huggingFaceNoProvidersFound": "Постачальників не знайдено",
+		"getRequestyApiKey": "�������� ���� API Requesty",
+		"getRequestyBaseUrl": "������� URL",
+		"requestyUseCustomBaseUrl": "��������������� ������� ������� URL",
+		"openRouterTransformsText": "�������� ������� �� �������� ���������� �� ������ ��������� (<a>������������ OpenRouter</a>)",
+		"anthropicApiKey": "���� API Anthropic",
+		"getAnthropicApiKey": "�������� ���� API Anthropic",
+		"anthropicUseAuthToken": "���������� ���� API Anthropic �� ��������� Authorization ������ X-Api-Key",
+		"anthropic1MContextBetaLabel": "�������� ���������� ���� 1M (Beta)",
+		"anthropic1MContextBetaDescription": "��������� ���������� ���� �� 1 ������� ������ ��� Claude Sonnet 4",
+		"vertex1MContextBetaLabel": "�������� ���������� ���� 1M (Beta)",
+		"vertex1MContextBetaDescription": "��������� ���������� ���� �� 1 ������� ������ ��� Claude Sonnet 4",
+		"awsBedrock1MContextBetaLabel": "�������� ���������� ���� 1M (Beta)",
+		"awsBedrock1MContextBetaDescription": "��������� ���������� ���� �� 1 ������� ������ ��� Claude Sonnet 4",
+		"anthropicUseAzureDeployment": "��������������� ��'� ����������� Azure",
+		"anthropicAzureDeploymentPlaceholder": "������ ��'� �����������...",
+		"basetenApiKey": "���� API Baseten",
+		"getBasetenApiKey": "�������� ���� API Baseten",
+		"cerebrasApiKey": "���� API Cerebras",
+		"getCerebrasApiKey": "�������� ���� API Cerebras",
+		"chutesApiKey": "���� API Chutes",
+		"getChutesApiKey": "�������� ���� API Chutes",
+		"ioIntelligenceApiKey": "���� API IO Intelligence",
+		"ioIntelligenceApiKeyPlaceholder": "������ ��� ���� API IO Intelligence",
+		"getIoIntelligenceApiKey": "�������� ���� API IO Intelligence",
+		"deepSeekApiKey": "���� API DeepSeek",
+		"getDeepSeekApiKey": "�������� ���� API DeepSeek",
+		"featherlessApiKey": "���� API Featherless",
+		"getFeatherlessApiKey": "�������� ���� API Featherless",
+		"fireworksApiKey": "���� API Fireworks",
+		"getFireworksApiKey": "�������� ���� API Fireworks",
+		"syntheticApiKey": "���� API Synthetic",
+		"getSyntheticApiKey": "�������� ���� API Synthetic",
+		"moonshotApiKey": "���� API Moonshot",
+		"getMoonshotApiKey": "�������� ���� API Moonshot",
+		"moonshotBaseUrl": "����� ����� Moonshot",
+		"minimaxApiKey": "���� API MiniMax",
+		"getMiniMaxApiKey": "�������� ���� API MiniMax",
+		"minimaxBaseUrl": "����� ����� MiniMax",
+		"zaiEntrypoint": "����� ����� Z AI",
+		"zaiEntrypointDescription": "���� �����, ������� �������� ����� ����� API ������� �� ������ ���������������. ���� �� � ����, ������� open.bigmodel.cn. ������ ������� api.z.ai.",
+		"geminiApiKey": "���� API Gemini",
+		"geminiUrlContext": "�������� URL � ��������",
+		"geminiUrlContextDescription": "���� ��������, URL ������ ������� � �������� ��� ��������� ������ �� Gemini",
+		"geminiGroundingSearch": "�������� ����� ����������",
+		"geminiGroundingSearchDescription": "���� ��������, Gemini ����������������� ���-����� ��� ������� ��������� ����������",
+		"getGroqApiKey": "�������� ���� API Groq",
+		"groqApiKey": "���� API Groq",
+		"getGeminiApiKey": "�������� ���� API Gemini",
+		"openAiApiKey": "���� API OpenAI",
+		"getHuggingFaceApiKey": "�������� ���� API Hugging Face",
+		"huggingFaceApiKey": "���� API Hugging Face",
+		"getOvhCloudAiEndpointsApiKey": "�������� ���� API OVHcloud AI Endpoints",
+		"ovhCloudAiEndpointsApiKey": "���� API OVHcloud AI Endpoints",
+		"ovhCloudAiEndpointsBaseUrl": "������� URL",
+		"getOvhCloudAiEndpointsBaseUrl": "��������������� �������������� ������� URL",
+		"huggingFaceModelId": "ID �����",
+		"huggingFaceLoading": "������������...",
+		"huggingFaceModelsCount": "({{count}} �������)",
+		"huggingFaceSelectModel": "������� ������...",
+		"huggingFaceSearchModels": "����� �������...",
+		"huggingFaceNoModelsFound": "����� �� ��������",
+		"huggingFaceProvider": "������������",
+		"huggingFaceProviderAuto": "�����������",
+		"huggingFaceSelectProvider": "������� �������������...",
+		"huggingFaceSearchProviders": "����� �������������...",
+		"huggingFaceNoProvidersFound": "������������� �� ��������",
 		"sapAiCore": {
-			"serviceKey": "Ключ сервісу AI Core",
-			"serviceKeyJson": "Введіть JSON ключа сервісу...",
-			"resourceGroup": "Група ресурсів AI Core",
-			"credentialsNote": "Ці облікові дані зберігаються локально і використовуються лише для виконання API-запитів з цього розширення.",
-			"learnMore": "Ви можете знайти більше інформації про доступ до SAP AI Core API тут.",
-			"orchestrationMode": "Режим оркестрації",
-			"orchestrationEnabledDesc": "Коли увімкнено, надає доступ до всіх доступних моделей без необхідності окремих розгортань.",
-			"orchestrationDisabledDesc": "Коли вимкнено, надає доступ лише до розгорнутих базових моделей у вашому екземплярі сервісу AI Core.",
-			"modelDeploymentDesc": "Ви можете вибирати лише моделі з доступними розгортаннями.",
-			"deployment": "Розгортання",
-			"loading": "Завантаження...",
-			"modelsCount": "({{count}} моделей)",
-			"deploymentsCount": "({{count}} розгортань)",
-			"selectModel": "Виберіть модель...",
-			"selectDeployment": "Виберіть розгортання...",
-			"searchModels": "Пошук моделей...",
-			"searchDeployments": "Пошук розгортань...",
-			"noModelsFound": "Моделі не знайдено",
-			"noDeploymentFound": "Розгортання не знайдено",
-			"getStarted": "Почати роботу з SAP AI Core",
-			"supportedProviders": "Підтримувані провайдери",
-			"supportedProvidersDesc1": "Провайдер SAP AI Core наразі підтримує лише базові моделі для наступних провайдерів LLM:",
-			"supportedProvidersDesc2": "Розгляньте можливість перемикання на режим оркестрації для доступу до більшої кількості моделей.",
-			"supportedProvidersDesc3": "Дізнатися більше про режим оркестрації"
+			"serviceKey": "���� ������ AI Core",
+			"serviceKeyJson": "������ JSON ����� ������...",
+			"resourceGroup": "����� ������� AI Core",
+			"credentialsNote": "ֳ ������ ��� ����������� �������� � ���������������� ���� ��� ��������� API-������ � ����� ����������.",
+			"learnMore": "�� ������ ������ ����� ���������� ��� ������ �� SAP AI Core API ���.",
+			"orchestrationMode": "����� �����������",
+			"orchestrationEnabledDesc": "���� ��������, ���� ������ �� ��� ��������� ������� ��� ����������� ������� ����������.",
+			"orchestrationDisabledDesc": "���� ��������, ���� ������ ���� �� ����������� ������� ������� � ������ ��������� ������ AI Core.",
+			"modelDeploymentDesc": "�� ������ �������� ���� ����� � ���������� �������������.",
+			"deployment": "�����������",
+			"loading": "������������...",
+			"modelsCount": "({{count}} �������)",
+			"deploymentsCount": "({{count}} ����������)",
+			"selectModel": "������� ������...",
+			"selectDeployment": "������� �����������...",
+			"searchModels": "����� �������...",
+			"searchDeployments": "����� ����������...",
+			"noModelsFound": "����� �� ��������",
+			"noDeploymentFound": "����������� �� ��������",
+			"getStarted": "������ ������ � SAP AI Core",
+			"supportedProviders": "ϳ��������� ����������",
+			"supportedProvidersDesc1": "��������� SAP AI Core ����� ������� ���� ����� ����� ��� ��������� ���������� LLM:",
+			"supportedProvidersDesc2": "���������� ��������� ����������� �� ����� ����������� ��� ������� �� ����� ������� �������.",
+			"supportedProvidersDesc3": "ĳ������� ����� ��� ����� �����������"
 		},
-		"awsApiKey": "Ключ API Amazon Bedrock",
-		"apiProviderDocs": "Документація провайдера",
-		"apiKey": "Ключ API",
-		"openAiBaseUrl": "Базовий URL",
-		"getOpenAiApiKey": "Отримати ключ API OpenAI",
-		"mistralApiKey": "Ключ API Mistral",
-		"getMistralApiKey": "Отримати ключ API Mistral / Codestral",
-		"codestralBaseUrl": "Базовий URL Codestral (необов'язково)",
-		"codestralBaseUrlDesc": "Встановити альтернативний URL для моделі Codestral.",
-		"xaiApiKey": "Ключ API xAI",
-		"getXaiApiKey": "Отримати ключ API xAI",
-		"litellmApiKey": "Ключ API LiteLLM",
-		"litellmBaseUrl": "Базовий URL LiteLLM",
-		"awsCredentials": "Облікові дані AWS",
-		"awsProfile": "Профіль AWS",
-		"awsProfileName": "Ім'я профілю AWS",
-		"awsAccessKey": "Ключ доступу AWS",
-		"awsSecretKey": "Секретний ключ AWS",
-		"awsSessionToken": "Токен сесії AWS",
-		"awsRegion": "Регіон AWS",
-		"awsCrossRegion": "Використовувати міжрегіональний висновок",
-		"awsGlobalInference": "Використовувати глобальний висновок (автоматичний вибір оптимального регіону AWS)",
-		"awsServiceTier": "Рівень сервісу",
-		"awsServiceTierStandard": "Стандартний",
-		"awsServiceTierStandardDesc": "Збалансована продуктивність і вартість",
-		"awsServiceTierFlex": "Гнучкий (знижка 50%)",
-		"awsServiceTierFlexDesc": "Нижча вартість, вища затримка для некритичних завдань",
-		"awsServiceTierPriority": "Пріоритетний (надбавка 75%)",
-		"awsServiceTierPriorityDesc": "Найшвидша продуктивність для важливих застосунків",
-		"awsServiceTierNote": "Рівні сервісу впливають на ціни та продуктивність. Гнучкий пропонує знижку 50% з вищою затримкою, Пріоритетний пропонує на 25% кращу продуктивність з надбавкою 75%.",
+		"awsApiKey": "���� API Amazon Bedrock",
+		"apiProviderDocs": "������������ ����������",
+		"apiKey": "���� API",
+		"openAiBaseUrl": "������� URL",
+		"getOpenAiApiKey": "�������� ���� API OpenAI",
+		"mistralApiKey": "���� API Mistral",
+		"getMistralApiKey": "�������� ���� API Mistral / Codestral",
+		"codestralBaseUrl": "������� URL Codestral (������'������)",
+		"codestralBaseUrlDesc": "���������� �������������� URL ��� ����� Codestral.",
+		"xaiApiKey": "���� API xAI",
+		"getXaiApiKey": "�������� ���� API xAI",
+		"litellmApiKey": "���� API LiteLLM",
+		"litellmBaseUrl": "������� URL LiteLLM",
+		"awsCredentials": "������ ��� AWS",
+		"awsProfile": "������ AWS",
+		"awsProfileName": "��'� ������ AWS",
+		"awsAccessKey": "���� ������� AWS",
+		"awsSecretKey": "��������� ���� AWS",
+		"awsSessionToken": "����� ��� AWS",
+		"awsRegion": "����� AWS",
+		"awsCrossRegion": "��������������� ������������� ��������",
+		"awsGlobalInference": "��������������� ���������� �������� (������������ ���� ������������ ������ AWS)",
+		"awsServiceTier": "г���� ������",
+		"awsServiceTierStandard": "�����������",
+		"awsServiceTierStandardDesc": "������������ ������������� � �������",
+		"awsServiceTierFlex": "������� (������ 50%)",
+		"awsServiceTierFlexDesc": "����� �������, ���� �������� ��� ����������� �������",
+		"awsServiceTierPriority": "����������� (�������� 75%)",
+		"awsServiceTierPriorityDesc": "��������� ������������� ��� �������� ����������",
+		"awsServiceTierNote": "г�� ������ ��������� �� ���� �� �������������. ������� ������� ������ 50% � ����� ���������, ����������� ������� �� 25% ����� ������������� � ��������� 75%.",
 		"awsBedrockVpc": {
-			"useCustomVpcEndpoint": "Використовувати власний кінцевий пункт VPC",
-			"vpcEndpointUrlPlaceholder": "Введіть URL кінцевого пункту VPC (необов'язково)",
-			"examples": "Приклади:"
+			"useCustomVpcEndpoint": "��������������� ������� ������� ����� VPC",
+			"vpcEndpointUrlPlaceholder": "������ URL �������� ������ VPC (������'������)",
+			"examples": "��������:"
 		},
-		"enablePromptCaching": "Увімкнути кешування підказок",
-		"enablePromptCachingTitle": "Увімкніть кешування підказок, щоб покращити продуктивність і зменшити витрати для підтримуваних моделей.",
-		"cacheUsageNote": "Примітка: якщо ви не бачите використання кешу, спробуйте вибрати іншу модель, а потім знову вибрати потрібну модель.",
-		"vscodeLmModel": "Мовна модель",
-		"vscodeLmWarning": "Примітка: це дуже експериментальна інтеграція, і підтримка провайдера може відрізнятися. Якщо ви отримуєте помилку про те, що модель не підтримується, це проблема на боці провайдера.",
+		"enablePromptCaching": "�������� ��������� �������",
+		"enablePromptCachingTitle": "������� ��������� �������, ��� ��������� ������������� � �������� ������� ��� ������������ �������.",
+		"cacheUsageNote": "�������: ���� �� �� ������ ������������ ����, ��������� ������� ���� ������, � ���� ����� ������� ������� ������.",
+		"vscodeLmModel": "����� ������",
+		"vscodeLmWarning": "�������: �� ���� ���������������� ����������, � �������� ���������� ���� ����������. ���� �� �������� ������� ��� ��, �� ������ �� �����������, �� �������� �� ���� ����������.",
 		"geminiParameters": {
 			"urlContext": {
-				"title": "Увімкнути контекст URL",
-				"description": "Дозволяє Gemini читати пов'язані сторінки, коли URL згадуються в розмовах"
+				"title": "�������� �������� URL",
+				"description": "�������� Gemini ������ ���'���� �������, ���� URL ���������� � ��������"
 			},
 			"groundingSearch": {
-				"title": "Увімкнути заземлення з пошуком Google",
-				"description": "Підключає Gemini до веб-даних у реальному часі через пошук Google для більш точних і актуальних відповідей"
+				"title": "�������� ���������� � ������� Google",
+				"description": "ϳ������ Gemini �� ���-����� � ��������� ��� ����� ����� Google ��� ���� ������ � ���������� ��������"
 			}
 		},
 		"googleCloudSetup": {
-			"title": "Щоб використовувати Google Cloud Vertex AI, вам потрібно:",
-			"step1": "1. Створити обліковий запис Google Cloud, увімкнути Vertex AI API та увімкнути потрібні моделі Claude.",
-			"step2": "2. Встановити Google Cloud CLI та налаштувати облікові дані за замовчуванням для програми.",
-			"step3": "3. Або створити обліковий запис служби з обліковими даними."
+			"title": "��� ��������������� Google Cloud Vertex AI, ��� �������:",
+			"step1": "1. �������� �������� ����� Google Cloud, �������� Vertex AI API �� �������� ������ ����� Claude.",
+			"step2": "2. ���������� Google Cloud CLI �� ����������� ������ ��� �� ������������� ��� ��������.",
+			"step3": "3. ��� �������� �������� ����� ������ � ��������� ������."
 		},
-		"googleCloudCredentials": "Облікові дані Google Cloud",
-		"googleCloudKeyFile": "Шлях до файлу ключа Google Cloud",
-		"googleCloudProjectId": "Ідентифікатор проекту Google Cloud",
-		"googleCloudRegion": "Регіон Google Cloud",
+		"googleCloudCredentials": "������ ��� Google Cloud",
+		"googleCloudKeyFile": "���� �� ����� ����� Google Cloud",
+		"googleCloudProjectId": "������������ ������� Google Cloud",
+		"googleCloudRegion": "����� Google Cloud",
 		"lmStudio": {
-			"baseUrl": "Базовий URL (необов'язково)",
-			"modelId": "Ідентифікатор моделі",
-			"speculativeDecoding": "Увімкнути спекулятивне декодування",
-			"draftModelId": "Ідентифікатор чернетки моделі",
-			"draftModelDesc": "Чернетка моделі має бути з тієї ж родини моделей, щоб спекулятивне декодування працювало правильно.",
-			"selectDraftModel": "Вибрати чернетку моделі",
-			"noModelsFound": "Чернетки моделей не знайдено. Переконайтеся, що LM Studio запущено з увімкненим режимом сервера.",
-			"description": "LM Studio дозволяє запускати моделі локально на вашому комп’ютері. Інструкції щодо початку роботи див. у їхньому <a>посібнику зі швидкого старту</a>. Вам також потрібно буде запустити функцію <b>локального сервера</b> LM Studio, щоб використовувати її з цим розширенням. <span>Примітка:</span> AlfaCode assistant використовує складні підказки і найкраще працює з моделями Claude. Менш здатні моделі можуть працювати не так, як очікувалося."
+			"baseUrl": "������� URL (������'������)",
+			"modelId": "������������ �����",
+			"speculativeDecoding": "�������� ������������ �����������",
+			"draftModelId": "������������ �������� �����",
+			"draftModelDesc": "�������� ����� �� ���� � 򳺿 � ������ �������, ��� ������������ ����������� ��������� ���������.",
+			"selectDraftModel": "������� �������� �����",
+			"noModelsFound": "�������� ������� �� ��������. �������������, �� LM Studio �������� � ��������� ������� �������.",
+			"description": "LM Studio �������� ��������� ����� �������� �� ������ ��������. ���������� ���� ������� ������ ���. � ������� <a>�������� � �������� ������</a>. ��� ����� ������� ���� ��������� ������� <b>���������� �������</b> LM Studio, ��� ��������������� �� � ��� �����������. <span>�������:</span> AlfaCode assistant ����������� ������ ������� � �������� ������ � �������� Claude. ���� ����� ����� ������ ��������� �� ���, �� �����������."
 		},
 		"ollama": {
-			"baseUrl": "Базовий URL (необов'язково)",
-			"modelId": "Ідентифікатор моделі",
-			"apiKey": "Ключ API",
-			"apiKeyHelp": "Додатковий API ключ для автентифікованих екземплярів Ollama або хмарних сервісів. Залиш порожнім для локальних установок.",
-			"numCtx": "Розмір контекстного вікна (num_ctx)",
-			"numCtxHelp": "Перевизначити розмір контекстного вікна моделі за замовчуванням. Залиш порожнім для використання конфігурації Modelfile. Мінімальне значення 128.",
-			"apiKeyPlaceholder": "Введіть ваш ключ API",
-			"apiKeyInfo": "Ключ API буде надісланий як заголовок Authorization",
-			"description": "Ollama дозволяє запускати моделі локально на вашому комп'ютері. Інструкції щодо початку роботи див. у їхньому посібнику зі швидкого старту.",
-			"warning": "Примітка: AlfaCode assistant використовує складні підказки і найкраще працює з моделями Claude. Менш здатні моделі можуть працювати не так, як очікувалося."
+			"baseUrl": "������� URL (������'������)",
+			"modelId": "������������ �����",
+			"apiKey": "���� API",
+			"apiKeyHelp": "���������� API ���� ��� ��������������� ���������� Ollama ��� ������� ������. ����� ������� ��� ��������� ���������.",
+			"numCtx": "����� ������������ ���� (num_ctx)",
+			"numCtxHelp": "������������� ����� ������������ ���� ����� �� �������������. ����� ������� ��� ������������ ����������� Modelfile. ̳������� �������� 128.",
+			"apiKeyPlaceholder": "������ ��� ���� API",
+			"apiKeyInfo": "���� API ���� ��������� �� ��������� Authorization",
+			"description": "Ollama �������� ��������� ����� �������� �� ������ ����'����. ���������� ���� ������� ������ ���. � ������� �������� � �������� ������.",
+			"warning": "�������: AlfaCode assistant ����������� ������ ������� � �������� ������ � �������� Claude. ���� ����� ����� ������ ��������� �� ���, �� �����������."
 		},
-		"unboundApiKey": "Ключ API Unbound",
-		"getUnboundApiKey": "Отримати ключ API Unbound",
-		"unboundRefreshModelsSuccess": "Список моделей оновлено! Тепер ви можете вибирати з останніх моделей.",
-		"unboundInvalidApiKey": "Недійсний ключ API. Перевірте свій ключ API і спробуйте ще раз.",
+		"unboundApiKey": "���� API Unbound",
+		"getUnboundApiKey": "�������� ���� API Unbound",
+		"unboundRefreshModelsSuccess": "������ ������� ��������! ����� �� ������ �������� � ������� �������.",
+		"unboundInvalidApiKey": "�������� ���� API. �������� ��� ���� API � ��������� �� ���.",
 		"humanRelay": {
-			"description": "Ключ API не потрібен, але користувачеві потрібно допомогти скопіювати та вставити інформацію до веб-чату ШІ.",
-			"instructions": "Під час використання з'явиться діалогове вікно, і поточне повідомлення буде автоматично скопійовано до буфера обміну. Вам потрібно вставити це до веб-версій ШІ (наприклад, ChatGPT або Claude), потім скопіювати відповідь ШІ назад у діалогове вікно та натиснути кнопку підтвердження."
+			"description": "���� API �� �������, ��� ������������ ������� ��������� ��������� �� �������� ���������� �� ���-���� ز.",
+			"instructions": "ϳ� ��� ������������ �'������� �������� ����, � ������� ����������� ���� ����������� ���������� �� ������ �����. ��� ������� �������� �� �� ���-����� ز (���������, ChatGPT ��� Claude), ���� ��������� ������� ز ����� � �������� ���� �� ��������� ������ ������������."
 		},
 		"roo": {
-			"authenticatedMessage": "Безпечна автентифікація через ваш обліковий запис Roo Code Cloud.",
-			"connectButton": "Підключитися до Roo Code Cloud"
+			"authenticatedMessage": "�������� ������������� ����� ��� �������� ����� AlfaCode assistant Cloud.",
+			"connectButton": "ϳ���������� �� AlfaCode assistant Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
-				"title": "Маршрутизація провайдера OpenRouter",
-				"description": "OpenRouter направляє запити до найкращих доступних провайдерів для вашої моделі. За замовчуванням запити розподіляються між провідними провайдерами для максимального часу безвідмовної роботи. Однак ви можете вибрати конкретного провайдера для використання цієї моделі.",
-				"learnMore": "Дізнайтеся більше про маршрутизацію провайдерів"
+				"title": "������������� ���������� OpenRouter",
+				"description": "OpenRouter ��������� ������ �� ��������� ��������� ���������� ��� ���� �����. �� ������������� ������ ������������� �� ��������� ������������ ��� ������������� ���� ���������� ������. ����� �� ������ ������� ����������� ���������� ��� ������������ ���� �����.",
+				"learnMore": "ĳ�������� ����� ��� ������������� ����������"
 			}
 		},
-		"doubaoApiKey": "Ключ API Doubao",
-		"getDoubaoApiKey": "Отримати ключ API Doubao",
-		"zaiApiKey": "Ключ API Z.AI",
-		"getZaiApiKey": "Отримати ключ API Z.AI",
-		"sambaNovaApiKey": "Ключ API SambaNova",
-		"getSambaNovaApiKey": "Отримати ключ API SambaNova",
-		"nanoGptApiKey": "Ключ API Nano-GPT",
-		"getNanoGptApiKey": "Отримати ключ API Nano-GPT",
-		"nanoGptModelList": "Список моделей",
+		"doubaoApiKey": "���� API Doubao",
+		"getDoubaoApiKey": "�������� ���� API Doubao",
+		"zaiApiKey": "���� API Z.AI",
+		"getZaiApiKey": "�������� ���� API Z.AI",
+		"sambaNovaApiKey": "���� API SambaNova",
+		"getSambaNovaApiKey": "�������� ���� API SambaNova",
+		"nanoGptApiKey": "���� API Nano-GPT",
+		"getNanoGptApiKey": "�������� ���� API Nano-GPT",
+		"nanoGptModelList": "������ �������",
 		"nanoGptModelListOptions": {
-			"all": "Усі моделі",
-			"personalized": "Персоналізовані моделі",
-			"subscription": "Підписні моделі"
+			"all": "�� �����",
+			"personalized": "������������� �����",
+			"subscription": "ϳ����� �����"
 		},
 		"customModel": {
-			"capabilities": "Налаштуйте можливості та ціни для вашої власної моделі, сумісної з OpenAI. Будьте обережні при вказуванні можливостей моделі, оскільки вони можуть вплинути на продуктивність AlfaCode assistant.",
+			"capabilities": "���������� ��������� �� ���� ��� ���� ������ �����, ������ � OpenAI. ������ ������� ��� ��������� ����������� �����, ������� ���� ������ �������� �� ������������� AlfaCode assistant.",
 			"maxTokens": {
-				"label": "Макс. вихідних токенів",
-				"description": "Максимальна кількість токенів, які може генерувати модель у відповіді. (Вкажіть -1, щоб дозволити серверу встановити макс. кількість токенів.)"
+				"label": "����. �������� ������",
+				"description": "����������� ������� ������, �� ���� ���������� ������ � ������. (������ -1, ��� ��������� ������� ���������� ����. ������� ������.)"
 			},
 			"contextWindow": {
-				"label": "Розмір контекстного вікна",
-				"description": "Загальна кількість токенів (вхід + вихід), які може обробити модель."
+				"label": "����� ������������ ����",
+				"description": "�������� ������� ������ (���� + �����), �� ���� �������� ������."
 			},
 			"imageSupport": {
-				"label": "Підтримка зображень",
-				"description": "Чи здатна ця модель обробляти та розуміти зображення?"
+				"label": "ϳ������� ���������",
+				"description": "�� ������ �� ������ ��������� �� ������� ����������?"
 			},
 			"computerUse": {
-				"label": "Використання комп'ютера",
-				"description": "Чи здатна ця модель взаємодіяти з браузером? (наприклад, Claude 3.7 Sonnet)."
+				"label": "������������ ����'�����",
+				"description": "�� ������ �� ������ ��������� � ���������? (���������, Claude 3.7 Sonnet)."
 			},
 			"promptCache": {
-				"label": "Кешування підказок",
-				"description": "Чи здатна ця модель кешувати підказки?"
+				"label": "��������� �������",
+				"description": "�� ������ �� ������ �������� �������?"
 			},
 			"pricing": {
 				"input": {
-					"label": "Ціна входу",
-					"description": "Вартість за мільйон токенів у вхідному/підказковому тексті. Це впливає на вартість надсилання контексту та інструкцій до моделі."
+					"label": "ֳ�� �����",
+					"description": "������� �� ������ ������ � ��������/����������� �����. �� ������ �� ������� ���������� ��������� �� ���������� �� �����."
 				},
 				"output": {
-					"label": "Ціна виходу",
-					"description": "Вартість за мільйон токенів у відповіді моделі. Це впливає на вартість генерованого контенту та завершень."
+					"label": "ֳ�� ������",
+					"description": "������� �� ������ ������ � ������ �����. �� ������ �� ������� ������������ �������� �� ���������."
 				},
 				"cacheReads": {
-					"label": "Ціна читання з кешу",
-					"description": "Вартість за мільйон токенів для читання з кешу. Це ціна, що стягується при отриманні кешованої відповіді."
+					"label": "ֳ�� ������� � ����",
+					"description": "������� �� ������ ������ ��� ������� � ����. �� ����, �� ��������� ��� �������� �������� ������."
 				},
 				"cacheWrites": {
-					"label": "Ціна запису в кеш",
-					"description": "Вартість за мільйон токенів для запису в кеш. Це ціна, що стягується, коли підказка кешується вперше."
+					"label": "ֳ�� ������ � ���",
+					"description": "������� �� ������ ������ ��� ������ � ���. �� ����, �� ���������, ���� ������� �������� ������."
 				}
 			},
-			"resetDefaults": "Скинути до стандартних"
+			"resetDefaults": "������� �� �����������"
 		},
 		"rateLimitAfter": {
-			"label": "Обмеження швидкості в кінці",
-			"description": "Розпочніть обмеження швидкості після завершення потоку API."
+			"label": "��������� �������� � ����",
+			"description": "��������� ��������� �������� ���� ���������� ������ API."
 		},
 		"rateLimitSeconds": {
-			"label": "Обмеження швидкості",
-			"description": "Мінімальний час між запитами API."
+			"label": "��������� ��������",
+			"description": "̳�������� ��� �� �������� API."
 		},
 		"consecutiveMistakeLimit": {
-			"label": "Обмеження помилок і повторень",
-			"description": "Кількість послідовних помилок або повторних дій перед показом діалогу 'AlfaCode assistant має проблеми'",
-			"unlimitedDescription": "Увімкнено необмежені повторні спроби (автоматичне продовження). Діалог ніколи не з'явиться.",
-			"warning": "⚠️ Встановлення на 0 дозволяє необмежені повторні спроби, що може призвести до значного використання API"
+			"label": "��������� ������� � ���������",
+			"description": "ʳ������ ���������� ������� ��� ��������� �� ����� ������� ������ 'AlfaCode assistant �� ��������'",
+			"unlimitedDescription": "�������� ��������� ������� ������ (����������� �����������). ĳ���� ����� �� �'�������.",
+			"warning": "?? ������������ �� 0 �������� ��������� ������� ������, �� ���� ��������� �� �������� ������������ API"
 		},
 		"reasoningEffort": {
-			"label": "Зусилля з міркування моделі",
-			"none": "Немає",
-			"minimal": "Мінімальний (найшвидший)",
-			"high": "Високий",
-			"medium": "Середній",
-			"low": "Низький",
-			"xhigh": "Екстра високий"
+			"label": "������� � ��������� �����",
+			"none": "����",
+			"minimal": "̳�������� (����������)",
+			"high": "�������",
+			"medium": "�������",
+			"low": "�������",
+			"xhigh": "������ �������"
 		},
 		"verbosity": {
-			"label": "Рівень деталізації виводу",
-			"high": "Високий",
-			"medium": "Середній",
-			"low": "Низький",
-			"description": "Контролює рівень деталізації відповідей моделі. Низький рівень створює стислі відповіді, тоді як високий рівень надає докладні пояснення."
+			"label": "г���� ���������� ������",
+			"high": "�������",
+			"medium": "�������",
+			"low": "�������",
+			"description": "��������� ����� ���������� �������� �����. ������� ����� ������� ����� ������, ��� �� ������� ����� ���� ������� ���������."
 		},
-		"setReasoningLevel": "Увімкнути зусилля з міркування",
+		"setReasoningLevel": "�������� ������� � ���������",
 		"claudeCode": {
-			"pathLabel": "Шлях до Claude Code",
-			"description": "Необов'язковий шлях до вашого Claude Code CLI. За замовчуванням 'claude', якщо не встановлено.",
-			"placeholder": "За замовчуванням: claude",
-			"maxTokensLabel": "Макс. вихідних токенів",
-			"maxTokensDescription": "Максимальна кількість вихідних токенів для відповідей Claude Code. За замовчуванням 8000."
+			"pathLabel": "���� �� Claude Code",
+			"description": "������'������� ���� �� ������ Claude Code CLI. �� ������������� 'claude', ���� �� �����������.",
+			"placeholder": "�� �������������: claude",
+			"maxTokensLabel": "����. �������� ������",
+			"maxTokensDescription": "����������� ������� �������� ������ ��� �������� Claude Code. �� ������������� 8000."
 		},
 		"io_intelligence": {
 			"name": "IO Intelligence",
-			"description": "Доступний штучний інтелект для повсякденних завдань"
+			"description": "��������� ������� �������� ��� ������������ �������"
 		},
 		"requesty": {
 			"name": "Requesty",
-			"description": "Швидкий та надійний AI помічник"
+			"description": "������� �� ������� AI �������"
 		},
 		"kilo_code_openrouter": {
-			"description": "Доступ до 200+ моделей через OpenRouter з контекстним вікном 1M"
+			"description": "������ �� 200+ ������� ����� OpenRouter � ����������� ����� 1M"
 		},
 		"qwenCode": {
-			"oauthPath": "Шлях до облікових даних OAuth (необов'язково)",
-			"oauthPathDescription": "Шлях до файлу облікових даних OAuth. Залиште порожнім для використання місця за замовчуванням (~/.qwen/oauth_creds.json).",
-			"description": "Цей провайдер використовує OAuth-аутентифікацію від сервісу Qwen і не потребує API-ключів.",
-			"instructions": "Будь ласка, дотримуйтесь офіційної документації для отримання файлу авторизації та розміщення його за вказаним шляхом.",
-			"setupLink": "Офіційна документація Qwen"
+			"oauthPath": "���� �� �������� ����� OAuth (������'������)",
+			"oauthPathDescription": "���� �� ����� �������� ����� OAuth. ������� ������� ��� ������������ ���� �� ������������� (~/.qwen/oauth_creds.json).",
+			"description": "��� ��������� ����������� OAuth-������������� �� ������ Qwen � �� ������� API-������.",
+			"instructions": "���� �����, ������������ ������� ������������ ��� ��������� ����� ����������� �� ��������� ���� �� �������� ������.",
+			"setupLink": "������� ������������ Qwen"
 		},
-		"profileName": "Назва профілю",
-		"profileType": "Тип профілю",
-		"profileTypeChat": "Чат",
-		"profileTypeAutocomplete": "Автодоповнення",
-		"profileTypeDescription": "Профілі чату використовуються для розмов. Дозволено лише один профіль автодоповнення.",
-		"autocompleteLabel": "(Автодоповнення)",
+		"profileName": "����� ������",
+		"profileType": "��� ������",
+		"profileTypeChat": "���",
+		"profileTypeAutocomplete": "��������������",
+		"profileTypeDescription": "����� ���� ���������������� ��� ������. ��������� ���� ���� ������ ��������������.",
+		"autocompleteLabel": "(��������������)",
 		"autocomplete": {
-			"onlyOneAllowed": "Дозволено лише один профіль автодоповнення. Профіль \"{{existingName}}\" вже налаштовано для автодоповнення. Будь ласка, спочатку зміни його тип або видали його."
+			"onlyOneAllowed": "��������� ���� ���� ������ ��������������. ������ \"{{existingName}}\" ��� ����������� ��� ��������������. ���� �����, �������� ���� ���� ��� ��� ������ ����."
 		}
 	},
 	"contextWindow": {
-		"description": "Максимальний контекст розмови",
+		"description": "������������ �������� �������",
 		"oneMillion": "1M"
 	},
 	"maxTokens": {
-		"description": "Максимальна довжина відповіді"
+		"description": "����������� ������� ������"
 	},
 	"topP": {
-		"description": "Контроль різноманітності відповідей"
+		"description": "�������� ������������ ��������"
 	},
 	"kiloRemoteControl": {
-		"description": "Увімкнути віддалене керування завданнями"
+		"description": "�������� �������� ��������� ����������"
 	},
 	"browser": {
 		"enable": {
-			"label": "Увімкнути інструмент браузера",
-			"description": "Якщо ввімкнено, AlfaCode assistant може використовувати браузер для взаємодії з веб-сайтами при використанні моделей, що підтримують використання комп’ютера. <0>Дізнатися більше</0>"
+			"label": "�������� ���������� ��������",
+			"description": "���� ��������, AlfaCode assistant ���� ��������������� ������� ��� �����䳿 � ���-������� ��� ����������� �������, �� ���������� ������������ ���������. <0>ĳ������� �����</0>"
 		},
 		"viewport": {
-			"label": "Розмір оглядового вікна",
-			"description": "Виберіть розмір оглядового вікна для взаємодії з браузером. Це впливає на те, як відображаються та взаємодіють веб-сайти.",
+			"label": "����� ���������� ����",
+			"description": "������� ����� ���������� ���� ��� �����䳿 � ���������. �� ������ �� ��, �� ������������� �� ��������� ���-�����.",
 			"options": {
-				"largeDesktop": "Великий робочий стіл (1280x800)",
-				"smallDesktop": "Малий робочий стіл (900x600)",
-				"tablet": "Планшет (768x1024)",
-				"mobile": "Мобільний (360x640)"
+				"largeDesktop": "������� ������� ��� (1280x800)",
+				"smallDesktop": "����� ������� ��� (900x600)",
+				"tablet": "������� (768x1024)",
+				"mobile": "�������� (360x640)"
 			}
 		},
 		"screenshotQuality": {
-			"label": "Якість знімка екрана",
-			"description": "Налаштуйте якість WebP знімків екрана браузера. Вищі значення забезпечують чіткіші знімки екрана, але збільшують використання токенів."
+			"label": "����� ����� ������",
+			"description": "���������� ����� WebP ����� ������ ��������. ���� �������� ������������ ������ ����� ������, ��� ��������� ������������ ������."
 		},
 		"remote": {
-			"label": "Використовувати віддалене підключення до браузера",
-			"description": "Підключитися до браузера Chrome, що працює з увімкненим віддаленим налагодженням (--remote-debugging-port=9222).",
-			"urlPlaceholder": "Власний URL (наприклад, http://localhost:9222)",
-			"testButton": "Перевірити з'єднання",
-			"testingButton": "Перевірка...",
-			"instructions": "Введіть адресу хоста протоколу DevTools або залиште порожнім для автоматичного виявлення локальних екземплярів Chrome. Кнопка «Перевірити з’єднання» спробує власний URL, якщо він наданий, або автоматично виявить, якщо поле порожнє."
+			"label": "��������������� �������� ���������� �� ��������",
+			"description": "ϳ���������� �� �������� Chrome, �� ������ � ��������� ��������� ������������� (--remote-debugging-port=9222).",
+			"urlPlaceholder": "������� URL (���������, http://localhost:9222)",
+			"testButton": "��������� �'�������",
+			"testingButton": "��������...",
+			"instructions": "������ ������ ����� ��������� DevTools ��� ������� ������� ��� ������������� ��������� ��������� ���������� Chrome. ������ ���������� 璺������� ������ ������� URL, ���� �� �������, ��� ����������� �������, ���� ���� ������."
 		}
 	},
 	"checkpoints": {
 		"timeout": {
-			"label": "Тайм-аут ініціалізації контрольної точки (секунди)",
-			"description": "Максимальний час очікування ініціалізації служби контрольних точок. За замовчуванням 15 секунд. Діапазон: 10-60 секунд."
+			"label": "����-��� ����������� ���������� ����� (�������)",
+			"description": "������������ ��� ���������� ����������� ������ ����������� �����. �� ������������� 15 ������. ĳ������: 10-60 ������."
 		},
 		"enable": {
-			"label": "Увімкнути автоматичні контрольні точки",
-			"description": "Якщо ввімкнено, AlfaCode assistant автоматично створюватиме контрольні точки під час виконання завдання, що полегшить перегляд змін або повернення до попередніх станів. <0>Дізнатися більше</0>"
+			"label": "�������� ���������� ��������� �����",
+			"description": "���� ��������, AlfaCode assistant ����������� ������������ ��������� ����� �� ��� ��������� ��������, �� ��������� �������� ��� ��� ���������� �� ��������� �����. <0>ĳ������� �����</0>"
 		}
 	},
 	"ghost": {
 		"showGutterAnimation": {
-			"label": "Показувати анімацію на полях при автозаповненні",
-			"description": "Відображати анімований індикатор на полях редактора під час роботи автозаповнення",
-			"preview": "Попередній перегляд анімації"
+			"label": "���������� ������� �� ����� ��� �������������",
+			"description": "³��������� ��������� ��������� �� ����� ��������� �� ��� ������ ��������������",
+			"preview": "��������� �������� �������"
 		}
 	},
 	"autoPurge": {
 		"enable": {
-			"label": "Увімкнути автоматичне очищення завдань",
-			"description": "Автоматично видаляти старі завдання для звільнення дискового простору та покращення продуктивності. Завдання класифікуються за типом та віком для визначення часу видалення."
+			"label": "�������� ����������� �������� �������",
+			"description": "����������� �������� ���� �������� ��� ��������� ��������� �������� �� ���������� �������������. �������� ������������� �� ����� �� ���� ��� ���������� ���� ���������."
 		},
 		"defaultRetention": {
-			"label": "Період зберігання за замовчуванням (дні)",
-			"description": "Кількість днів для зберігання завдань перед їх видаленням"
+			"label": "����� ��������� �� ������������� (��)",
+			"description": "ʳ������ ��� ��� ��������� ������� ����� �� ����������"
 		},
 		"neverPurgeFavorited": {
-			"label": "Ніколи не видаляти улюблені завдання",
-			"description": "При увімкненні улюблені завдання ніколи не будуть автоматично видалені незалежно від віку"
+			"label": "ͳ���� �� �������� ������� ��������",
+			"description": "��� �������� ������� �������� ����� �� ������ ����������� ������� ��������� �� ���"
 		},
 		"favoritedRetention": {
-			"label": "Зберігання улюблених завдань (дні)",
-			"description": "Кількість днів для зберігання улюблених завдань (застосовується лише коли 'Ніколи не видаляти улюблені завдання' вимкнено)"
+			"label": "��������� ��������� ������� (��)",
+			"description": "ʳ������ ��� ��� ��������� ��������� ������� (������������� ���� ���� 'ͳ���� �� �������� ������� ��������' ��������)"
 		},
 		"completedRetention": {
-			"label": "Зберігання завершених завдань (дні)",
-			"description": "Кількість днів для зберігання завдань, які були успішно завершені"
+			"label": "��������� ���������� ������� (��)",
+			"description": "ʳ������ ��� ��� ��������� �������, �� ���� ������ ��������"
 		},
 		"incompleteRetention": {
-			"label": "Зберігання незавершених завдань (дні)",
-			"description": "Кількість днів для зберігання завдань, які не були завершені (зазвичай коротше ніж завершені завдання)"
+			"label": "��������� ������������ ������� (��)",
+			"description": "ʳ������ ��� ��� ��������� �������, �� �� ���� �������� (�������� ������� �� �������� ��������)"
 		},
 		"lastRun": {
-			"label": "Останнє очищення"
+			"label": "������ ��������"
 		},
 		"manualPurge": {
-			"button": "Запустити очищення зараз"
+			"button": "��������� �������� �����"
 		}
 	},
 	"display": {
 		"taskTimeline": {
-			"label": "Показувати хронологію завдань",
-			"description": "Відображати візуальну хронологію повідомлень завдання, розфарбовану за типом, що дозволяє швидко переглядати хід виконання завдання та повертатися до певних моментів у історії завдання."
+			"label": "���������� ��������� �������",
+			"description": "³��������� �������� ��������� ���������� ��������, ������������ �� �����, �� �������� ������ ����������� ��� ��������� �������� �� ����������� �� ������ ������� � ����� ��������."
 		},
 		"sendMessageOnEnter": {
-			"label": "Надсилати повідомлення з Enter",
-			"description": "Якщо ввімкнено, натисніть Enter для надсилання та Shift+Enter для нового рядка. Вимкніть, щоб використовувати Shift+Enter для надсилання."
+			"label": "��������� ����������� � Enter",
+			"description": "���� ��������, �������� Enter ��� ���������� �� Shift+Enter ��� ������ �����. �������, ��� ��������������� Shift+Enter ��� ����������."
 		},
 		"costThreshold": {
-			"label": "Сховати вартість нижче порогового значення",
-			"currentValue": "Поточний поріг: ${{value}}",
-			"description": "Показувати лише витрати на запити, що перевищують цю суму. Витрати завжди видно, коли відкрита панель деталей."
+			"label": "������� ������� ����� ���������� ��������",
+			"currentValue": "�������� ����: ${{value}}",
+			"description": "���������� ���� ������� �� ������, �� ����������� �� ����. ������� ������ �����, ���� ������� ������ �������."
 		},
 		"showTimestamps": {
-			"label": "Показувати часові мітки",
-			"description": "Показувати часову мітку для кожного повідомлення у вікні чату"
+			"label": "���������� ����� ����",
+			"description": "���������� ������ ���� ��� ������� ����������� � ��� ����"
 		},
 		"showDiffStats": {
-			"label": "Показувати статистику diff",
-			"description": "Відображати статистику доданих/видалених рядків у заголовку завдання"
+			"label": "���������� ���������� diff",
+			"description": "³��������� ���������� �������/��������� ����� � ��������� ��������"
 		}
 	},
 	"notifications": {
 		"sound": {
-			"label": "Увімкнути звукові ефекти",
-			"description": "Якщо ввімкнено, AlfaCode assistant відтворюватиме звукові ефекти для сповіщень та подій.",
-			"volumeLabel": "Гучність"
+			"label": "�������� ������ ������",
+			"description": "���� ��������, AlfaCode assistant ������������� ������ ������ ��� �������� �� ����.",
+			"volumeLabel": "�������"
 		},
 		"tts": {
-			"label": "Увімкнути перетворення тексту на мову",
-			"description": "Якщо ввімкнено, AlfaCode assistant читатиме вголос свої відповіді за допомогою перетворення тексту на мову.",
-			"speedLabel": "Швидкість"
+			"label": "�������� ������������ ������ �� ����",
+			"description": "���� ��������, AlfaCode assistant �������� ������ ��� ������ �� ��������� ������������ ������ �� ����.",
+			"speedLabel": "��������"
 		}
 	},
 	"contextManagement": {
-		"description": "Контролюйте, яка інформація включається у вікно контексту ШІ, що впливає на використання токенів та якість відповіді",
+		"description": "�����������, ��� ���������� ���������� � ���� ��������� ز, �� ������ �� ������������ ������ �� ����� ������",
 		"autoCondenseContextPercent": {
-			"label": "Поріг для запуску інтелектуального стиснення контексту",
-			"description": "Коли вікно контексту досягне цього порогу, AlfaCode assistant автоматично його стисне."
+			"label": "���� ��� ������� ���������������� ��������� ���������",
+			"description": "���� ���� ��������� ������� ����� ������, AlfaCode assistant ����������� ���� ������."
 		},
 		"condensingApiConfiguration": {
-			"label": "Конфігурація API для стиснення контексту",
-			"description": "Виберіть, яку конфігурацію API використовувати для операцій стиснення контексту. Залиште невибраним, щоб використовувати поточну активну конфігурацію.",
-			"useCurrentConfig": "За замовчуванням"
+			"label": "����������� API ��� ��������� ���������",
+			"description": "�������, ��� ����������� API ��������������� ��� �������� ��������� ���������. ������� ����������, ��� ��������������� ������� ������� �����������.",
+			"useCurrentConfig": "�� �������������"
 		},
 		"customCondensingPrompt": {
-			"label": "Власна підказка для стиснення контексту",
-			"description": "Налаштуйте системну підказку, що використовується для стиснення контексту. Залиште порожнім, щоб використовувати підказку за замовчуванням.",
-			"placeholder": "Введіть тут свою власну підказку для стиснення...\n\nВи можете використовувати ту ж структуру, що й у підказці за замовчуванням:\n- Попередня розмова\n- Поточна робота\n- Ключові технічні концепції\n- Відповідні файли та код\n- Вирішення проблем\n- Незавершені завдання та наступні кроки",
-			"reset": "Скинути до стандартних",
-			"hint": "Порожнє = використовувати підказку за замовчуванням"
+			"label": "������ ������� ��� ��������� ���������",
+			"description": "���������� �������� �������, �� ��������������� ��� ��������� ���������. ������� �������, ��� ��������������� ������� �� �������������.",
+			"placeholder": "������ ��� ���� ������ ������� ��� ���������...\n\n�� ������ ��������������� �� � ���������, �� � � ������� �� �������������:\n- ��������� �������\n- ������� ������\n- ������ ������ ���������\n- ³������ ����� �� ���\n- �������� �������\n- ���������� �������� �� ������� �����",
+			"reset": "������� �� �����������",
+			"hint": "������ = ��������������� ������� �� �������������"
 		},
 		"autoCondenseContext": {
-			"name": "Автоматично запускати інтелектуальне стиснення контексту",
-			"description": "Якщо ввімкнено, AlfaCode assistant автоматично стискатиме контекст, коли буде досягнуто поріг. Якщо вимкнено, ви все одно можете вручну запустити стиснення контексту."
+			"name": "����������� ��������� �������������� ��������� ���������",
+			"description": "���� ��������, AlfaCode assistant ����������� ���������� ��������, ���� ���� ��������� ����. ���� ��������, �� ��� ���� ������ ������ ��������� ��������� ���������."
 		},
 		"openTabs": {
-			"label": "Обмеження контексту відкритих вкладок",
-			"description": "Максимальна кількість відкритих вкладок VSCode, які включаються до контексту. Вищі значення надають більше контексту, але збільшують використання токенів."
+			"label": "��������� ��������� �������� �������",
+			"description": "����������� ������� �������� ������� VSCode, �� ����������� �� ���������. ���� �������� ������� ����� ���������, ��� ��������� ������������ ������."
 		},
 		"workspaceFiles": {
-			"label": "Обмеження контексту файлів робочого простору",
-			"description": "Максимальна кількість файлів, які включаються до деталей поточного робочого каталогу. Вищі значення надають більше контексту, але збільшують використання токенів."
+			"label": "��������� ��������� ����� �������� ��������",
+			"description": "����������� ������� �����, �� ����������� �� ������� ��������� �������� ��������. ���� �������� ������� ����� ���������, ��� ��������� ������������ ������."
 		},
 		"rooignore": {
-			"label": "Показувати файли, що ігноруються .kilocodeignore, у списках та пошуках",
-			"description": "Якщо ввімкнено, файли, що відповідають шаблонам у .kilocodeignore, будуть показані у списках із символом замка. Якщо вимкнено, ці файли будуть повністю приховані зі списків файлів та пошуків."
+			"label": "���������� �����, �� ����������� .kilocodeignore, � ������� �� �������",
+			"description": "���� ��������, �����, �� ���������� �������� � .kilocodeignore, ������ ������� � ������� �� �������� �����. ���� ��������, �� ����� ������ ������� �������� � ������ ����� �� ������."
 		},
 		"maxConcurrentFileReads": {
-			"label": "Обмеження одночасного читання файлів",
-			"description": "Максимальна кількість файлів, які інструмент 'read_file' може обробляти одночасно. Вищі значення можуть прискорити читання кількох невеликих файлів, але збільшують використання пам'яті."
+			"label": "��������� ����������� ������� �����",
+			"description": "����������� ������� �����, �� ���������� 'read_file' ���� ��������� ���������. ���� �������� ������ ���������� ������� ������ ��������� �����, ��� ��������� ������������ ���'��."
 		},
 		"maxReadFile": {
-			"label": "Поріг автоматичного скорочення читання файлу",
-			"description": "AlfaCode assistant читає таку кількість рядків, коли модель опускає значення початку/кінця. Якщо це число менше за загальну кількість рядків у файлі, AlfaCode assistant генерує індекс номерів рядків визначень коду. Особливі випадки: -1 наказує AlfaCode assistant прочитати весь файл (без індексації), а 0 наказує не читати жодних рядків і надає лише індекси рядків для мінімального контексту. Нижчі значення мінімізують початкове використання контексту, дозволяючи точні послідовні читання діапазонів рядків. Явні запити на початок/кінець не обмежуються цим налаштуванням.",
-			"lines": "рядків",
-			"always_full_read": "Завжди читати весь файл"
+			"label": "���� ������������� ���������� ������� �����",
+			"description": "AlfaCode assistant ���� ���� ������� �����, ���� ������ ������ �������� �������/����. ���� �� ����� ����� �� �������� ������� ����� � ����, AlfaCode assistant ������ ������ ������ ����� ��������� ����. ������� �������: -1 ������ AlfaCode assistant ��������� ���� ���� (��� ����������), � 0 ������ �� ������ ������ ����� � ���� ���� ������� ����� ��� ���������� ���������. ����� �������� �������� ��������� ������������ ���������, ���������� ���� �������� ������� �������� �����. ��� ������ �� �������/����� �� ����������� ��� �������������.",
+			"lines": "�����",
+			"always_full_read": "������ ������ ���� ����"
 		},
 		"imageFileSize": {
-			"label": "Максимальний розмір файлу зображення",
-			"description": "Максимальний розмір файлу зображення в МБ для включення в контекст. Зображення більшого розміру будуть відхилені",
-			"mb": "МБ"
+			"label": "������������ ����� ����� ����������",
+			"description": "������������ ����� ����� ���������� � �� ��� ��������� � ��������. ���������� ������� ������ ������ �������",
+			"mb": "��"
 		},
 		"condensingThreshold": {
-			"label": "Поріг запуску стиснення",
-			"selectProfile": "Налаштувати поріг для профілю",
-			"defaultProfile": "Глобальний за замовчуванням (усі профілі)",
-			"defaultDescription": "Коли контекст досягне цього відсотка, він буде автоматично стиснутий для всіх профілів, якщо вони не мають власних налаштувань",
-			"profileDescription": "Власний поріг лише для цього профілю (перевизначає глобальний за замовчуванням)",
-			"inheritDescription": "Цей профіль успадковує глобальний поріг за замовчуванням ({{threshold}}%)",
-			"usesGlobal": "(використовує глобальний {{threshold}}%)"
+			"label": "���� ������� ���������",
+			"selectProfile": "����������� ���� ��� ������",
+			"defaultProfile": "���������� �� ������������� (�� �����)",
+			"defaultDescription": "���� �������� ������� ����� �������, �� ���� ����������� ��������� ��� ��� ������, ���� ���� �� ����� ������� �����������",
+			"profileDescription": "������� ���� ���� ��� ����� ������ (����������� ���������� �� �������������)",
+			"inheritDescription": "��� ������ ��������� ���������� ���� �� ������������� ({{threshold}}%)",
+			"usesGlobal": "(����������� ���������� {{threshold}}%)"
 		},
 		"diagnostics": {
 			"includeMessages": {
-				"label": "Автоматично включати діагностику в контекст",
-				"description": "Коли увімкнено, діагностичні повідомлення (помилки) з відредагованих файлів будуть автоматично включені в контекст. Ви завжди можете вручну включити всю діагностику робочого простору, використовуючи @problems."
+				"label": "����������� �������� ���������� � ��������",
+				"description": "���� ��������, ���������� ����������� (�������) � ������������� ����� ������ ����������� ������� � ��������. �� ������ ������ ������ �������� ��� ���������� �������� ��������, �������������� @problems."
 			},
 			"maxMessages": {
-				"label": "Максимальна кількість діагностичних повідомлень",
-				"description": "Обмежує кількість діагностичних повідомлень (помилки, попередження), включених у контекст. Коли встановлено, буде показано лише цю кількість діагностики, надаючи пріоритет помилкам над попередженнями. Встановіть 0 для необмеженої діагностики.",
-				"resetTooltip": "Скинути до значення за замовчуванням (50)",
-				"unlimitedLabel": "Необмежено"
+				"label": "����������� ������� ������������ ����������",
+				"description": "������ ������� ������������ ���������� (�������, ������������), ��������� � ��������. ���� �����������, ���� �������� ���� �� ������� ����������, ������� �������� �������� ��� ��������������. ��������� 0 ��� ���������� ����������.",
+				"resetTooltip": "������� �� �������� �� ������������� (50)",
+				"unlimitedLabel": "����������"
 			},
 			"delayAfterWrite": {
-				"label": "Затримка після запису для дозволу діагностиці виявити потенційні проблеми",
-				"description": "Час очікування після запису файлів перед збиранням діагностики (у мілісекундах). Вищі значення можуть покращити точність, але сповільнюють виявлення помилок."
+				"label": "�������� ���� ������ ��� ������� ���������� ������� ��������� ��������",
+				"description": "��� ���������� ���� ������ ����� ����� ��������� ���������� (� ����������). ���� �������� ������ ��������� �������, ��� ����������� ��������� �������."
 			}
 		},
 		"maxImageFileSize": {
-			"label": "Максимальний розмір файлу зображення",
-			"mb": "МБ",
-			"description": "Максимальний розмір (у МБ) для файлів зображень, які можуть бути включені в запити. Більші файли будуть автоматично змінені на менший розмір."
+			"label": "������������ ����� ����� ����������",
+			"mb": "��",
+			"description": "������������ ����� (� ��) ��� ����� ���������, �� ������ ���� ������� � ������. ������ ����� ������ ����������� ����� �� ������ �����."
 		},
 		"maxTotalImageSize": {
-			"label": "Максимальний загальний розмір зображень",
-			"mb": "МБ",
-			"description": "Максимальний кумулятивний ліміт розміру (у МБ) для всіх зображень в одному запиті. При перевищенні зображення будуть змінені на менший розмір, щоб поміститися в цей ліміт."
+			"label": "������������ ��������� ����� ���������",
+			"mb": "��",
+			"description": "������������ ������������ ��� ������ (� ��) ��� ��� ��������� � ������ �����. ��� ���������� ���������� ������ ����� �� ������ �����, ��� ���������� � ��� ���."
 		},
 		"includeCurrentTime": {
-			"label": "Включати поточний час у контекст",
-			"description": "Якщо ввімкнено, поточний час та інформація про часовий пояс будуть включені в системну підказку. Вимкніть це, якщо моделі припиняють роботу через занепокоєння часом."
+			"label": "�������� �������� ��� � ��������",
+			"description": "���� ��������, �������� ��� �� ���������� ��� ������� ���� ������ ������� � �������� �������. ������� ��, ���� ����� ���������� ������ ����� ����������� �����."
 		},
 		"includeCurrentCost": {
-			"label": "Включати поточну вартість у контекст",
-			"description": "Якщо ввімкнено, поточна вартість використання API буде включена в системну підказку. Вимкніть це, якщо моделі припиняють роботу через занепокоєння вартістю."
+			"label": "�������� ������� ������� � ��������",
+			"description": "���� ��������, ������� ������� ������������ API ���� �������� � �������� �������. ������� ��, ���� ����� ���������� ������ ����� ����������� �������."
 		},
 		"gitStatusIncludeUntracked": {
-			"label": "Включати невідстежені файли в git status",
-			"description": "Коли увімкнено, невідстежені файли будуть включені в інформацію про статус git у контексті"
+			"label": "�������� ���������� ����� � git status",
+			"description": "���� ��������, ���������� ����� ������ ������� � ���������� ��� ������ git � ��������"
 		},
-		"gitStatusIncludeUntrackedDesc": "Показувати невідстежені файли в контексті git status для кращого розуміння стану репозиторію",
+		"gitStatusIncludeUntrackedDesc": "���������� ���������� ����� � �������� git status ��� ������� �������� ����� ����������",
 		"maxGitStatusFiles": {
-			"label": "Макс. файлів статусу Git",
-			"description": "Максимальна кількість записів файлів для включення в контекст статусу git. Встановіть 0 для вимкнення. Інформація про гілку завжди показується, коли > 0."
+			"label": "����. ����� ������� Git",
+			"description": "����������� ������� ������ ����� ��� ��������� � �������� ������� git. ��������� 0 ��� ���������. ���������� ��� ���� ������ ����������, ���� > 0."
 		},
 		"enableSubfolderRules": {
-			"label": "Увімкнути правила підпапок",
-			"description": "Рекурсивно знаходити та завантажувати файли .roo/rules та AGENTS.md з підкаталогів. Корисно для монорепозиторіїв з правилами для кожного пакета."
+			"label": "�������� ������� �������",
+			"description": "���������� ��������� �� ������������� ����� .roo/rules �� AGENTS.md � ����������. ������� ��� �������������� � ��������� ��� ������� ������."
 		}
 	},
 	"terminal": {
 		"basic": {
-			"label": "Налаштування терміналу: Базові",
-			"description": "Базові налаштування терміналу"
+			"label": "������������ ��������: �����",
+			"description": "����� ������������ ��������"
 		},
 		"advanced": {
-			"label": "Налаштування терміналу: Розширені",
-			"description": "Наступні параметри можуть вимагати перезавантаження терміналу для застосування налаштувань."
+			"label": "������������ ��������: ��������",
+			"description": "������� ��������� ������ �������� ���������������� �������� ��� ������������ �����������."
 		},
 		"outputLineLimit": {
-			"label": "Обмеження виводу терміналу",
-			"description": "Максимальна кількість рядків, які включаються до виводу терміналу при виконанні команд. При перевищенні рядки будуть видалені з середини, заощаджуючи токени. <0>Дізнатися більше</0>"
+			"label": "��������� ������ ��������",
+			"description": "����������� ������� �����, �� ����������� �� ������ �������� ��� �������� ������. ��� ���������� ����� ������ ������� � ��������, ����������� ������. <0>ĳ������� �����</0>"
 		},
 		"outputCharacterLimit": {
-			"label": "Обмеження символів терміналу",
-			"description": "Максимальна кількість символів, які включаються до виводу терміналу при виконанні команд. Це обмеження має пріоритет над обмеженням рядків для запобігання проблемам з пам'яттю від надзвичайно довгих рядків. При перевищенні вивід буде обрізано. <0>Дізнатися більше</0>"
+			"label": "��������� ������� ��������",
+			"description": "����������� ������� �������, �� ����������� �� ������ �������� ��� �������� ������. �� ��������� �� �������� ��� ���������� ����� ��� ���������� ��������� � ���'���� �� ����������� ������ �����. ��� ���������� ���� ���� �������. <0>ĳ������� �����</0>"
 		},
 		"shellIntegrationTimeout": {
-			"label": "Тайм-аут інтеграції оболонки терміналу",
-			"description": "Максимальний час очікування ініціалізації інтеграції оболонки перед виконанням команд. Для користувачів із тривалим часом запуску оболонки це значення може знадобитися збільшити, якщо ви бачите помилки «Інтеграція оболонки недоступна» в терміналі. <0>Дізнатися більше</0>"
+			"label": "����-��� ���������� �������� ��������",
+			"description": "������������ ��� ���������� ����������� ���������� �������� ����� ���������� ������. ��� ������������ �� �������� ����� ������� �������� �� �������� ���� ����������� ��������, ���� �� ������ ������� ����������� �������� ���������� � �������. <0>ĳ������� �����</0>"
 		},
 		"shellIntegrationDisabled": {
-			"label": "Вимкнути інтеграцію оболонки терміналу",
-			"description": "Увімкніть це, якщо команди терміналу не працюють належним чином або ви бачите помилки «Інтеграція оболонки недоступна». Це використовує простіший метод для виконання команд, оминаючи деякі розширені функції терміналу. <0>Дізнатися більше</0>"
+			"label": "�������� ���������� �������� ��������",
+			"description": "������� ��, ���� ������� �������� �� �������� �������� ����� ��� �� ������ ������� ����������� �������� ����������. �� ����������� �������� ����� ��� ��������� ������, �������� ���� �������� ������� ��������. <0>ĳ������� �����</0>"
 		},
 		"commandDelay": {
-			"label": "Затримка команди терміналу",
-			"description": "Затримка в мілісекундах, що додається після виконання команди. Налаштування за замовчуванням 0 повністю вимикає затримку. Це може допомогти забезпечити повний запис виводу команди в терміналах із проблемами синхронізації. У більшості терміналів це реалізовано шляхом встановлення `PROMPT_COMMAND='sleep N'`, а Powershell додає `start-sleep` у кінець кожної команди. Спочатку це було обхідним шляхом для помилки VSCode#237208 і може більше не знадобитися. <0>Дізнатися більше</0>"
+			"label": "�������� ������� ��������",
+			"description": "�������� � ����������, �� �������� ���� ��������� �������. ������������ �� ������������� 0 ������� ������ ��������. �� ���� ��������� ����������� ������ ����� ������ ������� � ��������� �� ���������� ������������. � ������� �������� �� ���������� ������ ������������ `PROMPT_COMMAND='sleep N'`, � Powershell ���� `start-sleep` � ����� ����� �������. �������� �� ���� �������� ������ ��� ������� VSCode#237208 � ���� ����� �� �����������. <0>ĳ������� �����</0>"
 		},
 		"compressProgressBar": {
-			"label": "Стискати вивід індикатора виконання",
-			"description": "Якщо ввімкнено, обробляє вивід терміналу з поверненням каретки (\\r) для імітації того, як реальний термінал відображатиме вміст. Це видаляє проміжні стани індикатора виконання, зберігаючи лише кінцевий стан, що економить простір контексту для більш релевантної інформації. <0>Дізнатися більше</0>"
+			"label": "�������� ���� ���������� ���������",
+			"description": "���� ��������, �������� ���� �������� � ����������� ������� (\\r) ��� ������� ����, �� �������� ������� ������������ ����. �� ������� ������ ����� ���������� ���������, ��������� ���� ������� ����, �� ��������� ������ ��������� ��� ���� ���������� ����������. <0>ĳ������� �����</0>"
 		},
 		"powershellCounter": {
-			"label": "Увімкнути обхідний шлях для лічильника PowerShell",
-			"description": "Якщо ввімкнено, додає лічильник до команд PowerShell для забезпечення належного виконання команд. Це допомагає з терміналами PowerShell, у яких можуть виникати проблеми із захопленням виводу команд. <0>Дізнатися більше</0>"
+			"label": "�������� �������� ���� ��� ��������� PowerShell",
+			"description": "���� ��������, ���� �������� �� ������ PowerShell ��� ������������ ��������� ��������� ������. �� �������� � ���������� PowerShell, � ���� ������ �������� �������� �� ����������� ������ ������. <0>ĳ������� �����</0>"
 		},
 		"zshClearEolMark": {
-			"label": "Очистити позначку EOL ZSH",
-			"description": "Якщо ввімкнено, очищає позначку кінця рядка ZSH шляхом встановлення PROMPT_EOL_MARK=''. Це запобігає проблемам з інтерпретацією виводу команд, коли вивід закінчується спеціальними символами, такими як '%'. <0>Дізнатися більше</0>"
+			"label": "�������� �������� EOL ZSH",
+			"description": "���� ��������, ����� �������� ���� ����� ZSH ������ ������������ PROMPT_EOL_MARK=''. �� ������� ��������� � �������������� ������ ������, ���� ���� ���������� ������������ ���������, ������ �� '%'. <0>ĳ������� �����</0>"
 		},
 		"zshOhMy": {
-			"label": "Увімкнути інтеграцію Oh My Zsh",
-			"description": "Якщо ввімкнено, встановлює ITERM_SHELL_INTEGRATION_INSTALLED=Yes для ввімкнення функцій інтеграції оболонки Oh My Zsh. Застосування цього налаштування може вимагати перезавантаження IDE. <0>Дізнатися більше</0>"
+			"label": "�������� ���������� Oh My Zsh",
+			"description": "���� ��������, ���������� ITERM_SHELL_INTEGRATION_INSTALLED=Yes ��� ��������� ������� ���������� �������� Oh My Zsh. ������������ ����� ������������ ���� �������� ���������������� IDE. <0>ĳ������� �����</0>"
 		},
 		"zshP10k": {
-			"label": "Увімкнути інтеграцію Powerlevel10k",
-			"description": "Якщо ввімкнено, встановлює POWERLEVEL9K_TERM_SHELL_INTEGRATION=true для ввімкнення функцій інтеграції оболонки Powerlevel10k. <0>Дізнатися більше</0>"
+			"label": "�������� ���������� Powerlevel10k",
+			"description": "���� ��������, ���������� POWERLEVEL9K_TERM_SHELL_INTEGRATION=true ��� ��������� ������� ���������� �������� Powerlevel10k. <0>ĳ������� �����</0>"
 		},
 		"zdotdir": {
-			"label": "Увімкнути обробку ZDOTDIR",
-			"description": "Якщо ввімкнено, створює тимчасовий каталог для ZDOTDIR для належної обробки інтеграції оболонки zsh. Це гарантує правильну роботу інтеграції оболонки VSCode з zsh зі збереженням вашої конфігурації zsh. <0>Дізнатися більше</0>"
+			"label": "�������� ������� ZDOTDIR",
+			"description": "���� ��������, ������� ���������� ������� ��� ZDOTDIR ��� ������� ������� ���������� �������� zsh. �� ������� ��������� ������ ���������� �������� VSCode � zsh � ����������� ���� ����������� zsh. <0>ĳ������� �����</0>"
 		},
 		"inheritEnv": {
-			"label": "Успадковувати змінні середовища",
-			"description": "Якщо ввімкнено, термінал успадковуватиме змінні середовища від батьківського процесу VSCode, наприклад, налаштування інтеграції оболонки, визначені профілем користувача. Це безпосередньо перемикає глобальне налаштування VSCode `terminal.integrated.inheritEnv`. <0>Дізнатися більше</0>"
+			"label": "������������� ���� ����������",
+			"description": "���� ��������, ������� ��������������� ���� ���������� �� ������������ ������� VSCode, ���������, ������������ ���������� ��������, �������� ������� �����������. �� ������������� �������� ��������� ������������ VSCode `terminal.integrated.inheritEnv`. <0>ĳ������� �����</0>"
 		}
 	},
 	"advancedSettings": {
-		"title": "Розширені налаштування"
+		"title": "�������� ������������"
 	},
 	"toolProtocol": {
-		"label": "Протокол виклику інструментів",
-		"description": "Виберіть, як AlfaCode assistant спілкується з API. Native використовує API виклику функцій провайдера, тоді як XML використовує визначення інструментів у форматі XML.",
-		"toolProtocolAuto": "Автоматично",
-		"toolProtocolAutoDesc": "Дозволити AlfaCode assistant автоматично вибирати найкращий протокол для кожної моделі",
-		"toolProtocolFunctionCall": "Нативний",
-		"toolProtocolFunctionCallDesc": "Використовувати вбудований API виклику функцій провайдера",
+		"label": "�������� ������� �����������",
+		"description": "�������, �� AlfaCode assistant ��������� � API. Native ����������� API ������� ������� ����������, ��� �� XML ����������� ���������� ����������� � ������ XML.",
+		"toolProtocolAuto": "�����������",
+		"toolProtocolAutoDesc": "��������� AlfaCode assistant ����������� �������� ��������� �������� ��� ����� �����",
+		"toolProtocolFunctionCall": "��������",
+		"toolProtocolFunctionCallDesc": "��������������� ���������� API ������� ������� ����������",
 		"toolProtocolToolUse": "XML",
-		"toolProtocolToolUseDesc": "Використовувати визначення інструментів у форматі XML",
-		"default": "За замовчуванням",
+		"toolProtocolToolUseDesc": "��������������� ���������� ����������� � ������ XML",
+		"default": "�� �������������",
 		"xml": "XML",
-		"native": "Нативний",
-		"currentDefault": "За замовчуванням: {{protocol}}"
+		"native": "��������",
+		"currentDefault": "�� �������������: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {
-			"label": "Увімкнути редагування через diffs",
-			"description": "Якщо ввімкнено, AlfaCode assistant зможе швидше редагувати файли та автоматично відхилятиме скорочені записи цілих файлів. Найкраще працює з останньою моделлю Claude 4 Sonnet.",
+			"label": "�������� ����������� ����� diffs",
+			"description": "���� ��������, AlfaCode assistant ����� ������ ���������� ����� �� ����������� ���������� �������� ������ ����� �����. �������� ������ � ��������� ������� Claude 4 Sonnet.",
 			"strategy": {
-				"label": "Стратегія diff",
+				"label": "�������� diff",
 				"options": {
-					"standard": "Стандартний (один блок)",
-					"multiBlock": "Експериментальний: багатоблоковий diff",
-					"unified": "Експериментальний: уніфікований diff"
+					"standard": "����������� (���� ����)",
+					"multiBlock": "�����������������: �������������� diff",
+					"unified": "�����������������: ���������� diff"
 				},
 				"descriptions": {
-					"standard": "Стандартна стратегія diff застосовує зміни до одного блоку коду за раз.",
-					"unified": "Уніфікована стратегія diff використовує кілька підходів до застосування diffs і вибирає найкращий.",
-					"multiBlock": "Багатоблокова стратегія diff дозволяє оновлювати кілька блоків коду у файлі за один запит."
+					"standard": "���������� �������� diff ��������� ���� �� ������ ����� ���� �� ���.",
+					"unified": "��������� �������� diff ����������� ����� ������ �� ������������ diffs � ������ ���������.",
+					"multiBlock": "������������� �������� diff �������� ���������� ����� ����� ���� � ���� �� ���� �����."
 				}
 			},
 			"matchPrecision": {
-				"label": "Точність збігу",
-				"description": "Цей повзунок контролює, наскільки точно секції коду повинні збігатися при застосуванні diff. Нижчі значення дозволяють більш гнучке зіставлення, але збільшують ризик неправильних замін. Використовуйте значення нижче 100% з надзвичайною обережністю."
+				"label": "������� ����",
+				"description": "��� �������� ���������, �������� ����� ������ ���� ������ �������� ��� ����������� diff. ����� �������� ���������� ���� ������ ����������, ��� ��������� ����� ������������ ����. �������������� �������� ����� 100% � ������������ ����������."
 			}
 		},
 		"todoList": {
-			"label": "Увімкнути інструмент списку завдань",
-			"description": "Якщо ввімкнено, AlfaCode assistant може створювати та керувати списками завдань для відстеження прогресу виконання завдань. Це допомагає організувати складні завдання у керовані кроки."
+			"label": "�������� ���������� ������ �������",
+			"description": "���� ��������, AlfaCode assistant ���� ���������� �� �������� �������� ������� ��� ���������� �������� ��������� �������. �� �������� ����������� ������ �������� � ������� �����."
 		}
 	},
 	"experimental": {
 		"DIFF_STRATEGY_UNIFIED": {
-			"name": "Використовувати експериментальну уніфіковану стратегію diff",
-			"description": "Увімкнути експериментальну уніфіковану стратегію diff. Ця стратегія може зменшити кількість повторних спроб, спричинених помилками моделі, але може викликати несподівану поведінку або неправильні редагування. Вмикайте лише якщо ти розумієш ризики та готовий ретельно переглядати всі зміни."
+			"name": "��������������� ���������������� ��������� �������� diff",
+			"description": "�������� ���������������� ��������� �������� diff. �� �������� ���� �������� ������� ��������� �����, ����������� ��������� �����, ��� ���� ��������� ���������� �������� ��� ���������� �����������. �������� ���� ���� �� ����쳺� ������ �� ������� �������� ����������� �� ����."
 		},
 		"INSERT_BLOCK": {
-			"name": "Використовувати експериментальний інструмент вставки вмісту",
-			"description": "Увімкнути експериментальний інструмент вставки вмісту, що дозволяє AlfaCode assistant вставляти вміст у певні номери рядків без необхідності створювати diff."
+			"name": "��������������� ����������������� ���������� ������� �����",
+			"description": "�������� ����������������� ���������� ������� �����, �� �������� AlfaCode assistant ��������� ���� � ���� ������ ����� ��� ����������� ���������� diff."
 		},
 		"POWER_STEERING": {
-			"name": "Використовувати експериментальний режим \"силового керування\"",
-			"description": "Якщо ввімкнено, AlfaCode assistant частіше нагадуватиме моделі про деталі її поточного визначення режиму. Це призведе до сильнішого дотримання визначень ролей та власних інструкцій, але використовуватиме більше токенів на повідомлення."
+			"name": "��������������� ����������������� ����� \"�������� ���������\"",
+			"description": "���� ��������, AlfaCode assistant ������ ������������ ����� ��� ����� �� ��������� ���������� ������. �� �������� �� ��������� ���������� ��������� ����� �� ������� ����������, ��� ����������������� ����� ������ �� �����������."
 		},
 		"CONCURRENT_FILE_READS": {
-			"name": "Увімкнути одночасне читання файлів",
-			"description": "Якщо ввімкнено, AlfaCode assistant може читати кілька файлів за один запит. Якщо вимкнено, AlfaCode assistant повинен читати файли по одному. Вимкнення цього може допомогти при роботі з менш здатними моделями або коли ти хочеш більше контролю над доступом до файлів."
+			"name": "�������� ��������� ������� �����",
+			"description": "���� ��������, AlfaCode assistant ���� ������ ����� ����� �� ���� �����. ���� ��������, AlfaCode assistant ������� ������ ����� �� ������. ��������� ����� ���� ��������� ��� ����� � ���� �������� �������� ��� ���� �� ����� ����� �������� ��� �������� �� �����."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
-			"name": "Використовувати експериментальний інструмент багатоблокового diff",
-			"description": "Якщо ввімкнено, AlfaCode assistant використовуватиме інструмент багатоблокового diff. Це спробує оновити кілька блоків коду у файлі за один запит."
+			"name": "��������������� ����������������� ���������� ��������������� diff",
+			"description": "���� ��������, AlfaCode assistant ����������������� ���������� ��������������� diff. �� ������ ������� ����� ����� ���� � ���� �� ���� �����."
 		},
 		"MARKETPLACE": {
-			"name": "Увімкнути Marketplace",
-			"description": "Якщо ввімкнено, ти можеш встановлювати MCP та власні режими з Marketplace."
+			"name": "�������� Marketplace",
+			"description": "���� ��������, �� ����� ������������� MCP �� ����� ������ � Marketplace."
 		},
 		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Увімкнути одночасне редагування файлів",
-			"description": "Якщо ввімкнено, AlfaCode assistant може редагувати кілька файлів за один запит. Якщо вимкнено, AlfaCode assistant повинен редагувати файли по одному. Вимкнення цього може допомогти при роботі з менш здатними моделями або коли ти хочеш більше контролю над модифікаціями файлів."
+			"name": "�������� ��������� ����������� �����",
+			"description": "���� ��������, AlfaCode assistant ���� ���������� ����� ����� �� ���� �����. ���� ��������, AlfaCode assistant ������� ���������� ����� �� ������. ��������� ����� ���� ��������� ��� ����� � ���� �������� �������� ��� ���� �� ����� ����� �������� ��� ������������ �����."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
-			"name": "Редагування у фоновому режимі",
-			"description": "Запобігає порушенню фокусу редактора, коли увімкнено. Редагування файлів відбувається у фоновому режимі без відкриття diff-перегляду або крадіжки фокусу. Ви можете продовжувати працювати без переривань, поки AlfaCode assistant вносить зміни. Файли можуть відкриватися без фокусу для захоплення діагностики або залишатися повністю закритими."
+			"name": "����������� � �������� �����",
+			"description": "������� ��������� ������ ���������, ���� ��������. ����������� ����� ���������� � �������� ����� ��� �������� diff-��������� ��� ������� ������. �� ������ ������������ ��������� ��� ����������, ���� AlfaCode assistant ������� ����. ����� ������ ����������� ��� ������ ��� ���������� ���������� ��� ���������� ������� ���������."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
-			"name": "Використовувати новий парсер повідомлень",
-			"description": "Увімкнути експериментальний потоковий парсер повідомлень, який забезпечує значні покращення продуктивності для довгих відповідей асистента шляхом більш ефективної обробки повідомлень."
+			"name": "��������������� ����� ������ ����������",
+			"description": "�������� ����������������� ��������� ������ ����������, ���� ��������� ����� ���������� ������������� ��� ������ �������� ��������� ������ ���� ��������� ������� ����������."
 		},
 		"NEW_TASK_REQUIRE_TODOS": {
-			"name": "Вимагати список 'завдань' для нових завдань",
-			"description": "Коли увімкнено, інструмент new_task вимагатиме надання параметра завдань. Це забезпечить, що всі нові завдання почнуть з чітким списком цілей. Коли вимкнено (за замовчуванням), параметр завдань залишається необов'язковим для зворотної сумісності."
+			"name": "�������� ������ '�������' ��� ����� �������",
+			"description": "���� ��������, ���������� new_task ���������� ������� ��������� �������. �� �����������, �� �� ��� �������� ������� � ������ ������� �����. ���� �������� (�� �������������), �������� ������� ���������� ������'������� ��� �������� ��������."
 		},
 		"IMAGE_GENERATION": {
-			"name": "Увімкнути генерацію зображень ШІ",
-			"description": "Коли увімкнено, AlfaCode assistant може генерувати зображення з текстових запитів. Потребує AlfaCode assistant або OpenRouter API ключ.",
-			"apiProvider": "Провайдер API",
-			"providerLabel": "Провайдер",
-			"providerDescription": "Вибери провайдера для генерації зображень.",
+			"name": "�������� ��������� ��������� ز",
+			"description": "���� ��������, AlfaCode assistant ���� ���������� ���������� � ��������� ������. ������� AlfaCode assistant ��� OpenRouter API ����.",
+			"apiProvider": "��������� API",
+			"providerLabel": "���������",
+			"providerDescription": "������ ���������� ��� ��������� ���������.",
 			"openRouterApiKeyLabel": "OpenRouter API Key",
-			"openRouterApiKeyPlaceholder": "Введіть свій OpenRouter API ключ",
-			"kiloCodeApiKeyLabel": "AlfaCode assistant API ключ",
-			"kiloCodeApiKeyPlaceholder": "Введіть свій AlfaCode assistant API ключ",
-			"kiloCodeApiKeyPaste": "Вставити поточний API ключ AlfaCode assistant",
-			"getApiKeyText": "Отримайте API ключ з",
-			"modelSelectionLabel": "Модель генерації зображень",
-			"modelSelectionDescription": "Виберіть модель для використання при генерації зображень",
-			"warningMissingKey": "⚠️ API ключ потрібен для генерації зображень, будь ласка, налаштуйте його вище.",
-			"successConfigured": "✓ Генерація зображень налаштована і готова до використання"
+			"openRouterApiKeyPlaceholder": "������ ��� OpenRouter API ����",
+			"kiloCodeApiKeyLabel": "AlfaCode assistant API ����",
+			"kiloCodeApiKeyPlaceholder": "������ ��� AlfaCode assistant API ����",
+			"kiloCodeApiKeyPaste": "�������� �������� API ���� AlfaCode assistant",
+			"getApiKeyText": "��������� API ���� �",
+			"modelSelectionLabel": "������ ��������� ���������",
+			"modelSelectionDescription": "������� ������ ��� ������������ ��� ��������� ���������",
+			"warningMissingKey": "?? API ���� ������� ��� ��������� ���������, ���� �����, ���������� ���� ����.",
+			"successConfigured": "? ��������� ��������� ����������� � ������ �� ������������"
 		},
 		"RUN_SLASH_COMMAND": {
-			"name": "Увімкнути slash команди, ініційовані моделлю",
-			"description": "Коли увімкнено, AlfaCode assistant може запускати ваші slash команди для виконання робочих процесів."
+			"name": "�������� slash �������, ��������� �������",
+			"description": "���� ��������, AlfaCode assistant ���� ��������� ���� slash ������� ��� ��������� ������� �������."
 		},
 		"MORPH_FAST_APPLY": {
-			"name": "Увімкнути Fast Apply",
-			"description": "Коли увімкнено, AlfaCode assistant може редагувати файли за допомогою Fast Apply зі спеціалізованими моделями, оптимізованими для модифікацій коду. Потребує Kilo Gateway Provider, OpenRouter або ключа API Morph.",
-			"apiProvider": "Провайдер API",
+			"name": "�������� Fast Apply",
+			"description": "���� ��������, AlfaCode assistant ���� ���������� ����� �� ��������� Fast Apply � ��������������� ��������, ������������� ��� ���������� ����. ������� AlfaCode Gateway, OpenRouter ��� ����� API Morph.",
+			"apiProvider": "��������� API",
 			"apiProviderList": {
-				"current": "Поточний"
+				"current": "��������"
 			},
-			"apiKey": "Ключ API (необов'язково)",
-			"placeholder": "Введіть ваш ключ API (необов'язково)",
-			"modelLabel": "Вибір моделі",
-			"modelDescription": "Виберіть, яку модель швидкого застосування використовувати для редагування файлів",
+			"apiKey": "���� API (������'������)",
+			"placeholder": "������ ��� ���� API (������'������)",
+			"modelLabel": "���� �����",
+			"modelDescription": "�������, ��� ������ �������� ������������ ��������������� ��� ����������� �����",
 			"models": {
-				"auto": "Автоматично (За замовчуванням - вибирає найкращу доступну)",
-				"morphFast": "Morph v3 Fast (Швидше, нижча вартість)",
-				"morphLarge": "Morph v3 Large (Більш здатна)",
+				"auto": "����������� (�� ������������� - ������ �������� ��������)",
+				"morphFast": "Morph v3 Fast (������, ����� �������)",
+				"morphLarge": "Morph v3 Large (����� ������)",
 				"relace": "Relace Apply v3"
 			}
 		},
 		"INLINE_ASSIST": {
 			"name": "Autocomplete",
-			"description": "Увімкни функції Autocomplete для швидких пропозицій коду та покращень безпосередньо у твоєму редакторі. Включає Швидке Завдання (Cmd+I) для цільових змін та Autocomplete для контекстуальних покращень."
+			"description": "������ ������� Autocomplete ��� ������� ���������� ���� �� ��������� ������������� � ����� ��������. ������ ������ �������� (Cmd+I) ��� �������� ��� �� Autocomplete ��� ��������������� ���������."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Паралельні виклики інструментів",
-			"description": "Коли увімкнено, нативний протокол може виконувати кілька інструментів у одному повідомленні асистента."
+			"name": "��������� ������� �����������",
+			"description": "���� ��������, �������� �������� ���� ���������� ����� ����������� � ������ ���������� ���������."
 		},
-		"experimentalParallelToolCalls": "Експериментальні паралельні виклики інструментів",
-		"experimentalParallelToolCallsDesc": "Дозволяє моделі викликати кілька інструментів одночасно для покращення ефективності",
-		"experimentalParallelToolCallsInfo": "Ця функція може покращити швидкість виконання завдань, але може бути нестабільною з деякими моделями",
-		"experimentalParallelToolCallsWarning": "Використовуйте з обережністю: може призвести до неочікуваної поведінки",
+		"experimentalParallelToolCalls": "��������������� ��������� ������� �����������",
+		"experimentalParallelToolCallsDesc": "�������� ����� ��������� ����� ����������� ��������� ��� ���������� �����������",
+		"experimentalParallelToolCallsInfo": "�� ������� ���� ��������� �������� ��������� �������, ��� ���� ���� ����������� � ������� ��������",
+		"experimentalParallelToolCallsWarning": "�������������� � ����������: ���� ��������� �� ����������� ��������",
 		"SPEECH_TO_TEXT": {
-			"name": "Мовлення в текст (STT)",
-			"description": "Коли увімкнено, AlfaCode assistant може транскрибувати ваш голос у текст за допомогою моделі Whisper від OpenAI. Натисніть кнопку мікрофона в чаті, щоб почати запис. Потребує встановленого FFmpeg та налаштованого провайдера OpenAI API."
+			"name": "�������� � ����� (STT)",
+			"description": "���� ��������, AlfaCode assistant ���� �������������� ��� ����� � ����� �� ��������� ����� Whisper �� OpenAI. �������� ������ �������� � ���, ��� ������ �����. ������� ������������� FFmpeg �� ������������� ���������� OpenAI API."
 		},
 		"CUSTOM_TOOLS": {
-			"name": "Увімкнути власні інструменти",
-			"description": "Коли увімкнено, Kilo може завантажувати та використовувати власні інструменти TypeScript/JavaScript з каталогу .kilocode/tools вашого проекту або ~/.kilocode/tools для глобальних інструментів. Примітка: ці інструменти будуть автоматично схвалені.",
-			"toolsHeader": "Доступні власні інструменти",
-			"noTools": "Жодних власних інструментів не завантажено. Додайте файли .ts або .js до каталогу .kilocode/tools вашого проекту або ~/.kilocode/tools для глобальних інструментів.",
-			"refreshButton": "Оновити",
-			"refreshing": "Оновлення...",
-			"refreshSuccess": "Інструменти успішно оновлено",
-			"refreshError": "Не вдалося оновити інструменти",
-			"toolParameters": "Параметри"
+			"name": "�������� ����� �����������",
+			"description": "���� ��������, AlfaCode assistant ���� ������������� �� ��������������� ����� ����������� TypeScript/JavaScript � �������� .kilocode/tools ������ ������� ��� ~/.kilocode/tools ��� ���������� �����������. �������: �� ����������� ������ ����������� �������.",
+			"toolsHeader": "������� ����� �����������",
+			"noTools": "������ ������� ����������� �� �����������. ������� ����� .ts ��� .js �� �������� .kilocode/tools ������ ������� ��� ~/.kilocode/tools ��� ���������� �����������.",
+			"refreshButton": "�������",
+			"refreshing": "���������...",
+			"refreshSuccess": "����������� ������ ��������",
+			"refreshError": "�� ������� ������� �����������",
+			"toolParameters": "���������"
 		}
 	},
 	"promptCaching": {
-		"label": "Вимкнути кешування підказок",
-		"description": "Якщо відмічено, AlfaCode assistant не використовуватиме кешування підказок для цієї моделі."
+		"label": "�������� ��������� �������",
+		"description": "���� �������, AlfaCode assistant �� ����������������� ��������� ������� ��� ���� �����."
 	},
 	"temperature": {
-		"useCustom": "Використовувати власну температуру",
-		"description": "Контролює випадковість у відповідях моделі.",
-		"rangeDescription": "Вищі значення роблять вивід більш випадковим, нижчі значення роблять його більш детермінованим."
+		"useCustom": "��������������� ������ �����������",
+		"description": "��������� ����������� � �������� �����.",
+		"rangeDescription": "���� �������� ������� ���� ���� ����������, ����� �������� ������� ���� ���� �������������."
 	},
 	"modelInfo": {
-		"supportsImages": "Підтримує зображення",
-		"noImages": "Не підтримує зображення",
-		"supportsComputerUse": "Підтримує використання комп'ютера",
-		"noComputerUse": "Не підтримує використання комп'ютера",
-		"supportsPromptCache": "Підтримує кешування підказок",
-		"noPromptCache": "Не підтримує кешування підказок",
-		"contextWindow": "Контекстне вікно:",
-		"maxOutput": "Макс. вихід",
-		"inputPrice": "Ціна входу",
-		"outputPrice": "Ціна виходу",
-		"cacheReadsPrice": "Ціна читання кешу",
-		"cacheWritesPrice": "Ціна запису кешу",
-		"enableStreaming": "Увімкнути потокову передачу",
-		"enableR1Format": "Увімкнути параметри моделі R1",
-		"enableR1FormatTips": "Має бути ввімкнено при використанні моделей R1, таких як QWQ, щоб запобігти помилкам 400",
-		"useAzure": "Використовувати Azure",
-		"azureApiVersion": "Встановити версію Azure API",
+		"supportsImages": "ϳ������ ����������",
+		"noImages": "�� ������� ����������",
+		"supportsComputerUse": "ϳ������ ������������ ����'�����",
+		"noComputerUse": "�� ������� ������������ ����'�����",
+		"supportsPromptCache": "ϳ������ ��������� �������",
+		"noPromptCache": "�� ������� ��������� �������",
+		"contextWindow": "���������� ����:",
+		"maxOutput": "����. �����",
+		"inputPrice": "ֳ�� �����",
+		"outputPrice": "ֳ�� ������",
+		"cacheReadsPrice": "ֳ�� ������� ����",
+		"cacheWritesPrice": "ֳ�� ������ ����",
+		"enableStreaming": "�������� �������� ��������",
+		"enableR1Format": "�������� ��������� ����� R1",
+		"enableR1FormatTips": "�� ���� �������� ��� ����������� ������� R1, ����� �� QWQ, ��� �������� �������� 400",
+		"useAzure": "��������������� Azure",
+		"azureApiVersion": "���������� ����� Azure API",
 		"gemini": {
-			"freeRequests": "* Безкоштовно до {{count}} запитів на хвилину. Після цього оплата залежить від розміру підказки.",
-			"pricingDetails": "Для отримання додаткової інформації див. деталі ціноутворення.",
-			"billingEstimate": "* Оплата є приблизною - точна вартість залежить від розміру підказки."
+			"freeRequests": "* ����������� �� {{count}} ������ �� �������. ϳ��� ����� ������ �������� �� ������ �������.",
+			"pricingDetails": "��� ��������� ��������� ���������� ���. ����� �������������.",
+			"billingEstimate": "* ������ � ���������� - ����� ������� �������� �� ������ �������."
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "Розширення автоматично отримує останній список моделей, доступних на <serviceLink>{{serviceName}}</serviceLink>. Якщо ти не впевнений, яку модель вибрати, AlfaCode assistant найкраще працює з <defaultModelLink>{{defaultModelId}}</defaultModelLink>.",
-		"label": "Модель",
-		"searchPlaceholder": "Пошук",
-		"noMatchFound": "Збігів не знайдено",
-		"useCustomModel": "Використовувати власну: {{modelId}}",
-		"simplifiedExplanation": "Ви можете налаштувати детальні параметри моделі пізніше.",
-		"recommendedModels": "Рекомендовані моделі",
-		"allModels": "Усі моделі"
+		"automaticFetch": "���������� ����������� ������ ������� ������ �������, ��������� �� <serviceLink>{{serviceName}}</serviceLink>. ���� �� �� ���������, ��� ������ �������, AlfaCode assistant �������� ������ � <defaultModelLink>{{defaultModelId}}</defaultModelLink>.",
+		"label": "������",
+		"searchPlaceholder": "�����",
+		"noMatchFound": "���� �� ��������",
+		"useCustomModel": "��������������� ������: {{modelId}}",
+		"simplifiedExplanation": "�� ������ ����������� ������� ��������� ����� �����.",
+		"recommendedModels": "������������ �����",
+		"allModels": "�� �����"
 	},
 	"footer": {
-		"feedback": "Якщо у тебе є питання або відгуки, не соромся відкрити issue на <githubLink>github.com/Kilo-Org/kilocode</githubLink> або приєднатися до <redditLink>reddit.com/r/kilocode</redditLink> або <discordLink>kilo.ai/discord</discordLink>.",
-		"support": "З фінансових питань звертайся до служби підтримки клієнтів за адресою <supportLink>https://kilo.ai/support</supportLink>",
+		"feedback": "���� � ���� � ������� ��� ������, �� ������� ������� issue �� <githubLink>github.com/Alfa-Org/alfacode</githubLink> ��� ���������� �� <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> ��� <discordLink>alfacode.ai/discord</discordLink>.",
+		"support": "� ��������� ������ ��������� �� ������ �������� �볺��� �� ������� <supportLink>https://alfacode.ai/support</supportLink>",
 		"telemetry": {
-			"label": "Дозволити звітування про помилки та використання",
-			"description": "Допоможи покращити AlfaCode assistant, надсилаючи дані про використання та звіти про помилки. Жоден код, підказки або особиста інформація ніколи не надсилаються. Дивись нашу політику конфіденційності для отримання додаткової інформації."
+			"label": "��������� ��������� ��� ������� �� ������������",
+			"description": "�������� ��������� AlfaCode assistant, ���������� ��� ��� ������������ �� ���� ��� �������. ����� ���, ������� ��� �������� ���������� ����� �� ������������. ������ ���� ������� �������������� ��� ��������� ��������� ����������."
 		},
 		"settings": {
-			"import": "Імпорт",
-			"export": "Експорт",
-			"reset": "Скинути"
+			"import": "������",
+			"export": "�������",
+			"reset": "�������"
 		}
 	},
 	"thinkingBudget": {
-		"maxTokens": "Макс. токенів",
-		"maxThinkingTokens": "Макс. токенів роздумів"
+		"maxTokens": "����. ������",
+		"maxThinkingTokens": "����. ������ �������"
 	},
 	"validation": {
-		"apiKey": "Ти повинен надати дійсний ключ API.",
-		"awsRegion": "Ти повинен вибрати регіон для використання з Amazon Bedrock.",
-		"googleCloud": "Ти повинен надати дійсний ідентифікатор проекту Google Cloud та регіон.",
-		"modelId": "Ти повинен надати дійсний ідентифікатор моделі.",
-		"modelSelector": "Ти повинен надати дійсний селектор моделі.",
-		"openAi": "Ти повинен надати дійсний базовий URL, ключ API та ідентифікатор моделі.",
+		"apiKey": "�� ������� ������ ������ ���� API.",
+		"awsRegion": "�� ������� ������� ����� ��� ������������ � Amazon Bedrock.",
+		"googleCloud": "�� ������� ������ ������ ������������ ������� Google Cloud �� �����.",
+		"modelId": "�� ������� ������ ������ ������������ �����.",
+		"modelSelector": "�� ������� ������ ������ �������� �����.",
+		"openAi": "�� ������� ������ ������ ������� URL, ���� API �� ������������ �����.",
 		"arn": {
-			"invalidFormat": "Недійсний формат ARN. Будь ласка, перевір вимоги до формату.",
-			"regionMismatch": "Попередження: регіон у твоєму ARN ({{arnRegion}}) не відповідає вибраному регіону ({{region}}). Це може спричинити проблеми з доступом. Провайдер використовуватиме регіон з ARN."
+			"invalidFormat": "�������� ������ ARN. ���� �����, ������ ������ �� �������.",
+			"regionMismatch": "������������: ����� � ����� ARN ({{arnRegion}}) �� ������� ��������� ������ ({{region}}). �� ���� ���������� �������� � ��������. ��������� ����������������� ����� � ARN."
 		},
-		"modelAvailability": "Ідентифікатор моделі ({{modelId}}), який ти надав, недоступний. Будь ласка, вибери іншу модель.",
-		"modelDeprecated": "Ця модель більше недоступна. Будь ласка, вибери іншу модель.",
-		"providerNotAllowed": "Провайдер '{{provider}}' не дозволений твоєю організацією",
-		"modelNotAllowed": "Модель '{{model}}' не дозволена для провайдера '{{provider}}' твоєю організацією",
-		"profileInvalid": "Цей профіль містить провайдера або модель, які не дозволені твоєю організацією",
-		"qwenCodeOauthPath": "Ви повинні надати дійсний шлях до облікових даних OAuth.",
-		"sapAiCore": "Ви повинні надати дійсний ключ сервісу SAP AI Core.",
-		"sapAiCoreDeploymentId": "Ви повинні вибрати запущене розгортання для моделі '{{model}}'."
+		"modelAvailability": "������������ ����� ({{modelId}}), ���� �� �����, �����������. ���� �����, ������ ���� ������.",
+		"modelDeprecated": "�� ������ ����� ����������. ���� �����, ������ ���� ������.",
+		"providerNotAllowed": "��������� '{{provider}}' �� ���������� ���� �����������",
+		"modelNotAllowed": "������ '{{model}}' �� ��������� ��� ���������� '{{provider}}' ���� �����������",
+		"profileInvalid": "��� ������ ������ ���������� ��� ������, �� �� �������� ���� �����������",
+		"qwenCodeOauthPath": "�� ������ ������ ������ ���� �� �������� ����� OAuth.",
+		"sapAiCore": "�� ������ ������ ������ ���� ������ SAP AI Core.",
+		"sapAiCoreDeploymentId": "�� ������ ������� �������� ����������� ��� ����� '{{model}}'."
 	},
 	"placeholders": {
-		"apiKey": "Введи ключ API...",
-		"profileName": "Введи назву профілю",
-		"accessKey": "Введи ключ доступу...",
-		"secretKey": "Введи секретний ключ...",
-		"sessionToken": "Введи токен сесії...",
-		"credentialsJson": "Введи JSON облікових даних...",
-		"keyFilePath": "Введи шлях до файлу ключа...",
-		"projectId": "Введи ідентифікатор проекту...",
-		"customArn": "Введи ARN (наприклад, arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
-		"baseUrl": "Введи базовий URL...",
+		"apiKey": "����� ���� API...",
+		"profileName": "����� ����� ������",
+		"accessKey": "����� ���� �������...",
+		"secretKey": "����� ��������� ����...",
+		"sessionToken": "����� ����� ���...",
+		"credentialsJson": "����� JSON �������� �����...",
+		"keyFilePath": "����� ���� �� ����� �����...",
+		"projectId": "����� ������������ �������...",
+		"customArn": "����� ARN (���������, arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
+		"baseUrl": "����� ������� URL...",
 		"modelId": {
-			"lmStudio": "наприклад, meta-llama-3.1-8b-instruct",
-			"lmStudioDraft": "наприклад, lmstudio-community/llama-3.2-1b-instruct",
-			"ollama": "наприклад, llama3.1"
+			"lmStudio": "���������, meta-llama-3.1-8b-instruct",
+			"lmStudioDraft": "���������, lmstudio-community/llama-3.2-1b-instruct",
+			"ollama": "���������, llama3.1"
 		},
 		"numbers": {
-			"maxTokens": "наприклад, 4096",
-			"contextWindow": "наприклад, 128000",
-			"inputPrice": "наприклад, 0.0001",
-			"outputPrice": "наприклад, 0.0002",
-			"cacheWritePrice": "наприклад, 0.00005"
+			"maxTokens": "���������, 4096",
+			"contextWindow": "���������, 128000",
+			"inputPrice": "���������, 0.0001",
+			"outputPrice": "���������, 0.0002",
+			"cacheWritePrice": "���������, 0.00005"
 		}
 	},
 	"defaults": {
-		"ollamaUrl": "За замовчуванням: http://localhost:11434",
-		"lmStudioUrl": "За замовчуванням: http://localhost:1234",
-		"geminiUrl": "За замовчуванням: https://generativelanguage.googleapis.com"
+		"ollamaUrl": "�� �������������: http://localhost:11434",
+		"lmStudioUrl": "�� �������������: http://localhost:1234",
+		"geminiUrl": "�� �������������: https://generativelanguage.googleapis.com"
 	},
 	"labels": {
-		"customArn": "Власний ARN",
-		"useCustomArn": "Використовувати власний ARN..."
+		"customArn": "������� ARN",
+		"useCustomArn": "��������������� ������� ARN..."
 	},
-	"limitMaxTokensDescription": "Обмежити максимальну кількість токенів у відповіді",
-	"maxOutputTokensLabel": "Максимальні вихідні токени",
-	"maxTokensGenerateDescription": "Максимальна кількість токенів для генерації у відповіді",
-	"includeMaxOutputTokens": "Включити макс. вихідні токени",
-	"includeMaxOutputTokensDescription": "Надсилати параметр макс. вихідних токенів у запитах API. Деякі провайдери можуть не підтримувати це.",
+	"limitMaxTokensDescription": "�������� ����������� ������� ������ � ������",
+	"maxOutputTokensLabel": "���������� ������ ������",
+	"maxTokensGenerateDescription": "����������� ������� ������ ��� ��������� � ������",
+	"includeMaxOutputTokens": "�������� ����. ������ ������",
+	"includeMaxOutputTokensDescription": "��������� �������� ����. �������� ������ � ������� API. ���� ���������� ������ �� ����������� ��.",
 	"serviceTier": {
-		"label": "Рівень сервісу",
-		"tooltip": "Для швидшого обробки API запитів, спробуйте рівень пріоритетного обробки. Для нижчих цін з вищою затримкою, спробуйте гнучкий рівень обробки.",
-		"standard": "Стандартний",
-		"flex": "Гнучкий",
-		"priority": "Пріоритетний",
-		"pricingTableTitle": "Ціни за рівнем сервісу (ціна за 1М токенів)",
+		"label": "г���� ������",
+		"tooltip": "��� �������� ������� API ������, ��������� ����� ������������ �������. ��� ������ ��� � ����� ���������, ��������� ������� ����� �������.",
+		"standard": "�����������",
+		"flex": "�������",
+		"priority": "�����������",
+		"pricingTableTitle": "ֳ�� �� ����� ������ (���� �� 1� ������)",
 		"columns": {
-			"tier": "Рівень",
-			"input": "Вхід",
-			"output": "Вихід",
-			"cacheReads": "Читання кешу"
+			"tier": "г����",
+			"input": "����",
+			"output": "�����",
+			"cacheReads": "������� ����"
 		}
 	}
 }

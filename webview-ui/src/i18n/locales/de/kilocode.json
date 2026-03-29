@@ -302,7 +302,7 @@
 	"toolCallStyle": {
 		"title": "Tool-Call-Stil",
 		"description": "Wähle aus, wie Tool-Calls im System-Prompt formatiert werden. JSON ist derzeit experimentell und hauptsächlich für Nutzer gedacht, die an der Weiterentwicklung interessiert sind.",
-		"automatic": "Lass Kilo entscheiden",
+		"automatic": "Lass AlfaCode assistant entscheiden",
 		"xml": "XML",
 		"json": "JSON"
 	},
@@ -354,7 +354,7 @@
 			"title": "Sprache-zu-Text",
 			"description": "Sprache-zu-Text ist nicht verfügbar. Sprache-zu-Text erfordert sowohl FFmpeg als auch einen konfigurierten, gültigen OpenAI-Anbieter. <moreInfoLink>Klicken Sie hier für weitere Informationen</moreInfoLink>.",
 			"openAiReason": "Sie benötigen einen gültigen OpenAI-Anbieter mit einem API-Schlüssel, um die Sprachtranskription zu verwenden.",
-			"ffmpegReason": "Sie benötigen FFmpeg. <ffmpegLink>Klicken Sie hier</ffmpegLink>, damit Kilo Ihnen bei der Installation von FFmpeg hilft.",
+			"ffmpegReason": "Sie benötigen FFmpeg. <ffmpegLink>Klicken Sie hier</ffmpegLink>, damit AlfaCode assistant Ihnen bei der Installation von FFmpeg hilft.",
 			"ffmpegMessage": "Hilf mir, FFmpeg zu installieren"
 		},
 		"misconfiguredState": "Nicht verfügbar aufgrund der Konfiguration",

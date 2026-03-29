@@ -1,0 +1,38 @@
+{
+	"runId": "local-bge-m3-small",
+	"seed": 42,
+	"repoPath": "benchmark/code-index/datasets/small-synth-repo",
+	"languageHint": "typescript",
+	"embeddings": {
+		"baseUrl": "http://127.0.0.1:4001",
+		"apiKey": "${BGE_API_KEY}",
+		"model": "alfaleasing/bge-m3"
+	},
+	"qdrant": {
+		"url": "http://127.0.0.1:6333",
+		"apiKey": "",
+		"collection": "code-index-bench",
+		"distance": "Cosine",
+		"hnsw": { "m": 64, "ef_construct": 512, "on_disk": true },
+		"vectorsOnDisk": true,
+		"query": { "hnsw_ef": 128, "exact": false }
+	},
+	"neo4j": {
+		"uri": "bolt://127.0.0.1:7687",
+		"username": "neo4j",
+		"password": "${NEO4J_PASSWORD}",
+		"database": "neo4j"
+	},
+	"chunking": {
+		"maxBlockChars": 1000,
+		"minBlockChars": 50,
+		"maxCharsToleranceFactor": 1.15,
+		"minChunkRemainderChars": 200
+	},
+	"batch": { "embeddingBatchSize": 60 },
+	"search": {
+		"topK": 10,
+		"minScore": 0.0,
+		"hybrid": true
+	}
+}

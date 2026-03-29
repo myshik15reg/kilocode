@@ -458,11 +458,11 @@ export class ContextProxy {
 		return this.originalContext.workspaceState.update(key, value)
 	}
 
-	async getWorkspaceState(key: string) {
+	async getWorkspaceState<T = unknown>(key: string): Promise<T | undefined> {
 		if (!this.originalContext.workspaceState) {
 			return undefined
 		}
-		return await this.originalContext.workspaceState.get(key)
+		return await this.originalContext.workspaceState.get<T>(key)
 	}
 	// kilocode_change end
 

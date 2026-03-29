@@ -6,6 +6,7 @@ import { t } from "../../i18n"
 import type { ToolUse } from "../../shared/tools"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
+import { compactMcpResponse } from "./helpers/compactMcpResponse" // kilocode_change
 
 interface UseMcpToolParams {
 	server_name: string
@@ -315,22 +316,38 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			const outputText = this.processToolContent(toolResult)
 
 			if (outputText) {
+				// kilocode_change start
+				const compactOutputText = compactMcpResponse(outputText)
+				// kilocode_change end
 				await this.sendExecutionStatus(task, {
 					executionId,
 					status: "output",
-					response: outputText,
+					response: compactOutputText,
 				})
 
-				toolResultPretty = (toolResult.isError ? "Error:\n" : "") + outputText
+				toolResultPretty = (toolResult.isError ? "Error:\n" : "") + compactOutputText
 			}
 
-			// Send completion status
-			await this.sendExecutionStatus(task, {
-				executionId,
-				status: toolResult.isError ? "error" : "completed",
-				response: toolResultPretty,
-				error: toolResult.isError ? "Error executing MCP tool" : undefined,
-			})
+			// kilocode_change start
+			if (toolResult.isError) {
+				await this.sendExecutionStatus(task, {
+					executionId,
+					status: "error",
+					error: "Error executing MCP tool",
+				})
+			} else if (outputText) {
+				await this.sendExecutionStatus(task, {
+					executionId,
+					status: "completed",
+				})
+			} else {
+				await this.sendExecutionStatus(task, {
+					executionId,
+					status: "completed",
+					response: toolResultPretty,
+				})
+			}
+			// kilocode_change end
 		} else {
 			// Send error status if no result
 			await this.sendExecutionStatus(task, {

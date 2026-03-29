@@ -1,54 +1,48 @@
-import path from 'path'
-import type { Node as SyntaxNode, QueryCapture } from 'web-tree-sitter'
-import { BaseExtractor } from '../../tree-sitter/base-extractor'
-import type {
-	CodeEntity,
-	CodeEntityType,
-	CodeRelationship,
-	ExtractionResult,
-	ILanguageExtractor,
-} from '../interfaces'
+import path from "path"
+import type { Node as SyntaxNode, QueryCapture } from "web-tree-sitter"
+import { BaseExtractor } from "../../tree-sitter/base-extractor"
+import type { CodeEntity, CodeEntityType, CodeRelationship, ExtractionResult, ILanguageExtractor } from "../interfaces"
 
 const CAPTURE_DEFINITION_PATTERN = /definition\.([a-zA-Z0-9_.-]+)/
-const NAME_CAPTURE_PREFIX = 'name.'
+const NAME_CAPTURE_PREFIX = "name."
 
-const CALL_CAPTURE_NAMES = new Set(['call.function', 'call.method', 'call.callee', 'name.definition.call'])
+const CALL_CAPTURE_NAMES = new Set(["call.function", "call.method", "call.callee", "name.definition.call"])
 
 const entityType = (type: CodeEntityType, kind?: string): { type: CodeEntityType; kind?: string } =>
 	kind ? { type, kind } : { type }
 
 const ENTITY_TYPE_MAP: Record<string, { type: CodeEntityType; kind?: string }> = {
-	function: entityType('function'),
-	procedure: entityType('function', 'procedure'),
-	method: entityType('function', 'method'),
-	constructor: entityType('function', 'constructor'),
-	accessor: entityType('function', 'accessor'),
-	lambda: entityType('function', 'lambda'),
-	generator: entityType('function', 'generator'),
-	async_function: entityType('function', 'async_function'),
-	async_arrow: entityType('function', 'async_arrow'),
-	test: entityType('function', 'test'),
-	class: entityType('class'),
-	decorated_class: entityType('class', 'decorated_class'),
-	struct: entityType('class', 'struct'),
-	interface: entityType('interface'),
-	module: entityType('module'),
-	namespace: entityType('module', 'namespace'),
-	package: entityType('module', 'package'),
-	import: entityType('import'),
-	variable: entityType('variable'),
-	var: entityType('variable', 'var'),
-	const: entityType('variable', 'const'),
-	property: entityType('variable', 'property'),
-	field: entityType('variable', 'field'),
-	parameter: entityType('variable', 'parameter'),
-	enum: entityType('type', 'enum'),
-	type: entityType('type'),
-	typedef: entityType('type', 'typedef'),
-	type_alias: entityType('type', 'type_alias'),
-	macro: entityType('type', 'macro'),
-	object: entityType('type', 'object'),
-	array: entityType('type', 'array'),
+	function: entityType("function"),
+	procedure: entityType("function", "procedure"),
+	method: entityType("function", "method"),
+	constructor: entityType("function", "constructor"),
+	accessor: entityType("function", "accessor"),
+	lambda: entityType("function", "lambda"),
+	generator: entityType("function", "generator"),
+	async_function: entityType("function", "async_function"),
+	async_arrow: entityType("function", "async_arrow"),
+	test: entityType("function", "test"),
+	class: entityType("class"),
+	decorated_class: entityType("class", "decorated_class"),
+	struct: entityType("class", "struct"),
+	interface: entityType("interface"),
+	module: entityType("module"),
+	namespace: entityType("module", "namespace"),
+	package: entityType("module", "package"),
+	import: entityType("import"),
+	variable: entityType("variable"),
+	var: entityType("variable", "var"),
+	const: entityType("variable", "const"),
+	property: entityType("variable", "property"),
+	field: entityType("variable", "field"),
+	parameter: entityType("variable", "parameter"),
+	enum: entityType("type", "enum"),
+	type: entityType("type"),
+	typedef: entityType("type", "typedef"),
+	type_alias: entityType("type", "type_alias"),
+	macro: entityType("type", "macro"),
+	object: entityType("type", "object"),
+	array: entityType("type", "array"),
 }
 
 type DefinitionRecord = {
@@ -97,7 +91,7 @@ export class TreeSitterGraphExtractor extends BaseExtractor implements ILanguage
 
 			relationships.push({
 				id: `rel:${fileEntity.id}:defines:${record.entity.id}`,
-				type: 'defines',
+				type: "defines",
 				fromId: fileEntity.id,
 				toId: record.entity.id,
 				properties: {
@@ -110,8 +104,60 @@ export class TreeSitterGraphExtractor extends BaseExtractor implements ILanguage
 		}
 
 		this.extractCalls(captures, filePath, entitiesByName, definitionNodes, relationships)
+		this.extractImports(captures, filePath, fileEntity, entities, relationships)
 
 		return { entities, relationships }
+	}
+
+	private extractImports(
+		captures: QueryCapture[],
+		filePath: string,
+		fileEntity: CodeEntity,
+		entities: CodeEntity[],
+		relationships: CodeRelationship[],
+	): void {
+		// Heuristic: any capture that looks like an import definition becomes an import entity,
+		// and we link file -> import via `imports`.
+		// This keeps behavior consistent across languages where graph queries emit @definition.import.
+		for (const capture of captures) {
+			const def = this.getDefinitionType(capture.name)
+			if (!def) continue
+			if (def.baseType !== "import") continue
+
+			const mapping = this.mapEntityType(def.baseType)
+			if (!mapping) continue
+
+			const definitionNode = this.resolveDefinitionNode(capture)
+			const resolvedName = this.resolveName(definitionNode, this.findNameNode(definitionNode), def.baseType)
+			const importId = `${mapping.type}:${filePath}:${resolvedName}`
+
+			// Ensure entity exists (dedupe by id)
+			if (!entities.some((e) => e.id === importId)) {
+				entities.push({
+					id: importId,
+					type: mapping.type,
+					name: resolvedName,
+					filePath,
+					line: definitionNode.startPosition.row + 1,
+					column: definitionNode.startPosition.column,
+					language: this.languageLabel,
+					properties: {
+						captureType: def.rawType,
+						kind: mapping.kind,
+					},
+				})
+			}
+
+			relationships.push({
+				id: `rel:${fileEntity.id}:imports:${importId}:${definitionNode.startPosition.row + 1}`,
+				type: "imports",
+				fromId: fileEntity.id,
+				toId: importId,
+				properties: {
+					line: definitionNode.startPosition.row + 1,
+				},
+			})
+		}
 	}
 
 	private extractDefinitions(captures: QueryCapture[], filePath: string): DefinitionRecord[] {
@@ -181,7 +227,7 @@ export class TreeSitterGraphExtractor extends BaseExtractor implements ILanguage
 
 			relationships.push({
 				id: `rel:${filePath}:calls:${caller.id}:${targetId}:${capture.node.startPosition.row + 1}`,
-				type: 'calls',
+				type: "calls",
 				fromId: caller.id,
 				toId: targetId,
 				properties: {
@@ -192,7 +238,7 @@ export class TreeSitterGraphExtractor extends BaseExtractor implements ILanguage
 	}
 
 	private isNameCapture(capture: QueryCapture): boolean {
-		return capture.name === 'name' || capture.name.startsWith(NAME_CAPTURE_PREFIX)
+		return capture.name === "name" || capture.name.startsWith(NAME_CAPTURE_PREFIX)
 	}
 
 	private getDefinitionType(name: string): { rawType: string; baseType: string } | null {
@@ -200,7 +246,7 @@ export class TreeSitterGraphExtractor extends BaseExtractor implements ILanguage
 		if (!match || !match[1]) return null
 
 		const rawType = match[1]
-		const baseType = rawType.split('.')[0]
+		const baseType = rawType.split(".")[0]
 		return { rawType, baseType }
 	}
 
@@ -229,20 +275,20 @@ export class TreeSitterGraphExtractor extends BaseExtractor implements ILanguage
 
 	private findNameNode(definitionNode: SyntaxNode): SyntaxNode | null {
 		return (
-			definitionNode.childForFieldName?.('name') ??
-			definitionNode.childForFieldName?.('identifier') ??
+			definitionNode.childForFieldName?.("name") ??
+			definitionNode.childForFieldName?.("identifier") ??
 			definitionNode.namedChildren?.[0] ??
 			null
 		)
 	}
 
 	private resolveName(definitionNode: SyntaxNode, nameNode: SyntaxNode | null, baseType: string): string {
-		const raw = (nameNode?.text ?? '').trim()
+		const raw = (nameNode?.text ?? "").trim()
 		if (raw) {
 			return this.sanitizeName(raw)
 		}
 
-		const fallbackText = (definitionNode.text ?? '').trim()
+		const fallbackText = (definitionNode.text ?? "").trim()
 		if (fallbackText) {
 			return this.sanitizeName(fallbackText.split(/\r?\n/)[0])
 		}
@@ -251,7 +297,7 @@ export class TreeSitterGraphExtractor extends BaseExtractor implements ILanguage
 	}
 
 	private sanitizeName(name: string): string {
-		return name.replace(/\s+/g, ' ').trim()
+		return name.replace(/\s+/g, " ").trim()
 	}
 
 	private findContainingEntity(node: SyntaxNode, definitionNodes: Map<SyntaxNode, CodeEntity>): CodeEntity | null {
@@ -268,8 +314,8 @@ export class TreeSitterGraphExtractor extends BaseExtractor implements ILanguage
 
 	private normalizeCalledName(rawName: string): string {
 		const trimmed = rawName.trim()
-		if (!trimmed) return ''
-		const parts = trimmed.split('.')
+		if (!trimmed) return ""
+		const parts = trimmed.split(".")
 		return parts[parts.length - 1] || trimmed
 	}
 
@@ -287,7 +333,7 @@ export class TreeSitterGraphExtractor extends BaseExtractor implements ILanguage
 	private createFileEntity(filePath: string): CodeEntity {
 		return {
 			id: `file:${filePath}`,
-			type: 'file',
+			type: "file",
 			name: path.basename(filePath),
 			filePath,
 			line: 1,

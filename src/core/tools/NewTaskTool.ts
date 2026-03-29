@@ -15,6 +15,10 @@ interface NewTaskParams {
 	mode: string
 	message: string
 	todos?: string
+	execution?: "auto" | "foreground" | "background"
+	isolation?: "auto" | "shared" | "worktree"
+	branchFromTaskId?: string
+	branchStrategy?: "full" | "summary"
 }
 
 export class NewTaskTool extends BaseTool<"new_task"> {
@@ -25,11 +29,15 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			mode: params.mode || "",
 			message: params.message || "",
 			todos: params.todos,
+			execution: (params.execution as NewTaskParams["execution"]) || undefined,
+			isolation: (params.isolation as NewTaskParams["isolation"]) || undefined,
+			branchFromTaskId: params.branchFromTaskId,
+			branchStrategy: (params.branchStrategy as NewTaskParams["branchStrategy"]) || undefined,
 		}
 	}
 
 	async execute(params: NewTaskParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { mode, message, todos } = params
+		const { mode, message, todos, execution, isolation, branchFromTaskId, branchStrategy } = params
 		const { askApproval, handleError, pushToolResult, toolProtocol, toolCallId } = callbacks
 
 		try {
@@ -109,6 +117,10 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				mode: targetMode.name,
 				content: message,
 				todos: todoItems,
+				execution,
+				isolation,
+				branchFromTaskId,
+				branchStrategy,
 			})
 
 			const didApprove = await askApproval("tool", toolMessage)
@@ -129,6 +141,10 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				message: unescapedMessage,
 				initialTodos: todoItems,
 				mode,
+				execution,
+				isolation,
+				branchFromTaskId,
+				branchStrategy,
 			})
 
 			// Reflect delegation in tool result (no pause/unpause, no wait)

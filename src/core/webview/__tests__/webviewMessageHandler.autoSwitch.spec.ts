@@ -189,7 +189,7 @@ describe("webviewMessageHandler - Automatic Organization Switching", () => {
 			// Verify VSCode notification was shown
 			const vscode = await import("vscode")
 			expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
-				expect.stringContaining("Automatically switched to organization:"),
+				expect.stringContaining("AlfaCode assistant automatically switched to organization:"),
 			)
 			expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(expect.stringContaining("Test Org 1"))
 		})

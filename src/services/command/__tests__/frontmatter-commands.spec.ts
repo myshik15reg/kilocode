@@ -23,6 +23,65 @@ describe("Command loading with frontmatter", () => {
 	})
 
 	describe("getCommand with frontmatter", () => {
+		// kilocode_change start
+		it("should load init-memory-bank command with description and no mode", async () => {
+			const commandContent = `---
+description: "Workflow: initialize or repair workspace Memory Bank and continue into the artifact flow"
+---
+
+Source of Truth (workflow): [\`.kilocode/workflows/init-memory-bank.md\`](.kilocode/workflows/init-memory-bank.md:1)
+
+Use this entrypoint when the workspace Memory Bank is missing, incomplete, or needs repair.
+
+Recommended flow:
+1. Initialize or repair workspace Memory Bank by [\`.kilocode/workflows/init-memory-bank.md\`](.kilocode/workflows/init-memory-bank.md:1)
+2. Read [\`.kilocode/memory-bank/index.md\`](.kilocode/memory-bank/index.md:1) and confirm \`[MB: OK]\`
+3. Prime context by [\`.kilocode/workflows/context-priming.md\`](.kilocode/workflows/context-priming.md:1)
+4. Clean the task contract by [\`.kilocode/workflows/brief-refinement.md\`](.kilocode/workflows/brief-refinement.md:1)`
+
+			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
+			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
+
+			const result = await getCommand("/test/cwd", "init-memory-bank")
+
+			expect(result).toEqual({
+				name: "init-memory-bank",
+				content:
+					"Source of Truth (workflow): [`.kilocode/workflows/init-memory-bank.md`](.kilocode/workflows/init-memory-bank.md:1)\n\nUse this entrypoint when the workspace Memory Bank is missing, incomplete, or needs repair.\n\nRecommended flow:\n1. Initialize or repair workspace Memory Bank by [`.kilocode/workflows/init-memory-bank.md`](.kilocode/workflows/init-memory-bank.md:1)\n2. Read [`.kilocode/memory-bank/index.md`](.kilocode/memory-bank/index.md:1) and confirm `[MB: OK]`\n3. Prime context by [`.kilocode/workflows/context-priming.md`](.kilocode/workflows/context-priming.md:1)\n4. Clean the task contract by [`.kilocode/workflows/brief-refinement.md`](.kilocode/workflows/brief-refinement.md:1)",
+				source: "project",
+				filePath: path.join("/test/cwd", ".kilocode", "commands", "init-memory-bank.md"),
+				description: "Workflow: initialize or repair workspace Memory Bank and continue into the artifact flow",
+				argumentHint: undefined,
+				mode: undefined,
+			})
+		})
+
+		it("should load brief-refinement command with description and no mode", async () => {
+			const commandContent = `---
+description: "Workflow: refine a raw request into a clean reusable brief"
+---
+
+Source of Truth (workflow): [\`.kilocode/workflows/brief-refinement.md\`](.kilocode/workflows/brief-refinement.md:1)
+
+Use this workflow after \`context-priming\` and before protocol creation, broad planning, or orchestration.`
+
+			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
+			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
+
+			const result = await getCommand("/test/cwd", "brief-refinement")
+
+			expect(result).toEqual({
+				name: "brief-refinement",
+				content:
+					"Source of Truth (workflow): [`.kilocode/workflows/brief-refinement.md`](.kilocode/workflows/brief-refinement.md:1)\n\nUse this workflow after `context-priming` and before protocol creation, broad planning, or orchestration.",
+				source: "project",
+				filePath: path.join("/test/cwd", ".kilocode", "commands", "brief-refinement.md"),
+				description: "Workflow: refine a raw request into a clean reusable brief",
+				argumentHint: undefined,
+				mode: undefined,
+			})
+		})
+		// kilocode_change end
 		it("should load command with description from frontmatter", async () => {
 			const commandContent = `---
 description: Sets up the development environment

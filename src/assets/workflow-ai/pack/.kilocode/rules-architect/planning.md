@@ -1,70 +1,81 @@
 # Planning Rules (Architect Mode)
 
-> Правила планирования и создания протоколов.
+Правила планирования и создания протоколов. Нормативная рамка документов: [`docs-standards.md`](../rules/docs-standards.md:1).
 
-## Protocol Structure
-```
+## Protocol structure
+
+```text
 .protocols/YYYY-MM-DD-task-name/
-├── brief.md      # Что делать + Definition of Done
-├── plan.md       # Как делать (шаги)
-├── execution.md  # Лог выполнения (опционально)
-└── artifacts/    # Промежуточные материалы
+  brief.md
+  plan.md
+  execution.md (optional)
+  artifacts/
 ```
 
-## brief.md Template
-```markdown
-# Brief: Task Name
+## brief.md minimal template
+
+```text
+# Brief: <Task name>
 
 ## Goal
-Краткое описание цели.
+<short goal>
 
 ## Definition of Done
-- [ ] Критерий 1
-- [ ] Критерий 2
-- [ ] Tests pass (100% coverage)
-- [ ] No lint errors
+1. <criterion>
+2. <criterion>
+3. Tests pass (100% coverage)
+4. Lint is clean (0 errors, 0 warnings)
 
 ## Acceptance Criteria
-Given: исходное состояние
-When: действие
-Then: ожидаемый результат
+Given: <state>
+When: <action>
+Then: <result>
 
 ## Constraints
-- Ограничение 1
-- Ограничение 2
+1. <constraint>
+2. <constraint>
 ```
 
-## plan.md Template
-```markdown
-# Plan: Task Name
+## plan.md minimal template
+
+```text
+# Plan: <Task name>
 
 ## Steps
 
-### Step 1: Name
-- **INPUT:** Что нужно
-- **OUTPUT:** Что получим
-- **VERIFY:** Как проверить
-- **AGENT:** Кто выполняет
-
-### Step 2: ...
+### Step 1: <name>
+INPUT: <what is needed>
+OUTPUT: <what is produced>
+VERIFY: <how to verify>
+AGENT: <who executes>
 ```
 
 ## Workflow
-1. Прочитать Memory Bank → `[MB: OK]`
-2. Уточнить требования (1-3 вопроса)
-3. Создать протокол
-4. Написать brief.md + plan.md
-5. Получить approval
-6. Делегировать реализацию
 
-## Naming Rules
-- `task-name`: kebab-case, 2-3 слова, ≤30 символов
-- С номером задачи: `YYYY-MM-DD-UZ12345-task-name`
+|   # | Step                                     | Output            |
+| --: | ---------------------------------------- | ----------------- |
+|   1 | Read Memory Bank and confirm `[MB: OK]`  | context ready     |
+|   2 | Ask 1–3 clarifying questions if blocking | clarified scope   |
+|   3 | Create protocol folder                   | `.protocols/.../` |
+|   4 | Write `brief.md` + `plan.md`             | protocol ready    |
+|   5 | Get approval                             | approved plan     |
+|   6 | Delegate implementation via `new_task`   | strict handoff    |
 
-## Quality Gates
+## Naming rules
+
+| Item        | Rule                             | Example                        |
+| ----------- | -------------------------------- | ------------------------------ |
+| task-name   | kebab-case, 2–3 words, ≤30 chars | `fix-links-audit`              |
+| with ticket | `YYYY-MM-DD-UZ12345-task-name`   | `2026-02-10-UZ12345-fix-links` |
+
+## Quality gates
+
 Протокол обязателен для:
-- Любых изменений кода
-- Архитектурных решений
-- Новых фич
 
-**No Protocol, No Code!**
+| Change type           | Required |
+| --------------------- | -------- |
+| Любые изменения кода  | protocol |
+| Архитектурные решения | protocol |
+| Новые фичи            | protocol |
+
+Non-negotiable quality gates: [`quality-gates.md`](../rules/quality-gates.md:1).

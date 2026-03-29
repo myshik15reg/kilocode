@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { parseWwwAuthenticateHeader } from "./utils"
+import { mcpHttpFetch } from "./mcpHttpFetch"
 
 // Zod schemas for runtime validation at IO boundaries
 
@@ -122,7 +123,7 @@ export class McpAuthorizationDiscovery {
 	 */
 	async fetchResourceMetadata(metadataUrl: string): Promise<ProtectedResourceMetadata> {
 		try {
-			const response = await fetch(metadataUrl)
+			const response = await mcpHttpFetch(metadataUrl)
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status} ${response.statusText}`)
 			}
@@ -146,7 +147,7 @@ export class McpAuthorizationDiscovery {
 		// Try RFC 8414 first
 		try {
 			const url = `${baseUrl}/.well-known/oauth-authorization-server`
-			const response = await fetch(url)
+			const response = await mcpHttpFetch(url)
 			if (response.ok) {
 				const json: unknown = await response.json()
 				const result = AuthorizationServerMetadataSchema.safeParse(json)
@@ -163,7 +164,7 @@ export class McpAuthorizationDiscovery {
 		// Try OIDC Discovery
 		try {
 			const url = `${baseUrl}/.well-known/openid-configuration`
-			const response = await fetch(url)
+			const response = await mcpHttpFetch(url)
 			if (response.ok) {
 				const json: unknown = await response.json()
 				const result = AuthorizationServerMetadataSchema.safeParse(json)

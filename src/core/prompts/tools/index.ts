@@ -23,6 +23,7 @@ import { getAccessMcpResourceDescription } from "./access-mcp-resource"
 import { getSwitchModeDescription } from "./switch-mode"
 import { getNewTaskDescription } from "./new-task"
 import { getCodebaseSearchDescription } from "./codebase-search"
+import { getWebSearchDescription } from "./web-search"
 import { getUpdateTodoListDescription } from "./update-todo-list"
 import { getRunSlashCommandDescription } from "./run-slash-command"
 import { getGenerateImageDescription } from "./generate-image"
@@ -49,6 +50,7 @@ const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined>
 	use_mcp_tool: (args) => getUseMcpToolDescription(args),
 	access_mcp_resource: (args) => getAccessMcpResourceDescription(args),
 	codebase_search: (args) => getCodebaseSearchDescription(args),
+	web_search: (args) => getWebSearchDescription(args),
 	switch_mode: () => getSwitchModeDescription(),
 	new_task: (args) => getNewTaskDescription(args),
 	// kilocode_change start: Fast Apply
@@ -201,6 +203,7 @@ export {
 	getSwitchModeDescription,
 	getEditFileDescription, // kilocode_change: Morph fast apply
 	getCodebaseSearchDescription,
+	getWebSearchDescription,
 	getRunSlashCommandDescription,
 	getGenerateImageDescription,
 }

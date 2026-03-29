@@ -52,21 +52,23 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 
 					<div className="mt-4 text-sm text-center text-vscode-descriptionForeground">
 						<div className="flex items-center justify-center gap-4">
+							{/* kilocode_change start */}
 							<SocialLink
 								icon={<SiX className="w-4 h-4" aria-hidden />}
 								label="X"
-								href="https://x.com/roocode"
+								href="https://x.com/alfacode"
 							/>
 							<SocialLink
 								icon={<SiDiscord className="w-4 h-4" aria-hidden />}
 								label="Discord"
-								href="https://discord.gg/rCQcvT7Fnt"
+								href="https://alfacode.ai/discord"
 							/>
 							<SocialLink
 								icon={<SiReddit className="w-4 h-4" aria-hidden />}
 								label="Reddit"
-								href="https://www.reddit.com/r/RooCode/"
+								href="https://www.reddit.com/r/AlfaCodeAssistant/"
 							/>
+							{/* kilocode_change end */}
 						</div>
 					</div>
 
@@ -103,14 +105,16 @@ const SocialLink = ({ icon, label, href }: { icon: ReactNode; label: string; hre
 )
 
 const GitHubLink = ({ children }: { children?: ReactNode }) => (
+	// kilocode_change start
 	<VSCodeLink
-		href="https://github.com/RooCodeInc/Roo-Code"
+		href="https://github.com/Alfa-Org/alfacode"
 		onClick={(e) => {
 			e.preventDefault()
-			vscode.postMessage({ type: "openExternal", url: "https://github.com/RooCodeInc/Roo-Code" })
+			vscode.postMessage({ type: "openExternal", url: "https://github.com/Alfa-Org/alfacode" })
 		}}>
 		{children}
 	</VSCodeLink>
+	// kilocode_change end
 )
 
 const CareersLink = ({ children }: { children?: ReactNode }) => (

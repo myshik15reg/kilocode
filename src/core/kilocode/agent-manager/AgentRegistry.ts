@@ -1,10 +1,27 @@
-import { AgentSession, AgentStatus, AgentManagerState, PendingSession, ParallelModeInfo } from "./types"
+import { AgentSession, AgentStatus, AgentManagerState, PendingSession, ParallelModeInfo, SessionGroup } from "./types"
 import { DEFAULT_MODE_SLUG } from "@roo-code/types"
 
 export interface CreateSessionOptions {
 	parallelMode?: boolean
 	model?: string
 	mode?: string
+	sessionGroup?: SessionGroup
+	taskId?: string
+	rootTaskId?: string
+	parentTaskId?: string
+	childTaskIds?: string[]
+	restartCount?: number
+	restartLimit?: number
+	autoRestartEnabled?: boolean
+	lastStopReason?: string
+	lastStopSummary?: string
+	restartHandoff?: string
+	lifecycleStatus?: string
+	activityState?: string
+	needsAttention?: boolean
+	recoveryState?: string
+	pendingReaction?: string
+	lastEventAt?: number
 }
 
 const MAX_SESSIONS = 10
@@ -72,6 +89,23 @@ export class AgentRegistry {
 			gitUrl: options?.gitUrl,
 			model: options?.model,
 			mode: options?.mode ?? DEFAULT_MODE_SLUG,
+			sessionGroup: options?.sessionGroup,
+			taskId: options?.taskId,
+			rootTaskId: options?.rootTaskId,
+			parentTaskId: options?.parentTaskId,
+			childTaskIds: options?.childTaskIds,
+			restartCount: options?.restartCount,
+			restartLimit: options?.restartLimit,
+			autoRestartEnabled: options?.autoRestartEnabled,
+			lastStopReason: options?.lastStopReason,
+			lastStopSummary: options?.lastStopSummary,
+			restartHandoff: options?.restartHandoff,
+			lifecycleStatus: options?.lifecycleStatus,
+			activityState: options?.activityState,
+			needsAttention: options?.needsAttention,
+			recoveryState: options?.recoveryState,
+			pendingReaction: options?.pendingReaction,
+			lastEventAt: options?.lastEventAt,
 		}
 
 		this.sessions.set(sessionId, session)
@@ -96,6 +130,7 @@ export class AgentRegistry {
 		if (!session) return undefined
 
 		session.status = status
+		session.lastEventAt = Date.now()
 		if (status === "done" || status === "error" || status === "stopped") {
 			session.endTime = Date.now()
 		} else if (status === "running") {
@@ -111,6 +146,36 @@ export class AgentRegistry {
 			session.error = error
 		}
 
+		session.lifecycleStatus =
+			status === "creating"
+				? "starting"
+				: status === "running"
+					? "active"
+					: status === "done"
+						? "completed"
+						: status === "error"
+							? "failed"
+							: "stopped"
+		session.activityState = status === "running" || status === "creating" ? "active" : "idle"
+		if (status === "done") {
+			session.needsAttention = false
+			session.pendingReaction = undefined
+			session.recoveryState = undefined
+		}
+
+		return session
+	}
+
+	public updateSession(sessionId: string, patch: Partial<AgentSession>): AgentSession | undefined {
+		const session = this.sessions.get(sessionId)
+		if (!session) {
+			return undefined
+		}
+
+		Object.assign(session, patch)
+		if (patch.lastEventAt === undefined) {
+			session.lastEventAt = Date.now()
+		}
 		return session
 	}
 

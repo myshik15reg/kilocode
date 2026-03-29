@@ -309,7 +309,18 @@ export class CodeIndexManager {
 		this.assertInitialized()
 		await this._orchestrator!.clearIndexData()
 		await this._cacheManager!.clearCacheFile()
+		await this._cacheManager!.clearNeo4jCacheFile()
 	}
+
+	// kilocode_change start
+	public async clearSemanticCache(): Promise<void> {
+		if (!this._cacheManager) {
+			this._cacheManager = new CacheManager(this.context, this.workspacePath)
+			await this._cacheManager.initialize()
+		}
+		await this._cacheManager.clearCacheFile()
+	}
+	// kilocode_change end
 
 	// FIX: neo4j-cache-invalidate-on-config-change (TestAnalyzer)
 	// Root cause: Neo4j relationship indexing skips files when neo4j-cache hashes match vector hashes.

@@ -1681,7 +1681,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 									)}
 
 									{/* kilocode_change start */}
-									<div className="space-y-3">
+									<div className="space-y-3 rounded-md border border-vscode-panel-border p-4">
 										<div className="flex items-center gap-2">
 											<label className="text-sm font-medium">
 												{t("settings:codeIndex.rerankSectionLabel")}
@@ -1817,143 +1817,153 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 									{/* vectorStoreProviderLabel */}
 									{/* kilocode_change start */}
-									<div className="space-y-2">
-										<label className="text-sm font-medium">
-											{t("settings:codeIndex.vectorStoreProviderLabel")}
-										</label>
-										<Select
-											value={currentSettings.codebaseIndexVectorStoreProvider}
-											onValueChange={(value: "lancedb" | "qdrant") => {
-												updateSetting("codebaseIndexVectorStoreProvider", value)
-											}}>
-											<SelectTrigger className="w-full">
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="qdrant">Qdrant</SelectItem>
-												<SelectItem value="lancedb">LanceDB</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-
-									{/* Vector Store Name Field */}
-									<div className="space-y-2">
-										<label className="text-sm font-medium">
-											{t("settings:codeIndex.vectorStoreName")}
-										</label>
-										<VSCodeTextField
-											value={currentSettings.codebaseIndexVectorStoreName || ""}
-											onInput={(e: any) =>
-												updateSetting("codebaseIndexVectorStoreName", e.target.value)
-											}
-											placeholder={t("settings:codeIndex.vectorStoreNamePlaceholder")}
-											className={cn("w-full", {
-												"border-vscode-errorForeground":
-													formErrors.codebaseIndexVectorStoreName,
-											})}
-										/>
-										{formErrors.codebaseIndexVectorStoreName && (
-											<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
-												{formErrors.codebaseIndexVectorStoreName}
-											</p>
-										)}
-									</div>
-									{/* kilocode_change end */}
-
-									{/* Qdrant Settings */}
-									{currentSettings.codebaseIndexVectorStoreProvider === "qdrant" && (
-										<>
-											<div className="space-y-2">
-												<label className="text-sm font-medium">
-													{t("settings:codeIndex.qdrantUrlLabel")}
-												</label>
-												<VSCodeTextField
-													value={currentSettings.codebaseIndexQdrantUrl || ""}
-													onInput={(e: any) =>
-														updateSetting("codebaseIndexQdrantUrl", e.target.value)
-													}
-													onBlur={(e: any) => {
-														// Set default Qdrant URL if field is empty
-														if (!e.target.value.trim()) {
-															updateSetting("codebaseIndexQdrantUrl", DEFAULT_QDRANT_URL)
-														}
-													}}
-													placeholder={t("settings:codeIndex.qdrantUrlPlaceholder")}
-													className={cn("w-full", {
-														"border-red-500": formErrors.codebaseIndexQdrantUrl,
-													})}
-												/>
-												{formErrors.codebaseIndexQdrantUrl && (
-													<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
-														{formErrors.codebaseIndexQdrantUrl}
-													</p>
-												)}
-											</div>
-
-											<div className="space-y-2">
-												<label className="text-sm font-medium">
-													{t("settings:codeIndex.qdrantApiKeyLabel")}
-												</label>
-												<VSCodeTextField
-													type="password"
-													value={currentSettings.codeIndexQdrantApiKey || ""}
-													onInput={(e: any) =>
-														updateSetting("codeIndexQdrantApiKey", e.target.value)
-													}
-													placeholder={t("settings:codeIndex.qdrantApiKeyPlaceholder")}
-													className={cn("w-full", {
-														"border-red-500": formErrors.codeIndexQdrantApiKey,
-													})}
-												/>
-												{formErrors.codeIndexQdrantApiKey && (
-													<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
-														{formErrors.codeIndexQdrantApiKey}
-													</p>
-												)}
-											</div>
-										</>
-									)}
-
-									{/* Neo4j Settings */}
-									<Neo4jSettings
-										enabled={currentSettings.codebaseIndexNeo4jEnabled ?? false}
-										uri={currentSettings.codebaseIndexNeo4jUri ?? ""}
-										username={currentSettings.codebaseIndexNeo4jUsername ?? ""}
-										database={currentSettings.codebaseIndexNeo4jDatabase ?? ""}
-										// kilocode_change start - secret draft plumbed to child component
-										password={neo4jPasswordDraft}
-										onPasswordChange={handleNeo4jPasswordDraftChange}
-										// kilocode_change end
-										setCachedStateField={(field, value) =>
-											updateSetting(field as keyof LocalCodeIndexSettings, value)
-										}
-									/>
-
-									{/* kilocode_change start */}
-									{/* LanceDB Vector Store Settings */}
-									{currentSettings.codebaseIndexVectorStoreProvider === "lancedb" && (
+									<div className="space-y-4">
 										<div className="space-y-2">
 											<label className="text-sm font-medium">
-												{t("settings:codeIndex.lancedbVectorStoreDirectoryLabel")}
+												{t("settings:codeIndex.vectorStoreProviderLabel")}
+											</label>
+											<Select
+												value={currentSettings.codebaseIndexVectorStoreProvider}
+												onValueChange={(value: "lancedb" | "qdrant") => {
+													updateSetting("codebaseIndexVectorStoreProvider", value)
+												}}>
+												<SelectTrigger className="w-full">
+													<SelectValue />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="qdrant">Qdrant</SelectItem>
+													<SelectItem value="lancedb">LanceDB</SelectItem>
+												</SelectContent>
+											</Select>
+										</div>
+
+										<div className="space-y-2">
+											<label className="text-sm font-medium">
+												{t("settings:codeIndex.vectorStoreName")}
 											</label>
 											<VSCodeTextField
-												value={currentSettings.codebaseIndexLancedbVectorStoreDirectory || ""}
+												value={currentSettings.codebaseIndexVectorStoreName || ""}
 												onInput={(e: any) =>
-													updateSetting(
-														"codebaseIndexLancedbVectorStoreDirectory",
-														e.target.value,
-													)
+													updateSetting("codebaseIndexVectorStoreName", e.target.value)
 												}
-												placeholder={t(
-													"settings:codeIndex.lancedbVectorStoreDirectoryPlaceholder",
-												)}
-												className="w-full"
+												placeholder={t("settings:codeIndex.vectorStoreNamePlaceholder")}
+												className={cn("w-full", {
+													"border-vscode-errorForeground":
+														formErrors.codebaseIndexVectorStoreName,
+												})}
 											/>
-											<p className="text-xs text-vscode-descriptionForeground">
-												{t("settings:codeIndex.lancedbVectorStoreDirectoryDescription")}
+											<p className="text-xs text-vscode-descriptionForeground mt-1 mb-0">
+												{t("settings:codeIndex.vectorStoreNamePlaceholder")}
 											</p>
+											{formErrors.codebaseIndexVectorStoreName && (
+												<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+													{formErrors.codebaseIndexVectorStoreName}
+												</p>
+											)}
 										</div>
-									)}
+
+										{/* Qdrant Settings */}
+										{currentSettings.codebaseIndexVectorStoreProvider === "qdrant" && (
+											<div className="grid gap-3 lg:grid-cols-2">
+												<div className="space-y-2">
+													<label className="text-sm font-medium">
+														{t("settings:codeIndex.qdrantUrlLabel")}
+													</label>
+													<VSCodeTextField
+														value={currentSettings.codebaseIndexQdrantUrl || ""}
+														onInput={(e: any) =>
+															updateSetting("codebaseIndexQdrantUrl", e.target.value)
+														}
+														onBlur={(e: any) => {
+															// Set default Qdrant URL if field is empty
+															if (!e.target.value.trim()) {
+																updateSetting(
+																	"codebaseIndexQdrantUrl",
+																	DEFAULT_QDRANT_URL,
+																)
+															}
+														}}
+														placeholder={t("settings:codeIndex.qdrantUrlPlaceholder")}
+														className={cn("w-full", {
+															"border-red-500": formErrors.codebaseIndexQdrantUrl,
+														})}
+													/>
+													{formErrors.codebaseIndexQdrantUrl && (
+														<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+															{formErrors.codebaseIndexQdrantUrl}
+														</p>
+													)}
+												</div>
+
+												<div className="space-y-2">
+													<label className="text-sm font-medium">
+														{t("settings:codeIndex.qdrantApiKeyLabel")}
+													</label>
+													<VSCodeTextField
+														type="password"
+														value={currentSettings.codeIndexQdrantApiKey || ""}
+														onInput={(e: any) =>
+															updateSetting("codeIndexQdrantApiKey", e.target.value)
+														}
+														placeholder={t("settings:codeIndex.qdrantApiKeyPlaceholder")}
+														className={cn("w-full", {
+															"border-red-500": formErrors.codeIndexQdrantApiKey,
+														})}
+													/>
+													{formErrors.codeIndexQdrantApiKey && (
+														<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+															{formErrors.codeIndexQdrantApiKey}
+														</p>
+													)}
+												</div>
+											</div>
+										)}
+
+										{/* Neo4j Settings */}
+										<div>
+											<Neo4jSettings
+												enabled={currentSettings.codebaseIndexNeo4jEnabled ?? false}
+												uri={currentSettings.codebaseIndexNeo4jUri ?? ""}
+												username={currentSettings.codebaseIndexNeo4jUsername ?? ""}
+												database={currentSettings.codebaseIndexNeo4jDatabase ?? ""}
+												// kilocode_change start - secret draft plumbed to child component
+												password={neo4jPasswordDraft}
+												onPasswordChange={handleNeo4jPasswordDraftChange}
+												// kilocode_change end
+												setCachedStateField={(field, value) =>
+													updateSetting(field as keyof LocalCodeIndexSettings, value)
+												}
+											/>
+										</div>
+
+										{/* kilocode_change start */}
+										{/* LanceDB Vector Store Settings */}
+										{currentSettings.codebaseIndexVectorStoreProvider === "lancedb" && (
+											<div className="space-y-2">
+												<label className="text-sm font-medium">
+													{t("settings:codeIndex.lancedbVectorStoreDirectoryLabel")}
+												</label>
+												<VSCodeTextField
+													value={
+														currentSettings.codebaseIndexLancedbVectorStoreDirectory || ""
+													}
+													onInput={(e: any) =>
+														updateSetting(
+															"codebaseIndexLancedbVectorStoreDirectory",
+															e.target.value,
+														)
+													}
+													placeholder={t(
+														"settings:codeIndex.lancedbVectorStoreDirectoryPlaceholder",
+													)}
+													className="w-full"
+												/>
+												<p className="text-xs text-vscode-descriptionForeground">
+													{t("settings:codeIndex.lancedbVectorStoreDirectoryDescription")}
+												</p>
+											</div>
+										)}
+									</div>
 									{/* kilocode_change end */}
 								</div>
 							)}

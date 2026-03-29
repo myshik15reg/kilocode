@@ -51,6 +51,30 @@ export type ToolCallStreamEvent = ApiStreamToolCallStartChunk | ApiStreamToolCal
  * provider-level raw chunks into start/delta/end events.
  */
 export class NativeToolCallParser {
+	// kilocode_change start
+	private static readonly canonicalToolParamMap = new Map(
+		toolParamNames.map((paramName) => [this.toCanonicalParamKey(paramName), paramName]),
+	)
+
+	private static toCanonicalParamKey(key: string): string {
+		return key.replace(/[^a-zA-Z0-9]/g, "").toLowerCase()
+	}
+
+	private static normalizeTopLevelToolArgs(rawArgs: Record<string, any>): Record<string, any> {
+		if (!rawArgs || typeof rawArgs !== "object" || Array.isArray(rawArgs)) {
+			return rawArgs
+		}
+
+		const normalizedArgs: Record<string, any> = {}
+		for (const [key, value] of Object.entries(rawArgs)) {
+			const normalizedKey = this.canonicalToolParamMap.get(this.toCanonicalParamKey(key)) ?? key
+			normalizedArgs[normalizedKey] = value
+		}
+
+		return normalizedArgs
+	}
+	// kilocode_change end
+
 	// Streaming state management for argument accumulation (keyed by tool call id)
 	// Note: name is string to accommodate dynamic MCP tools (mcp--serverName--toolName)
 	private static streamingToolCalls = new Map<
@@ -256,12 +280,17 @@ export class NativeToolCallParser {
 			const resolvedName = resolveToolAlias(toolCall.name) as ToolName
 			// Preserve original name if it differs from resolved (i.e., it was an alias)
 			const originalName = toolCall.name !== resolvedName ? toolCall.name : undefined
+			// kilocode_change start
+			const normalizedArgs = this.normalizeTopLevelToolArgs(partialArgs || {})
+			const normalizedPartialArgs =
+				resolvedName === "read_file" ? this.normalizeReadFileArgs(normalizedArgs) : normalizedArgs
+			// kilocode_change end
 
 			// Create partial ToolUse with extracted values
 			return this.createPartialToolUse(
 				toolCall.id,
 				resolvedName,
-				partialArgs || {},
+				normalizedPartialArgs,
 				true, // partial
 				originalName,
 			)
@@ -309,9 +338,11 @@ export class NativeToolCallParser {
 	 */
 	private static convertFileEntries(files: any[]): FileEntry[] {
 		return files.map((file: any) => {
-			const entry: FileEntry = { path: file.path }
+			// kilocode_change start
+			const entry: FileEntry = { path: file.path ?? file.Path }
 			// kilocode_change: support lineRanges spelling, often preferred by Claude
-			const lineRanges = file.line_ranges ?? file.lineRanges
+			const lineRanges = file.line_ranges ?? file.lineRanges ?? file.LineRanges
+			// kilocode_change end
 			if (lineRanges && Array.isArray(lineRanges)) {
 				entry.lineRanges = lineRanges
 					// kilocode_change end
@@ -338,6 +369,33 @@ export class NativeToolCallParser {
 			return entry
 		})
 	}
+
+	// kilocode_change start
+	private static normalizeReadFileArgs(rawArgs: Record<string, any>): Record<string, any> {
+		if (!rawArgs || typeof rawArgs !== "object") {
+			return rawArgs
+		}
+
+		const normalizedArgs = { ...rawArgs }
+		const rawFiles = normalizedArgs.files ?? normalizedArgs.Files
+
+		if (Array.isArray(rawFiles)) {
+			normalizedArgs.files = rawFiles.map((file) => {
+				if (!file || typeof file !== "object") {
+					return file
+				}
+
+				return {
+					...file,
+					path: file.path ?? file.Path,
+					line_ranges: file.line_ranges ?? file.lineRanges ?? file.LineRanges,
+				}
+			})
+		}
+
+		return normalizedArgs
+	}
+	// kilocode_change end
 
 	/**
 	 * Create a partial ToolUse from currently parsed arguments.
@@ -618,7 +676,11 @@ export class NativeToolCallParser {
 
 		try {
 			// Parse the arguments JSON string
-			const args = toolCall.arguments === "" ? {} : JSON.parse(toolCall.arguments)
+			const parsedArgs = toolCall.arguments === "" ? {} : JSON.parse(toolCall.arguments)
+			// kilocode_change start
+			const normalizedArgs = this.normalizeTopLevelToolArgs(parsedArgs)
+			const args = resolvedName === "read_file" ? this.normalizeReadFileArgs(normalizedArgs) : normalizedArgs
+			// kilocode_change end
 
 			// Build legacy params object for backward compatibility with XML protocol and UI.
 			// Native execution path uses nativeArgs instead, which has proper typing.

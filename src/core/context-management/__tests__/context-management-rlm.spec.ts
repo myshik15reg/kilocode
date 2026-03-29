@@ -144,4 +144,51 @@ describe("manageContext (RLM routing)", () => {
 		expect(result.summary).toBe("Fallback summary")
 		expect(result.prevContextTokens).toBe(60000)
 	})
+
+	it("should trigger fast RLM routing at lower token pressure with new defaults", async () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First message" },
+			{ role: "assistant", content: "Second message" },
+			{ role: "user", content: "Third message" },
+			{ role: "assistant", content: "Fourth message" },
+			{ role: "user", content: "Last message" },
+		]
+
+		const mockApiHandler: ApiHandler = {
+			countTokens: vi.fn().mockResolvedValue(1000),
+			getModel: vi.fn().mockReturnValue({
+				id: "test-model",
+				info: { contextWindow: 100000, maxTokens: 30000, supportsPromptCache: false, supportsImages: false },
+			}),
+		} as unknown as ApiHandler
+
+		summarizeConversationRlmMock.mockResolvedValueOnce({
+			messages: [{ role: "user", content: "First message" }],
+			summary: "Earlier RLM summary",
+			cost: 0.01,
+			newContextTokens: 120,
+			condenseId: "condense-early",
+		})
+
+		const result = await manageContext({
+			messages,
+			totalTokens: 34000, // + 1000 => 35% of context window
+			contextWindow: 100000,
+			maxTokens: 30000,
+			apiHandler: mockApiHandler,
+			autoCondenseContext: true,
+			autoCondenseContextPercent: 85,
+			systemPrompt: "System prompt",
+			taskId: "task-id",
+			profileThresholds: {},
+			currentProfileId: "default",
+			contextRoutingEnabled: true,
+			contextRoutingFastThresholdPercent: 35,
+			contextRoutingDeepThresholdPercent: 65,
+		})
+
+		expect(summarizeConversationRlmMock).toHaveBeenCalledTimes(1)
+		expect(result.summary).toBe("Earlier RLM summary")
+		expect(result.prevContextTokens).toBe(35000)
+	})
 })

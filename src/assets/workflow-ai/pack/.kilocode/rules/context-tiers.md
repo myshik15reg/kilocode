@@ -1,8 +1,5 @@
-# Context Tiers (оптимизация чтения контекста)
+# Context Tiers (wrapper)
 
-> Этот файл — короткая обёртка для стабильных ссылок в документации.
-> **Source of truth:** skill `/context-tiers` (см. `.kilocode/skills/context-tiers/SKILL.md`).
+Source of Truth: [`context-tiers/SKILL.md`](../skills/context-tiers/SKILL.md:1).
 
-## Читать первоисточник
-
-- [`../skills/context-tiers/SKILL.md`](../skills/context-tiers/SKILL.md)
+1. Стратегия "lazy loading" и tiers: [`context-tiers/SKILL.md`](../skills/context-tiers/SKILL.md:1).

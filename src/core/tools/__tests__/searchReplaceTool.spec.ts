@@ -8,6 +8,7 @@ import { isPathOutsideWorkspace } from "../../../utils/pathUtils"
 import { getReadablePath } from "../../../utils/path"
 import { ToolUse, ToolResponse } from "../../../shared/tools"
 import { searchReplaceTool } from "../SearchReplaceTool"
+import { annotateWithHashline } from "../helpers/hashline"
 
 vi.mock("fs/promises", () => ({
 	default: {
@@ -267,6 +268,8 @@ describe("searchReplaceTool", () => {
 
 			expect(result).toContain("Error:")
 			expect(result).toContain("No match found")
+			expect(result).toContain("Selective hashline preview")
+			expect(result).toContain("#HL 1:")
 			expect(mockCline.consecutiveMistakeCount).toBe(1)
 			expect(mockCline.recordToolError).toHaveBeenCalledWith("search_replace", "no_match")
 		})
@@ -279,6 +282,8 @@ describe("searchReplaceTool", () => {
 
 			expect(result).toContain("Error:")
 			expect(result).toContain("3 matches")
+			expect(result).toContain("Selective hashline preview")
+			expect(result).toContain("#HL 1:")
 			expect(mockCline.consecutiveMistakeCount).toBe(1)
 			expect(mockCline.recordToolError).toHaveBeenCalledWith("search_replace", "multiple_matches")
 		})
@@ -296,6 +301,39 @@ describe("searchReplaceTool", () => {
 			expect(mockCline.diffViewProvider.editType).toBe("modify")
 			expect(mockAskApproval).toHaveBeenCalled()
 		})
+
+		// kilocode_change start
+		it("resolves hashline references in old_string", async () => {
+			const fileContent = "Line 1\nLine 2\nLine 3"
+			const hashlineReference = annotateWithHashline(fileContent).split("\n")[1].split("|")[0]
+
+			await executeSearchReplaceTool(
+				{
+					old_string: hashlineReference,
+					new_string: "Modified Line 2",
+				},
+				{ fileContent },
+			)
+
+			expect(mockCline.consecutiveMistakeCount).toBe(0)
+			expect(mockCline.diffViewProvider.editType).toBe("modify")
+			expect(mockAskApproval).toHaveBeenCalled()
+		})
+
+		it("strips hashline prefixes from new_string before writing", async () => {
+			const fileContent = "Line 1\nLine 2\nLine 3"
+
+			await executeSearchReplaceTool(
+				{
+					old_string: "Line 2",
+					new_string: "#HL 2:abc|Modified Line 2",
+				},
+				{ fileContent },
+			)
+
+			expect(mockCline.diffViewProvider.update).toHaveBeenCalledWith("Line 1\nModified Line 2\nLine 3", true)
+		})
+		// kilocode_change end
 	})
 
 	describe("approval workflow", () => {

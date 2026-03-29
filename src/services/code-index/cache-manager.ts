@@ -6,6 +6,8 @@ import { safeWriteJson } from "../../utils/safeWriteJson"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 
+const utf8Decoder = new TextDecoder("utf-8") // kilocode_change
+
 /**
  * Manages the cache for code indexing
  */
@@ -46,7 +48,7 @@ export class CacheManager implements ICacheManager {
 	async initialize(): Promise<void> {
 		try {
 			const cacheData = await vscode.workspace.fs.readFile(this.cachePath)
-			this.fileHashes = JSON.parse(cacheData.toString())
+			this.fileHashes = JSON.parse(utf8Decoder.decode(cacheData)) // kilocode_change
 		} catch (error) {
 			this.fileHashes = {}
 			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
@@ -58,7 +60,7 @@ export class CacheManager implements ICacheManager {
 
 		try {
 			const neo4jCacheData = await vscode.workspace.fs.readFile(this.neo4jCachePath)
-			this.neo4jFileHashes = JSON.parse(neo4jCacheData.toString())
+			this.neo4jFileHashes = JSON.parse(utf8Decoder.decode(neo4jCacheData)) // kilocode_change
 		} catch (error) {
 			this.neo4jFileHashes = {}
 			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {

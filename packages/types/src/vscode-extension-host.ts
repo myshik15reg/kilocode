@@ -21,6 +21,7 @@ import type { GitCommit } from "./git.js"
 import type { McpServer } from "./mcp.js"
 import type { ModelRecord, RouterModels, ModelInfo } from "./model.js"
 import type { CommitRange } from "./kilocode/kilocode.js"
+import type { ActivityItem, TechDebtItem } from "./orchestration.js"
 import type { OpenAiCodexRateLimitInfo } from "./providers/openai-codex-rate-limits.js"
 
 // kilocode_change start: Type definitions for Kilo Code-specific features
@@ -348,12 +349,14 @@ export interface ExtensionMessage {
 		success: boolean
 		message: string
 		version?: string
+		databaseCreated?: boolean
 	}
 	// kilocode_change end: Neo4j settings responses
 	/** Generic payload for extension messages that use `values` */
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	values?: Record<string, any>
 	requestId?: string
+	itemId?: string
 	promptText?: string
 	results?:
 		| { path: string; type: "file" | "folder"; label?: string }[]
@@ -523,6 +526,10 @@ export type ExtensionState = Pick<
 	| "soundVolume"
 	| "autoCondenseContext"
 	| "autoCondenseContextPercent"
+	| "autoRestartProblematicProcesses" // kilocode_change
+	| "problematicProcessRestartLimit" // kilocode_change
+	| "parallelAgentsEnabled" // kilocode_change
+	| "parallelAgentCount" // kilocode_change
 	| "contextRoutingEnabled" // kilocode_change
 	| "contextRoutingFastThresholdPercent" // kilocode_change
 	| "contextRoutingDeepThresholdPercent" // kilocode_change
@@ -588,6 +595,11 @@ export type ExtensionState = Pick<
 	version: string
 	clineMessages: ClineMessage[]
 	currentTaskItem?: HistoryItem
+	currentTaskActivity?: ActivityItem[]
+	techDebtBacklog?: TechDebtItem[]
+	activeRootTaskIds?: string[] // kilocode_change
+	runningRootTaskIds?: string[] // kilocode_change
+	focusedRootTaskId?: string // kilocode_change
 	currentTaskTodos?: TodoItem[] // Initial todos for the current task
 	apiConfiguration: ProviderSettings
 	uriScheme?: string
@@ -738,6 +750,7 @@ export interface WebviewMessage {
 		| "askResponse"
 		| "terminalOperation"
 		| "clearTask"
+		| "closeTaskToHistory" // kilocode_change
 		| "didShowAnnouncement"
 		| "selectImages"
 		| "exportCurrentTask"
@@ -764,6 +777,9 @@ export interface WebviewMessage {
 		| "openFile"
 		| "openMention"
 		| "cancelTask"
+		| "pauseTask"
+		| "resumeTask"
+		| "branchTask"
 		| "cancelAutoApproval"
 		| "updateVSCodeSetting"
 		| "getVSCodeSetting"
@@ -968,6 +984,9 @@ export interface WebviewMessage {
 		| "sessionShow" // kilocode_change
 		| "sessionSelect" // kilocode_change
 		| "singleCompletion" // kilocode_change
+		| "acceptTechDebt"
+		| "dismissTechDebt"
+		| "convertTechDebtToTask"
 		| "openExtensionSettings" // kilocode_change: Open extension settings from CLI
 		| "openDebugApiHistory"
 		| "openDebugUiHistory"
@@ -990,8 +1009,9 @@ export interface WebviewMessage {
 	completionRequestId?: string // kilocode_change
 	shareId?: string // kilocode_change - for sessionFork
 	sessionId?: string // kilocode_change - for sessionSelect
+	itemId?: string
 	editedMessageContent?: string
-	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud" | "auth" // kilocode_change
+	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud" | "auth" | "techDebt" // kilocode_change
 	disabled?: boolean
 	context?: string
 	dataUri?: string

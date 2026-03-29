@@ -1,6 +1,6 @@
 // kilocode_change - new file
 import React from "react"
-import { render, fireEvent } from "@/utils/test-utils"
+import { render, fireEvent, screen, act } from "@/utils/test-utils"
 
 import { Neo4jSettings } from "@/components/chat/kilocode/Neo4jSettings"
 
@@ -64,5 +64,40 @@ describe("Neo4jSettings", () => {
 		expect(document.body.textContent).not.toContain("settings:codeIndex.neo4j.aboutPoint1")
 		expect(document.body.textContent).not.toContain("settings:codeIndex.neo4j.aboutPoint2")
 		expect(document.body.textContent).not.toContain("settings:codeIndex.neo4j.aboutPoint3")
+	})
+
+	it("shows auto-create hint and created-database message after successful test", () => {
+		const setCachedStateField = vi.fn()
+
+		render(
+			<Neo4jSettings
+				enabled={true}
+				uri="bolt://localhost:7687"
+				username="neo4j"
+				database="project_graph"
+				password=""
+				onPasswordChange={vi.fn()}
+				setCachedStateField={setCachedStateField}
+			/>,
+		)
+
+		expect(screen.getByText("settings:codeIndex.neo4j.autoCreateHint")).toBeInTheDocument()
+
+		act(() => {
+			window.dispatchEvent(
+				new MessageEvent("message", {
+					data: {
+						type: "neo4jConnectionResult",
+						neo4jConnectionResult: {
+							success: true,
+							message: "Successfully connected to Neo4j",
+							databaseCreated: true,
+						},
+					},
+				}),
+			)
+		})
+
+		expect(screen.getByText("settings:codeIndex.neo4j.databaseCreatedHint")).toBeInTheDocument()
 	})
 })

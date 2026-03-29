@@ -123,6 +123,19 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 			TelemetryService.instance.captureTaskCompleted(task.taskId)
 			task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
+			const provider = task.providerRef.deref() as any
+			if (provider?.extractTechDebtForTask) {
+				void provider
+					.extractTechDebtForTask({
+						taskId: task.taskId,
+						completionSummary: result,
+					})
+					.catch((error: unknown) => {
+						console.error(
+							`[AttemptCompletionTool] Failed to extract tech debt for task ${task.taskId}: ${error instanceof Error ? error.message : String(error)}`,
+						)
+					})
+			}
 
 			// Check for subtask using parentTaskId (metadata-driven delegation)
 			if (task.parentTaskId) {

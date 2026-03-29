@@ -62,7 +62,7 @@
 		"contact": {
 			"label": "Bizimle konuşmanız mı gerekiyor? Yazın"
 		},
-		"community": "İpuçları mı istiyorsunuz yoksa sadece diğer AlfaCode assistant kullanıcılarıyla takılmak mı istiyorsunuz? <redditLink>reddit.com/r/kilocode</redditLink> veya <discordLink>kilo.ai/discord</discordLink>'a katılın",
+		"community": "İpuçları mı istiyorsunuz yoksa sadece diğer AlfaCode assistant kullanıcılarıyla takılmak mı istiyorsunuz? <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> veya <discordLink>alfacode.ai/discord</discordLink>'a katılın",
 		"contactAndCommunity": "İletişim ve Topluluk",
 		"manageSettings": "Ayarları Yönet",
 		"debugMode": {
@@ -532,8 +532,8 @@
 			"instructions": "Kullanım sırasında bir iletişim kutusu açılacak ve mevcut mesaj otomatik olarak panoya kopyalanacaktır. Bunları web yapay zekalarına (ChatGPT veya Claude gibi) yapıştırmanız, ardından yapay zekanın yanıtını iletişim kutusuna kopyalayıp onay düğmesine tıklamanız gerekir."
 		},
 		"roo": {
-			"authenticatedMessage": "Roo Code Cloud hesabın üzerinden güvenli bir şekilde kimlik doğrulandı.",
-			"connectButton": "Roo Code Cloud'a Bağlan"
+			"authenticatedMessage": "AlfaCode assistant Cloud hesabın üzerinden güvenli bir şekilde kimlik doğrulandı.",
+			"connectButton": "AlfaCode assistant Cloud'a Bağlan"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -594,7 +594,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Hata ve Tekrar Limiti",
-			"description": "'Kilo sorun yaşıyor' iletişim kutusunu göstermeden önceki ardışık hata veya tekrarlanan eylem sayısı. Bu güvenlik mekanizmasını devre dışı bırakmak için 0 olarak ayarlayın (asla tetiklenmez).",
+			"description": "'AlfaCode assistant sorun yaşıyor' iletişim kutusunu göstermeden önceki ardışık hata veya tekrarlanan eylem sayısı. Bu güvenlik mekanizmasını devre dışı bırakmak için 0 olarak ayarlayın (asla tetiklenmez).",
 			"unlimitedDescription": "Sınırsız yeniden deneme etkin (otomatik devam et). Diyalog asla görünmeyecek.",
 			"warning": "⚠️ 0'a ayarlamak, önemli API kullanımına neden olabilecek sınırsız yeniden denemeye izin verir"
 		},
@@ -603,10 +603,9 @@
 			"none": "Yok",
 			"minimal": "Minimal (en hızlı)",
 			"high": "Yüksek",
-			"xhigh": "Çok yüksek",
+			"xhigh": "Ekstra Yüksek",
 			"medium": "Orta",
-			"low": "Düşük",
-			"xhigh": "Ekstra Yüksek"
+			"low": "Düşük"
 		},
 		"verbosity": {
 			"label": "Çıktı Ayrıntı Düzeyi",
@@ -856,11 +855,11 @@
 		},
 		"outputLineLimit": {
 			"label": "Terminal çıktı sınırı",
-			"description": "Sınırın altında kalmak için ilk ve son satırları tutar ve ortadakileri atar. Jetonları kaydetmek için düşürün; Kilo'ya daha fazla orta ayrıntı vermek için yükseltin. Kilo, içeriğin atlandığı yerde bir yer tutucu görür.<0>Daha fazla bilgi edinin</0>"
+			"description": "Sınırın altında kalmak için ilk ve son satırları tutar ve ortadakileri atar. Jetonları kaydetmek için düşürün; AlfaCode assistant'ya daha fazla orta ayrıntı vermek için yükseltin. AlfaCode assistant, içeriğin atlandığı yerde bir yer tutucu görür.<0>Daha fazla bilgi edinin</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Terminal karakter sınırı",
-			"description": "Çıktı boyutuna katı bir üst sınır uygulayarak bellek sorunlarını önlemek için satır sınırını geçersiz kılar. Aşılırsa, başlangıcı ve sonu tutar ve içeriğin atlandığı yerde Kilo'ya bir yer tutucu gösterir. <0>Daha fazla bilgi edinin</0>"
+			"description": "Çıktı boyutuna katı bir üst sınır uygulayarak bellek sorunlarını önlemek için satır sınırını geçersiz kılar. Aşılırsa, başlangıcı ve sonu tutar ve içeriğin atlandığı yerde AlfaCode assistant'ya bir yer tutucu gösterir. <0>Daha fazla bilgi edinin</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal shell entegrasyon timeout",
@@ -868,7 +867,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Satır İçi Terminal Kullan (önerilir)",
-			"description": "Daha hızlı, daha güvenilir çalıştırmalar için kabuk profillerini/entegrasyonunu atlamak için Satır İçi Terminal'de (sohbet) komutları çalıştırın. Devre dışı bırakıldığında Kilo, kabuk profiliniz, istemleriniz ve eklentilerinizle VS Code terminalini kullanır. <0>Daha fazla bilgi edinin</0>"
+			"description": "Daha hızlı, daha güvenilir çalıştırmalar için kabuk profillerini/entegrasyonunu atlamak için Satır İçi Terminal'de (sohbet) komutları çalıştırın. Devre dışı bırakıldığında AlfaCode assistant, kabuk profiliniz, istemleriniz ve eklentilerinizle VS Code terminalini kullanır. <0>Daha fazla bilgi edinin</0>"
 		},
 		"commandDelay": {
 			"label": "Terminal komut delay",
@@ -972,7 +971,7 @@
 		},
 		"MORPH_FAST_APPLY": {
 			"name": "Fast Apply'ı etkinleştir",
-			"description": "Etkinleştirildiğinde, AlfaCode assistant dosyaları kod değişiklikleri için optimize edilmiş özel modellerle Fast Apply kullanarak düzenleyebilir. Kilo Gateway Provider, OpenRouter veya bir Morph API anahtarı gerektirir.",
+			"description": "Etkinleştirildiğinde, AlfaCode assistant dosyaları kod değişiklikleri için optimize edilmiş özel modellerle Fast Apply kullanarak düzenleyebilir. AlfaCode Gateway, OpenRouter veya bir Morph API anahtarı gerektirir.",
 			"apiProvider": "API Sağlayıcı",
 			"apiProviderList": {
 				"current": "Mevcut"
@@ -1035,7 +1034,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Özel araçları etkinleştir",
-			"description": "Etkinleştirildiğinde, Kilo projenizin .kilocode/tools dizininden veya global araçlar için ~/.kilocode/tools dizininden özel TypeScript/JavaScript araçlarını yükleyebilir ve kullanabilir. Not: bu araçlar otomatik olarak onaylanacaktır.",
+			"description": "Etkinleştirildiğinde, AlfaCode assistant projenizin .kilocode/tools dizininden veya global araçlar için ~/.kilocode/tools dizininden özel TypeScript/JavaScript araçlarını yükleyebilir ve kullanabilir. Not: bu araçlar otomatik olarak onaylanacaktır.",
 			"toolsHeader": "Kullanılabilir Özel Araçlar",
 			"noTools": "Özel araç yüklenmedi. Projenizin .kilocode/tools dizinine veya global araçlar için ~/.kilocode/tools dizinine .ts veya .js dosyaları ekleyin.",
 			"refreshButton": "Yenile",
@@ -1087,8 +1086,8 @@
 		"allModels": "Tüm modeller"
 	},
 	"footer": {
-		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/Kilo-Org/kilocode</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/kilocode</redditLink> ya da <discordLink>kilo.ai/discord</discordLink>'a katılmaktan çekinmeyin",
-		"support": "Mali konular için lütfen <supportLink>https://kilo.ai/support</supportLink> adresinden Müşteri Desteği ile iletişime geçin",
+		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/Alfa-Org/alfacode</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> ya da <discordLink>alfacode.ai/discord</discordLink>'a katılmaktan çekinmeyin",
+		"support": "Mali konular için lütfen <supportLink>https://alfacode.ai/support</supportLink> adresinden Müşteri Desteği ile iletişime geçin",
 		"telemetry": {
 			"label": "Hata ve kullanım raporlamaya izin ver",
 			"description": "Kullanım verileri ve hata raporları göndererek AlfaCode assistant'u geliştirmeye yardımcı olun. Hiçbir kod, istem veya kişisel bilgi asla gönderilmez. Daha fazla ayrıntı için gizlilik politikamıza bakın."

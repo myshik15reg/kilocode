@@ -23,6 +23,18 @@
 		"next": "Next",
 		"page": "Page {{page}} / {{count}}"
 	},
+	"techDebt": {
+		"title": "Tech Debt",
+		"subtitle": "{{count}} suggested items",
+		"empty": "No suggested tech debt items right now.",
+		"evidence": "Evidence",
+		"actions": {
+			"accept": "Accept",
+			"dismiss": "Dismiss",
+			"convert": "Convert to task",
+			"openSource": "Open source task"
+		}
+	},
 	"invalidModel": {
 		"alphaPeriodEnded": "🎉 The alpha period for {{model}} has ended! Change to a different model to continue.",
 		"notAllowedForTeam": "⚠️ Your organization does not allow use of the {{model}} model. Change to a different model to continue.",
@@ -102,6 +114,97 @@
 			"testButton": "Test Notification",
 			"testTitle": "AlfaCode assistant",
 			"testMessage": "This is a test notification from AlfaCode assistant."
+		},
+		"alfaCode": {
+			"description": "Centralized AlfaCode assistant features and quality/cost controls: prompt helpers, condensing profile, terminal generator, and fast apply routing.",
+			"fastApplyDescription": "Configure the faster apply-model route used by AlfaCode assistant for patch-heavy work.",
+			"imageGenerationDescription": "Manage AlfaCode assistant image generation providers here, including a dedicated LiteLLM profile.",
+			"presets": {
+				"title": "Quality presets",
+				"description": "Apply a recommended context-routing preset depending on whether you want maximum quality, balanced cost, or minimum token usage.",
+				"quality": "Quality",
+				"balanced": "Balanced",
+				"tokenSaver": "Token Saver"
+			},
+			"taskStrategy": {
+				"title": "Task strategy",
+				"description": "Use the cheapest workflow that still preserves quality before escalating to a more expensive context reset.",
+				"summary": "Recommended order: stay local for focused follow-ups, compact when the thread gets long, and start a new task only when the goal or code area truly changes.",
+				"badges": {
+					"cheapest": "Cheapest",
+					"recommendedLongContext": "Best for long context",
+					"onlyWhenNeeded": "Only when needed"
+				},
+				"local": {
+					"title": "Local follow-up",
+					"description": "Best for small fixes, short clarifications, and continuing the same focused subtask without widening context."
+				},
+				"compact": {
+					"title": "Compact context",
+					"description": "Use when the conversation is long but the goal is unchanged, so history can be compressed instead of paying for a fresh task."
+				},
+				"newTask": {
+					"title": "New task",
+					"description": "Reserve for genuinely new goals, unrelated code areas, or when you want a clean context boundary between jobs."
+				}
+			},
+			"routing": {
+				"title": "Model routing",
+				"description": "Route cheaper profiles to lightweight subtasks and keep your main chat profile for harder reasoning and final synthesis.",
+				"badges": {
+					"recommendedMain": "Recommended for main",
+					"recommendedCheap": "Recommended for cheaper helpers"
+				},
+				"useCurrent": "Use current chat profile",
+				"primary": {
+					"label": "Primary chat profile",
+					"description": "Used for the main conversation, complex reasoning, and final answers."
+				},
+				"enhance": {
+					"label": "Prompt enhancement profile",
+					"description": "Good place for a cheaper model when rewriting or polishing prompts before work."
+				},
+				"condense": {
+					"label": "Context condensing profile",
+					"description": "Best candidate for a low-cost model because it summarizes long context and compacts history."
+				},
+				"terminal": {
+					"label": "Terminal command profile",
+					"description": "Use a faster or cheaper model for shell command generation and command formatting."
+				},
+				"presets": {
+					"title": "Routing presets",
+					"description": "Apply a one-click routing strategy for helper subtasks without changing your main chat profile.",
+					"strongMainCheapHelpers": "Strong Main + Cheap Helpers",
+					"balanced": "Balanced",
+					"maximumSaving": "Maximum Saving"
+				}
+			},
+			"parallelAgents": {
+				"enabled": {
+					"label": "Enable parallel agents",
+					"description": "Allow AlfaCode assistant to launch several agent branches for a root task. When disabled, root tasks run sequentially."
+				},
+				"count": {
+					"label": "Parallel agents count",
+					"description": "Maximum number of parallel agents for a root task. If capacity is not available, AlfaCode assistant falls back to sequential execution."
+				}
+			},
+			"recovery": {
+				"autoRestartProblematicProcesses": {
+					"label": "Automatically restart problematic processes",
+					"description": "When enabled, AlfaCode assistant will automatically restart a problematic branch or process after loop or stall protection stops it."
+				},
+				"problematicProcessRestartLimit": {
+					"label": "Restart attempts",
+					"description": "Maximum number of automatic restart attempts for a problematic branch or process before manual action is required."
+				},
+				"largeReads": {
+					"title": "Large file safety",
+					"label": "Allow very large reads",
+					"description": "Disable the oversized/minified-file guard and allow full reads for very large files when you explicitly need them. This can increase token usage and risk context overflow."
+				}
+			}
 		},
 		"terminal": {
 			"commandGenerator": {
@@ -238,7 +341,7 @@
 	"toolCallStyle": {
 		"title": "Tool Call Style",
 		"description": "Choose how tool calls are formatted in the system prompt. JSON is currently experimental and mostly intended for users interested in contributing to its development.",
-		"automatic": "Let Kilo decide",
+		"automatic": "Let AlfaCode assistant decide",
 		"xml": "XML",
 		"json": "JSON"
 	},
@@ -357,7 +460,7 @@
 			"title": "Speech-to-Text",
 			"description": "Speech-to-text is unavailable. Speech-to-text requires both FFmpeg and a valid OpenAI provider configured. <moreInfoLink>Click here for more information</moreInfoLink>.",
 			"openAiReason": "You need a valid OpenAI provider with an API key to use voice transcription.",
-			"ffmpegReason": "You need FFmpeg installed. <ffmpegLink>Click here</ffmpegLink> to have Kilo help you install FFmpeg.",
+			"ffmpegReason": "You need FFmpeg installed. <ffmpegLink>Click here</ffmpegLink> to have AlfaCode assistant help you install FFmpeg.",
 			"ffmpegMessage": "Help me install FFmpeg"
 		},
 		"microphone": {

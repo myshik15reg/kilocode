@@ -1,49 +1,27 @@
-# Рабочий процесс: OpenSpec - жизненный цикл изменения (openspec-change-workflow)
+﻿# Workflow: OpenSpec change lifecycle (`openspec-change-workflow`)
 
-## Описание
-Процесс управления изменениями в OpenSpec:
-- изменения и обсуждение живут в `openspec/changes/CHANGE_ID/`
-- источник правды по требованиям живёт в `openspec/specs/`
+## Purpose
 
-Типовой поток: `proposal.md` -> `openspec validate` -> реализация по `tasks.md` -> `openspec archive` (строгие гейты качества).
+Run spec-driven changes through a stable lifecycle from proposal to archive.
 
-## Когда использовать
-- Нужно изменить существующее поведение или несколько спецификаций.
-- Нужна прозрачная дельта требований и аудируемая история изменений.
+## Source of truth
 
-## Шаги
-1. Подготовка
-   - Убедись, что в репозитории инициализирован OpenSpec: `openspec init` (если требуется).
-   - Прочитай `openspec/AGENTS.md` и `openspec/project.md` (если существуют).
-2. Определить объём работ
-   - Посмотри список спецификаций и изменений:
-     - `openspec spec list --long`
-     - `openspec list`
-   - Реши: это новая возможность (`proposal`) или исправление существующего поведения.
-3. Создать предложение изменения
-   - Создай папку `openspec/changes/CHANGE_ID/`:
-     - `proposal.md`
-     - `tasks.md`
-     - (опционально) `design.md`
-   - Добавь дельту спецификации в `openspec/changes/CHANGE_ID/specs/CAPABILITY/spec.md`.
-   - Для дельты используй блоки `ADDED` / `MODIFIED` / `REMOVED` и сценарии (`Scenario`), если проект их использует.
-4. Валидация и одобрение
-   - Запусти `openspec validate CHANGE_ID --strict`.
-   - Не переходи к реализации, пока предложение (`proposal.md`) не одобрено.
-5. Синхронизация с `main` (если были параллельные изменения)
-   - Перед реализацией подтяни изменения и убедись, что дельта актуальна.
-   - Если доступно: `openspec change sync CHANGE_ID`.
-   - Иначе: синхронизируй вручную и повтори `openspec validate CHANGE_ID --strict`.
-6. Реализация
-   - Выполняй `tasks.md` по порядку.
-   - Соблюдай правила проекта: TDD, 100% покрытие, 0 предупреждений линтера.
-7. Архивация
-   - `openspec archive CHANGE_ID --yes`
-   - Опционально: `openspec validate CHANGE_ID --strict` после архивации.
-8. Завершение
-   - Обнови `.protocols/YYYY-MM-DD-name/execution.md` (протокол обязателен всегда).
-   - Обнови Memory Bank, если изменились продукт/архитектура/техстек.
+- active changes live in `openspec/changes/CHANGE_ID/`
+- accepted requirements live in `openspec/specs/`
 
-## Примечания
-- Для любой работы веди протокол в `.protocols/`.
-- Если OpenSpec пере-генерирует файлы (например, `openspec update`), после обновления снова прогоняй гейты качества.
+## Lifecycle
+
+1. Create the task protocol first if the repository will change.
+2. Inspect current specs and open changes.
+3. Create `proposal.md`, `tasks.md`, optional `design.md`, and spec deltas.
+4. Validate with `openspec validate CHANGE_ID --strict`.
+5. Get approval.
+6. Implement from `tasks.md`.
+7. Revalidate.
+8. Archive the change.
+
+## Rules
+
+- proposal before implementation
+- strict validation before and after implementation
+- protocol and Memory Bank stay workspace-specific, not template-scoped

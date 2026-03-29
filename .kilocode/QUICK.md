@@ -25,6 +25,12 @@
 
 Source: [`protocol-new.md`](workflows/protocol-new.md:1).
 
+## 2.1) FAST PATH для быстрых правок (Micro-change)
+
+Если пользователь явно просит **быструю правку / микро‑рефакторинг / extract method / обёртку** и даёт точный фрагмент кода, агент SHOULD использовать FAST PATH workflow: [`quick-fix.md`](workflows/quick-fix.md:1).
+
+Правило: FAST PATH **не отменяет** протокол для repo changes; он меняет порядок ответа: **patch → verify → (если применяем к репозиторию) протокол**.
+
 ## 3) Choose mode (specialist-first)
 
 Алгоритм выбора режима: [`mode-selection/SKILL.md`](skills/mode-selection/SKILL.md:1).
@@ -56,7 +62,7 @@ Source: [`protocol-new.md`](workflows/protocol-new.md:1).
 ЗАДАЧА: ...
 
 === CONTEXT HANDOFF ===
-ROOT: <workspace-root>
+ROOT: d:/path/to/project
 PROTOCOL: .protocols/YYYY-MM-DD-name/
 ORIGIN: architect -> react-dev
 DOMAIN: React

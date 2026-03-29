@@ -1,4 +1,4 @@
-import NodeCache from "node-cache"
+﻿import NodeCache from "node-cache"
 import getFolderSize from "get-folder-size"
 
 import type { ClineMessage, HistoryItem, ToolProtocol } from "@roo-code/types"
@@ -16,6 +16,7 @@ export type TaskMetadataOptions = {
 	taskId: string
 	rootTaskId?: string
 	parentTaskId?: string
+	delegationDepth?: number
 	taskNumber: number
 	messages: ClineMessage[]
 	globalStoragePath: string
@@ -24,7 +25,7 @@ export type TaskMetadataOptions = {
 	/** Provider profile name for the task (sticky profile feature) */
 	apiConfigName?: string
 	/** Initial status for the task (e.g., "active" for child tasks) */
-	initialStatus?: "active" | "delegated" | "completed"
+	initialStatus?: "active" | "delegated" | "completed" | "aborted"
 	/**
 	 * The tool protocol locked to this task. Once set, the task will
 	 * continue using this protocol even if user settings change.
@@ -36,6 +37,7 @@ export async function taskMetadata({
 	taskId: id,
 	rootTaskId,
 	parentTaskId,
+	delegationDepth,
 	taskNumber,
 	messages,
 	globalStoragePath,
@@ -105,6 +107,7 @@ export async function taskMetadata({
 		id,
 		rootTaskId,
 		parentTaskId,
+		...(typeof delegationDepth === "number" ? { delegationDepth } : {}),
 		number: taskNumber,
 		ts: timestamp,
 		task: hasMessages
@@ -120,7 +123,7 @@ export async function taskMetadata({
 		mode,
 		...(toolProtocol && { toolProtocol }),
 		...(typeof apiConfigName === "string" && apiConfigName.length > 0 ? { apiConfigName } : {}),
-		...(initialStatus && { status: initialStatus }),
+		...(initialStatus && { status: initialStatus, statusUpdatedAt: Date.now() }),
 	}
 
 	return { historyItem, tokenUsage }

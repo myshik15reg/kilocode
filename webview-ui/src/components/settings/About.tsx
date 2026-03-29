@@ -41,8 +41,11 @@ export const About = ({
 			<SectionHeader
 				description={
 					Package.sha
-						? `Version: ${Package.version} (${Package.sha.slice(0, 8)})`
-						: `Version: ${Package.version}`
+						? t("settings:about.versionWithSha", {
+								version: Package.version,
+								sha: Package.sha.slice(0, 8),
+							})
+						: t("settings:about.version", { version: Package.version })
 				}>
 				<div className="flex items-center gap-2">
 					<Info className="w-4" />
@@ -70,23 +73,25 @@ export const About = ({
 					</p>
 				</div>
 
+				{/* kilocode_change start */}
 				<div>
 					<Trans
 						i18nKey="settings:footer.feedback"
 						components={{
-							githubLink: <VSCodeLink href="https://github.com/Kilo-Org/kilocode" />,
-							redditLink: <VSCodeLink href="https://reddit.com/r/kilocode" />,
-							discordLink: <VSCodeLink href="https://kilo.ai/discord" />,
+							githubLink: <VSCodeLink href="https://github.com/Alfa-Org/alfacode" />,
+							redditLink: <VSCodeLink href="https://reddit.com/r/AlfaCodeAssistant" />,
+							discordLink: <VSCodeLink href="https://alfacode.ai/discord" />,
 						}}
 					/>
 				</div>
+				{/* kilocode_change end */}
 
 				{/* kilocode_change start */}
 				<div>
 					<Trans
 						i18nKey="settings:footer.support"
 						components={{
-							supportLink: <VSCodeLink href="https://kilo.ai/support" />,
+							supportLink: <VSCodeLink href="https://alfacode.ai/support" />,
 						}}
 					/>
 				</div>

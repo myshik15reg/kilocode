@@ -1,5 +1,5 @@
 {
-	"greeting": "¿Qué puede hacer AlfaCode assistant por ti?",
+	"greeting": "¿Qué puede hacer AlfaCode por ti?",
 	"task": {
 		"title": "Tarea",
 		"expand": "Expandir tarea",
@@ -22,12 +22,12 @@
 		"sharePublicly": "Compartir públicamente",
 		"sharePubliclyDescription": "Cualquiera con el enlace puede acceder",
 		"connectToCloud": "Conectar al Cloud",
-		"connectToCloudDescription": "Inicia sesión en AlfaCode assistant Cloud para compartir tareas",
+		"connectToCloudDescription": "Inicia sesión en AlfaCode Cloud para compartir tareas",
 		"sharingDisabledByOrganization": "Compartir deshabilitado por la organización",
 		"shareSuccessOrganization": "Enlace de organización copiado al portapapeles",
 		"shareSuccessPublic": "Enlace público copiado al portapapeles",
-		"openInCloud": "Abrir tarea en Roo Code Cloud",
-		"openInCloudIntro": "Continúa monitoreando o interactuando con Roo desde cualquier lugar. Escanea, haz clic o copia para abrir.",
+		"openInCloud": "Abrir tarea en AlfaCode Cloud",
+		"openInCloudIntro": "Continúa monitoreando o interactuando con AlfaCode desde cualquier lugar. Escanea, haz clic o copia para abrir.",
 		"openApiHistory": "Abrir historial de API",
 		"openUiHistory": "Abrir historial de UI"
 	},
@@ -101,7 +101,7 @@
 	"scrollToBottom": "Desplazarse al final del chat",
 	"about": "Genera, refactoriza y depura código con asistencia de IA. Consulta nuestra <DocsLink>documentación</DocsLink> para saber más.",
 	"docs": "Consulta nuestra <DocsLink>documentación</DocsLink> para saber más.",
-	"onboarding": "<strong>Tu lista de tareas en este espacio de trabajo está vacía.</strong> Comienza escribiendo una tarea abajo. ¿No estás seguro cómo empezar? Lee más sobre lo que AlfaCode assistant puede hacer por ti en <DocsLink>la documentación</DocsLink>.",
+	"onboarding": "<strong>Tu lista de tareas en este espacio de trabajo está vacía.</strong> Comienza escribiendo una tarea abajo. ¿No estás seguro cómo empezar? Lee más sobre lo que AlfaCode puede hacer por ti en <DocsLink>la documentación</DocsLink>.",
 	"rooTips": {
 		"customizableModes": {
 			"title": "Modos personalizables",
@@ -130,7 +130,7 @@
 		"title": "Modos",
 		"marketplace": "Marketplace de Modos",
 		"settings": "Configuración de Modos",
-		"description": "Personalidades especializadas que adaptan el comportamiento de AlfaCode assistant.",
+		"description": "Personalidades especializadas que adaptan el comportamiento de AlfaCode.",
 		"searchPlaceholder": "Buscar modos...",
 		"noResults": "No se encontraron resultados",
 		"organizationModes": "Modos de organización"
@@ -145,7 +145,7 @@
 	"diffError": {
 		"title": "Edición fallida"
 	},
-	"troubleMessage": "AlfaCode assistant está teniendo problemas...",
+	"troubleMessage": "AlfaCode está teniendo problemas...",
 	"apiRequest": {
 		"title": "Solicitud API",
 		"failed": "Solicitud API falló",
@@ -155,14 +155,14 @@
 		"rateLimitWait": "Limitación de tasa",
 		"errorTitle": "Error del proveedor {{code}}",
 		"errorMessage": {
-			"docs": "Documentación",
-			"goToSettings": "Configuración",
 			"400": "El proveedor no pudo procesar la solicitud tal como se hizo. Detén la tarea e intenta un enfoque diferente.",
 			"401": "No se pudo autenticar con el proveedor. Por favor verifica tu configuración de clave API.",
 			"402": "Parece que se te han acabado los fondos/créditos en tu cuenta. Ve a tu proveedor y agrega más para continuar.",
 			"403": "No autorizado. Tu clave API es válida, pero el proveedor se negó a completar esta solicitud.",
 			"429": "Demasiadas solicitudes. Te estás viendo limitado por el proveedor. Por favor espera un poco antes de tu próxima llamada API.",
 			"500": "Error del servidor del proveedor. Algo está mal en el lado del proveedor, no hay nada mal con tu solicitud.",
+			"docs": "Documentación",
+			"goToSettings": "Configuración",
 			"unknown": "Error API desconocido, haz clic en Detalles para más información.",
 			"connection": "Error de conexión. Asegúrate de tener una conexión a Internet funcional.",
 			"claudeCodeNotAuthenticated": "Debes iniciar sesión para usar Claude Code. Ve a Configuración y haz clic en \"Iniciar sesión en Claude Code\" para autenticarte."
@@ -188,48 +188,48 @@
 		"current": "Actual"
 	},
 	"instructions": {
-		"wantsToFetch": "AlfaCode assistant quiere obtener instrucciones detalladas para ayudar con la tarea actual"
+		"wantsToFetch": "AlfaCode quiere obtener instrucciones detalladas para ayudar con la tarea actual"
 	},
 	"fileOperations": {
-		"wantsToRead": "AlfaCode assistant quiere leer este archivo",
-		"wantsToReadOutsideWorkspace": "AlfaCode assistant quiere leer este archivo fuera del espacio de trabajo",
-		"didRead": "AlfaCode assistant leyó este archivo",
-		"wantsToEdit": "AlfaCode assistant quiere editar este archivo",
-		"wantsToEditOutsideWorkspace": "AlfaCode assistant quiere editar este archivo fuera del espacio de trabajo",
-		"wantsToEditProtected": "AlfaCode assistant quiere editar un archivo de configuración protegido",
-		"wantsToCreate": "AlfaCode assistant quiere crear un nuevo archivo",
-		"wantsToSearchReplace": "AlfaCode assistant quiere realizar búsqueda y reemplazo en este archivo",
-		"didSearchReplace": "AlfaCode assistant realizó búsqueda y reemplazo en este archivo",
-		"wantsToInsert": "AlfaCode assistant quiere insertar contenido en este archivo",
-		"wantsToInsertWithLineNumber": "AlfaCode assistant quiere insertar contenido en este archivo en la línea {{lineNumber}}",
-		"wantsToInsertAtEnd": "AlfaCode assistant quiere añadir contenido al final de este archivo",
-		"wantsToReadAndXMore": "AlfaCode assistant quiere leer este archivo y {{count}} más",
-		"wantsToReadMultiple": "AlfaCode assistant quiere leer varios archivos",
-		"wantsToApplyBatchChanges": "AlfaCode assistant quiere aplicar cambios a múltiples archivos",
-		"wantsToGenerateImage": "AlfaCode assistant quiere generar una imagen",
-		"wantsToGenerateImageOutsideWorkspace": "AlfaCode assistant quiere generar una imagen fuera del espacio de trabajo",
-		"wantsToGenerateImageProtected": "AlfaCode assistant quiere generar una imagen en una ubicación protegida",
-		"didGenerateImage": "AlfaCode assistant generó una imagen",
-		"wantsToDelete": "AlfaCode assistant quiere eliminar este archivo",
-		"wantsToDeleteDirectory": "AlfaCode assistant quiere eliminar este directorio"
+		"wantsToRead": "AlfaCode quiere leer este archivo",
+		"wantsToReadOutsideWorkspace": "AlfaCode quiere leer este archivo fuera del espacio de trabajo",
+		"didRead": "AlfaCode leyó este archivo",
+		"wantsToEdit": "AlfaCode quiere editar este archivo",
+		"wantsToEditOutsideWorkspace": "AlfaCode quiere editar este archivo fuera del espacio de trabajo",
+		"wantsToEditProtected": "AlfaCode quiere editar un archivo de configuración protegido",
+		"wantsToCreate": "AlfaCode quiere crear un nuevo archivo",
+		"wantsToSearchReplace": "AlfaCode quiere realizar búsqueda y reemplazo en este archivo",
+		"didSearchReplace": "AlfaCode realizó búsqueda y reemplazo en este archivo",
+		"wantsToInsert": "AlfaCode quiere insertar contenido en este archivo",
+		"wantsToInsertWithLineNumber": "AlfaCode quiere insertar contenido en este archivo en la línea {{lineNumber}}",
+		"wantsToInsertAtEnd": "AlfaCode quiere añadir contenido al final de este archivo",
+		"wantsToReadAndXMore": "AlfaCode quiere leer este archivo y {{count}} más",
+		"wantsToReadMultiple": "AlfaCode quiere leer varios archivos",
+		"wantsToApplyBatchChanges": "AlfaCode quiere aplicar cambios a múltiples archivos",
+		"wantsToGenerateImage": "AlfaCode quiere generar una imagen",
+		"wantsToGenerateImageOutsideWorkspace": "AlfaCode quiere generar una imagen fuera del espacio de trabajo",
+		"wantsToGenerateImageProtected": "AlfaCode quiere generar una imagen en una ubicación protegida",
+		"didGenerateImage": "AlfaCode generó una imagen",
+		"wantsToDelete": "AlfaCode quiere eliminar este archivo",
+		"wantsToDeleteDirectory": "AlfaCode quiere eliminar este directorio"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "AlfaCode assistant quiere ver los archivos de nivel superior en este directorio",
-		"didViewTopLevel": "AlfaCode assistant vio los archivos de nivel superior en este directorio",
-		"wantsToViewRecursive": "AlfaCode assistant quiere ver recursivamente todos los archivos en este directorio",
-		"didViewRecursive": "AlfaCode assistant vio recursivamente todos los archivos en este directorio",
-		"wantsToViewDefinitions": "AlfaCode assistant quiere ver nombres de definiciones de código fuente utilizados en este directorio",
-		"didViewDefinitions": "AlfaCode assistant vio nombres de definiciones de código fuente utilizados en este directorio",
-		"wantsToSearch": "AlfaCode assistant quiere buscar en este directorio <code>{{regex}}</code>",
-		"didSearch": "AlfaCode assistant buscó en este directorio <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "AlfaCode assistant quiere buscar en este directorio (fuera del espacio de trabajo) <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "AlfaCode assistant buscó en este directorio (fuera del espacio de trabajo) <code>{{regex}}</code>",
-		"wantsToViewTopLevelOutsideWorkspace": "AlfaCode assistant quiere ver los archivos de nivel superior en este directorio (fuera del espacio de trabajo)",
-		"didViewTopLevelOutsideWorkspace": "AlfaCode assistant vio los archivos de nivel superior en este directorio (fuera del espacio de trabajo)",
-		"wantsToViewRecursiveOutsideWorkspace": "AlfaCode assistant quiere ver recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)",
-		"didViewRecursiveOutsideWorkspace": "AlfaCode assistant vio recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)",
-		"wantsToViewDefinitionsOutsideWorkspace": "AlfaCode assistant quiere ver nombres de definiciones de código fuente utilizados en este directorio (fuera del espacio de trabajo)",
-		"didViewDefinitionsOutsideWorkspace": "AlfaCode assistant vio nombres de definiciones de código fuente utilizados en este directorio (fuera del espacio de trabajo)"
+		"wantsToViewTopLevel": "AlfaCode quiere ver los archivos de nivel superior en este directorio",
+		"didViewTopLevel": "AlfaCode vio los archivos de nivel superior en este directorio",
+		"wantsToViewRecursive": "AlfaCode quiere ver recursivamente todos los archivos en este directorio",
+		"didViewRecursive": "AlfaCode vio recursivamente todos los archivos en este directorio",
+		"wantsToViewDefinitions": "AlfaCode quiere ver nombres de definiciones de código fuente utilizados en este directorio",
+		"didViewDefinitions": "AlfaCode vio nombres de definiciones de código fuente utilizados en este directorio",
+		"wantsToSearch": "AlfaCode quiere buscar en este directorio <code>{{regex}}</code>",
+		"didSearch": "AlfaCode buscó en este directorio <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "AlfaCode quiere buscar en este directorio (fuera del espacio de trabajo) <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "AlfaCode buscó en este directorio (fuera del espacio de trabajo) <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "AlfaCode quiere ver los archivos de nivel superior en este directorio (fuera del espacio de trabajo)",
+		"didViewTopLevelOutsideWorkspace": "AlfaCode vio los archivos de nivel superior en este directorio (fuera del espacio de trabajo)",
+		"wantsToViewRecursiveOutsideWorkspace": "AlfaCode quiere ver recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)",
+		"didViewRecursiveOutsideWorkspace": "AlfaCode vio recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)",
+		"wantsToViewDefinitionsOutsideWorkspace": "AlfaCode quiere ver nombres de definiciones de código fuente utilizados en este directorio (fuera del espacio de trabajo)",
+		"didViewDefinitionsOutsideWorkspace": "AlfaCode vio nombres de definiciones de código fuente utilizados en este directorio (fuera del espacio de trabajo)"
 	},
 	"commandOutput": "Salida del comando",
 	"commandExecution": {
@@ -251,24 +251,24 @@
 	"response": "Respuesta",
 	"arguments": "Argumentos",
 	"text": {
-		"rooSaid": "Kilo ha dicho"
+		"rooSaid": "AlfaCode assistant ha dicho"
 	},
 	"feedback": {
 		"youSaid": "Has dicho"
 	},
 	"mcp": {
-		"wantsToUseTool": "AlfaCode assistant quiere usar una herramienta en el servidor MCP {{serverName}}",
-		"wantsToAccessResource": "AlfaCode assistant quiere acceder a un recurso en el servidor MCP {{serverName}}"
+		"wantsToUseTool": "AlfaCode quiere usar una herramienta en el servidor MCP {{serverName}}",
+		"wantsToAccessResource": "AlfaCode quiere acceder a un recurso en el servidor MCP {{serverName}}"
 	},
 	"modes": {
-		"wantsToSwitch": "AlfaCode assistant quiere cambiar a modo <code>{{mode}}</code>",
-		"wantsToSwitchWithReason": "AlfaCode assistant quiere cambiar a modo <code>{{mode}}</code> porque: {{reason}}",
-		"didSwitch": "AlfaCode assistant cambió a modo <code>{{mode}}</code>",
-		"didSwitchWithReason": "AlfaCode assistant cambió a modo <code>{{mode}}</code> porque: {{reason}}"
+		"wantsToSwitch": "AlfaCode quiere cambiar a modo <code>{{mode}}</code>",
+		"wantsToSwitchWithReason": "AlfaCode quiere cambiar a modo <code>{{mode}}</code> porque: {{reason}}",
+		"didSwitch": "AlfaCode cambió a modo <code>{{mode}}</code>",
+		"didSwitchWithReason": "AlfaCode cambió a modo <code>{{mode}}</code> porque: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "AlfaCode assistant quiere crear una nueva subtarea en modo <code>{{mode}}</code>",
-		"wantsToFinish": "AlfaCode assistant quiere finalizar esta subtarea",
+		"wantsToCreate": "AlfaCode quiere crear una nueva subtarea en modo <code>{{mode}}</code>",
+		"wantsToFinish": "AlfaCode quiere finalizar esta subtarea",
 		"newTaskContent": "Instrucciones de la subtarea",
 		"completionContent": "Subtarea completada",
 		"resultContent": "Resultados de la subtarea",
@@ -276,7 +276,7 @@
 		"completionInstructions": "¡Subtarea completada! Puedes revisar los resultados y sugerir correcciones o próximos pasos. Si todo se ve bien, confirma para devolver el resultado a la tarea principal."
 	},
 	"questions": {
-		"hasQuestion": "AlfaCode assistant tiene una pregunta"
+		"hasQuestion": "AlfaCode tiene una pregunta"
 	},
 	"taskCompleted": "Tarea completada",
 	"modelResponseIncomplete": "Respuesta del modelo incompleta",
@@ -292,7 +292,7 @@
 		"copyToClipboard": "Copiar al portapapeles",
 		"copied": "¡Copiado!",
 		"diagnostics": "Obtener información de error detallada",
-		"proxyProvider": "Parece que estás usando un proveedor basado en proxy. Asegúrate de revisar sus registros y de que no está reescribiendo las solicitudes de Roo."
+		"proxyProvider": "Parece que estás usando un proveedor basado en proxy. Asegúrate de revisar sus registros y de que no está reescribiendo las solicitudes de AlfaCode."
 	},
 	"powershell": {
 		"issues": "Parece que estás teniendo problemas con Windows PowerShell, por favor consulta esta"
@@ -339,19 +339,19 @@
 		"timerPrefix": "Aprobación automática habilitada. Seleccionando en {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} publicado",
-		"support": "Por favor, apoya a Roo Code dándonos una estrella en <githubLink>GitHub</githubLink>.",
+		"title": "AlfaCode {{version}} publicado",
+		"support": "Por favor, apoya a AlfaCode dándonos una estrella en <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Modelo stealth GRATUITO por tiempo limitado</bold> - Code Supernova: ¡Ahora actualizado con una <bold>ventana de contexto de 1M tokens</bold>! Un modelo de codificación agéntica versátil que soporta entradas de imágenes, accesible a través de Roo Code Cloud.",
+			"feature": "<bold>Modelo stealth GRATUITO por tiempo limitado</bold> - Code Supernova: ¡Ahora actualizado con una <bold>ventana de contexto de 1M tokens</bold>! Un modelo de codificación agéntica versátil que soporta entradas de imágenes, accesible a través de AlfaCode Cloud.",
 			"note": "(Nota: los prompts y completaciones son registrados por el creador del modelo y utilizados para mejorarlo)",
-			"connectButton": "Conectar a Roo Code Cloud",
-			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveedor Roo Code Cloud en Configuración para comenzar.",
+			"connectButton": "Conectar a AlfaCode Cloud",
+			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveedor AlfaCode Cloud en Configuración para comenzar.",
 			"goToSettingsButton": "Ir a Configuración"
 		},
 		"release": {
 			"heading": "Qué hay de nuevo:",
 			"openaiCodexProvider": "Se añadió el Proveedor OpenAI - ChatGPT Plus/Pro que ofrece acceso basado en suscripción a modelos Codex sin costos por token.",
-			"gpt52codexModel": "Se añadió el nuevo modelo gpt-5.2-codex al Roo Code Router, al proveedor estándar OpenAI y más.",
+			"gpt52codexModel": "Se añadió el nuevo modelo gpt-5.2-codex al AlfaCode Router, al proveedor estándar OpenAI y más.",
 			"bugFixes": "Se corrigieron fugas de memoria que causaban pantallas grises, problemas de firma de pensamiento de Gemini y más mejoras de estabilidad."
 		},
 		"cloudAgents": {
@@ -371,7 +371,7 @@
 	"browser": {
 		"session": "Sesión del navegador",
 		"active": "Activo",
-		"rooWantsToUse": "AlfaCode assistant quiere usar el navegador",
+		"rooWantsToUse": "AlfaCode quiere usar el navegador",
 		"consoleLogs": "Registros de la consola",
 		"noNewLogs": "(No hay nuevos registros)",
 		"screenshot": "Captura de pantalla del navegador",
@@ -419,24 +419,24 @@
 	"profileViolationWarning": "El perfil actual no es compatible con la configuración de tu organización",
 	"shellIntegration": {
 		"title": "Advertencia de ejecución de comandos",
-		"description": "Tu comando se está ejecutando sin la integración de shell de terminal de VSCode. Para suprimir esta advertencia, puedes desactivar la integración de shell en la sección <strong>Terminal</strong> de la <settingsLink>configuración de AlfaCode assistant</settingsLink> o solucionar problemas de integración de terminal de VSCode usando el enlace de abajo.",
+		"description": "Tu comando se está ejecutando sin la integración de shell de terminal de VSCode. Para suprimir esta advertencia, puedes desactivar la integración de shell en la sección <strong>Terminal</strong> de la <settingsLink>configuración de AlfaCode</settingsLink> o solucionar problemas de integración de terminal de VSCode usando el enlace de abajo.",
 		"troubleshooting": "Haz clic aquí para ver la documentación de integración de shell."
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Límite de Solicitudes Auto-aprobadas Alcanzado",
-			"description": "AlfaCode assistant ha alcanzado el límite auto-aprobado de {{count}} solicitud(es) API. ¿Deseas reiniciar el contador y continuar con la tarea?",
+			"description": "AlfaCode ha alcanzado el límite auto-aprobado de {{count}} solicitud(es) API. ¿Deseas reiniciar el contador y continuar con la tarea?",
 			"button": "Reiniciar y Continuar"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "Límite de Costo Auto-Aprobado Alcanzado",
-			"description": "AlfaCode assistant ha alcanzado el límite de costo autoaprobado de ${{count}}. ¿Le gustaría reiniciar el costo y continuar con la tarea?",
+			"description": "AlfaCode ha alcanzado el límite de costo autoaprobado de ${{count}}. ¿Le gustaría reiniciar el costo y continuar con la tarea?",
 			"button": "Reiniciar y continuar"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "AlfaCode assistant quiere buscar en la base de código <code>{{query}}</code>",
-		"wantsToSearchWithPath": "AlfaCode assistant quiere buscar en la base de código <code>{{query}}</code> en <code>{{path}}</code>",
+		"wantsToSearch": "AlfaCode quiere buscar en la base de código <code>{{query}}</code>",
+		"wantsToSearchWithPath": "AlfaCode quiere buscar en la base de código <code>{{query}}</code> en <code>{{path}}</code>",
 		"didSearch_one": "Se encontró 1 resultado",
 		"didSearch_other": "Se encontraron {{count}} resultados",
 		"resultTooltip": "Puntuación de similitud: {{score}} (haz clic para abrir el archivo)"
@@ -460,7 +460,7 @@
 		"ariaLabel": "Versión {{version}} - Haz clic para ver las notas de la versión"
 	},
 	"rooCloudCTA": {
-		"title": "¡Roo Code Cloud está evolucionando!",
+		"title": "¡AlfaCode Cloud está evolucionando!",
 		"description": "Ejecuta agentes remotos en la nube, accede a tus tareas desde cualquier lugar, colabora con otros y mucho más.",
 		"joinWaitlist": "Regístrate para recibir las últimas actualizaciones."
 	},
@@ -501,8 +501,8 @@
 		"clickToEdit": "Haz clic para editar el mensaje"
 	},
 	"slashCommand": {
-		"wantsToRun": "AlfaCode assistant quiere ejecutar un comando slash",
-		"didRun": "AlfaCode assistant ejecutó un comando slash"
+		"wantsToRun": "AlfaCode quiere ejecutar un comando slash",
+		"didRun": "AlfaCode ejecutó un comando slash"
 	},
 	"todo": {
 		"partial": "{{completed}} de {{total}} tareas pendientes realizadas",

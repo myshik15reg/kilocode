@@ -62,7 +62,7 @@
 		"contact": {
 			"label": "Hai bisogno di parlarci? Scrivi"
 		},
-		"community": "Vuoi consigli o semplicemente uscire con altri utenti di Roo Code? Unisciti a <redditLink>reddit.com/r/kilocode</redditLink> o <discordLink>kilo.ai/discord</discordLink>",
+		"community": "Vuoi consigli o semplicemente uscire con altri utenti di AlfaCode assistant? Unisciti a <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> o <discordLink>alfacode.ai/discord</discordLink>",
 		"contactAndCommunity": "Contatti e Comunità",
 		"manageSettings": "Gestisci Impostazioni",
 		"debugMode": {
@@ -572,8 +572,8 @@
 			"instructions": "Durante l'uso, apparirà una finestra di dialogo e il messaggio corrente verrà automaticamente copiato negli appunti. Dovrai incollarlo nelle versioni web dell'AI (come ChatGPT o Claude), quindi copiare la risposta dell'AI nella finestra di dialogo e fare clic sul pulsante di conferma."
 		},
 		"roo": {
-			"authenticatedMessage": "Autenticato in modo sicuro tramite il tuo account Roo Code Cloud.",
-			"connectButton": "Connetti a Roo Code Cloud"
+			"authenticatedMessage": "Autenticato in modo sicuro tramite il tuo account AlfaCode assistant Cloud.",
+			"connectButton": "Connetti a AlfaCode assistant Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -634,7 +634,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Limite di errori e ripetizioni",
-			"description": "Numero di errori consecutivi o azioni ripetute prima di mostrare la finestra di dialogo 'Kilo sta riscontrando problemi'. Imposta a 0 per disabilitare questo meccanismo di sicurezza (non si attiverà mai).",
+			"description": "Numero di errori consecutivi o azioni ripetute prima di mostrare la finestra di dialogo 'AlfaCode assistant sta riscontrando problemi'. Imposta a 0 per disabilitare questo meccanismo di sicurezza (non si attiverà mai).",
 			"unlimitedDescription": "Tentativi illimitati abilitati (procedi automaticamente). La finestra di dialogo non verrà mai visualizzata.",
 			"warning": "⚠️ L'impostazione a 0 consente tentativi illimitati che possono consumare un notevole utilizzo dell'API"
 		},
@@ -643,10 +643,9 @@
 			"none": "Nessuno",
 			"minimal": "Minimo (più veloce)",
 			"high": "Alto",
-			"xhigh": "Molto alto",
+			"xhigh": "Extra Alto",
 			"medium": "Medio",
-			"low": "Basso",
-			"xhigh": "Extra Alto"
+			"low": "Basso"
 		},
 		"verbosity": {
 			"label": "Verbosity dell'output",
@@ -861,11 +860,11 @@
 		},
 		"outputLineLimit": {
 			"label": "Limite output terminale",
-			"description": "Mantiene le prime e ultime righe e scarta quelle centrali per rimanere sotto il limite. Abbassa per risparmiare token; alza per dare a Kilo più dettagli centrali. Kilo vede un segnaposto dove il contenuto viene saltato.<0>Scopri di più</0>"
+			"description": "Mantiene le prime e ultime righe e scarta quelle centrali per rimanere sotto il limite. Abbassa per risparmiare token; alza per dare a AlfaCode assistant più dettagli centrali. AlfaCode assistant vede un segnaposto dove il contenuto viene saltato.<0>Scopri di più</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Limite caratteri terminale",
-			"description": "Sovrascrive il limite di righe per prevenire problemi di memoria imponendo un limite rigido alla dimensione di output. Se superato, mantiene l'inizio e la fine e mostra un segnaposto a Kilo dove il contenuto viene saltato. <0>Scopri di più</0>"
+			"description": "Sovrascrive il limite di righe per prevenire problemi di memoria imponendo un limite rigido alla dimensione di output. Se superato, mantiene l'inizio e la fine e mostra un segnaposto a AlfaCode assistant dove il contenuto viene saltato. <0>Scopri di più</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Timeout integrazione shell terminale",
@@ -873,7 +872,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Usa terminale in linea (consigliato)",
-			"description": "Esegui comandi nel terminale in linea (chat) per bypassare profili/integrazione shell per esecuzioni più veloci e affidabili. Quando disabilitato, Kilo usa il terminale VS Code con il tuo profilo shell, prompt e plugin. <0>Scopri di più</0>"
+			"description": "Esegui comandi nel terminale in linea (chat) per bypassare profili/integrazione shell per esecuzioni più veloci e affidabili. Quando disabilitato, AlfaCode assistant usa il terminale VS Code con il tuo profilo shell, prompt e plugin. <0>Scopri di più</0>"
 		},
 		"commandDelay": {
 			"label": "Ritardo comando terminale",
@@ -1010,7 +1009,7 @@
 		},
 		"MORPH_FAST_APPLY": {
 			"name": "Abilita Fast Apply",
-			"description": "Quando abilitato, AlfaCode assistant può modificare i file utilizzando Fast Apply con modelli specializzati ottimizzati per le modifiche al codice. Richiede Kilo Gateway Provider, OpenRouter o una chiave API Morph.",
+			"description": "Quando abilitato, AlfaCode assistant può modificare i file utilizzando Fast Apply con modelli specializzati ottimizzati per le modifiche al codice. Richiede AlfaCode Gateway, OpenRouter o una chiave API Morph.",
 			"apiProvider": "Fornitore API",
 			"apiProviderList": {
 				"current": "Attuale"
@@ -1040,7 +1039,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Abilita strumenti personalizzati",
-			"description": "Quando abilitato, Kilo può caricare e utilizzare strumenti personalizzati TypeScript/JavaScript dalla directory .kilocode/tools del tuo progetto o ~/.kilocode/tools per strumenti globali. Nota: questi strumenti saranno automaticamente auto-approvati.",
+			"description": "Quando abilitato, AlfaCode assistant può caricare e utilizzare strumenti personalizzati TypeScript/JavaScript dalla directory .kilocode/tools del tuo progetto o ~/.kilocode/tools per strumenti globali. Nota: questi strumenti saranno automaticamente auto-approvati.",
 			"toolsHeader": "Strumenti personalizzati disponibili",
 			"noTools": "Nessuno strumento personalizzato caricato. Aggiungi file .ts o .js alla directory .kilocode/tools del tuo progetto o ~/.kilocode/tools per strumenti globali.",
 			"refreshButton": "Aggiorna",
@@ -1092,8 +1091,8 @@
 		"allModels": "Tutti i modelli"
 	},
 	"footer": {
-		"feedback": "Se hai domande o feedback, sentiti libero di aprire un issue su <githubLink>github.com/Kilo-Org/kilocode</githubLink> o unirti a <redditLink>reddit.com/r/kilocode</redditLink> o <discordLink>kilo.ai/discord</discordLink>",
-		"support": "Per domande finanziarie, contatta il Supporto Clienti a <supportLink>https://kilo.ai/support</supportLink>",
+		"feedback": "Se hai domande o feedback, sentiti libero di aprire un issue su <githubLink>github.com/Alfa-Org/alfacode</githubLink> o unirti a <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> o <discordLink>alfacode.ai/discord</discordLink>",
+		"support": "Per domande finanziarie, contatta il Supporto Clienti a <supportLink>https://alfacode.ai/support</supportLink>",
 		"telemetry": {
 			"label": "Consenti segnalazioni di errori e utilizzo",
 			"description": "Aiuta a migliorare AlfaCode assistant inviando dati di utilizzo e segnalazioni di errori. Non vengono mai inviati codice, prompt o informazioni personali. Consulta la nostra politica sulla privacy per maggiori dettagli."

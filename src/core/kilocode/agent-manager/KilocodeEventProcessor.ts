@@ -65,6 +65,14 @@ export class KilocodeEventProcessor {
 
 		// Track first api_req_started to identify user echo
 		if (payload.say === "api_req_started") {
+			this.registry.updateSession(sessionId, {
+				lifecycleStatus: "active",
+				activityState: "streaming",
+				needsAttention: false,
+				recoveryState: undefined,
+				pendingReaction: undefined,
+				lastEventAt: Date.now(),
+			})
 			const wasSet = this.firstApiReqStarted.get(sessionId)
 			this.firstApiReqStarted.set(sessionId, true)
 			// Only notify webview for NEW requests, not usage updates
@@ -99,6 +107,14 @@ export class KilocodeEventProcessor {
 
 		// Handle ask:completion_result early - it has no text but needs to trigger state event
 		if (payload.type === "ask" && payload.ask === "completion_result") {
+			this.registry.updateSession(sessionId, {
+				lifecycleStatus: "completed",
+				activityState: "idle",
+				needsAttention: false,
+				recoveryState: undefined,
+				pendingReaction: undefined,
+				lastEventAt: Date.now(),
+			})
 			this.postStateEvent(sessionId, { eventType: "ask_completion_result" })
 			return
 		}
@@ -106,6 +122,14 @@ export class KilocodeEventProcessor {
 		// Handle resume asks early - they're state signals, not content to display
 		// The state machine transitions to paused/waiting_input, no chat message needed
 		if (payload.type === "ask" && (payload.ask === "resume_task" || payload.ask === "resume_completed_task")) {
+			this.registry.updateSession(sessionId, {
+				lifecycleStatus: "paused",
+				activityState: "paused",
+				needsAttention: true,
+				recoveryState: "recoverable",
+				pendingReaction: "resume",
+				lastEventAt: Date.now(),
+			})
 			this.postStateEvent(sessionId, { eventType: "ask_resume_task" })
 			return
 		}
@@ -179,6 +203,9 @@ export class KilocodeEventProcessor {
 
 		// Send state events to webview for state machine transitions
 		this.sendStateEventForMessage(sessionId, payload)
+		this.registry.updateSession(sessionId, {
+			lastEventAt: Date.now(),
+		})
 
 		// Send to webview
 		this.postChatMessages(sessionId, messages)

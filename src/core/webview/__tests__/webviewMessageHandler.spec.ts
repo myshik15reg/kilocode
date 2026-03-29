@@ -16,6 +16,16 @@ vi.mock("../../../integrations/openai-codex/rate-limits", () => ({
 	fetchOpenAiCodexRateLimitInfo: vi.fn(),
 }))
 
+vi.mock("../../../integrations/claude-code/oauth", () => ({
+	claudeCodeOAuthManager: {
+		getAccessToken: vi.fn(),
+	},
+}))
+
+vi.mock("../../../integrations/claude-code/streaming-client", () => ({
+	fetchRateLimitInfo: vi.fn(),
+}))
+
 // Mock the diagnosticsHandler module
 vi.mock("../diagnosticsHandler", () => ({
 	generateErrorDiagnostics: vi.fn().mockResolvedValue({ success: true, filePath: "/tmp/diagnostics.json" }),
@@ -28,11 +38,15 @@ import type { ClineProvider } from "../ClineProvider"
 import { getModels } from "../../../api/providers/fetchers/modelCache"
 const { openAiCodexOAuthManager } = await import("../../../integrations/openai-codex/oauth")
 const { fetchOpenAiCodexRateLimitInfo } = await import("../../../integrations/openai-codex/rate-limits")
+const { claudeCodeOAuthManager } = await import("../../../integrations/claude-code/oauth")
+const { fetchRateLimitInfo } = await import("../../../integrations/claude-code/streaming-client")
 
 const mockGetModels = getModels as Mock<typeof getModels>
 const mockGetAccessToken = vi.mocked(openAiCodexOAuthManager.getAccessToken)
 const mockGetAccountId = vi.mocked(openAiCodexOAuthManager.getAccountId)
 const mockFetchOpenAiCodexRateLimitInfo = vi.mocked(fetchOpenAiCodexRateLimitInfo)
+const mockClaudeCodeGetAccessToken = vi.mocked(claudeCodeOAuthManager.getAccessToken)
+const mockFetchClaudeCodeRateLimitInfo = vi.mocked(fetchRateLimitInfo)
 
 // Mock ClineProvider
 const mockClineProvider = {
@@ -212,6 +226,116 @@ describe("webviewMessageHandler - image mentions", () => {
 
 		expect(vi.mocked(resolveImageMentions)).toHaveBeenCalled()
 		expect(mockHandleWebviewAskResponse).toHaveBeenCalledWith("messageResponse", "See @/img.png", [
+			"data:image/png;base64,from-mention",
+		])
+	})
+})
+
+describe("webviewMessageHandler - text resume intent", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		mockClineProvider.getState = vi.fn().mockResolvedValue({
+			maxImageFileSize: 5,
+			maxTotalImageSize: 20,
+		})
+		;(mockClineProvider as any).getTaskHistory = vi.fn().mockReturnValue([])
+		;(mockClineProvider as any).resumeTask = vi.fn()
+		;(mockClineProvider as any).createTask = vi.fn().mockResolvedValue(undefined)
+		;(mockClineProvider as any).log = vi.fn()
+	})
+
+	it("resumes a single paused task for russian `продолжить`", async () => {
+		const handleWebviewAskResponse = vi.fn()
+		;(mockClineProvider as any).getTaskHistory.mockReturnValue([
+			{ id: "paused-1", task: "Paused task", ts: 100, lifecycleState: "paused", pausedAt: 200 },
+		])
+		;(mockClineProvider as any).getCurrentTask = vi
+			.fn()
+			.mockReturnValue({ taskId: "paused-1", handleWebviewAskResponse })
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "newTask",
+			text: "продолжить",
+			images: [],
+		} as any)
+
+		expect((mockClineProvider as any).resumeTask).toHaveBeenCalledWith("paused-1", "continue")
+		expect((mockClineProvider as any).createTask).not.toHaveBeenCalled()
+		expect(handleWebviewAskResponse).toHaveBeenCalledWith("yesButtonClicked")
+	})
+
+	it("resumes a single paused task for english `continue`", async () => {
+		const handleWebviewAskResponse = vi.fn()
+		;(mockClineProvider as any).getTaskHistory.mockReturnValue([
+			{ id: "paused-1", task: "Paused task", ts: 100, lifecycleState: "paused", pausedAt: 200 },
+		])
+		;(mockClineProvider as any).getCurrentTask = vi
+			.fn()
+			.mockReturnValue({ taskId: "paused-1", handleWebviewAskResponse })
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "newTask",
+			text: "continue",
+			images: [],
+		} as any)
+
+		expect((mockClineProvider as any).resumeTask).toHaveBeenCalledWith("paused-1", "continue")
+		expect((mockClineProvider as any).createTask).not.toHaveBeenCalled()
+		expect(handleWebviewAskResponse).toHaveBeenCalledWith("yesButtonClicked")
+	})
+
+	it("resumes a single paused task for english `resume`", async () => {
+		const handleWebviewAskResponse = vi.fn()
+		;(mockClineProvider as any).getTaskHistory.mockReturnValue([
+			{ id: "paused-1", task: "Paused task", ts: 100, lifecycleState: "paused", pausedAt: 200 },
+		])
+		;(mockClineProvider as any).getCurrentTask = vi
+			.fn()
+			.mockReturnValue({ taskId: "paused-1", handleWebviewAskResponse })
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "newTask",
+			text: "resume",
+			images: [],
+		} as any)
+
+		expect((mockClineProvider as any).resumeTask).toHaveBeenCalledWith("paused-1", "continue")
+		expect((mockClineProvider as any).createTask).not.toHaveBeenCalled()
+		expect(handleWebviewAskResponse).toHaveBeenCalledWith("yesButtonClicked")
+	})
+
+	it("asks the user to choose when multiple paused tasks exist", async () => {
+		;(mockClineProvider as any).getTaskHistory.mockReturnValue([
+			{ id: "paused-1", task: "First paused", ts: 100, lifecycleState: "paused", pausedAt: 200 },
+			{ id: "paused-2", task: "Second paused", ts: 101, lifecycleState: "paused", pausedAt: 300 },
+		])
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "newTask",
+			text: "continue",
+			images: [],
+		} as any)
+
+		expect((mockClineProvider as any).resumeTask).not.toHaveBeenCalled()
+		expect((mockClineProvider as any).createTask).not.toHaveBeenCalled()
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "invoke",
+			invoke: "setChatBoxMessage",
+			text: expect.stringContaining("There are multiple paused tasks"),
+		})
+	})
+
+	it("falls back to normal new-task flow when no paused tasks exist", async () => {
+		;(mockClineProvider as any).getTaskHistory.mockReturnValue([])
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "newTask",
+			text: "continue",
+			images: [],
+		} as any)
+
+		expect((mockClineProvider as any).resumeTask).not.toHaveBeenCalled()
+		expect((mockClineProvider as any).createTask).toHaveBeenCalledWith("continue", [
 			"data:image/png;base64,from-mention",
 		])
 	})
@@ -756,6 +880,39 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 	})
 })
 
+describe("webviewMessageHandler - requestClaudeCodeRateLimits", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		mockClaudeCodeGetAccessToken.mockResolvedValue(null)
+	})
+
+	it("posts translated error when not authenticated", async () => {
+		await webviewMessageHandler(mockClineProvider, { type: "requestClaudeCodeRateLimits" } as any)
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "claudeCodeRateLimits",
+			error: "common:errors.claudeCode.notAuthenticated",
+		})
+	})
+
+	it("posts values when authenticated", async () => {
+		mockClaudeCodeGetAccessToken.mockResolvedValue("token")
+		mockFetchClaudeCodeRateLimitInfo.mockResolvedValue({
+			fiveHour: { status: "unknown", utilization: 0.1, resetTime: 1700000000 },
+		})
+
+		await webviewMessageHandler(mockClineProvider, { type: "requestClaudeCodeRateLimits" } as any)
+
+		expect(mockFetchClaudeCodeRateLimitInfo).toHaveBeenCalledWith("token")
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "claudeCodeRateLimits",
+			values: {
+				fiveHour: { status: "unknown", utilization: 0.1, resetTime: 1700000000 },
+			},
+		})
+	})
+})
+
 describe("webviewMessageHandler - requestOpenAiCodexRateLimits", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -763,12 +920,12 @@ describe("webviewMessageHandler - requestOpenAiCodexRateLimits", () => {
 		mockGetAccountId.mockResolvedValue(null)
 	})
 
-	it("posts error when not authenticated", async () => {
+	it("posts translated error when not authenticated", async () => {
 		await webviewMessageHandler(mockClineProvider, { type: "requestOpenAiCodexRateLimits" } as any)
 
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "openAiCodexRateLimits",
-			error: "Not authenticated with OpenAI Codex",
+			error: "common:errors.openAiCodex.notAuthenticated",
 		})
 	})
 

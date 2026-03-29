@@ -1,4 +1,4 @@
-import type { ToolName, ToolProtocol } from "@roo-code/types"
+﻿import type { ToolName, ToolProtocol } from "@roo-code/types"
 
 import { Task } from "../task/Task"
 import type {
@@ -15,6 +15,7 @@ import type {
  */
 export interface ToolCallbacks {
 	askApproval: AskApproval
+	taskApproval?: AskApproval
 	handleError: HandleError
 	pushToolResult: PushToolResult
 	removeClosingTag: RemoveClosingTag
@@ -32,8 +33,8 @@ type ToolParams<TName extends ToolName> = TName extends keyof NativeToolArgs ? N
  * Abstract base class for all tools.
  *
  * Provides a consistent architecture where:
- * - XML/legacy protocol: params → parseLegacy() → typed params → execute()
- * - Native protocol: nativeArgs already contain typed data → execute()
+ * - XML/legacy protocol: params в†’ parseLegacy() в†’ typed params в†’ execute()
+ * - Native protocol: nativeArgs already contain typed data в†’ execute()
  *
  * Each tool extends this class and implements:
  * - parseLegacy(): Convert XML/legacy string params to typed params

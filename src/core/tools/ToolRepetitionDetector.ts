@@ -98,14 +98,43 @@ export class ToolRepetitionDetector {
 	private serializeToolUse(toolUse: ToolUse): string {
 		const toolObject: Record<string, any> = {
 			name: toolUse.name,
-			params: toolUse.params,
+			params: this.normalizeValue(toolUse.params),
 		}
 
 		// Only include nativeArgs if it has content
 		if (toolUse.nativeArgs && Object.keys(toolUse.nativeArgs).length > 0) {
-			toolObject.nativeArgs = toolUse.nativeArgs
+			toolObject.nativeArgs = this.normalizeValue(toolUse.nativeArgs)
 		}
 
 		return stringify(toolObject)
+	}
+
+	private normalizeValue(value: unknown): unknown {
+		if (typeof value === "string") {
+			const trimmed = value.trim()
+			if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+				try {
+					return this.normalizeValue(JSON.parse(trimmed))
+				} catch {
+					return trimmed
+				}
+			}
+			return trimmed
+		}
+
+		if (Array.isArray(value)) {
+			return value.map((item) => this.normalizeValue(item))
+		}
+
+		if (value && typeof value === "object") {
+			return Object.fromEntries(
+				Object.entries(value as Record<string, unknown>).map(([key, entryValue]) => [
+					key,
+					this.normalizeValue(entryValue),
+				]),
+			)
+		}
+
+		return value
 	}
 }

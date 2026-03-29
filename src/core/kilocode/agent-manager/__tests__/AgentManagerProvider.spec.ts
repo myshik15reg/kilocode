@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from "vitest"
+﻿import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from "vitest"
 import { EventEmitter } from "node:events"
 import * as path from "node:path"
 import * as telemetry from "../telemetry"
@@ -45,13 +45,20 @@ describe("AgentManagerProvider CLI spawning", () => {
 		createTerminal: Mock
 	}
 
-	beforeEach(
-		async () => {
+	beforeEach(async () => {
 		vi.resetModules()
 
 		const mockWorkspaceFolder = { uri: { fsPath: "/tmp/workspace" } }
 		const mockProvider = {
-			getState: vi.fn().mockResolvedValue({ apiConfiguration: { apiProvider: "kilocode" } }),
+			getState: vi.fn().mockResolvedValue({
+				apiConfiguration: { apiProvider: "kilocode" },
+				autoRestartProblematicProcesses: true,
+				problematicProcessRestartLimit: 3,
+				parallelAgentsEnabled: false,
+				parallelAgentCount: 2,
+			}),
+			getTaskHistory: vi.fn().mockReturnValue([]),
+			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		}
 
 		mockWindow = {
@@ -137,13 +144,204 @@ describe("AgentManagerProvider CLI spawning", () => {
 		const module = await import("../AgentManagerProvider")
 		AgentManagerProvider = module.AgentManagerProvider
 		provider = new AgentManagerProvider(mockContext, mockOutputChannel, mockProvider as any)
-		},
-		60_000,
-	)
+	}, 60_000)
 
 	afterEach(() => {
 		provider?.dispose()
 	})
+
+	// kilocode_change start
+	it("skips duplicate chat payload posts until forced", () => {
+		;(provider as any).postMessage = vi.fn()
+		const messages = [{ ts: 1, type: "say", say: "text", text: "hello", partial: false }]
+
+		;(provider as any).postChatMessages("session-dup", messages)
+		;(provider as any).postChatMessages("session-dup", messages)
+		;(provider as any).postChatMessages("session-dup", messages, { force: true })
+
+		expect((provider as any).postMessage).toHaveBeenCalledTimes(2)
+		expect((provider as any).postMessage).toHaveBeenNthCalledWith(
+			1,
+			expect.objectContaining({
+				type: "agentManager.chatMessages",
+				sessionId: "session-dup",
+				messages,
+			}),
+		)
+		expect((provider as any).postMessage).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({
+				type: "agentManager.chatMessages",
+				sessionId: "session-dup",
+				messages,
+			}),
+		)
+	})
+	// kilocode_change end
+
+	it("falls back to sequential execution when parallel agents are disabled", async () => {
+		const startAgentSession = vi.fn().mockResolvedValue(undefined)
+		;(provider as any).startAgentSession = startAgentSession
+		;(provider as any).parallelAgentsEnabled = false
+		;(provider as any).parallelAgentCount = 4
+
+		await (provider as any).handleStartSession({
+			type: "agentManager.startSession",
+			prompt: "Implement feature",
+			versions: 3,
+		})
+
+		expect(startAgentSession).toHaveBeenCalledTimes(1)
+	})
+
+	it("launches configured parallel agents when enabled", async () => {
+		const startAgentSession = vi.fn().mockResolvedValue(undefined)
+		;(provider as any).startAgentSession = startAgentSession
+		;(provider as any).parallelAgentsEnabled = true
+		;(provider as any).parallelAgentCount = 3
+		;(provider as any).maxConcurrentSessionStarts = 4
+		;(provider as any).registry.getSessions = vi.fn().mockReturnValue([])
+
+		await (provider as any).handleStartSession({ type: "agentManager.startSession", prompt: "Implement feature" })
+
+		expect(startAgentSession).toHaveBeenCalledTimes(3)
+	})
+
+	it("falls back to sequential execution when no parallel capacity is available", async () => {
+		const startAgentSession = vi.fn().mockResolvedValue(undefined)
+		;(provider as any).startAgentSession = startAgentSession
+		;(provider as any).parallelAgentsEnabled = true
+		;(provider as any).parallelAgentCount = 4
+		;(provider as any).maxConcurrentSessionStarts = 1
+		;(provider as any).registry.getSessions = vi.fn().mockReturnValue([{ status: "running" }])
+
+		await (provider as any).handleStartSession({
+			type: "agentManager.startSession",
+			prompt: "Implement feature",
+			versions: 4,
+		})
+
+		expect(startAgentSession).toHaveBeenCalledTimes(1)
+	})
+
+	// kilocode_change start
+	it("skips duplicate state payload posts until forced", () => {
+		;(provider as any).postMessage = vi.fn()
+		;(provider as any).getFilteredState = vi
+			.fn()
+			.mockReturnValue({ sessions: [{ sessionId: "s1", status: "running" }] })
+		;(provider as any).postStateToWebview()
+		;(provider as any).postStateToWebview()
+		;(provider as any).postStateToWebview({ force: true })
+
+		expect((provider as any).postMessage).toHaveBeenCalledTimes(2)
+		expect((provider as any).postMessage).toHaveBeenNthCalledWith(
+			1,
+			expect.objectContaining({
+				type: "agentManager.state",
+				state: { sessions: [{ sessionId: "s1", status: "running" }] },
+			}),
+		)
+		expect((provider as any).postMessage).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({
+				type: "agentManager.state",
+				state: { sessions: [{ sessionId: "s1", status: "running" }] },
+			}),
+		)
+	})
+	// kilocode_change end
+
+	// kilocode_change start
+	it("skips duplicate remote sessions posts until forced", () => {
+		;(provider as any).postMessage = vi.fn()
+		const sessions = [{ id: "remote-1", title: "Task", created_at: "2026-01-01", git_url: undefined }]
+
+		;(provider as any).postRemoteSessionsToWebview(sessions)
+		;(provider as any).postRemoteSessionsToWebview(sessions)
+		;(provider as any).postRemoteSessionsToWebview(sessions, { force: true })
+
+		expect((provider as any).postMessage).toHaveBeenCalledTimes(2)
+		expect((provider as any).postMessage).toHaveBeenNthCalledWith(
+			1,
+			expect.objectContaining({ type: "agentManager.remoteSessions", sessions }),
+		)
+		expect((provider as any).postMessage).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({ type: "agentManager.remoteSessions", sessions }),
+		)
+	})
+
+	it("skips duplicate available modes posts until forced", () => {
+		;(provider as any).postMessage = vi.fn()
+		const modes = [{ slug: "code", name: "Code", description: "Default", iconName: "zap", source: "global" }]
+
+		;(provider as any).postAvailableModesToWebview(modes, "code")
+		;(provider as any).postAvailableModesToWebview(modes, "code")
+		;(provider as any).postAvailableModesToWebview(modes, "code", { force: true })
+
+		expect((provider as any).postMessage).toHaveBeenCalledTimes(2)
+		expect((provider as any).postMessage).toHaveBeenNthCalledWith(
+			1,
+			expect.objectContaining({ type: "agentManager.availableModes", modes, currentMode: "code" }),
+		)
+		expect((provider as any).postMessage).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({ type: "agentManager.availableModes", modes, currentMode: "code" }),
+		)
+	})
+
+	it("skips duplicate available models posts until forced", () => {
+		;(provider as any).postMessage = vi.fn()
+		const payload = {
+			provider: "kilocode",
+			currentModel: "gpt-test",
+			models: [
+				{
+					id: "gpt-test",
+					displayName: "GPT Test",
+					contextWindow: 128000,
+					supportsImages: true,
+					inputPrice: 1,
+					outputPrice: 2,
+				},
+			],
+		}
+
+		;(provider as any).postAvailableModelsToWebview(payload)
+		;(provider as any).postAvailableModelsToWebview(payload)
+		;(provider as any).postAvailableModelsToWebview(payload, { force: true })
+
+		expect((provider as any).postMessage).toHaveBeenCalledTimes(2)
+		expect((provider as any).postMessage).toHaveBeenNthCalledWith(
+			1,
+			expect.objectContaining({ type: "agentManager.availableModels", ...payload }),
+		)
+		expect((provider as any).postMessage).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({ type: "agentManager.availableModels", ...payload }),
+		)
+	})
+
+	it("skips duplicate branches posts until forced", () => {
+		;(provider as any).postMessage = vi.fn()
+		const payload = { branches: ["main", "feature/x"], currentBranch: "main" }
+
+		;(provider as any).postBranchesToWebview(payload)
+		;(provider as any).postBranchesToWebview(payload)
+		;(provider as any).postBranchesToWebview(payload, { force: true })
+
+		expect((provider as any).postMessage).toHaveBeenCalledTimes(2)
+		expect((provider as any).postMessage).toHaveBeenNthCalledWith(
+			1,
+			expect.objectContaining({ type: "agentManager.branches", ...payload }),
+		)
+		expect((provider as any).postMessage).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({ type: "agentManager.branches", ...payload }),
+		)
+	})
+	// kilocode_change end
 
 	it("forks agent-runtime process for session", async () => {
 		await (provider as any).startAgentSession('echo "$(whoami)"')
@@ -162,59 +360,338 @@ describe("AgentManagerProvider CLI spawning", () => {
 		expect(options?.stdio).toContain("ipc")
 	})
 
-	it("creates pending session and waits for session_created event", async () => {
+	it("creates a creating session before ready is received", async () => {
 		await (provider as any).startAgentSession("test pending")
 
-		// Should have a pending session
-		expect((provider as any).registry.pendingSession).not.toBeNull()
-		expect((provider as any).registry.pendingSession.prompt).toBe("test pending")
-
-		// No sessions created yet
-		expect((provider as any).registry.getSessions()).toHaveLength(0)
+		const sessions = (provider as any).registry.getSessions()
+		expect(sessions).toHaveLength(1)
+		expect(sessions[0].prompt).toBe("test pending")
+		expect(sessions[0].status).toBe("creating")
 	})
 
-	it("creates session when ready event is received", async () => {
+	it("transitions a creating session to running when ready event is received", async () => {
 		await (provider as any).startAgentSession("test session created")
 		const forkMock = (await import("node:child_process")).fork as unknown as Mock
 		const proc = forkMock.mock.results[0].value as EventEmitter & { stdout: EventEmitter }
 
-		// Emit IPC ready message - session is created on ready in RuntimeProcessHandler
 		proc.emit("message", { type: "ready" })
 
-		// Pending session should be cleared
-		expect((provider as any).registry.pendingSession).toBeNull()
-
-		// Session should be created with auto-generated sessionId
 		const sessions = (provider as any).registry.getSessions()
 		expect(sessions).toHaveLength(1)
 		expect(sessions[0].sessionId).toMatch(/^agent_/)
+		expect(sessions[0].status).toBe("running")
 	})
 
-	it("waits for pending processes to clear before resolving multi-version sequencing", async () => {
-		vi.useFakeTimers()
+	it("starts multi-version sessions in parallel without waiting for ready", async () => {
+		;(provider as any).parallelAgentsEnabled = true
+		;(provider as any).parallelAgentCount = 3
+		;(provider as any).maxConcurrentSessionStarts = 4
+		;(provider as any).getActiveSessionLoad = vi.fn().mockReturnValue(0)
 
-		try {
-			const registry = (provider as any).registry
-			const processHandler = (provider as any).processHandler
+		await (provider as any).handleStartSession({
+			type: "agentManager.startSession",
+			prompt: "parallel versions",
+			versions: 3,
+		})
 
-			registry.clearPendingSession()
-			processHandler.pendingProcess = {}
+		const forkMock = (await import("node:child_process")).fork as unknown as Mock
+		expect(forkMock).toHaveBeenCalledTimes(3)
 
-			let resolved = false
-			const waitPromise = (provider as any).waitForPendingSessionToClear().then(() => {
-				resolved = true
-			})
+		const sessions = (provider as any).registry.getSessions()
+		expect(sessions).toHaveLength(3)
+		expect(sessions.every((session: any) => session.status === "creating")).toBe(true)
+	})
 
-			await Promise.resolve()
-			expect(resolved).toBe(false)
+	it("queues launches when concurrency limit is reached", async () => {
+		;(provider as any).maxConcurrentSessionStarts = 1
 
-			processHandler.pendingProcess = null
-			vi.advanceTimersByTime(200)
-			await waitPromise
-			expect(resolved).toBe(true)
-		} finally {
-			vi.useRealTimers()
-		}
+		await (provider as any).startAgentSession("first")
+		await (provider as any).startAgentSession("second")
+
+		const forkMock = (await import("node:child_process")).fork as unknown as Mock
+		expect(forkMock).toHaveBeenCalledTimes(1)
+		expect((provider as any).queuedSessionLaunches).toHaveLength(1)
+		expect((provider as any).queuedSessionLaunches[0].prompt).toBe("second")
+	})
+
+	it("dequeues a waiting launch after capacity is freed", async () => {
+		;(provider as any).maxConcurrentSessionStarts = 1
+
+		await (provider as any).startAgentSession("first")
+		await (provider as any).startAgentSession("second")
+
+		const forkMock = (await import("node:child_process")).fork as unknown as Mock
+		const firstSessionId = (provider as any).registry.getSessions()[0].sessionId
+		;(provider as any).registry.updateSessionStatus(firstSessionId, "done")
+
+		await (provider as any).drainQueuedSessionLaunches()
+
+		expect(forkMock).toHaveBeenCalledTimes(2)
+		expect((provider as any).queuedSessionLaunches).toHaveLength(0)
+	})
+
+	it("fairly alternates queued launches across groups when draining", async () => {
+		;(provider as any).queuedSessionLaunches = [
+			{
+				prompt: "g1-first",
+				queueKey: "group-1",
+				rootScopeKey: "g1-root",
+				options: { sessionGroup: { groupId: "group-1", rootSessionId: "g1-root" } },
+			},
+			{
+				prompt: "g1-second",
+				queueKey: "group-1",
+				rootScopeKey: "g1-root",
+				options: { sessionGroup: { groupId: "group-1", rootSessionId: "g1-root" } },
+			},
+			{
+				prompt: "g2-first",
+				queueKey: "group-2",
+				rootScopeKey: "g2-root",
+				options: { sessionGroup: { groupId: "group-2", rootSessionId: "g2-root" } },
+			},
+		]
+
+		const first = (provider as any).dequeueNextSessionLaunch()
+		const second = (provider as any).dequeueNextSessionLaunch()
+		const third = (provider as any).dequeueNextSessionLaunch()
+
+		expect(first?.prompt).toBe("g1-first")
+		expect(second?.prompt).toBe("g2-first")
+		expect(third?.prompt).toBe("g1-second")
+	})
+
+	it("prioritizes a different root scope before returning to the same root subtree", () => {
+		;(provider as any).queuedSessionLaunches = [
+			{
+				prompt: "root-a-parent",
+				queueKey: "group-a-parent",
+				rootScopeKey: "root-a",
+				options: { sessionGroup: { groupId: "group-a-parent", rootSessionId: "root-a" } },
+			},
+			{
+				prompt: "root-a-child",
+				queueKey: "group-a-child",
+				rootScopeKey: "root-a",
+				options: {
+					sessionGroup: {
+						groupId: "group-a-child",
+						rootSessionId: "root-a",
+						parentGroupId: "group-a-parent",
+					},
+				},
+			},
+			{
+				prompt: "root-b-parent",
+				queueKey: "group-b-parent",
+				rootScopeKey: "root-b",
+				options: { sessionGroup: { groupId: "group-b-parent", rootSessionId: "root-b" } },
+			},
+		]
+
+		const first = (provider as any).dequeueNextSessionLaunch()
+		const second = (provider as any).dequeueNextSessionLaunch()
+		const third = (provider as any).dequeueNextSessionLaunch()
+
+		expect(first?.prompt).toBe("root-a-parent")
+		expect(second?.prompt).toBe("root-b-parent")
+		expect(third?.prompt).toBe("root-a-child")
+	})
+
+	it("skips a queued group that already reached its per-group cap", () => {
+		const registry = (provider as any).registry
+		registry.createSession("active-g1", "prompt", Date.now(), {
+			sessionGroup: { groupId: "group-1", rootSessionId: "g1-root" },
+		})
+		registry.updateSessionStatus("active-g1", "running")
+		;(provider as any).queuedSessionLaunches = [
+			{
+				prompt: "g1-queued",
+				queueKey: "group-1",
+				rootScopeKey: "g1-root",
+				options: { sessionGroup: { groupId: "group-1", rootSessionId: "g1-root" } },
+			},
+			{
+				prompt: "g2-queued",
+				queueKey: "group-2",
+				rootScopeKey: "g2-root",
+				options: { sessionGroup: { groupId: "group-2", rootSessionId: "g2-root" } },
+			},
+		]
+
+		const next = (provider as any).dequeueNextSessionLaunch()
+
+		expect(next?.prompt).toBe("g2-queued")
+		expect((provider as any).queuedSessionLaunches).toHaveLength(1)
+		expect((provider as any).queuedSessionLaunches[0].prompt).toBe("g1-queued")
+	})
+
+	it("treats repeatedly problematic groups as temporarily saturated", () => {
+		;(provider as any).updateQueueKeyPressure("group-1", "problematic")
+		;(provider as any).updateQueueKeyPressure("group-1", "problematic")
+		;(provider as any).queuedSessionLaunches = [
+			{
+				prompt: "g1-queued",
+				queueKey: "group-1",
+				rootScopeKey: "g1-root",
+				options: { sessionGroup: { groupId: "group-1", rootSessionId: "g1-root" } },
+			},
+			{
+				prompt: "g2-queued",
+				queueKey: "group-2",
+				rootScopeKey: "g2-root",
+				options: { sessionGroup: { groupId: "group-2", rootSessionId: "g2-root" } },
+			},
+		]
+
+		const next = (provider as any).dequeueNextSessionLaunch()
+
+		expect(next?.prompt).toBe("g2-queued")
+	})
+
+	it("reduces pressure for a group after success", () => {
+		;(provider as any).updateQueueKeyPressure("group-1", "problematic")
+		;(provider as any).updateQueueKeyPressure("group-1", "problematic")
+		;(provider as any).updateQueueKeyPressure("group-1", "success")
+		;(provider as any).updateQueueKeyPressure("group-1", "success")
+
+		expect((provider as any).queueKeyPressure.has("group-1")).toBe(false)
+		expect((provider as any).getEffectiveQueueKeyCap("group-1")).toBe(1)
+	})
+
+	it("enriches filtered state with restart policy metadata", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("session-restart", "Recover parser")
+		;(provider as any).provider.getTaskHistory.mockReturnValue([
+			{
+				id: "session-restart",
+				restartCount: 2,
+				lastStopReason: "loop_detected",
+				lastStopSummary: "Branch repeated the same broken patch.",
+			},
+		])
+
+		await (provider as any).refreshRestartPolicyState()
+		const state = (provider as any).getFilteredState()
+		expect(state.sessions).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					sessionId: "session-restart",
+					taskId: "session-restart",
+					restartCount: 2,
+					restartLimit: 3,
+					autoRestartEnabled: true,
+					lastStopReason: "loop_detected",
+					lastStopSummary: "Branch repeated the same broken patch.",
+					restartHandoff:
+						"Stop reason: loop_detected. Previous summary: Branch repeated the same broken patch.",
+				}),
+			]),
+		)
+	})
+
+	// kilocode_change start
+	it("enriches filtered state with task tree linkage metadata", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("child-task", "Implement child branch")
+		;(provider as any).provider.getTaskHistory.mockReturnValue([
+			{
+				id: "child-task",
+				rootTaskId: "root-task",
+				parentTaskId: "parent-task",
+				childIds: ["grandchild-task"],
+				number: 2,
+				ts: 1,
+				task: "Implement child branch",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+			},
+		])
+
+		const state = (provider as any).getFilteredState()
+		expect(state.sessions).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					sessionId: "child-task",
+					taskId: "child-task",
+					rootTaskId: "root-task",
+					parentTaskId: "parent-task",
+					childTaskIds: ["grandchild-task"],
+				}),
+			]),
+		)
+	})
+	// kilocode_change end
+
+	it("applies per-session auto-restart override in filtered state", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("session-restart-override", "Recover parser")
+
+		await (provider as any).refreshRestartPolicyState()
+		;(provider as any).setSessionAutoRestart("session-restart-override", false)
+
+		const state = (provider as any).getFilteredState()
+		expect(state.sessions).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					sessionId: "session-restart-override",
+					autoRestartEnabled: false,
+				}),
+			]),
+		)
+	})
+
+	it("persists per-session auto-restart override into task history", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("session-restart-persist", "Recover parser")
+		;(provider as any).provider.getTaskHistory.mockReturnValue([
+			{
+				id: "session-restart-persist",
+				number: 1,
+				ts: 1,
+				task: "Recover parser",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+			},
+		])
+		;(provider as any).setSessionAutoRestart("session-restart-persist", false)
+
+		expect((provider as any).provider.updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "session-restart-persist",
+				sessionAutoRestartEnabled: false,
+			}),
+		)
+	})
+
+	it("prefers persisted session override from task history when no live override exists", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("session-restart-history", "Recover parser")
+		;(provider as any).provider.getTaskHistory.mockReturnValue([
+			{
+				id: "session-restart-history",
+				number: 1,
+				ts: 1,
+				task: "Recover parser",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				sessionAutoRestartEnabled: false,
+			},
+		])
+
+		await (provider as any).refreshRestartPolicyState()
+		const state = (provider as any).getFilteredState()
+		expect(state.sessions).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					sessionId: "session-restart-history",
+					autoRestartEnabled: false,
+				}),
+			]),
+		)
 	})
 
 	it("shows existing terminal when selecting a session", () => {
@@ -499,7 +976,94 @@ describe("AgentManagerProvider CLI spawning", () => {
 		})
 	})
 
+	it("stops all active sessions in a group", () => {
+		const registry = (provider as any).registry
+		registry.createSession("s1", "prompt 1", Date.now(), { sessionGroup: { groupId: "g1", rootSessionId: "s1" } })
+		registry.createSession("s2", "prompt 2", Date.now(), { sessionGroup: { groupId: "g1", rootSessionId: "s1" } })
+		registry.updateSessionStatus("s1", "running")
+		registry.updateSessionStatus("s2", "running")
+		const stopSpy = vi.spyOn((provider as any).processHandler, "stopProcess")
+		;(provider as any).stopSessionGroup("g1")
+		expect(stopSpy).toHaveBeenCalledWith("s1")
+		expect(stopSpy).toHaveBeenCalledWith("s2")
+		expect(registry.getSession("s1")?.status).toBe("stopped")
+		expect(registry.getSession("s2")?.status).toBe("stopped")
+	})
+
+	// kilocode_change start
+	it("removes queued launches for a stopped group and preserves unrelated queue entries", () => {
+		;(provider as any).queuedSessionLaunches = [
+			{
+				prompt: "group queued",
+				queueKey: "g1",
+				rootScopeKey: "root-g1",
+				options: { sessionId: "queued-g1", sessionGroup: { groupId: "g1", rootSessionId: "root-g1" } },
+			},
+			{
+				prompt: "other queued",
+				queueKey: "g2",
+				rootScopeKey: "root-g2",
+				options: { sessionId: "queued-g2", sessionGroup: { groupId: "g2", rootSessionId: "root-g2" } },
+			},
+		]
+
+		const publishSpy = vi.spyOn(provider as any, "publishGroupEvent")
+
+		;(provider as any).stopSessionGroup("g1")
+
+		expect((provider as any).queuedSessionLaunches).toEqual([
+			expect.objectContaining({
+				prompt: "other queued",
+				queueKey: "g2",
+			}),
+		])
+		expect(publishSpy).toHaveBeenCalledWith("g1", "queued-g1", "stopped", "Stopped before launch")
+	})
+
+	it("stops active sessions across a nested group subtree", () => {
+		const registry = (provider as any).registry
+		registry.createSession("parent-1", "parent prompt", Date.now(), {
+			sessionGroup: { groupId: "g-parent", rootSessionId: "parent-1" },
+		})
+		registry.createSession("child-1", "child prompt", Date.now(), {
+			sessionGroup: { groupId: "g-child", rootSessionId: "parent-1", parentGroupId: "g-parent" },
+		})
+		registry.createSession("grandchild-1", "grandchild prompt", Date.now(), {
+			sessionGroup: { groupId: "g-grandchild", rootSessionId: "parent-1", parentGroupId: "g-child" },
+		})
+		registry.updateSessionStatus("parent-1", "running")
+		registry.updateSessionStatus("child-1", "running")
+		registry.updateSessionStatus("grandchild-1", "running")
+
+		const stopSpy = vi.spyOn((provider as any).processHandler, "stopProcess")
+		;(provider as any).stopSessionGroup("g-parent")
+
+		expect(stopSpy).toHaveBeenCalledWith("parent-1")
+		expect(stopSpy).toHaveBeenCalledWith("child-1")
+		expect(stopSpy).toHaveBeenCalledWith("grandchild-1")
+		expect(registry.getSession("parent-1")?.status).toBe("stopped")
+		expect(registry.getSession("child-1")?.status).toBe("stopped")
+		expect(registry.getSession("grandchild-1")?.status).toBe("stopped")
+	})
+	// kilocode_change end
+
 	describe("dispose behavior", () => {
+		it("keeps running agents alive when panel is closed", async () => {
+			await (provider as any).startAgentSession("background session")
+
+			const forkMock = (await import("node:child_process")).fork as unknown as Mock
+			const proc = forkMock.mock.results[0].value as EventEmitter & { stdout: EventEmitter; kill: Mock }
+			proc.emit("message", { type: "ready" })
+
+			const processHandler = (provider as any).processHandler
+			expect(processHandler.activeSessions.size).toBe(1)
+			;(provider as any).handlePanelDisposed()
+
+			expect(proc.kill).not.toHaveBeenCalled()
+			expect(processHandler.activeSessions.size).toBe(1)
+			expect((provider as any).panel).toBeUndefined()
+		})
+
 		it("kills pending process on dispose", async () => {
 			await (provider as any).startAgentSession("pending session")
 
@@ -507,12 +1071,12 @@ describe("AgentManagerProvider CLI spawning", () => {
 			const proc = forkMock.mock.results[0].value
 
 			const processHandler = (provider as any).processHandler
-			expect(processHandler.pendingProcess).not.toBeNull()
+			expect(processHandler.pendingProcesses.size).toBe(1)
 
 			provider.dispose()
 
 			expect(proc.kill).toHaveBeenCalledWith("SIGTERM")
-			expect(processHandler.pendingProcess).toBeNull()
+			expect(processHandler.pendingProcesses.size).toBe(0)
 		})
 
 		it("kills all running processes on dispose", async () => {
@@ -586,6 +1150,494 @@ describe("AgentManagerProvider CLI spawning", () => {
 			expect((provider as any).getRunningSessionCount()).toBe(2)
 		})
 	})
+	it("restarts a problematic session and relaxes queue pressure", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("restart-1", "repair task", Date.now(), {
+			labelOverride: "Repair task",
+			sessionGroup: {
+				groupId: "group-r",
+				rootSessionId: "restart-1",
+				label: "Repair task",
+				sessionIndex: 0,
+				sessionCount: 1,
+			},
+		})
+		registry.updateSessionStatus("restart-1", "error", 1, "failed")
+		;(provider as any).queueKeyPressure.set("group-r", 2)
+		;(provider as any).resumeSession = vi.fn().mockResolvedValue(undefined)
+
+		await (provider as any).restartSession("restart-1")
+
+		expect((provider as any).resumeSession).toHaveBeenCalledWith(
+			"restart-1",
+			expect.stringContaining("Restart branch from latest valid state"),
+			"Repair task",
+		)
+		expect((provider as any).queueKeyPressure.get("group-r") ?? 0).toBe(0)
+	})
+
+	it("uses compact recovery prompt when requested", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("restart-compact", "repair task", Date.now(), {
+			labelOverride: "Repair task",
+		})
+		;(provider as any).provider.getTaskHistory.mockReturnValue([
+			{
+				id: "restart-compact",
+				restartCount: 1,
+				lastStopReason: "loop_detected",
+				lastStopSummary: "Branch repeated the same broken patch.",
+			},
+		])
+		;(provider as any).resumeSession = vi.fn().mockResolvedValue(undefined)
+
+		await (provider as any).restartSession("restart-compact", { compact: true })
+
+		expect((provider as any).resumeSession).toHaveBeenCalledWith(
+			"restart-compact",
+			expect.stringContaining("compact recovery mode"),
+			"Repair task",
+		)
+		expect((provider as any).resumeSession).toHaveBeenCalledWith(
+			"restart-compact",
+			expect.stringContaining("Previous stop reason: loop_detected."),
+			"Repair task",
+		)
+	})
+
+	it("reuses provider recovery packet for compact session restart", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("restart-packet", "repair task", Date.now(), {
+			labelOverride: "Repair task",
+		})
+		;(provider as any).provider.getTaskHistory.mockReturnValue([
+			{
+				id: "restart-packet",
+				restartCount: 2,
+				lastStopReason: "loop_detected",
+				lastStopSummary: "Branch repeated the same broken patch.",
+			},
+		])
+		;(provider as any).provider.buildRecoveryPacket = vi.fn().mockResolvedValue({
+			summary: "Cached branch summary",
+			handoff:
+				"Restart branch from latest valid state in compact recovery mode. Previous stop reason: loop_detected. Previous summary: Cached branch summary Use a short handoff, avoid replaying the whole branch, and continue with the minimal required context.",
+			recoveryMode: "standard",
+			stopReason: "loop_detected",
+			restartAttempt: 3,
+		})
+		;(provider as any).resumeSession = vi.fn().mockResolvedValue(undefined)
+
+		await (provider as any).restartSession("restart-packet", { compact: true })
+
+		expect((provider as any).provider.buildRecoveryPacket).toHaveBeenCalledWith(
+			expect.objectContaining({
+				historyItem: expect.objectContaining({
+					id: "restart-packet",
+					lastStopReason: "loop_detected",
+				}),
+			}),
+		)
+		expect((provider as any).resumeSession).toHaveBeenCalledWith(
+			"restart-packet",
+			expect.stringContaining("Cached branch summary"),
+			"Repair task",
+		)
+	})
+
+	it("restarts all problematic sessions in a group with compact recovery mode", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("group-error-1", "repair task", Date.now(), {
+			labelOverride: "Repair task A",
+			sessionGroup: {
+				groupId: "group-compact",
+				rootSessionId: "group-error-1",
+				label: "Repair swarm",
+				sessionIndex: 0,
+				sessionCount: 2,
+			},
+		})
+		registry.createSession("group-error-2", "repair task", Date.now(), {
+			labelOverride: "Repair task B",
+			sessionGroup: {
+				groupId: "group-compact",
+				rootSessionId: "group-error-1",
+				label: "Repair swarm",
+				sessionIndex: 1,
+				sessionCount: 2,
+			},
+		})
+		registry.updateSessionStatus("group-error-1", "error", 1, "failed")
+		registry.updateSessionStatus("group-error-2", "stopped", 1, "stopped")
+		;(provider as any).restartSession = vi.fn().mockResolvedValue(undefined)
+
+		await (provider as any).restartSessionGroupCompact("group-compact")
+
+		expect((provider as any).restartSession).toHaveBeenCalledTimes(2)
+		expect((provider as any).restartSession).toHaveBeenCalledWith("group-error-1", { compact: true })
+		expect((provider as any).restartSession).toHaveBeenCalledWith("group-error-2", { compact: true })
+	})
+
+	it("reuses cached relay content across repeated root broadcasts", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("root-cache-source", "Planner", Date.now(), {
+			labelOverride: "Planner",
+		})
+		registry.createSession("root-cache-target", "Worker", Date.now(), {
+			labelOverride: "Worker",
+		})
+		registry.updateSessionStatus("root-cache-source", "error", 1, "failed")
+		registry.updateSessionStatus("root-cache-target", "running")
+		const sourceSession = registry.getSession("root-cache-source")
+		const targetSession = registry.getSession("root-cache-target")
+		if (!sourceSession || !targetSession) {
+			throw new Error("Missing root cache sessions")
+		}
+		sourceSession.taskId = "root-cache-task"
+		sourceSession.rootTaskId = "root-cache-task"
+		targetSession.taskId = "root-cache-child"
+		targetSession.rootTaskId = "root-cache-task"
+		;(provider as any).provider.getTaskHistory.mockReturnValue([
+			{
+				id: "root-cache-source",
+				restartCount: 2,
+				lastStopReason: "loop_detected",
+				lastStopSummary: "Branch repeated the same broken patch.",
+			},
+		])
+		;(provider as any).provider.buildRecoveryPacket = vi.fn().mockResolvedValue({
+			summary: "Return only delta summary",
+			handoff: "<restart_handoff> Return only delta summary </restart_handoff>",
+			recoveryMode: "pressure",
+			stopReason: "loop_detected",
+			restartAttempt: 3,
+		})
+		;(provider as any).sendMessageToStdin = vi.fn().mockResolvedValue(undefined)
+		;(provider as any).postMessage = vi.fn()
+		;(provider as any).publishGroupEvent = vi.fn()
+
+		await (provider as any).broadcastToRootTask("root-cache-source", undefined, false, true)
+		await (provider as any).broadcastToRootTask("root-cache-source", undefined, false, true)
+
+		expect((provider as any).provider.buildRecoveryPacket).toHaveBeenCalledTimes(1)
+	})
+
+	it("reuses cached relay content across repeated group broadcasts", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("group-cache-source", "prompt 1", Date.now(), {
+			label: "Leader",
+			sessionGroup: { groupId: "g-cache", rootSessionId: "group-cache-source" },
+		})
+		registry.createSession("group-cache-target", "prompt 2", Date.now(), {
+			label: "Worker A",
+			sessionGroup: { groupId: "g-cache", rootSessionId: "group-cache-source" },
+		})
+		registry.updateSessionStatus("group-cache-source", "error", 1, "failed")
+		registry.updateSessionStatus("group-cache-target", "running")
+		;(provider as any).queueKeyPressure.set("g-cache", 2)
+		;(provider as any).provider.getTaskHistory = vi
+			.fn()
+			.mockReturnValue([
+				{
+					id: "group-cache-source",
+					restartCount: 2,
+					lastStopReason: "loop_detected",
+					lastStopSummary: "Verbose stop summary.",
+				},
+			])
+		;(provider as any).provider.buildRecoveryPacket = vi.fn().mockResolvedValue({
+			summary: "Pressure compact summary",
+			handoff: "<restart_handoff> Verbose full handoff </restart_handoff>",
+			recoveryMode: "pressure",
+			stopReason: "loop_detected",
+			restartAttempt: 3,
+		})
+		;(provider as any).sendMessageToStdin = vi.fn().mockResolvedValue(undefined)
+		;(provider as any).postMessage = vi.fn()
+		;(provider as any).publishGroupEvent = vi.fn()
+
+		await (provider as any).broadcastToSessionGroup(
+			"group-cache-source",
+			"Branch handoff from Leader: Verbose full handoff",
+			false,
+		)
+		await (provider as any).broadcastToSessionGroup(
+			"group-cache-source",
+			"Branch handoff from Leader: Verbose full handoff",
+			false,
+		)
+
+		expect((provider as any).provider.buildRecoveryPacket).toHaveBeenCalledTimes(1)
+	})
+
+	it("broadcasts compact recovery handoff to sibling root-task sessions", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("root-broadcast-source", "Planner", Date.now(), {
+			labelOverride: "Planner",
+		})
+		registry.createSession("root-broadcast-target", "Worker", Date.now(), {
+			labelOverride: "Worker",
+		})
+		registry.updateSessionStatus("root-broadcast-source", "error", 1, "failed")
+		registry.updateSessionStatus("root-broadcast-target", "running")
+		const sourceSession = registry.getSession("root-broadcast-source")
+		const targetSession = registry.getSession("root-broadcast-target")
+		if (!sourceSession || !targetSession) {
+			throw new Error("Missing root broadcast sessions")
+		}
+		sourceSession.taskId = "root-task-1"
+		sourceSession.rootTaskId = "root-task-1"
+		targetSession.taskId = "child-task-2"
+		targetSession.rootTaskId = "root-task-1"
+		;(provider as any).provider.getTaskHistory.mockReturnValue([
+			{
+				id: "root-broadcast-source",
+				restartCount: 2,
+				lastStopReason: "loop_detected",
+				lastStopSummary: "Branch repeated the same broken patch.",
+			},
+		])
+		;(provider as any).provider.buildRecoveryPacket = vi.fn().mockResolvedValue({
+			summary: "Return only delta summary",
+			handoff: "<restart_handoff> Return only delta summary </restart_handoff>",
+			recoveryMode: "pressure",
+			stopReason: "loop_detected",
+			restartAttempt: 3,
+		})
+		;(provider as any).sendMessageToStdin = vi.fn().mockResolvedValue(undefined)
+		;(provider as any).postMessage = vi.fn()
+		;(provider as any).publishGroupEvent = vi.fn()
+
+		await (provider as any).broadcastToRootTask("root-broadcast-source", undefined, false, true)
+
+		expect((provider as any).provider.buildRecoveryPacket).toHaveBeenCalled()
+		expect((provider as any).sendMessageToStdin).toHaveBeenCalledWith(
+			"root-broadcast-target",
+			expect.stringContaining("<root_handoff>"),
+		)
+		expect((provider as any).postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "agentManager.rootTaskMessage",
+				rootTaskId: "root-task-1",
+				content: expect.stringContaining("Return only delta summary"),
+			}),
+		)
+	})
+
+	it("auto-compacts root broadcast under scheduler pressure even when full handoff is requested", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("root-broadcast-pressure", "Planner", Date.now(), {
+			labelOverride: "Planner",
+			sessionGroup: {
+				groupId: "group-pressure-root",
+				rootSessionId: "root-broadcast-pressure",
+				label: "Pressure root",
+				sessionIndex: 0,
+				sessionCount: 1,
+			},
+		})
+		registry.createSession("root-broadcast-pressure-target", "Worker", Date.now(), {
+			labelOverride: "Worker",
+		})
+		registry.updateSessionStatus("root-broadcast-pressure", "error", 1, "failed")
+		registry.updateSessionStatus("root-broadcast-pressure-target", "running")
+		const sourceSession = registry.getSession("root-broadcast-pressure")
+		const targetSession = registry.getSession("root-broadcast-pressure-target")
+		if (!sourceSession || !targetSession) {
+			throw new Error("Missing pressure root broadcast sessions")
+		}
+		sourceSession.taskId = "root-task-pressure"
+		sourceSession.rootTaskId = "root-task-pressure"
+		targetSession.taskId = "child-task-pressure"
+		targetSession.rootTaskId = "root-task-pressure"
+		;(provider as any).queueKeyPressure.set("group-pressure-root", 2)
+		;(provider as any).provider.getTaskHistory.mockReturnValue([
+			{
+				id: "root-broadcast-pressure",
+				restartCount: 2,
+				lastStopReason: "loop_detected",
+				lastStopSummary: "Verbose stop summary.",
+			},
+		])
+		;(provider as any).provider.buildRecoveryPacket = vi.fn().mockResolvedValue({
+			summary: "Pressure compact summary",
+			handoff: "<restart_handoff> Verbose full handoff </restart_handoff>",
+			recoveryMode: "pressure",
+			stopReason: "loop_detected",
+			restartAttempt: 3,
+		})
+		;(provider as any).sendMessageToStdin = vi.fn().mockResolvedValue(undefined)
+		;(provider as any).postMessage = vi.fn()
+		;(provider as any).publishGroupEvent = vi.fn()
+
+		await (provider as any).broadcastToRootTask(
+			"root-broadcast-pressure",
+			"Branch handoff from Planner: Verbose full handoff",
+			false,
+			false,
+		)
+
+		expect((provider as any).sendMessageToStdin).toHaveBeenCalledWith(
+			"root-broadcast-pressure-target",
+			expect.stringContaining("Pressure compact summary"),
+		)
+		expect((provider as any).publishGroupEvent).toHaveBeenCalledWith(
+			"group-pressure-root",
+			"root-broadcast-pressure",
+			"running",
+			expect.stringContaining("compact"),
+		)
+	})
+
+	// kilocode_change start
+	it("preserves custom root relay content when it is not a recovery handoff", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("root-custom-source", "Planner", Date.now(), {
+			labelOverride: "Planner",
+		})
+		registry.createSession("root-custom-target", "Worker", Date.now(), {
+			labelOverride: "Worker",
+		})
+		registry.updateSessionStatus("root-custom-source", "running")
+		registry.updateSessionStatus("root-custom-target", "running")
+		const sourceSession = registry.getSession("root-custom-source")
+		const targetSession = registry.getSession("root-custom-target")
+		if (!sourceSession || !targetSession) {
+			throw new Error("Missing custom root broadcast sessions")
+		}
+		sourceSession.taskId = "root-task-custom"
+		sourceSession.rootTaskId = "root-task-custom"
+		targetSession.taskId = "child-task-custom"
+		targetSession.rootTaskId = "root-task-custom"
+		;(provider as any).provider.buildRecoveryPacket = vi.fn()
+
+		const sendSpy = vi.spyOn(provider as any, "sendMessageToStdin").mockResolvedValue(undefined)
+		const postSpy = vi.spyOn(provider as any, "postMessage")
+
+		await (provider as any).broadcastToRootTask(
+			"root-custom-source",
+			"Coordinate on parser branch only",
+			false,
+			true,
+		)
+
+		expect((provider as any).provider.buildRecoveryPacket).not.toHaveBeenCalled()
+		expect(sendSpy).toHaveBeenCalledWith(
+			"root-custom-target",
+			expect.stringContaining("Coordinate on parser branch only"),
+		)
+		expect(postSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "agentManager.rootTaskMessage",
+				rootTaskId: "root-task-custom",
+				content: "Coordinate on parser branch only",
+			}),
+		)
+	})
+	// kilocode_change end
+
+	it("broadcasts compact recovery handoff to sibling root-task sessions", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("root-broadcast-source", "Planner", Date.now(), {
+			labelOverride: "Planner",
+		})
+		registry.createSession("root-broadcast-target", "Worker", Date.now(), {
+			labelOverride: "Worker",
+		})
+		registry.updateSessionStatus("root-broadcast-source", "error", 1, "failed")
+		registry.updateSessionStatus("root-broadcast-target", "running")
+		const sourceSession = registry.getSession("root-broadcast-source")
+		const targetSession = registry.getSession("root-broadcast-target")
+		if (!sourceSession || !targetSession) {
+			throw new Error("Missing root broadcast sessions")
+		}
+		sourceSession.taskId = "root-task-1"
+		sourceSession.rootTaskId = "root-task-1"
+		targetSession.taskId = "child-task-2"
+		targetSession.rootTaskId = "root-task-1"
+		;(provider as any).provider.getTaskHistory.mockReturnValue([
+			{
+				id: "root-broadcast-source",
+				restartCount: 2,
+				lastStopReason: "loop_detected",
+				lastStopSummary: "Branch repeated the same broken patch.",
+			},
+		])
+		;(provider as any).provider.buildRecoveryPacket = vi.fn().mockResolvedValue({
+			summary: "Return only delta summary",
+			handoff: "<restart_handoff> Return only delta summary </restart_handoff>",
+			recoveryMode: "pressure",
+			stopReason: "loop_detected",
+			restartAttempt: 3,
+		})
+		;(provider as any).sendMessageToStdin = vi.fn().mockResolvedValue(undefined)
+		;(provider as any).postMessage = vi.fn()
+		;(provider as any).publishGroupEvent = vi.fn()
+
+		await (provider as any).broadcastToRootTask("root-broadcast-source", undefined, false, true)
+
+		expect((provider as any).provider.buildRecoveryPacket).toHaveBeenCalled()
+		expect((provider as any).sendMessageToStdin).toHaveBeenCalledWith(
+			"root-broadcast-target",
+			expect.stringContaining("<root_handoff>"),
+		)
+		expect((provider as any).postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "agentManager.rootTaskMessage",
+				rootTaskId: "root-task-1",
+				content: expect.stringContaining("Return only delta summary"),
+			}),
+		)
+	})
+
+	// kilocode_change start
+	it("restarts problematic sessions across a nested group subtree in compact mode", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("parent-running", "parent task", Date.now(), {
+			labelOverride: "Parent task",
+			sessionGroup: {
+				groupId: "group-parent-compact",
+				rootSessionId: "parent-running",
+				label: "Parent swarm",
+				sessionIndex: 0,
+				sessionCount: 1,
+			},
+		})
+		registry.createSession("child-error", "child task", Date.now(), {
+			labelOverride: "Child task",
+			sessionGroup: {
+				groupId: "group-child-compact",
+				rootSessionId: "parent-running",
+				parentGroupId: "group-parent-compact",
+				label: "Child swarm",
+				sessionIndex: 0,
+				sessionCount: 1,
+			},
+		})
+		registry.createSession("grandchild-stopped", "grandchild task", Date.now(), {
+			labelOverride: "Grandchild task",
+			sessionGroup: {
+				groupId: "group-grandchild-compact",
+				rootSessionId: "parent-running",
+				parentGroupId: "group-child-compact",
+				label: "Grandchild swarm",
+				sessionIndex: 0,
+				sessionCount: 1,
+			},
+		})
+		registry.updateSessionStatus("parent-running", "running")
+		registry.updateSessionStatus("child-error", "error", 1, "failed")
+		registry.updateSessionStatus("grandchild-stopped", "stopped", 1, "stopped")
+		;(provider as any).restartSession = vi.fn().mockResolvedValue(undefined)
+
+		await (provider as any).restartSessionGroupCompact("group-parent-compact")
+
+		expect((provider as any).restartSession).toHaveBeenCalledTimes(2)
+		expect((provider as any).restartSession).not.toHaveBeenCalledWith("parent-running", { compact: true })
+		expect((provider as any).restartSession).toHaveBeenCalledWith("child-error", { compact: true })
+		expect((provider as any).restartSession).toHaveBeenCalledWith("grandchild-stopped", { compact: true })
+	})
+	// kilocode_change end
 })
 
 describe("AgentManagerProvider gitUrl filtering", () => {
@@ -967,6 +2019,8 @@ describe("AgentManagerProvider telemetry", () => {
 		const sessionId = "session-complete-1"
 		registry.createSession(sessionId, "test complete")
 		;(provider as any).sessionMessages.set(sessionId, [])
+		;(provider as any).postMessage = vi.fn()
+		;(provider as any).fetchAndPostRemoteSessions = vi.fn().mockResolvedValue(undefined)
 
 		// Handle complete event
 		;(provider as any).handleCliEvent(sessionId, {
@@ -977,6 +2031,14 @@ describe("AgentManagerProvider telemetry", () => {
 		expect(telemetry.captureAgentManagerSessionCompleted).toHaveBeenCalledWith(
 			sessionId,
 			false, // useWorktree = false
+		)
+		expect((provider as any).fetchAndPostRemoteSessions).toHaveBeenCalledTimes(1)
+		expect((provider as any).postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "agentManager.stateEvent",
+				sessionId,
+				eventType: "ask_completion_result",
+			}),
 		)
 	})
 
@@ -1012,6 +2074,41 @@ describe("AgentManagerProvider telemetry", () => {
 			sessionId,
 			false, // useWorktree = false
 		)
+	})
+
+	it("syncs task-layer paused status into filtered session lifecycle fields", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("child-1", "paused task")
+		;(provider as any).provider.getTaskHistory = vi.fn().mockReturnValue([
+			{
+				id: "child-1",
+				rootTaskId: "root-1",
+				parentTaskId: "parent-1",
+				number: 1,
+				ts: Date.now(),
+				task: "paused task",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				lifecycleState: "paused",
+				pauseReason: "waiting for resume",
+				pausedAt: 123,
+				resumeContextSummary: "Continue from previous checkpoint",
+			},
+		])
+
+		const state = (provider as any).getFilteredState()
+		expect(state.sessions[0]).toMatchObject({
+			taskId: "child-1",
+			rootTaskId: "root-1",
+			parentTaskId: "parent-1",
+			lifecycleStatus: "paused",
+			activityState: "paused",
+			needsAttention: true,
+			recoveryState: "recoverable",
+			pendingReaction: "resume",
+			restartHandoff: "Continue from previous checkpoint",
+		})
 	})
 
 	it("tracks session error telemetry when error event is received", async () => {
@@ -1487,5 +2584,185 @@ describe("AgentManagerProvider telemetry", () => {
 				testProvider.dispose()
 			}
 		})
+	})
+
+	it("broadcasts typed group relay with sender metadata to sibling sessions", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("s1", "prompt 1", Date.now(), {
+			label: "Leader",
+			sessionGroup: { groupId: "g1", rootSessionId: "s1", label: "Swarm" },
+		})
+		registry.createSession("s2", "prompt 2", Date.now(), {
+			label: "Worker A",
+			sessionGroup: { groupId: "g1", rootSessionId: "s1", label: "Swarm" },
+		})
+		registry.updateSessionStatus("s1", "running")
+		registry.updateSessionStatus("s2", "running")
+
+		const sendSpy = vi.spyOn(provider as any, "sendMessageToStdin").mockResolvedValue(undefined)
+		const postSpy = vi.spyOn(provider as any, "postMessage")
+
+		await (provider as any).broadcastToSessionGroup("s1", "Coordinate on failing branch", false)
+
+		expect(sendSpy).toHaveBeenCalledTimes(1)
+		expect(sendSpy).toHaveBeenCalledWith("s2", expect.stringContaining("<group_handoff>"))
+		expect(sendSpy).toHaveBeenCalledWith("s2", expect.stringContaining("source_label: prompt 1"))
+		expect(postSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "agentManager.groupMessage",
+				groupId: "g1",
+				sourceSessionId: "s1",
+				sourceLabel: "prompt 1",
+				content: "Coordinate on failing branch",
+			}),
+		)
+	})
+
+	it("can include sender when broadcasting to group", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("s1", "prompt 1", Date.now(), {
+			label: "Leader",
+			sessionGroup: { groupId: "g2", rootSessionId: "s1" },
+		})
+		registry.createSession("s2", "prompt 2", Date.now(), {
+			label: "Worker",
+			sessionGroup: { groupId: "g2", rootSessionId: "s1" },
+		})
+		registry.updateSessionStatus("s1", "running")
+		registry.updateSessionStatus("s2", "running")
+
+		const sendSpy = vi.spyOn(provider as any, "sendMessageToStdin").mockResolvedValue(undefined)
+
+		await (provider as any).broadcastToSessionGroup("s1", "Broadcast to all", true)
+
+		expect(sendSpy).toHaveBeenCalledTimes(2)
+		expect(sendSpy).toHaveBeenCalledWith("s1", expect.any(String))
+		expect(sendSpy).toHaveBeenCalledWith("s2", expect.any(String))
+	})
+
+	it("continues broadcast when one sibling relay fails", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("s1", "prompt 1", Date.now(), {
+			label: "Leader",
+			sessionGroup: { groupId: "g3", rootSessionId: "s1" },
+		})
+		registry.createSession("s2", "prompt 2", Date.now(), {
+			label: "Worker A",
+			sessionGroup: { groupId: "g3", rootSessionId: "s1" },
+		})
+		registry.createSession("s3", "prompt 3", Date.now(), {
+			label: "Worker B",
+			sessionGroup: { groupId: "g3", rootSessionId: "s1" },
+		})
+		registry.updateSessionStatus("s1", "running")
+		registry.updateSessionStatus("s2", "running")
+		registry.updateSessionStatus("s3", "running")
+
+		const sendSpy = vi
+			.spyOn(provider as any, "sendMessageToStdin")
+			.mockImplementation(async (...args: unknown[]) => {
+				const sessionId = args[0] as string
+				if (sessionId === "s2") {
+					throw new Error("relay failed")
+				}
+			})
+		const publishSpy = vi.spyOn(provider as any, "publishGroupEvent")
+
+		await (provider as any).broadcastToSessionGroup("s1", "Keep going", false)
+
+		expect(sendSpy).toHaveBeenCalledTimes(2)
+		expect(publishSpy).toHaveBeenCalledWith("g3", "s1", "running", "Broadcast delivered to 1/2 agent(s)")
+	})
+
+	it("auto-compacts group recovery relay under scheduler pressure", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("group-pressure-source", "prompt 1", Date.now(), {
+			label: "Leader",
+			sessionGroup: { groupId: "g-pressure", rootSessionId: "group-pressure-source" },
+		})
+		registry.createSession("group-pressure-target", "prompt 2", Date.now(), {
+			label: "Worker A",
+			sessionGroup: { groupId: "g-pressure", rootSessionId: "group-pressure-source" },
+		})
+		registry.updateSessionStatus("group-pressure-source", "error", 1, "failed")
+		registry.updateSessionStatus("group-pressure-target", "running")
+		;(provider as any).queueKeyPressure.set("g-pressure", 2)
+		;(provider as any).provider.getTaskHistory = vi
+			.fn()
+			.mockReturnValue([
+				{
+					id: "group-pressure-source",
+					restartCount: 2,
+					lastStopReason: "loop_detected",
+					lastStopSummary: "Verbose stop summary.",
+				},
+			])
+		;(provider as any).provider.buildRecoveryPacket = vi.fn().mockResolvedValue({
+			summary: "Pressure compact summary",
+			handoff: "<restart_handoff> Verbose full handoff </restart_handoff>",
+			recoveryMode: "pressure",
+			stopReason: "loop_detected",
+			restartAttempt: 3,
+		})
+
+		const sendSpy = vi.spyOn(provider as any, "sendMessageToStdin").mockResolvedValue(undefined)
+		const postSpy = vi.spyOn(provider as any, "postMessage")
+		const publishSpy = vi.spyOn(provider as any, "publishGroupEvent")
+
+		await (provider as any).broadcastToSessionGroup(
+			"group-pressure-source",
+			"Branch handoff from Leader: Verbose full handoff",
+			false,
+		)
+
+		expect((provider as any).provider.buildRecoveryPacket).toHaveBeenCalled()
+		expect(sendSpy).toHaveBeenCalledWith(
+			"group-pressure-target",
+			expect.stringContaining("Pressure compact summary"),
+		)
+		expect(sendSpy).toHaveBeenCalledWith("group-pressure-target", expect.stringContaining("compact: yes"))
+		expect(postSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "agentManager.groupMessage",
+				groupId: "g-pressure",
+				content: expect.stringContaining("Pressure compact summary"),
+			}),
+		)
+		expect(publishSpy).toHaveBeenCalledWith(
+			"g-pressure",
+			"group-pressure-source",
+			"running",
+			expect.stringContaining("compact"),
+		)
+	})
+
+	it("preserves custom group relay content when it is not a recovery handoff", async () => {
+		const registry = (provider as any).registry
+		registry.createSession("group-custom-source", "prompt 1", Date.now(), {
+			label: "Leader",
+			sessionGroup: { groupId: "g-custom", rootSessionId: "group-custom-source" },
+		})
+		registry.createSession("group-custom-target", "prompt 2", Date.now(), {
+			label: "Worker A",
+			sessionGroup: { groupId: "g-custom", rootSessionId: "group-custom-source" },
+		})
+		registry.updateSessionStatus("group-custom-source", "running")
+		registry.updateSessionStatus("group-custom-target", "running")
+		;(provider as any).queueKeyPressure.set("g-custom", 2)
+		;(provider as any).provider.buildRecoveryPacket = vi.fn()
+
+		const sendSpy = vi.spyOn(provider as any, "sendMessageToStdin").mockResolvedValue(undefined)
+
+		await (provider as any).broadcastToSessionGroup(
+			"group-custom-source",
+			"Coordinate on parser branch only",
+			false,
+		)
+
+		expect((provider as any).provider.buildRecoveryPacket).not.toHaveBeenCalled()
+		expect(sendSpy).toHaveBeenCalledWith(
+			"group-custom-target",
+			expect.stringContaining("Coordinate on parser branch only"),
+		)
 	})
 })

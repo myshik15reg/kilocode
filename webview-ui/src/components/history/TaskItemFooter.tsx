@@ -7,6 +7,9 @@ import { DeleteButton } from "./DeleteButton"
 import { FavoriteButton } from "../kilocode/history/FavoriteButton" // kilocode_change
 import { KiloShareSessionButton } from "./KiloShareSessionButton" // kilocode_change
 import { StandardTooltip } from "../ui/standard-tooltip"
+import { vscode } from "@/utils/vscode"
+import { LucideIconButton } from "../chat/LucideIconButton"
+import { PauseIcon, PlayIcon, GitBranchIcon } from "lucide-react"
 
 export interface TaskItemFooterProps {
 	item: HistoryItem
@@ -16,6 +19,10 @@ export interface TaskItemFooterProps {
 }
 
 const TaskItemFooter: React.FC<TaskItemFooterProps> = ({ item, variant, isSelectionMode = false, onDelete }) => {
+	// kilocode_change start
+	const isCompletedItem = item.status === "completed" || item.lifecycleState === "completed"
+	// kilocode_change end
+
 	return (
 		<div className="text-xs text-vscode-descriptionForeground flex justify-between items-center">
 			<div className="flex gap-1 items-center text-vscode-descriptionForeground/60">
@@ -35,6 +42,27 @@ const TaskItemFooter: React.FC<TaskItemFooterProps> = ({ item, variant, isSelect
 			{/* Action Buttons for non-compact view */}
 			{!isSelectionMode && (
 				<div className="flex flex-row gap-0 -mx-2 items-center text-vscode-descriptionForeground/60 hover:text-vscode-descriptionForeground">
+					{/* kilocode_change start */}
+					{!isCompletedItem && (
+						<>
+							<LucideIconButton
+								icon={item.lifecycleState === "paused" ? PlayIcon : PauseIcon}
+								title={item.lifecycleState === "paused" ? "Resume task" : "Pause task"}
+								onClick={() =>
+									vscode.postMessage({
+										type: item.lifecycleState === "paused" ? "resumeTask" : "pauseTask",
+										text: item.id,
+									})
+								}
+							/>
+							<LucideIconButton
+								icon={GitBranchIcon}
+								title="Branch task"
+								onClick={() => vscode.postMessage({ type: "branchTask", text: item.id })}
+							/>
+						</>
+					)}
+					{/* kilocode_change end */}
 					<CopyButton itemTask={item.task} />
 					<FavoriteButton isFavorited={item.isFavorited ?? false} id={item.id} />
 					<KiloShareSessionButton id={item.id} />

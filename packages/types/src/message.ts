@@ -166,6 +166,7 @@ export function isNonBlockingAsk(ask: ClineAsk): ask is NonBlockingAsk {
  * - `condense_context`: Context condensation/summarization has started
  * - `condense_context_error`: Error occurred during context condensation
  * - `codebase_search_result`: Results from searching the codebase
+ * - `web_search_result`: Results from searching the web or an offline fallback summary
  */
 export const clineSays = [
 	"error",
@@ -196,6 +197,7 @@ export const clineSays = [
 	"condense_context_error",
 	"sliding_window_truncation",
 	"codebase_search_result",
+	"web_search_result",
 	"user_edit_todos",
 ] as const
 

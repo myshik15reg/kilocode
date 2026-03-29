@@ -392,29 +392,49 @@ async function readTextFileIfExists(filePath: string): Promise<string | null> {
 	}
 }
 
-async function copyFileIfMissing(params: {
+// kilocode_change start: pack-managed commands should update on reinstall while preserving user-only commands
+async function copyPackManagedCommandFile(params: {
 	sourcePath: string
 	destPath: string
+	globalKiloDir: string
+	backupRoot?: string
 	result: WorkflowAiSyncResult
 	log?: WorkflowAiSyncOptions["log"]
 }): Promise<void> {
-	const { sourcePath, destPath, result, log } = params
+	const { sourcePath, destPath, globalKiloDir, backupRoot, result, log } = params
 
-	if (await pathExists(destPath)) {
-		result.skippedFiles += 1
+	if (!(await fileExistsAtPath(sourcePath))) {
 		return
 	}
 
+	const existed = await pathExists(destPath)
+
 	try {
+		if (existed && backupRoot) {
+			await backupExistingPath({
+				globalKiloDir,
+				destPath,
+				backupRoot,
+				result,
+				log,
+			})
+		}
+
 		await fs.mkdir(path.dirname(destPath), { recursive: true })
 		await fs.copyFile(sourcePath, destPath)
-		result.copiedFiles += 1
+
+		if (existed) {
+			result.overwrittenFiles += 1
+		} else {
+			result.copiedFiles += 1
+		}
 	} catch (error) {
 		const message = `Failed to copy ${sourcePath} -> ${destPath}: ${error instanceof Error ? error.message : String(error)}`
 		result.errors.push(message)
 		logMessage(log, message)
 	}
 }
+// kilocode_change end
 
 async function migrateLegacyMemoryBankCommand(params: {
 	commandsDir: string
@@ -557,7 +577,14 @@ async function syncWorkflowAiCommands(params: {
 	for (const relativePath of sourceFiles) {
 		const sourcePath = path.join(sourceDir, relativePath)
 		const destPath = path.join(destDir, relativePath)
-		await copyFileIfMissing({ sourcePath, destPath, result, log })
+		await copyPackManagedCommandFile({
+			sourcePath,
+			destPath,
+			globalKiloDir,
+			backupRoot,
+			result,
+			log,
+		})
 	}
 }
 // kilocode_change end
@@ -631,6 +658,7 @@ export async function syncWorkflowAiAssets(options: WorkflowAiSyncOptions): Prom
 		{ kind: "dir", src: path.join(packKiloDir, "skills"), dest: path.join(globalKiloDir, "skills") },
 		{ kind: "dir", src: path.join(packKiloDir, "modes"), dest: path.join(globalKiloDir, "modes") },
 		{ kind: "dir", src: path.join(packKiloDir, "patterns"), dest: path.join(globalKiloDir, "patterns") },
+		{ kind: "dir", src: path.join(packKiloDir, "sources"), dest: path.join(globalKiloDir, "sources") },
 		{ kind: "file", src: path.join(packKiloDir, "QUICK.md"), dest: path.join(globalKiloDir, "QUICK.md") },
 
 		// Managed modes file (lowest precedence in CustomModesManager)
@@ -647,6 +675,7 @@ export async function syncWorkflowAiAssets(options: WorkflowAiSyncOptions): Prom
 		{ kind: "dir", src: path.join(packKiloDir, "memory-bank"), dest: path.join(templateRoot, "memory-bank") },
 		{ kind: "dir", src: path.join(packKiloDir, "patterns"), dest: path.join(templateRoot, "patterns") },
 		{ kind: "dir", src: path.join(packKiloDir, "skills"), dest: path.join(templateRoot, "skills") },
+		{ kind: "dir", src: path.join(packKiloDir, "sources"), dest: path.join(templateRoot, "sources") },
 		{
 			kind: "dir",
 			src: path.join(packKiloDir, "templates", "quality-gates"),

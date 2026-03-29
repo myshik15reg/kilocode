@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RuntimeProcessHandler - Spawns agent processes using @kilocode/agent-runtime
  *
  * This handler uses Node.js fork() to spawn agent-runtime processes instead of
@@ -92,6 +92,13 @@ interface PendingProcessInfo {
 	mode?: string // Mode slug (e.g., "code", "architect", "debug")
 	images?: string[]
 	sessionData?: SessionData // For resuming with history
+	sessionGroup?: {
+		groupId: string
+		rootSessionId: string
+		label?: string
+		sessionIndex?: number
+		sessionCount?: number
+	}
 }
 
 interface ActiveProcessInfo {
@@ -121,7 +128,7 @@ export interface RuntimeProcessHandlerCallbacks {
 
 export class RuntimeProcessHandler {
 	private activeSessions: Map<string, ActiveProcessInfo> = new Map()
-	private pendingProcess: PendingProcessInfo | null = null
+	private pendingProcesses: Map<string, PendingProcessInfo> = new Map() // kilocode_change
 	// Track whether we've sent api_req_started for each session
 	private sentApiReqStarted: Set<string> = new Set()
 	// Track pending resume continuations - sent after session is loaded from server
@@ -140,10 +147,22 @@ export class RuntimeProcessHandler {
 		this.vscodeAppRoot = vscodeAppRoot
 	}
 
-	private clearPendingTimeout(): void {
-		if (this.pendingProcess?.timeoutId) {
-			clearTimeout(this.pendingProcess.timeoutId)
+	private clearPendingTimeout(sessionId: string): void {
+		// kilocode_change
+		const pendingProcess = this.pendingProcesses.get(sessionId)
+		if (pendingProcess?.timeoutId) {
+			clearTimeout(pendingProcess.timeoutId)
 		}
+	}
+
+	private getPendingProcessByProc(proc: ChildProcess): PendingProcessInfo | undefined {
+		// kilocode_change
+		for (const pendingProcess of this.pendingProcesses.values()) {
+			if (pendingProcess.process === proc) {
+				return pendingProcess
+			}
+		}
+		return undefined
 	}
 
 	/**
@@ -228,6 +247,13 @@ export class RuntimeProcessHandler {
 			images?: string[]
 			autoApprove?: boolean
 			sessionData?: SessionData // For resuming with history
+			sessionGroup?: {
+				groupId: string
+				rootSessionId: string
+				label?: string
+				sessionIndex?: number
+				sessionCount?: number
+			}
 		},
 	): Record<string, unknown> {
 		const modeToUse = options?.mode || "code"
@@ -308,44 +334,55 @@ export class RuntimeProcessHandler {
 					customModes?: ModeConfig[] // Custom modes including organization modes
 					images?: string[]
 					sessionData?: SessionData // For resuming with history
+					sessionGroup?: {
+						groupId: string
+						rootSessionId: string
+						label?: string
+						sessionIndex?: number
+						sessionCount?: number
+					}
 			  }
 			| undefined,
 		onEvent: (sessionId: string, event: StreamEvent) => void,
 	): void {
 		const isResume = !!options?.sessionId
+		const sessionId = options?.sessionId || this.generateSessionId() // kilocode_change
 
-		if (isResume) {
-			const existingSession = this.registry.getSession(options!.sessionId!)
-			if (existingSession) {
-				this.registry.updateSessionStatus(options!.sessionId!, "creating")
-			} else {
-				this.registry.createSession(options!.sessionId!, prompt, Date.now(), {
-					parallelMode: options?.parallelMode,
-					labelOverride: options?.label,
-					gitUrl: options?.gitUrl,
-					model: options?.model,
-					mode: options?.mode,
-				})
-				this.registry.updateSessionStatus(options!.sessionId!, "creating")
-			}
-
-			// Update parallel mode info for resumed sessions if worktree info is provided
-			// (e.g., when worktree was recreated during resume)
-			if (options?.worktreeInfo) {
-				this.registry.updateParallelModeInfo(options!.sessionId!, {
-					branch: options.worktreeInfo.branch,
-					worktreePath: options.worktreeInfo.path,
-					parentBranch: options.worktreeInfo.parentBranch,
-				})
-			}
-			this.callbacks.onStateChanged()
+		const existingSession = this.registry.getSession(sessionId)
+		if (existingSession) {
+			this.registry.updateSessionStatus(sessionId, "creating")
 		} else {
-			const pendingSession = this.registry.setPendingSession(prompt, {
+			this.registry.createSession(sessionId, prompt, Date.now(), {
 				parallelMode: options?.parallelMode,
+				labelOverride: options?.label,
 				gitUrl: options?.gitUrl,
+				model: options?.model,
+				mode: options?.mode,
+				sessionGroup: options?.sessionGroup,
+				taskId: options?.sessionId,
+				rootTaskId: options?.sessionGroup?.rootSessionId,
+				parentTaskId: options?.sessionGroup?.label?.startsWith("subagent:")
+					? options.sessionGroup.label.replace("subagent:", "")
+					: undefined,
+				lifecycleStatus: "starting",
+				activityState: "active",
+				needsAttention: false,
+				recoveryState: isResume ? "resuming" : undefined,
+				pendingReaction: isResume ? "resume" : undefined,
+				lastEventAt: Date.now(),
 			})
-			this.callbacks.onPendingSessionChanged(pendingSession)
+			this.registry.updateSessionStatus(sessionId, "creating")
 		}
+
+		// Update parallel mode info for creating sessions if worktree info is provided
+		if (options?.worktreeInfo) {
+			this.registry.updateParallelModeInfo(sessionId, {
+				branch: options.worktreeInfo.branch,
+				worktreePath: options.worktreeInfo.path,
+				parentBranch: options.worktreeInfo.parentBranch,
+			})
+		}
+		this.callbacks.onStateChanged()
 
 		// Build agent configuration
 		const agentConfig = this.buildAgentConfig(workspace, prompt, options)
@@ -368,12 +405,13 @@ export class RuntimeProcessHandler {
 			})
 
 			// Store pending process info
-			this.pendingProcess = {
+			const pendingProcess: PendingProcessInfo = {
+				// kilocode_change
 				process: proc,
 				prompt,
 				startTime: Date.now(),
 				parallelMode: options?.parallelMode,
-				desiredSessionId: options?.sessionId,
+				desiredSessionId: sessionId,
 				desiredLabel: options?.label,
 				worktreeInfo: options?.worktreeInfo,
 				gitUrl: options?.gitUrl,
@@ -381,15 +419,17 @@ export class RuntimeProcessHandler {
 				mode: options?.mode,
 				images: options?.images,
 				sessionData: options?.sessionData,
+				sessionGroup: options?.sessionGroup,
 			}
 
 			// Set up timeout for pending session
-			this.pendingProcess.timeoutId = setTimeout(() => {
-				if (this.pendingProcess?.process === proc) {
+			pendingProcess.timeoutId = setTimeout(() => {
+				if (this.pendingProcesses.get(sessionId)?.process === proc) {
 					this.callbacks.onLog(`Agent session timed out after ${PENDING_SESSION_TIMEOUT_MS}ms`)
-					this.handleSessionTimeout(proc, onEvent)
+					this.handleSessionTimeout(sessionId, proc, onEvent)
 				}
 			}, PENDING_SESSION_TIMEOUT_MS)
+			this.pendingProcesses.set(sessionId, pendingProcess)
 
 			// Handle IPC messages from agent
 			proc.on("message", (msg: Serializable) => {
@@ -412,9 +452,10 @@ export class RuntimeProcessHandler {
 				message: `Failed to start agent: ${error instanceof Error ? error.message : String(error)}`,
 			})
 
-			// Clean up pending state
-			this.registry.clearPendingSession()
-			this.callbacks.onPendingSessionChanged(null)
+			// Clean up creating state
+			this.registry.removeSession(sessionId)
+			this.pendingProcesses.delete(sessionId)
+			this.callbacks.onStateChanged()
 		}
 	}
 
@@ -426,12 +467,13 @@ export class RuntimeProcessHandler {
 		msg: AgentIPCMessage,
 		onEvent: (sessionId: string, event: StreamEvent) => void,
 	): void {
-		const sessionId = this.getSessionIdForProcess(proc) || this.pendingProcess?.desiredSessionId || "pending"
+		const sessionId =
+			this.getSessionIdForProcess(proc) || this.getPendingProcessByProc(proc)?.desiredSessionId || "pending" // kilocode_change
 
 		// Log incoming IPC message from agent (except verbose log messages)
 		if (msg.type !== "log") {
 			const payloadSummary = this.summarizePayload(msg)
-			this.callbacks.onLog(`[IPC←Agent] ${sessionId}: ${msg.type} ${payloadSummary}`)
+			this.callbacks.onLog(`[IPCв†ђAgent] ${sessionId}: ${msg.type} ${payloadSummary}`)
 		}
 
 		switch (msg.type) {
@@ -490,59 +532,53 @@ export class RuntimeProcessHandler {
 	 * Handle agent "ready" message - similar to session_created
 	 */
 	private handleAgentReady(proc: ChildProcess, onEvent: (sessionId: string, event: StreamEvent) => void): void {
-		if (!this.pendingProcess || this.pendingProcess.process !== proc) {
+		const pendingProcess = this.getPendingProcessByProc(proc) // kilocode_change
+		if (!pendingProcess?.desiredSessionId) {
 			return
 		}
 
-		this.clearPendingTimeout()
+		const sessionId = pendingProcess.desiredSessionId
+		this.clearPendingTimeout(sessionId)
 
-		// Generate or use provided session ID
-		const sessionId = this.pendingProcess.desiredSessionId || this.generateSessionId()
-		const prompt = this.pendingProcess.prompt
+		const prompt = pendingProcess.prompt
 
 		// Check if this is a resume (desiredSessionId means we're resuming an existing session)
-		const isResume = !!this.pendingProcess.desiredSessionId
+		const isResume = !!pendingProcess.sessionData
 
-		// Create the session in registry
-		this.registry.createSession(sessionId, prompt, Date.now(), {
-			parallelMode: this.pendingProcess.parallelMode,
-			labelOverride: this.pendingProcess.desiredLabel,
-			gitUrl: this.pendingProcess.gitUrl,
-			model: this.pendingProcess.model,
-			mode: this.pendingProcess.mode,
-		})
+		// Update the creating session to running
 		this.registry.updateSessionStatus(sessionId, "running")
+		this.registry.updateSession(sessionId, {
+			lifecycleStatus: isResume ? "resumed" : "active",
+			activityState: isResume ? "recovering" : "active",
+			needsAttention: false,
+			recoveryState: isResume ? "handoff_pending" : undefined,
+			pendingReaction: isResume ? "resume" : undefined,
+			lastEventAt: Date.now(),
+		})
 
 		// Update parallel mode info with worktree details if available
-		if (this.pendingProcess.worktreeInfo) {
+		if (pendingProcess.worktreeInfo) {
 			this.registry.updateParallelModeInfo(sessionId, {
-				branch: this.pendingProcess.worktreeInfo.branch,
-				worktreePath: this.pendingProcess.worktreeInfo.path,
-				parentBranch: this.pendingProcess.worktreeInfo.parentBranch,
+				branch: pendingProcess.worktreeInfo.branch,
+				worktreePath: pendingProcess.worktreeInfo.path,
+				parentBranch: pendingProcess.worktreeInfo.parentBranch,
 			})
 		}
 
-		// Capture data before clearing pendingProcess
-		const images = this.pendingProcess.images
-		const capturedPrompt = this.pendingProcess.prompt
-		const sessionData = this.pendingProcess.sessionData
+		const images = pendingProcess.images
+		const capturedPrompt = pendingProcess.prompt
+		const sessionData = pendingProcess.sessionData
 
-		// Move to active sessions
 		this.activeSessions.set(sessionId, {
 			process: proc,
 			sessionId,
 		})
+		this.pendingProcesses.delete(sessionId)
 
-		// Clear pending state
-		this.registry.clearPendingSession()
-
-		// Capture worktree info before clearing pendingProcess
-		const worktreeInfo = this.pendingProcess.worktreeInfo
-		const parallelMode = this.pendingProcess.parallelMode
-		this.pendingProcess = null
+		const worktreeInfo = pendingProcess.worktreeInfo
+		const parallelMode = pendingProcess.parallelMode
 
 		this.callbacks.onStateChanged()
-		this.callbacks.onPendingSessionChanged(null)
 
 		// Pass resume info if this is a resumed session with history
 		const resumeInfo = isResume && sessionData ? { prompt: capturedPrompt, images: images } : undefined
@@ -792,20 +828,21 @@ export class RuntimeProcessHandler {
 		onEvent: (sessionId: string, event: StreamEvent) => void,
 	): void {
 		const sessionId = this.getSessionIdForProcess(proc)
+		const pendingProcess = this.getPendingProcessByProc(proc) // kilocode_change
 		const errorMsg = error?.message || "Unknown agent error"
 
 		this.callbacks.onLog(`Agent error: ${errorMsg}`)
 
-		if (this.pendingProcess?.process === proc) {
+		if (pendingProcess?.desiredSessionId) {
 			// Error during session creation
-			this.clearPendingTimeout()
+			this.clearPendingTimeout(pendingProcess.desiredSessionId)
 			this.callbacks.onStartSessionFailed({
 				type: "spawn_error",
 				message: errorMsg,
 			})
-			this.registry.clearPendingSession()
-			this.pendingProcess = null
-			this.callbacks.onPendingSessionChanged(null)
+			this.registry.removeSession(pendingProcess.desiredSessionId)
+			this.pendingProcesses.delete(pendingProcess.desiredSessionId)
+			this.callbacks.onStateChanged()
 		} else if (sessionId) {
 			// Error in active session
 			const errorEvent: ErrorStreamEvent = {
@@ -831,19 +868,22 @@ export class RuntimeProcessHandler {
 	/**
 	 * Handle session timeout
 	 */
-	private handleSessionTimeout(proc: ChildProcess, onEvent: (sessionId: string, event: StreamEvent) => void): void {
+	private handleSessionTimeout(
+		sessionId: string,
+		proc: ChildProcess,
+		_onEvent: (sessionId: string, event: StreamEvent) => void,
+	): void {
+		// kilocode_change
 		this.callbacks.onStartSessionFailed({
 			type: "unknown",
 			message: "Agent session timed out waiting for ready signal",
 		})
 
-		// Kill the process
 		proc.kill("SIGTERM")
-
-		// Clean up pending state
-		this.registry.clearPendingSession()
-		this.pendingProcess = null
-		this.callbacks.onPendingSessionChanged(null)
+		this.clearPendingTimeout(sessionId)
+		this.registry.removeSession(sessionId)
+		this.pendingProcesses.delete(sessionId)
+		this.callbacks.onStateChanged()
 	}
 
 	/**
@@ -857,16 +897,18 @@ export class RuntimeProcessHandler {
 	): void {
 		const sessionId = this.getSessionIdForProcess(proc)
 
-		if (this.pendingProcess?.process === proc) {
-			// Exit during pending state
-			this.clearPendingTimeout()
+		const pendingProcess = this.getPendingProcessByProc(proc) // kilocode_change
+
+		if (pendingProcess?.desiredSessionId) {
+			// Exit during creating state
+			this.clearPendingTimeout(pendingProcess.desiredSessionId)
 			this.callbacks.onStartSessionFailed({
 				type: "unknown",
 				message: `Agent process exited unexpectedly (code: ${code}, signal: ${signal})`,
 			})
-			this.registry.clearPendingSession()
-			this.pendingProcess = null
-			this.callbacks.onPendingSessionChanged(null)
+			this.registry.removeSession(pendingProcess.desiredSessionId)
+			this.pendingProcesses.delete(pendingProcess.desiredSessionId)
+			this.callbacks.onStateChanged()
 		} else if (sessionId) {
 			// Exit of active session
 			this.activeSessions.delete(sessionId)
@@ -902,15 +944,16 @@ export class RuntimeProcessHandler {
 	private handleProcessError(proc: ChildProcess, error: Error): void {
 		this.callbacks.onLog(`Agent process error: ${error.message}`)
 
-		if (this.pendingProcess?.process === proc) {
-			this.clearPendingTimeout()
+		const pendingProcess = this.getPendingProcessByProc(proc) // kilocode_change
+		if (pendingProcess?.desiredSessionId) {
+			this.clearPendingTimeout(pendingProcess.desiredSessionId)
 			this.callbacks.onStartSessionFailed({
 				type: "spawn_error",
 				message: error.message,
 			})
-			this.registry.clearPendingSession()
-			this.pendingProcess = null
-			this.callbacks.onPendingSessionChanged(null)
+			this.registry.removeSession(pendingProcess.desiredSessionId)
+			this.pendingProcesses.delete(pendingProcess.desiredSessionId)
+			this.callbacks.onStateChanged()
 		}
 	}
 
@@ -952,7 +995,7 @@ export class RuntimeProcessHandler {
 		// Log outgoing IPC message to agent
 		const msgType = (message as { type?: string })?.type || "unknown"
 		const msgText = (message as { text?: string })?.text?.slice(0, 50) || ""
-		this.callbacks.onLog(`[IPC→Agent] ${sessionId}: sendMessage(${msgType}) ${msgText ? `"${msgText}..."` : ""}`)
+		this.callbacks.onLog(`[IPCв†’Agent] ${sessionId}: sendMessage(${msgType}) ${msgText ? `"${msgText}..."` : ""}`)
 
 		return new Promise((resolve, reject) => {
 			info.process.send(ipcMessage, (error) => {
@@ -1006,12 +1049,13 @@ export class RuntimeProcessHandler {
 	 * Stop all active processes
 	 */
 	public stopAllProcesses(): void {
-		// Stop pending process
-		if (this.pendingProcess) {
-			this.clearPendingTimeout()
-			this.pendingProcess.process.kill("SIGTERM")
-			this.pendingProcess = null
+		// Stop creating processes
+		for (const [sessionId, pendingProcess] of this.pendingProcesses.entries()) {
+			// kilocode_change
+			this.clearPendingTimeout(sessionId)
+			pendingProcess.process.kill("SIGTERM")
 		}
+		this.pendingProcesses.clear()
 
 		// Stop all active sessions
 		for (const info of this.activeSessions.values()) {
@@ -1027,13 +1071,16 @@ export class RuntimeProcessHandler {
 	 * Cancel a pending session
 	 */
 	public cancelPendingSession(): void {
-		if (this.pendingProcess) {
-			this.clearPendingTimeout()
-			this.pendingProcess.process.kill("SIGTERM")
-			this.registry.clearPendingSession()
-			this.pendingProcess = null
-			this.callbacks.onPendingSessionChanged(null)
+		const [sessionId, pendingProcess] = this.pendingProcesses.entries().next().value ?? []
+		if (!sessionId || !pendingProcess) {
+			return
 		}
+
+		this.clearPendingTimeout(sessionId)
+		pendingProcess.process.kill("SIGTERM")
+		this.registry.removeSession(sessionId)
+		this.pendingProcesses.delete(sessionId)
+		this.callbacks.onStateChanged()
 	}
 
 	/**
@@ -1054,7 +1101,7 @@ export class RuntimeProcessHandler {
 	 * Check if there's a pending session
 	 */
 	public hasPendingSession(): boolean {
-		return this.pendingProcess !== null
+		return this.pendingProcesses.size > 0
 	}
 
 	/**

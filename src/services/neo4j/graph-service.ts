@@ -17,6 +17,26 @@ import type {
 } from "./interfaces"
 import { Neo4jConnectionManager } from "./connection-manager"
 
+// kilocode_change start
+type NormalizeCypherIntOptions = {
+	defaultValue: number
+	min: number
+	max: number
+}
+
+function normalizeCypherInt(value: unknown, { defaultValue, min, max }: NormalizeCypherIntOptions): number {
+	const rawNumber = typeof value === "number" ? value : typeof value === "string" ? Number(value) : Number.NaN
+	if (!Number.isFinite(rawNumber)) {
+		return defaultValue
+	}
+
+	const intValue = Math.trunc(rawNumber)
+	if (intValue < min) return min
+	if (intValue > max) return max
+	return intValue
+}
+// kilocode_change end
+
 export class Neo4jGraphService implements IGraphStore {
 	private connectionManager: Neo4jConnectionManager
 
@@ -91,6 +111,9 @@ export class Neo4jGraphService implements IGraphStore {
 	 * Create a single entity
 	 */
 	public async createEntity(entity: CodeEntity): Promise<void> {
+		// FIX: 2026-02-19-neo4j-integration (TestAnalyzer)
+		// Root cause: Neo4j properties не поддерживают map/object; запись `properties = {}`/object падает.
+		// Решение: хранить JSON-строку в `propertiesJson`.
 		const query = `
 			MERGE (e:CodeEntity {id: $id})
 			SET e.type = $type,
@@ -99,7 +122,7 @@ export class Neo4jGraphService implements IGraphStore {
 			    e.line = $line,
 			    e.column = $column,
 			    e.language = $language,
-			    e.properties = $properties,
+			    e.propertiesJson = $propertiesJson,
 			    e.updatedAt = datetime()
 			RETURN e
 		`
@@ -112,7 +135,7 @@ export class Neo4jGraphService implements IGraphStore {
 			line: entity.line,
 			column: entity.column || null,
 			language: entity.language,
-			properties: entity.properties || {},
+			propertiesJson: this.serializePropertiesJson(entity.properties),
 		})
 	}
 
@@ -124,7 +147,7 @@ export class Neo4jGraphService implements IGraphStore {
 			MATCH (from:CodeEntity {id: $fromId})
 			MATCH (to:CodeEntity {id: $toId})
 			MERGE (from)-[r:${this.sanitizeRelationType(relationship.type)}]->(to)
-			SET r.properties = $properties,
+			SET r.propertiesJson = $propertiesJson,
 			    r.updatedAt = datetime()
 			RETURN r
 		`
@@ -132,7 +155,7 @@ export class Neo4jGraphService implements IGraphStore {
 		await this.connectionManager.executeWrite(query, {
 			fromId: relationship.fromId,
 			toId: relationship.toId,
-			properties: relationship.properties || {},
+			propertiesJson: this.serializePropertiesJson(relationship.properties),
 		})
 	}
 
@@ -153,7 +176,7 @@ export class Neo4jGraphService implements IGraphStore {
 				    e.line = entity.line,
 				    e.column = entity.column,
 				    e.language = entity.language,
-				    e.properties = entity.properties,
+				    e.propertiesJson = entity.propertiesJson,
 				    e.updatedAt = datetime()
 			`
 
@@ -165,7 +188,7 @@ export class Neo4jGraphService implements IGraphStore {
 				line: e.line,
 				column: e.column || null,
 				language: e.language,
-				properties: e.properties || {},
+				propertiesJson: this.serializePropertiesJson(e.properties),
 			}))
 
 			await this.connectionManager.executeWrite(query, { entities: params })
@@ -198,14 +221,14 @@ export class Neo4jGraphService implements IGraphStore {
 					MATCH (from:CodeEntity {id: rel.fromId})
 					MATCH (to:CodeEntity {id: rel.toId})
 					MERGE (from)-[r:${this.sanitizeRelationType(type)}]->(to)
-					SET r.properties = rel.properties,
+					SET r.propertiesJson = rel.propertiesJson,
 					    r.updatedAt = datetime()
 				`
 
 				const params = rels.map((r) => ({
 					fromId: r.fromId,
 					toId: r.toId,
-					properties: r.properties || {},
+					propertiesJson: this.serializePropertiesJson(r.properties),
 				}))
 
 				await this.connectionManager.executeWrite(query, { relationships: params })
@@ -250,8 +273,12 @@ export class Neo4jGraphService implements IGraphStore {
 
 			for (const item of record.relationships || []) {
 				if (item.rel && item.entity) {
-					relationships.push(this.mapToCodeRelationship(item.rel, entityId, item.entity.id as string))
-					relatedEntities.push(this.mapToCodeEntity(item.entity))
+					// FIX: 2026-02-19-neo4j-integration (TestAnalyzer)
+					// Root cause: Neo4j driver возвращает Node-объект; `item.entity.id` не содержит `CodeEntity.id`.
+					// Решение: сначала маппим сущность, затем используем её `id` для связи.
+					const relatedEntity = this.mapToCodeEntity(item.entity)
+					relationships.push(this.mapToCodeRelationship(item.rel, entityId, relatedEntity.id))
+					relatedEntities.push(relatedEntity)
 				}
 			}
 
@@ -269,8 +296,12 @@ export class Neo4jGraphService implements IGraphStore {
 	 * Get all dependencies of an entity
 	 */
 	public async getDependencies(entityId: string, depth: number = 1): Promise<CodeEntity[]> {
+		// FIX: 2026-02-19-reviewer-neo4j-cypher-numeric-normalization (TestAnalyzer)
+		// Root cause: `depth` интерполировался в Cypher как строка без валидации → риск Cypher-injection.
+		// Решение: нормализуем до integer и clamp диапазон перед интерполяцией.
+		const safeDepth = normalizeCypherInt(depth, { defaultValue: 1, min: 1, max: 25 })
 		const query = `
-			MATCH path = (e:CodeEntity {id: $entityId})-[*1..${depth}]->(dep:CodeEntity)
+			MATCH path = (e:CodeEntity {id: $entityId})-[*1..${safeDepth}]->(dep:CodeEntity)
 			RETURN DISTINCT dep
 		`
 
@@ -282,8 +313,12 @@ export class Neo4jGraphService implements IGraphStore {
 	 * Get all dependents of an entity
 	 */
 	public async getDependents(entityId: string, depth: number = 1): Promise<CodeEntity[]> {
+		// FIX: 2026-02-19-reviewer-neo4j-cypher-numeric-normalization (TestAnalyzer)
+		// Root cause: `depth` интерполировался в Cypher как строка без валидации → риск Cypher-injection.
+		// Решение: нормализуем до integer и clamp диапазон перед интерполяцией.
+		const safeDepth = normalizeCypherInt(depth, { defaultValue: 1, min: 1, max: 25 })
 		const query = `
-			MATCH path = (dependent:CodeEntity)-[*1..${depth}]->(e:CodeEntity {id: $entityId})
+			MATCH path = (dependent:CodeEntity)-[*1..${safeDepth}]->(e:CodeEntity {id: $entityId})
 			RETURN DISTINCT dependent
 		`
 
@@ -341,8 +376,12 @@ export class Neo4jGraphService implements IGraphStore {
 	 * Find paths between two entities
 	 */
 	public async findPath(fromId: string, toId: string, maxDepth: number = 5): Promise<string[][]> {
+		// FIX: 2026-02-19-reviewer-neo4j-cypher-numeric-normalization (TestAnalyzer)
+		// Root cause: `maxDepth` интерполировался в Cypher как строка без валидации → риск Cypher-injection.
+		// Решение: нормализуем до integer и clamp диапазон перед интерполяцией.
+		const safeMaxDepth = normalizeCypherInt(maxDepth, { defaultValue: 5, min: 1, max: 25 })
 		const query = `
-			MATCH path = shortestPath((from:CodeEntity {id: $fromId})-[*1..${maxDepth}]-(to:CodeEntity {id: $toId}))
+			MATCH path = shortestPath((from:CodeEntity {id: $fromId})-[*1..${safeMaxDepth}]-(to:CodeEntity {id: $toId}))
 			RETURN [node in nodes(path) | node.id] AS pathIds
 		`
 
@@ -398,8 +437,12 @@ export class Neo4jGraphService implements IGraphStore {
 
 		query += " RETURN e"
 
-		if (options?.limit) {
-			query += ` LIMIT ${options.limit}`
+		if (options?.limit !== undefined) {
+			// FIX: 2026-02-19-reviewer-neo4j-cypher-numeric-normalization (TestAnalyzer)
+			// Root cause: `limit` интерполировался в Cypher как строка без валидации → риск Cypher-injection.
+			// Решение: нормализуем до integer и clamp диапазон перед интерполяцией.
+			const safeLimit = normalizeCypherInt(options.limit, { defaultValue: 100, min: 1, max: 1000 })
+			query += ` LIMIT ${safeLimit}`
 		}
 
 		const result = await this.connectionManager.executeRead<{ e: any }>(query, params)
@@ -518,15 +561,17 @@ export class Neo4jGraphService implements IGraphStore {
 	 * Map Neo4j node to CodeEntity
 	 */
 	private mapToCodeEntity(node: any): CodeEntity {
+		const props = (node?.properties as Record<string, unknown> | undefined) ?? (node as Record<string, unknown>)
+
 		return {
-			id: node.id,
-			type: node.type,
-			name: node.name,
-			filePath: node.filePath,
-			line: node.line,
-			column: node.column,
-			language: node.language,
-			properties: node.properties || {},
+			id: props.id as string,
+			type: props.type as EntityType,
+			name: props.name as string,
+			filePath: props.filePath as string,
+			line: props.line as number,
+			column: props.column as number,
+			language: props.language as string,
+			properties: this.parsePropertiesJson(props.propertiesJson, props.properties),
 		}
 	}
 
@@ -534,12 +579,44 @@ export class Neo4jGraphService implements IGraphStore {
 	 * Map Neo4j relationship to CodeRelationship
 	 */
 	private mapToCodeRelationship(rel: any, fromId: string, toId: string): CodeRelationship {
+		const props = (rel?.properties as Record<string, unknown> | undefined) ?? (rel as Record<string, unknown>)
+
 		return {
 			fromId,
 			toId,
 			type: rel.type?.toLowerCase() || "references",
-			properties: rel.properties || {},
+			properties: this.parsePropertiesJson(props.propertiesJson, props.properties),
 		}
+	}
+
+	private serializePropertiesJson(properties: unknown): string {
+		if (properties === undefined || properties === null) return "{}"
+		if (typeof properties === "string") return properties
+		try {
+			return JSON.stringify(properties)
+		} catch {
+			return "{}"
+		}
+	}
+
+	private parsePropertiesJson(propertiesJson: unknown, legacyProperties: unknown): Record<string, any> {
+		if (typeof propertiesJson === "string" && propertiesJson.trim() !== "") {
+			try {
+				const parsed = JSON.parse(propertiesJson)
+				if (parsed && typeof parsed === "object") {
+					return parsed as Record<string, any>
+				}
+				return {}
+			} catch {
+				return {}
+			}
+		}
+
+		if (legacyProperties && typeof legacyProperties === "object") {
+			return legacyProperties as Record<string, any>
+		}
+
+		return {}
 	}
 
 	/**

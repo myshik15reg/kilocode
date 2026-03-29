@@ -62,7 +62,7 @@
 		"contact": {
 			"label": "Necessites parlar amb nosaltres? Escriu"
 		},
-		"community": "Vols consells o simplement passar l'estona amb altres usuaris de AlfaCode assistant? Uneix-te a <redditLink>reddit.com/r/kilocode</redditLink> o <discordLink>kilo.ai/discord</discordLink>",
+		"community": "Vols consells o simplement passar l'estona amb altres usuaris de AlfaCode assistant? Uneix-te a <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> o <discordLink>alfacode.ai/discord</discordLink>",
 		"contactAndCommunity": "Contacte i Comunitat",
 		"manageSettings": "Gestionar Configuració",
 		"debugMode": {
@@ -558,8 +558,8 @@
 			"instructions": "Durant l'ús, apareixerà un diàleg i el missatge actual es copiarà automàticament al porta-retalls. Necessiteu enganxar-lo a les versions web d'IA (com ChatGPT o Claude), després copiar la resposta de l'IA de nou al diàleg i fer clic al botó de confirmació."
 		},
 		"roo": {
-			"authenticatedMessage": "Autenticat de forma segura a través del teu compte de Roo Code Cloud.",
-			"connectButton": "Connecta amb Roo Code Cloud"
+			"authenticatedMessage": "Autenticat de forma segura a través del teu compte de AlfaCode assistant Cloud.",
+			"connectButton": "Connecta amb AlfaCode assistant Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -620,7 +620,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Límit d'errors i repeticions",
-			"description": "Nombre d'errors consecutius o accions repetides abans de mostrar el diàleg 'En Kilo està tenint problemes'. Estableix a 0 per desactivar aquest mecanisme de seguretat (no s'activarà mai).",
+			"description": "Nombre d'errors consecutius o accions repetides abans de mostrar el diàleg 'En AlfaCode assistant està tenint problemes'. Estableix a 0 per desactivar aquest mecanisme de seguretat (no s'activarà mai).",
 			"unlimitedDescription": "Reintents il·limitats habilitats (procediment automàtic). El diàleg no apareixerà mai.",
 			"warning": "⚠️ Establir a 0 permet reintents il·limitats que poden consumir un ús significatiu de l'API"
 		},
@@ -629,10 +629,9 @@
 			"none": "Cap",
 			"minimal": "Mínim (el més ràpid)",
 			"high": "Alt",
-			"xhigh": "Molt alt",
+			"xhigh": "Molt Alt",
 			"medium": "Mitjà",
-			"low": "Baix",
-			"xhigh": "Molt Alt"
+			"low": "Baix"
 		},
 		"verbosity": {
 			"label": "Verbositat de la sortida",
@@ -855,11 +854,11 @@
 		},
 		"outputLineLimit": {
 			"label": "Límit de sortida del terminal",
-			"description": "Conserva les primeres i últimes línies i descarta les del mig per mantenir-se sota el límit. Redueix per estalviar tokens; augmenta per donar a Kilo més detalls del mig. Kilo veu un marcador on s'ha omès el contingut.<0>Aprèn-ne més</0>"
+			"description": "Conserva les primeres i últimes línies i descarta les del mig per mantenir-se sota el límit. Redueix per estalviar tokens; augmenta per donar a AlfaCode assistant més detalls del mig. AlfaCode assistant veu un marcador on s'ha omès el contingut.<0>Aprèn-ne més</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Límit de caràcters del terminal",
-			"description": "Anul·la el límit de línies per evitar problemes de memòria imposant un límit dur a la mida de sortida. Si se supera, manté l'inici i el final i mostra un marcador a Kilo on s'ha omès el contingut. <0>Aprèn-ne més</0>"
+			"description": "Anul·la el límit de línies per evitar problemes de memòria imposant un límit dur a la mida de sortida. Si se supera, manté l'inici i el final i mostra un marcador a AlfaCode assistant on s'ha omès el contingut. <0>Aprèn-ne més</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Temps d'espera d'integració del shell del terminal",
@@ -867,7 +866,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Utilitza terminal en línia (recomanat)",
-			"description": "Executa comandes al terminal en línia (xat) per evitar perfils/integració del shell per a execucions més ràpides i fiables. Quan està desactivat, Kilo usa el terminal de VS Code amb el teu perfil de shell, prompts i connectors. <0>Aprèn-ne més</0>"
+			"description": "Executa comandes al terminal en línia (xat) per evitar perfils/integració del shell per a execucions més ràpides i fiables. Quan està desactivat, AlfaCode assistant usa el terminal de VS Code amb el teu perfil de shell, prompts i connectors. <0>Aprèn-ne més</0>"
 		},
 		"commandDelay": {
 			"label": "Retard de comanda del terminal",
@@ -1004,7 +1003,7 @@
 		},
 		"MORPH_FAST_APPLY": {
 			"name": "Habilitar Fast Apply",
-			"description": "Quan està habilitat, AlfaCode assistant pot editar fitxers utilitzant Fast Apply amb models especialitzats optimitzats per a modificacions de codi. Requereix Kilo Gateway Provider, OpenRouter o una clau API de Morph.",
+			"description": "Quan està habilitat, AlfaCode assistant pot editar fitxers utilitzant Fast Apply amb models especialitzats optimitzats per a modificacions de codi. Requereix AlfaCode Gateway, OpenRouter o una clau API de Morph.",
 			"apiProvider": "Proveïdor d'API",
 			"apiProviderList": {
 				"current": "Actual"
@@ -1034,7 +1033,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Habilitar eines personalitzades",
-			"description": "Quan està habilitat, Kilo pot carregar i utilitzar eines TypeScript/JavaScript personalitzades des del directori .kilocode/tools del vostre projecte o ~/.kilocode/tools per a eines globals. Nota: aquestes eines s'aprovaran automàticament.",
+			"description": "Quan està habilitat, AlfaCode assistant pot carregar i utilitzar eines TypeScript/JavaScript personalitzades des del directori .kilocode/tools del vostre projecte o ~/.kilocode/tools per a eines globals. Nota: aquestes eines s'aprovaran automàticament.",
 			"toolsHeader": "Eines personalitzades disponibles",
 			"noTools": "No s'han carregat eines personalitzades. Afegiu fitxers .ts o .js al directori .kilocode/tools del vostre projecte o ~/.kilocode/tools per a eines globals.",
 			"refreshButton": "Actualitzar",
@@ -1086,8 +1085,8 @@
 		"allModels": "Tots els models"
 	},
 	"footer": {
-		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/Kilo-Org/kilocode</githubLink> o unir-vos a <redditLink>reddit.com/r/kilocode</redditLink> o <discordLink>kilo.ai/discord</discordLink>",
-		"support": "Per a qüestions financeres, poseu-vos en contacte amb el Suport al Client a <supportLink>https://kilo.ai/support</supportLink>",
+		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/Alfa-Org/alfacode</githubLink> o unir-vos a <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> o <discordLink>alfacode.ai/discord</discordLink>",
+		"support": "Per a qüestions financeres, poseu-vos en contacte amb el Suport al Client a <supportLink>https://alfacode.ai/support</supportLink>",
 		"telemetry": {
 			"label": "Permetre informes d'errors i ús",
 			"description": "Ajuda a millorar AlfaCode assistant enviant dades d'ús i informes d'errors. Mai s'envia codi, prompts o informació personal. Consulta la nostra política de privacitat per a més detalls."

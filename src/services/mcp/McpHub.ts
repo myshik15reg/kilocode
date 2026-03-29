@@ -43,6 +43,7 @@ import { safeWriteJson } from "../../utils/safeWriteJson"
 import { sanitizeMcpName } from "../../utils/mcp-name"
 // kilocode_change start - MCP OAuth Authorization
 import { McpOAuthService, OAuthTokens } from "./oauth"
+import { mcpHttpFetch } from "./oauth/mcpHttpFetch"
 // kilocode_change end
 // Discriminated union for connection states
 export type ConnectedMcpConnection = {
@@ -1222,8 +1223,13 @@ export class McpHub {
 				await transport.start()
 				const stderrStream = transport.stderr
 				if (stderrStream) {
-					stderrStream.on("data", async (data: Buffer) => {
-						const output = data.toString()
+					// kilocode_change start
+					const stderrDecoder = new TextDecoder("utf-8")
+					stderrStream.on("data", async (data: string | Uint8Array) => {
+						const output = typeof data === "string" ? data : stderrDecoder.decode(data, { stream: true })
+						if (!output) {
+							return
+						}
 						// Check if output contains INFO level log
 						const isInfoLog = /INFO/i.test(output)
 
@@ -1242,6 +1248,18 @@ export class McpHub {
 							}
 						}
 					})
+					stderrStream.on("close", () => {
+						const output = stderrDecoder.decode()
+						if (!output) {
+							return
+						}
+						console.error(`Server "${name}" stderr:`, output)
+						const connection = this.findConnection(name, source)
+						if (connection) {
+							this.appendErrorMessage(connection, output)
+						}
+					})
+					// kilocode_change end
 				} else {
 					console.error(`No stderr stream for ${name}`)
 				}
@@ -1260,6 +1278,7 @@ export class McpHub {
 				// kilocode_change end
 
 				transport = new StreamableHTTPClientTransport(new URL(configInjected.url), {
+					fetch: mcpHttpFetch,
 					requestInit: {
 						headers: httpHeaders,
 					},
@@ -1315,7 +1334,7 @@ export class McpHub {
 						for (const [key, value] of Object.entries(sseHeaders)) {
 							headers.set(key, value)
 						}
-						return fetch(url, {
+						return mcpHttpFetch(url, {
 							...init,
 							headers,
 						})
@@ -1323,6 +1342,7 @@ export class McpHub {
 				}
 				global.EventSource = ReconnectingEventSource
 				transport = new SSEClientTransport(new URL(configInjected.url), {
+					fetch: mcpHttpFetch,
 					...sseOptions,
 					eventSourceInit: reconnectingEventSourceOptions,
 				})

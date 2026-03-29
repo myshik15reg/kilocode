@@ -1,4 +1,4 @@
-import { Plugin } from "vite"
+import type { Plugin, ResolvedConfig } from "vite" // kilocode_change
 import fs from "fs"
 import path from "path"
 
@@ -7,9 +7,21 @@ import path from "path"
  * This plugin copies source maps to the build directory and ensures they're accessible
  */
 export function sourcemapPlugin(): Plugin {
+	// kilocode_change start - use resolved Vite config for outDir to avoid env mismatches
+	let resolvedOutDir: string | undefined
+	// kilocode_change end
+
 	return {
 		name: "vite-plugin-sourcemap",
 		apply: "build",
+
+		// kilocode_change start - prefer build.outDir from resolved config
+		configResolved(config: ResolvedConfig) {
+			resolvedOutDir = path.isAbsolute(config.build.outDir)
+				? config.build.outDir
+				: path.resolve(config.root, config.build.outDir)
+		},
+		// kilocode_change end
 
 		// After the build is complete, ensure source maps are included in the build
 		closeBundle: {
@@ -17,15 +29,13 @@ export function sourcemapPlugin(): Plugin {
 			handler: async () => {
 				console.log("Ensuring source maps are included in build...")
 
-				// Determine the correct output directory based on the build mode
+				// Determine the correct output directory based on the resolved Vite config
 				const mode = process.env.NODE_ENV
-				let outDir
-
-				if (mode === "nightly") {
-					outDir = path.resolve("../apps/vscode-nightly/build/webview-ui/build")
-				} else {
-					outDir = path.resolve("../src/webview-ui/build")
-				}
+				const outDir =
+					resolvedOutDir ??
+					(mode === "nightly"
+						? path.resolve("../apps/vscode-nightly/build/webview-ui/build")
+						: path.resolve("../src/webview-ui/build"))
 
 				const assetsDir = path.join(outDir, "assets")
 
@@ -57,8 +67,21 @@ export function sourcemapPlugin(): Plugin {
 					if (fs.existsSync(mapPath)) {
 						console.log(`Source map found for ${jsFile}`)
 
+						// kilocode_change start - tolerate races / missing assets in parallel builds
+						if (!fs.existsSync(jsPath)) {
+							console.warn(`JS file not found while processing source maps: ${jsPath}`)
+							continue
+						}
+						// kilocode_change end
+
 						// Read the JS file
-						let jsContent = fs.readFileSync(jsPath, "utf8")
+						let jsContent: string
+						try {
+							jsContent = fs.readFileSync(jsPath, "utf8")
+						} catch (error) {
+							console.warn(`Failed to read JS file while processing source maps: ${jsPath}`, error)
+							continue
+						}
 
 						// Check if the source map is already referenced
 						if (!jsContent.includes("//# sourceMappingURL=")) {

@@ -1,67 +1,60 @@
----
+﻿---
 name: mode-selection
-description: Decision tree for selecting the right mode - specialist-first principle, task type routing, mode capabilities.
+description: Choose the narrowest suitable mode for a task and avoid unnecessary fallback to broad modes.
 ---
 
-# Mode Selection Guide
+# Mode Selection
 
-> **Specialist First** — always use the narrowest specialist.
+Use this skill whenever a task needs routing to the correct mode.
 
-## Decision Tree
+## Core principle
 
-```
-START: Task type?
-|
-+--[1] Planning / Protocol closure?
-|      -> architect
-|
-+--[2] Complex multi-step coordination?
-|      -> orchestrator
-|
-+--[3] Question / Research?
-|      +-- Internal code? -> planning/research-codebase
-|      +-- External docs? -> planning/research-web
-|      +-- General? -> ask
-|
-+--[4] Bug / Problem?
-|      +-- Need to find cause? -> debug
-|      +-- Cause known, need fix? -> code-fixer
-|
-+--[5] Testing?
-|      +-- Unit? -> unit-tester
-|      +-- Integration? -> integration-tester
-|      +-- E2E? -> e2e-tester
-|      +-- Security? -> security-tester
-|
-+--[6] Code Review?
-|      -> reviewer
-|
-+--[7] Refactoring?
-|      +-- General? -> refactorer
-|      +-- Simplify? -> code-simplifier
-|
-+--[8] Localization?
-|      -> translate
-|
-+--[9] Development (specific tech)?
-|      +-- TypeScript/JS? -> ts-dev
-|      +-- Python? -> python-dev
-|      +-- 1C? -> 1c-developer
-|      -> *-dev specialist
-|
-+--[10] Generic development?
-       -> code (last resort)
-```
+Always prefer the narrowest suitable specialist.
+Use broad fallback modes only when no better specialist clearly fits.
 
-## Quick Selection Table
+## Decision order
 
-| Task | Mode |
-|------|------|
-| New feature planning | architect |
-| Multi-step task | orchestrator |
-| Write code | *-dev or code |
-| Fix bug | code-fixer |
-| Write tests | *-tester |
-| Review code | reviewer |
-| Refactor | refactorer |
-| Translate | translate |
+1. Determine whether the task is planning, implementation, debugging, testing, review, security, operations, or domain-specific.
+2. Check for strong domain triggers such as framework, language, database, CI, or 1C context.
+3. Choose the narrowest valid specialist.
+4. If no specialist clearly fits, use a broader safe fallback.
+5. If work must move to another mode, delegate with `new_task` and the canonical handoff.
+
+## Fast mapping
+
+| Task shape                    | Preferred mode                                  |
+| ----------------------------- | ----------------------------------------------- |
+| Planning, protocol, docs-only | `architect`                                     |
+| Multi-step coordination       | `orchestrator`                                  |
+| Unknown-cause bug             | `debug`                                         |
+| Known-cause fix               | `code-fixer` or a domain specialist             |
+| New implementation            | matching `*-dev`, else `code`                   |
+| Unit or integration testing   | matching tester mode                            |
+| Review                        | `reviewer`                                      |
+| Security review               | `security-auditor` or `security-tester`         |
+| 1C work                       | `1c-orchestrator` or the relevant 1C specialist |
+
+## Domain triggers
+
+| Trigger                         | Likely route            |
+| ------------------------------- | ----------------------- |
+| React, hooks, JSX               | `react-dev`             |
+| Vue, Nuxt                       | `vue-dev`               |
+| Node.js, Express, Nest          | `nodejs-dev`            |
+| Python, Django, FastAPI         | `python-dev`            |
+| SQL tuning, indexes, PostgreSQL | `postgresql-specialist` |
+| Docker, pipelines, CI           | `devops` or `cicd`      |
+| 1C metadata, BSL, EDT           | `1c-orchestrator`       |
+
+## Fallback rules
+
+1. `code` is a fallback, not the first choice.
+2. `orchestrator` routes and integrates; it is not the default worker for deep implementation.
+3. `ask` is for questions or light research, not for code changes.
+4. If routing is blocked by one missing fact, ask one blocking question or state a safe temporary default.
+
+## References
+
+- Registry: [`../../modes/REGISTRY.md`](../../modes/REGISTRY.md:1)
+- Routing rules: [`../../rules/agent-routing.md`](../../rules/agent-routing.md:1)
+- Handoff format: [`../../patterns/orchestration/context-handoff.md`](../../patterns/orchestration/context-handoff.md:1)

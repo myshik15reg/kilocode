@@ -30,6 +30,7 @@ const MEMORY_BANK_TEMPLATE_FILES = [
 	"architecture.md",
 	"tech.md",
 	"context.md",
+	"examples/example.md",
 ] as const
 
 async function fileExists(filePath: string): Promise<boolean> {
@@ -258,11 +259,12 @@ export class MemoryBankService {
 		const truncated = context.length > maxLength
 		const content = truncated ? context.slice(0, maxLength) : context
 
+		// FIX: third-party-skills (TestAnalyzer)
+		// Root cause: trailing newline caused an extra blank line before the next prompt section (snapshots are pinned).
 		return `## Project Context (from .kilocode/memory-bank/context.md)
 ${content}${truncated ? "\n...[truncated - read full file for details]" : ""}
 
-[MB: OK] - Memory Bank loaded
-`
+[MB: OK] - Memory Bank loaded`
 	}
 
 	/**

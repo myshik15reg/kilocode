@@ -8,6 +8,7 @@ import { isPathOutsideWorkspace } from "../../../utils/pathUtils"
 import { getReadablePath } from "../../../utils/path"
 import { ToolUse, ToolResponse } from "../../../shared/tools"
 import { searchAndReplaceTool } from "../SearchAndReplaceTool"
+import { annotateWithHashline } from "../helpers/hashline"
 
 vi.mock("fs/promises", () => ({
 	default: {
@@ -277,6 +278,43 @@ describe("searchAndReplaceTool", () => {
 			expect(mockTask.diffViewProvider.editType).toBe("modify")
 			expect(mockAskApproval).toHaveBeenCalled()
 		})
+
+		// kilocode_change start
+		it("resolves hashline references inside operation search text", async () => {
+			const fileContent = "Line 1\nLine 2\nLine 3"
+			const hashlineReference = annotateWithHashline(fileContent).split("\n")[1].split("|")[0]
+
+			await executeSearchAndReplaceTool(
+				{ operations: JSON.stringify([{ search: hashlineReference, replace: "Modified Line 2" }]) },
+				{ fileContent },
+			)
+
+			expect(mockTask.consecutiveMistakeCount).toBe(0)
+			expect(mockTask.diffViewProvider.editType).toBe("modify")
+			expect(mockAskApproval).toHaveBeenCalled()
+		})
+
+		it("strips hashline prefixes from operation replacement text", async () => {
+			const fileContent = "Line 1\nLine 2\nLine 3"
+
+			await executeSearchAndReplaceTool(
+				{ operations: JSON.stringify([{ search: "Line 2", replace: "#HL 2:abc|Modified Line 2" }]) },
+				{ fileContent },
+			)
+
+			expect(mockTask.diffViewProvider.update).toHaveBeenCalledWith("Line 1\nModified Line 2\nLine 3", true)
+		})
+
+		it("includes selective hashline preview in failed batch operations", async () => {
+			const result = await executeSearchAndReplaceTool(
+				{ operations: JSON.stringify([{ search: "Missing", replace: "New" }]) },
+				{ fileContent: "Line 1\nLine 2\nLine 3" },
+			)
+
+			expect(result).toContain("Selective hashline preview")
+			expect(result).toContain("#HL 1:")
+		})
+		// kilocode_change end
 	})
 
 	describe("CRLF normalization", () => {

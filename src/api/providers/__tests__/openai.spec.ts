@@ -5,7 +5,7 @@ import { ApiHandlerOptions } from "../../../shared/api"
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import { openAiModelInfoSaneDefaults } from "@roo-code/types"
-import { Package } from "../../../shared/package"
+import { DEFAULT_HEADERS } from "../constants" // kilocode_change
 import axios from "axios"
 
 const mockCreate = vitest.fn()
@@ -110,12 +110,7 @@ describe("OpenAiHandler", () => {
 			expect(vi.mocked(OpenAI)).toHaveBeenCalledWith({
 				baseURL: expect.any(String),
 				apiKey: expect.any(String),
-				defaultHeaders: {
-					"HTTP-Referer": "https://kilocode.ai",
-					"X-Title": "AlfaCode assistant",
-					"X-KiloCode-Version": Package.version,
-					"User-Agent": `Kilo-Code/${Package.version}`,
-				},
+				defaultHeaders: expect.objectContaining(DEFAULT_HEADERS),
 				timeout: expect.any(Number),
 			})
 		})

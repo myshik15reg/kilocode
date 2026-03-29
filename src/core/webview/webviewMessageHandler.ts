@@ -2,8 +2,8 @@ import { safeWriteJson } from "../../utils/safeWriteJson"
 import * as path from "path"
 import * as os from "os"
 import * as fs from "fs/promises"
+import pWaitFor from "p-wait-for" // kilocode_change
 import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
-import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
 // kilocode_change start
 import axios from "axios"
@@ -23,6 +23,7 @@ import {
 	type Language,
 	type GlobalState,
 	type ClineMessage,
+	type HistoryItem,
 	type TelemetrySetting,
 	type UserSettingsConfig,
 	type ModelRecord,
@@ -68,7 +69,6 @@ import { searchWorkspaceFiles } from "../../services/search/file-search"
 import { fileExistsAtPath } from "../../utils/fs"
 import { playTts, setTtsEnabled, setTtsSpeed, stopTts } from "../../utils/tts"
 import { showSystemNotification } from "../../integrations/notifications" // kilocode_change
-import { singleCompletionHandler } from "../../utils/single-completion-handler" // kilocode_change
 import { searchCommits } from "../../utils/git"
 import { exportSettings, importSettingsWithFeedback } from "../config/importExport"
 import { getOpenAiModels } from "../../api/providers/openai"
@@ -108,6 +108,8 @@ import { setPendingTodoList } from "../tools/UpdateTodoListTool"
 import { ManagedIndexer } from "../../services/code-index/managed/ManagedIndexer"
 import { SessionManager } from "../../shared/kilocode/cli-sessions/core/SessionManager" // kilocode_change
 import { getEffectiveTelemetrySetting } from "../kilocode/wrapper"
+import { handleSingleCompletionRequest } from "./webviewSingleCompletion"
+import { singleCompletionHandler } from "../../utils/single-completion-handler"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -142,6 +144,69 @@ export const webviewMessageHandler = async (
 		})
 		return resolved
 	}
+
+	// kilocode_change start
+	const RESUME_INTENT_PATTERN = /^(?:continue|resume|продолжить)$/i
+
+	const isResumeIntentMessage = (text?: string) => {
+		if (!text) {
+			return false
+		}
+
+		return RESUME_INTENT_PATTERN.test(text.trim())
+	}
+
+	const getPausedHistoryItems = (): HistoryItem[] => {
+		return provider
+			.getTaskHistory()
+			.filter((item) => item.lifecycleState === "paused")
+			.sort((left, right) => (right.pausedAt ?? right.ts) - (left.pausedAt ?? left.ts))
+	}
+
+	const buildPausedTasksSelectionMessage = (pausedTasks: HistoryItem[]) => {
+		const taskList = pausedTasks
+			.map((task, index) => `${index + 1}. ${task.task}${task.id ? ` (${task.id})` : ""}`)
+			.join("\n")
+
+		return `There are multiple paused tasks. Please choose which one to resume:\n${taskList}`
+	}
+
+	const tryHandleTextResumeIntent = async (text?: string, images?: string[]) => {
+		void images
+		if (!isResumeIntentMessage(text)) {
+			return false
+		}
+
+		const pausedTasks = getPausedHistoryItems()
+
+		if (pausedTasks.length === 0) {
+			return false
+		}
+
+		if (pausedTasks.length > 1) {
+			await provider.postMessageToWebview({
+				type: "invoke",
+				invoke: "setChatBoxMessage",
+				text: buildPausedTasksSelectionMessage(pausedTasks),
+			})
+			return true
+		}
+
+		const [pausedTask] = pausedTasks
+		provider.resumeTask(pausedTask.id, "continue")
+
+		try {
+			await pWaitFor(() => provider.getCurrentTask()?.taskId === pausedTask.id, { timeout: 3_000 })
+			provider.getCurrentTask()?.handleWebviewAskResponse("yesButtonClicked")
+		} catch (error) {
+			provider.log(
+				`[textResumeIntent] Failed to confirm resume for ${pausedTask.id}: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+
+		return true
+	}
+	// kilocode_change end
 	/**
 	 * Shared utility to find message indices based on timestamp.
 	 * When multiple messages share the same timestamp (e.g., after condense),
@@ -580,6 +645,9 @@ export const webviewMessageHandler = async (
 			// task. This essentially creates a fresh slate for the new task.
 			try {
 				const resolved = await resolveIncomingImages({ text: message.text, images: message.images })
+				if (await tryHandleTextResumeIntent(resolved.text, resolved.images)) {
+					break
+				}
 				await provider.createTask(resolved.text, resolved.images)
 				// Task created successfully - notify the UI to reset
 				await provider.postMessageToWebview({ type: "invoke", invoke: "newChat" })
@@ -774,6 +842,13 @@ export const webviewMessageHandler = async (
 			await provider.clearTask()
 			await provider.postStateToWebview()
 			break
+		// kilocode_change start
+		case "closeTaskToHistory":
+			await provider.closeTaskToHistory()
+			await provider.postStateToWebview()
+			await provider.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
+			break
+		// kilocode_change end
 		case "didShowAnnouncement":
 			await updateGlobalState("lastShownAnnouncementId", provider.latestAnnouncementId)
 			await provider.postStateToWebview()
@@ -1455,6 +1530,22 @@ export const webviewMessageHandler = async (
 		}
 		case "cancelTask":
 			await provider.cancelTask()
+			break
+		case "pauseTask":
+			await provider.pauseTask(message.text, (message as any).reason)
+			break
+		case "resumeTask":
+			if (message.text) {
+				provider.resumeTask(message.text)
+			}
+			break
+		case "branchTask":
+			if (message.text) {
+				await provider.branchTask(
+					message.text,
+					message.values as { message?: string; branchStrategy?: "full" | "summary" } | undefined,
+				)
+			}
 			break
 		case "cancelAutoApproval":
 			// Cancel any pending auto-approval timeout for the current task
@@ -2880,7 +2971,7 @@ export const webviewMessageHandler = async (
 					provider.log("KiloCode token not found in extension state.")
 					provider.postMessageToWebview({
 						type: "profileDataResponse",
-						payload: { success: false, error: "KiloCode API token not configured." },
+						payload: { success: false, error: "AlfaCode assistant API token not configured." },
 					})
 					break
 				}
@@ -2940,7 +3031,9 @@ export const webviewMessageHandler = async (
 						await webviewMessageHandler(provider, upsertMessage)
 						await updateGlobalState("hasPerformedOrganizationAutoSwitch", true)
 
-						vscode.window.showInformationMessage(`Automatically switched to organization: ${firstOrg.name}`)
+						vscode.window.showInformationMessage(
+							`AlfaCode assistant automatically switched to organization: ${firstOrg.name}`,
+						)
 
 						provider.log(`[Auto-switch] Successfully switched to organization: ${firstOrg.name}`)
 					}
@@ -2975,7 +3068,7 @@ export const webviewMessageHandler = async (
 					provider.log("KiloCode token not found in extension state for balance data.")
 					provider.postMessageToWebview({
 						type: "balanceDataResponse", // New response type
-						payload: { success: false, error: "KiloCode API token not configured." },
+						payload: { success: false, error: "AlfaCode assistant API token not configured." },
 					})
 					break
 				}
@@ -3394,6 +3487,12 @@ export const webviewMessageHandler = async (
 					currentConfig.codebaseIndexEmbedderProvider !== settings.codebaseIndexEmbedderProvider
 
 				const vectorStoreName = settings.codebaseIndexVectorStoreName
+				const prevVectorStoreProvider = (currentConfig.codebaseIndexVectorStoreProvider ?? "qdrant") as string
+				const prevVectorStoreName = (currentConfig.codebaseIndexVectorStoreName ?? "") as string
+				const prevQdrantUrl = (currentConfig.codebaseIndexQdrantUrl ?? "") as string
+				const prevLancedbDirectory = (currentConfig.codebaseIndexLancedbVectorStoreDirectory ?? "") as string
+				const prevQdrantApiKey = ((await provider.contextProxy.getSecret("codeIndexQdrantApiKey")) ??
+					"") as string
 
 				// FIX: neo4j-cache-invalidate-on-config-change (TestAnalyzer)
 				// Root cause: neo4j-cache is keyed only by workspace path, so changing Neo4j connection settings
@@ -3533,7 +3632,41 @@ export const webviewMessageHandler = async (
 					prevNeo4jUsername !== nextNeo4jUsername ||
 					prevNeo4jDatabase !== nextNeo4jDatabase
 
+				// kilocode_change start
+				const nextVectorStoreProvider = (globalStateConfig.codebaseIndexVectorStoreProvider ??
+					"qdrant") as string
+				const nextVectorStoreName = (globalStateConfig.codebaseIndexVectorStoreName ?? "") as string
+				const nextQdrantUrl = (globalStateConfig.codebaseIndexQdrantUrl ?? "") as string
+				const nextLancedbDirectory = (globalStateConfig.codebaseIndexLancedbVectorStoreDirectory ??
+					"") as string
+				const nextQdrantApiKey = (
+					settings.codeIndexQdrantApiKey === undefined
+						? prevQdrantApiKey
+						: (settings.codeIndexQdrantApiKey ?? "")
+				) as string
+				const semanticTargetChanged =
+					prevVectorStoreProvider !== nextVectorStoreProvider ||
+					prevVectorStoreName !== nextVectorStoreName ||
+					prevQdrantUrl !== nextQdrantUrl ||
+					prevLancedbDirectory !== nextLancedbDirectory ||
+					prevQdrantApiKey !== nextQdrantApiKey
+				// kilocode_change end
+
 				const currentCodeIndexManager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (semanticTargetChanged && currentCodeIndexManager?.clearSemanticCache) {
+					try {
+						await currentCodeIndexManager.clearSemanticCache()
+						provider.log(
+							`Semantic index target changed (provider/store/url/path/apiKey). Cleared semantic cache for workspace.`,
+						)
+					} catch (cacheError) {
+						provider.log(
+							`Failed to clear semantic cache after config change: ${
+								cacheError instanceof Error ? cacheError.message : String(cacheError)
+							}`,
+						)
+					}
+				}
 				if (neo4jConnectionChanged && currentCodeIndexManager?.clearNeo4jCache) {
 					try {
 						await currentCodeIndexManager.clearNeo4jCache()
@@ -3795,7 +3928,31 @@ export const webviewMessageHandler = async (
 					connectionTimeout: 10000, // 10 seconds timeout for connection test
 				}
 
+				// kilocode_change start
 				// Test connection
+				const requestedDatabaseName = database || "neo4j"
+				const databaseExistsBeforeConnect = await (async () => {
+					if (requestedDatabaseName === "neo4j") {
+						return true
+					}
+
+					try {
+						const tempManager = Neo4jConnectionManager.getInstance()
+						await tempManager.connect({
+							uri,
+							username,
+							password,
+							connectionTimeout: 10000,
+						})
+						await tempManager.executeRead("RETURN 1", {}, requestedDatabaseName)
+						await tempManager.disconnect()
+						return true
+					} catch {
+						return false
+					}
+				})()
+				// kilocode_change end
+
 				await connectionManager.connect(config)
 
 				// Execute simple test query to verify database access (read)
@@ -3863,6 +4020,8 @@ export const webviewMessageHandler = async (
 						success: true,
 						message: "Successfully connected to Neo4j",
 						version,
+						// kilocode_change
+						databaseCreated: !databaseExistsBeforeConnect && requestedDatabaseName !== "neo4j",
 					},
 				})
 			} catch (error) {
@@ -4742,29 +4901,7 @@ export const webviewMessageHandler = async (
 		}
 		case "singleCompletion": {
 			try {
-				const { text, completionRequestId } = message
-
-				if (!completionRequestId) {
-					throw new Error("Missing completionRequestId")
-				}
-
-				if (!text) {
-					throw new Error("Missing prompt text")
-				}
-
-				// Always use current configuration
-				const config = (await provider.getState()).apiConfiguration
-
-				// Call the single completion handler
-				const result = await singleCompletionHandler(config, text)
-
-				// Send success response
-				await provider.postMessageToWebview({
-					type: "singleCompletionResult",
-					completionRequestId,
-					completionText: result,
-					success: true,
-				})
+				await handleSingleCompletionRequest(provider, message)
 			} catch (error) {
 				// Send error response
 				await provider.postMessageToWebview({
@@ -4773,6 +4910,24 @@ export const webviewMessageHandler = async (
 					completionError: error instanceof Error ? error.message : String(error),
 					success: false,
 				})
+			}
+			break
+		}
+		case "acceptTechDebt": {
+			if (message.text && message.itemId) {
+				await provider.updateTechDebtStatus(message.text, message.itemId, "accepted")
+			}
+			break
+		}
+		case "dismissTechDebt": {
+			if (message.text && message.itemId) {
+				await provider.updateTechDebtStatus(message.text, message.itemId, "dismissed")
+			}
+			break
+		}
+		case "convertTechDebtToTask": {
+			if (message.text && message.itemId) {
+				await provider.convertTechDebtToTask({ taskId: message.text, itemId: message.itemId })
 			}
 			break
 		}
@@ -4813,7 +4968,7 @@ export const webviewMessageHandler = async (
 				if (!accessToken) {
 					provider.postMessageToWebview({
 						type: "claudeCodeRateLimits",
-						error: "Not authenticated with Claude Code",
+						error: t("common:errors.claudeCode.notAuthenticated"),
 					})
 					break
 				}
@@ -4844,7 +4999,7 @@ export const webviewMessageHandler = async (
 				if (!accessToken) {
 					provider.postMessageToWebview({
 						type: "openAiCodexRateLimits",
-						error: "Not authenticated with OpenAI Codex",
+						error: t("common:errors.openAiCodex.notAuthenticated"),
 					})
 					break
 				}

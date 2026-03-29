@@ -7,6 +7,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
 import { VercelAiGatewayHandler } from "../vercel-ai-gateway"
+import { DEFAULT_HEADERS } from "../constants" // kilocode_change
 import { ApiHandlerOptions } from "../../../shared/api"
 import { vercelAiGatewayDefaultModelId, VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE } from "@roo-code/types"
 
@@ -96,11 +97,7 @@ describe("VercelAiGatewayHandler", () => {
 			baseURL: "https://ai-gateway.vercel.sh/v1",
 			apiKey: mockOptions.vercelAiGatewayApiKey,
 			// kilocode_change start
-			defaultHeaders: expect.objectContaining({
-				"HTTP-Referer": "https://kilocode.ai",
-				"X-Title": "AlfaCode assistant",
-				"User-Agent": expect.stringContaining("Kilo-Code/"),
-			}),
+			defaultHeaders: expect.objectContaining(DEFAULT_HEADERS),
 			// kilocode_change end
 		})
 	})

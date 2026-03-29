@@ -3,6 +3,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest"
+import os from "node:os" // kilocode_change
+import path from "node:path" // kilocode_change
 import type { DetermineParallelBranchInput } from "../determineBranch.js"
 
 // Create mock for simpleGit using vi.hoisted
@@ -33,6 +35,9 @@ import { determineParallelBranch } from "../determineBranch.js"
 import { getGitInfo, generateBranchName, branchExists } from "../../utils/git.js"
 
 describe("determineParallelBranch", () => {
+	const toOsPath = (value: string) => (process.platform === "win32" ? value.replaceAll("/", "\\") : value) // kilocode_change
+	const normalizeOsPath = (value: string) => path.normalize(value) // kilocode_change
+
 	const mockCwd = "/test/repo"
 	const mockPrompt = "Add new feature"
 	const mockBranch = "main"
@@ -199,11 +204,13 @@ describe("determineParallelBranch", () => {
 			const result = await determineParallelBranch(input)
 
 			expect(result.worktreeBranch).toBe(existingBranch)
-			expect(result.worktreePath).toContain(`kilocode-worktree-${existingBranch}`)
+			expect(normalizeOsPath(result.worktreePath)).toContain(
+				normalizeOsPath(`kilocode-worktree-${existingBranch}`),
+			)
 			expect(capturedArgs).toEqual([
 				"worktree",
 				"add",
-				expect.stringContaining(`kilocode-worktree-${existingBranch}`),
+				expect.stringContaining(toOsPath(`kilocode-worktree-${existingBranch}`)),
 				existingBranch,
 			])
 			expect(capturedArgs).not.toContain("-b") // Should not have -b flag for existing branch
@@ -222,7 +229,8 @@ describe("determineParallelBranch", () => {
 			const result = await determineParallelBranch(input)
 
 			// Worktree path should be in temp directory
-			expect(result.worktreePath).toMatch(/^\/.*\/kilocode-worktree-/)
+			expect(path.isAbsolute(result.worktreePath)).toBe(true)
+			expect(normalizeOsPath(result.worktreePath)).toContain(normalizeOsPath(os.tmpdir()))
 			expect(result.worktreePath).toContain(generatedBranch)
 		})
 
@@ -300,7 +308,9 @@ describe("determineParallelBranch", () => {
 			const result = await determineParallelBranch(input)
 
 			expect(result.worktreeBranch).toBe(existingBranch)
-			expect(result.worktreePath).toContain(existingBranch)
+			expect(normalizeOsPath(result.worktreePath)).toContain(
+				normalizeOsPath(`kilocode-worktree-${existingBranch}`),
+			)
 		})
 	})
 })

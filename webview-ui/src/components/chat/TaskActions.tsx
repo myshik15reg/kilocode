@@ -10,7 +10,16 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { DeleteTaskDialog } from "../history/DeleteTaskDialog"
 // import { ShareButton } from "./ShareButton" // kilocode_change unused
 // import { CloudTaskButton } from "./CloudTaskButton" // kilocode_change: unused
-import { CopyIcon, DownloadIcon, Trash2Icon, FileJsonIcon, MessageSquareCodeIcon } from "lucide-react"
+import {
+	CopyIcon,
+	DownloadIcon,
+	Trash2Icon,
+	FileJsonIcon,
+	MessageSquareCodeIcon,
+	PauseIcon,
+	PlayIcon,
+	GitBranchIcon,
+} from "lucide-react"
 import { LucideIconButton } from "./LucideIconButton"
 
 interface TaskActionsProps {
@@ -23,9 +32,34 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 	const { t } = useTranslation()
 	const { copyWithFeedback } = useCopyToClipboard()
 	const { debug } = useExtensionState()
+	// kilocode_change start
+	const isCompletedItem = item?.status === "completed" || item?.lifecycleState === "completed"
+	const showLifecycleControls = !!item?.id && !isCompletedItem
+	// kilocode_change end
 
 	return (
 		<div className="flex flex-row items-center -ml-0.5 mt-1 gap-1">
+			{showLifecycleControls && (
+				<LucideIconButton
+					icon={item.lifecycleState === "paused" ? PlayIcon : PauseIcon}
+					title={item.lifecycleState === "paused" ? "Resume task" : "Pause task"}
+					disabled={buttonsDisabled}
+					onClick={() =>
+						vscode.postMessage({
+							type: item.lifecycleState === "paused" ? "resumeTask" : "pauseTask",
+							text: item.id,
+						})
+					}
+				/>
+			)}
+			{showLifecycleControls && (
+				<LucideIconButton
+					icon={GitBranchIcon}
+					title="Branch task"
+					disabled={buttonsDisabled}
+					onClick={() => vscode.postMessage({ type: "branchTask", text: item.id })}
+				/>
+			)}
 			<LucideIconButton
 				icon={DownloadIcon}
 				title={t("chat:task.export")}

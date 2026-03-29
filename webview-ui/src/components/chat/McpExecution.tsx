@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, memo } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, memo } from "react"
 import { Server, ChevronDown, ChevronRight } from "lucide-react"
 import { useEvent } from "react-use"
 import { useTranslation } from "react-i18next"
@@ -62,6 +62,7 @@ export const McpExecution = ({
 	const [status, setStatus] = useState<McpExecutionStatus | null>(null)
 	const [responseText, setResponseText] = useState(text || "")
 	const [argumentsText, setArgumentsText] = useState(text || "")
+	const lastOutputChunkRef = useRef<string | null>(null) // kilocode_change
 	const [serverName, setServerName] = useState(initialServerName)
 	const [toolName, setToolName] = useState(initialToolName)
 
@@ -142,22 +143,25 @@ export const McpExecution = ({
 	const onMessage = useCallback(
 		(event: MessageEvent) => {
 			const message: ExtensionMessage = event.data
-
 			if (message.type === "mcpExecutionStatus") {
 				try {
 					const result = mcpExecutionStatusSchema.safeParse(safeJsonParse(message.text || "{}", {}))
-
 					if (result.success) {
 						const data = result.data
-
-						// Only update if this message is for our response
 						if (data.executionId === executionId) {
 							setStatus(data)
-
 							if (data.status === "output" && data.response) {
-								setResponseText((prev) => prev + data.response)
-							} else if (data.status === "completed" && data.response) {
-								setResponseText(data.response)
+								if (lastOutputChunkRef.current !== data.response) {
+									lastOutputChunkRef.current = data.response
+									setResponseText((prev) => prev + data.response)
+								}
+							} else if (data.status === "completed") {
+								lastOutputChunkRef.current = null
+								if (data.response) {
+									setResponseText(data.response)
+								}
+							} else if (data.status === "error") {
+								lastOutputChunkRef.current = null
 							}
 						}
 					}

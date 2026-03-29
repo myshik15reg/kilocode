@@ -1,5 +1,8 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import * as vscode from "vscode"
+
+const mockSpawn = vi.fn()
+const mockCreateInterface = vi.fn()
 
 // Mock Package
 vi.mock("../../../shared/package", () => ({
@@ -22,14 +25,23 @@ vi.mock("vscode", () => ({
 }))
 
 // Mock getBinPath
-vi.mock("../ripgrep", () => ({
+vi.mock("../../ripgrep", () => ({
 	getBinPath: vi.fn(async () => null), // Return null to skip actual ripgrep execution
 }))
 
 // Mock child_process
 vi.mock("child_process", () => ({
-	spawn: vi.fn(),
+	spawn: mockSpawn,
 }))
+
+vi.mock("readline", () => ({
+	createInterface: mockCreateInterface,
+}))
+
+beforeEach(() => {
+	vi.resetModules()
+	vi.clearAllMocks()
+})
 
 describe("file-search", () => {
 	describe("configuration integration", () => {
@@ -97,4 +109,59 @@ describe("file-search", () => {
 			expect(limit).toBe(10000)
 		})
 	})
+
+	// kilocode_change start
+	describe("UTF-8 stderr decoding", () => {
+		it("should decode split UTF-8 stderr chunks before rejecting", async () => {
+			const mockSearchConfig = { get: vi.fn() }
+			const mockRooConfig = { get: vi.fn(() => 10000) }
+			;(vscode.workspace.getConfiguration as any).mockImplementation((section: string) => {
+				if (section === "search") return mockSearchConfig
+				if (section === "roo-cline") return mockRooConfig
+				return { get: vi.fn() }
+			})
+
+			const { PassThrough } = await import("stream")
+			const ripgrep = await import("../../ripgrep")
+			vi.mocked(ripgrep.getBinPath).mockResolvedValue("/mock/path/to/rg")
+			const { executeRipgrep } = await import("../file-search")
+			const stdout = new PassThrough()
+			const stderr = new PassThrough()
+			const rlHandlers: Record<string, (() => void) | undefined> = {}
+			const kill = vi.fn(() => {
+				rlHandlers.close?.()
+			})
+
+			mockSpawn.mockReturnValue({
+				stdout,
+				stderr,
+				on: vi.fn(),
+				kill,
+			} as any)
+
+			mockCreateInterface.mockReturnValue({
+				on: vi.fn((event: string, handler: () => void) => {
+					rlHandlers[event] = handler
+				}),
+				close: vi.fn(() => {
+					rlHandlers.close?.()
+				}),
+			} as any)
+
+			const promise = executeRipgrep({
+				args: ["--files", "/tmp/workspace"],
+				workspacePath: "/tmp/workspace",
+				limit: 5,
+			})
+			await Promise.resolve()
+
+			stderr.write(new Uint8Array([0xd0]))
+			stderr.write(new Uint8Array([0x96]))
+			stderr.end()
+			rlHandlers.close?.()
+
+			await expect(promise).rejects.toThrow("ripgrep process error: Ж")
+		})
+	})
+	// kilocode_change end
 })

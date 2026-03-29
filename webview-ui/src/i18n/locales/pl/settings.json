@@ -62,7 +62,7 @@
 		"contact": {
 			"label": "Musisz z nami porozmawiać? Napisz"
 		},
-		"community": "Chcesz wskazówek lub po prostu porozmawiać z innymi użytkownikami AlfaCode assistant? Dołącz do <redditLink>reddit.com/r/kilocode</redditLink> lub <discordLink>kilo.ai/discord</discordLink>",
+		"community": "Chcesz wskazówek lub po prostu porozmawiać z innymi użytkownikami AlfaCode assistant? Dołącz do <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> lub <discordLink>alfacode.ai/discord</discordLink>",
 		"contactAndCommunity": "Kontakt i Społeczność",
 		"manageSettings": "Zarządzaj Ustawieniami",
 		"debugMode": {
@@ -558,8 +558,8 @@
 			"instructions": "Podczas użytkowania pojawi się okno dialogowe, a bieżąca wiadomość zostanie automatycznie skopiowana do schowka. Będziesz musiał wkleić ją do internetowych wersji AI (takich jak ChatGPT lub Claude), a następnie skopiować odpowiedź AI z powrotem do okna dialogowego i kliknąć przycisk potwierdzenia."
 		},
 		"roo": {
-			"authenticatedMessage": "Bezpiecznie uwierzytelniony przez twoje konto Roo Code Cloud.",
-			"connectButton": "Połącz z Roo Code Cloud"
+			"authenticatedMessage": "Bezpiecznie uwierzytelniony przez twoje konto AlfaCode assistant Cloud.",
+			"connectButton": "Połącz z AlfaCode assistant Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -620,7 +620,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Limit błędów i powtórzeń",
-			"description": "Liczba kolejnych błędów lub powtórzonych akcji przed wyświetleniem okna dialogowego 'Kilo ma problemy'. Ustaw na 0, aby wyłączyć ten mechanizm bezpieczeństwa (nigdy się nie uruchomi).",
+			"description": "Liczba kolejnych błędów lub powtórzonych akcji przed wyświetleniem okna dialogowego 'AlfaCode assistant ma problemy'. Ustaw na 0, aby wyłączyć ten mechanizm bezpieczeństwa (nigdy się nie uruchomi).",
 			"unlimitedDescription": "Włączono nieograniczone próby (automatyczne kontynuowanie). Okno dialogowe nigdy się nie pojawi.",
 			"warning": "⚠️ Ustawienie na 0 pozwala na nieograniczone próby, co może zużyć znaczną ilość API"
 		},
@@ -631,8 +631,7 @@
 			"high": "Wysoki",
 			"xhigh": "Bardzo wysoki",
 			"medium": "Średni",
-			"low": "Niski",
-			"xhigh": "Bardzo wysoki"
+			"low": "Niski"
 		},
 		"verbosity": {
 			"label": "Szczegółowość danych wyjściowych",
@@ -972,7 +971,7 @@
 		},
 		"MORPH_FAST_APPLY": {
 			"name": "Włącz Fast Apply",
-			"description": "Gdy włączone, AlfaCode assistant może edytować pliki za pomocą Fast Apply ze specjalizowanymi modelami zoptymalizowanymi do modyfikacji kodu. Wymaga Kilo Gateway Provider, OpenRouter lub klucza API Morph.",
+			"description": "Gdy włączone, AlfaCode assistant może edytować pliki za pomocą Fast Apply ze specjalizowanymi modelami zoptymalizowanymi do modyfikacji kodu. Wymaga AlfaCode Gateway, OpenRouter lub klucza API Morph.",
 			"apiProvider": "Dostawca API",
 			"apiProviderList": {
 				"current": "Aktualny"
@@ -1035,7 +1034,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Włącz niestandardowe narzędzia",
-			"description": "Gdy włączone, Kilo może ładować i używać niestandardowych narzędzi TypeScript/JavaScript z katalogu .kilocode/tools Twojego projektu lub ~/.kilocode/tools dla narzędzi globalnych. Uwaga: te narzędzia będą automatycznie zatwierdzane.",
+			"description": "Gdy włączone, AlfaCode assistant może ładować i używać niestandardowych narzędzi TypeScript/JavaScript z katalogu .kilocode/tools Twojego projektu lub ~/.kilocode/tools dla narzędzi globalnych. Uwaga: te narzędzia będą automatycznie zatwierdzane.",
 			"toolsHeader": "Dostępne niestandardowe narzędzia",
 			"noTools": "Nie załadowano niestandardowych narzędzi. Dodaj pliki .ts lub .js do katalogu .kilocode/tools swojego projektu lub ~/.kilocode/tools dla narzędzi globalnych.",
 			"refreshButton": "Odśwież",
@@ -1087,8 +1086,8 @@
 		"allModels": "Wszystkie modele"
 	},
 	"footer": {
-		"feedback": "Jeśli masz jakiekolwiek pytania lub opinie, śmiało otwórz zgłoszenie na <githubLink>github.com/Kilo-Org/kilocode</githubLink> lub dołącz do <redditLink>reddit.com/r/kilocode</redditLink> lub <discordLink>kilo.ai/discord</discordLink>",
-		"support": "W sprawach finansowych skontaktuj się z Obsługą Klienta pod adresem <supportLink>https://kilo.ai/support</supportLink>",
+		"feedback": "Jeśli masz jakiekolwiek pytania lub opinie, śmiało otwórz zgłoszenie na <githubLink>github.com/Alfa-Org/alfacode</githubLink> lub dołącz do <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> lub <discordLink>alfacode.ai/discord</discordLink>",
+		"support": "W sprawach finansowych skontaktuj się z Obsługą Klienta pod adresem <supportLink>https://alfacode.ai/support</supportLink>",
 		"telemetry": {
 			"label": "Zezwól na anonimowe raportowanie błędów i użycia",
 			"description": "Pomóż ulepszyć AlfaCode assistant, wysyłając anonimowe dane o użytkowaniu i raporty o błędach. Nigdy nie są wysyłane kod, podpowiedzi ani informacje osobiste. Zobacz naszą politykę prywatności, aby uzyskać więcej szczegółów."

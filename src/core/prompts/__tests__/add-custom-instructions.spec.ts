@@ -41,7 +41,87 @@ vi.mock("os-name", () => ({
 	default: () => "Linux",
 }))
 
-vi.mock("fs/promises")
+const fsPromisesMock = vi.hoisted(() => {
+	const createDirEntry = (name: string, parentPath: string, type: "file" | "dir") => ({
+		name,
+		parentPath,
+		isFile: () => type === "file",
+		isDirectory: () => type === "dir",
+		isSymbolicLink: () => false,
+	})
+
+	const agentsDir = "/test/path"
+	const agentFile = `${agentsDir}/AGENTS.md`
+	const memoryBankDir = "/test/path/.kilocode/memory-bank"
+	const memoryBankContext = `${memoryBankDir}/context.md`
+
+	// FIX: third-party-skills (TestAnalyzer)
+	// Root cause: On Windows, `path.join()` uses backslashes, but these tests/mocks use POSIX-style paths.
+	const normalizeMockPath = (filePath: string) => filePath.replace(/\\/g, "/")
+
+	const readFile = vi.fn(async (filePath: string) => {
+		const normalizedPath = normalizeMockPath(filePath)
+		if (normalizedPath === agentFile) {
+			return "AGENTS rules content"
+		}
+		if (normalizedPath === memoryBankContext) {
+			return "Memory Bank context"
+		}
+		return ""
+	})
+
+	const stat = vi.fn(async (filePath: string) => {
+		const normalizedPath = normalizeMockPath(filePath)
+		return {
+			isDirectory: () => normalizedPath === memoryBankDir,
+			isFile: () =>
+				normalizedPath === agentFile ||
+				normalizedPath === memoryBankContext ||
+				normalizedPath.endsWith("/context.md"),
+			isSymbolicLink: () => false,
+		}
+	})
+
+	const access = vi.fn(async (filePath: string) => {
+		const normalizedPath = normalizeMockPath(filePath)
+		if (normalizedPath === memoryBankDir || normalizedPath.endsWith("/.kilocode/memory-bank")) return
+		throw Object.assign(new Error("ENOENT"), { code: "ENOENT" })
+	})
+
+	const readdir = vi.fn(async (dirPath: string) => {
+		const normalizedPath = normalizeMockPath(dirPath)
+		if (normalizedPath === agentsDir) {
+			return [createDirEntry("AGENTS.md", agentsDir, "file")]
+		}
+		return []
+	})
+
+	const lstat = vi.fn(async (filePath: string) => {
+		const normalizedPath = normalizeMockPath(filePath)
+		return {
+			isSymbolicLink: () => false,
+			isFile: () => normalizedPath === agentFile || normalizedPath === memoryBankContext,
+			isDirectory: () => normalizedPath === agentsDir || normalizedPath === memoryBankDir,
+		}
+	})
+
+	const readlink = vi.fn(async () => "")
+
+	return {
+		readFile,
+		stat,
+		access,
+		readdir,
+		lstat,
+		readlink,
+	}
+})
+
+vi.mock("fs/promises", () => ({
+	__esModule: true,
+	default: fsPromisesMock,
+	...fsPromisesMock,
+}))
 
 import * as vscode from "vscode"
 

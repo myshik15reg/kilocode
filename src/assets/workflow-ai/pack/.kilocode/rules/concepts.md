@@ -1,68 +1,33 @@
 # Core Concepts: Memory Bank, Protocols, Agents
 
-> Базовые понятия WorkFlowAI и AlfaFlow.
+Назначение: единые определения и связь между Memory Bank, протоколами и режимами.
+
+Термины: [`terminology.md`](terminology.md:1).
+Нормативная рамка документов: [`docs-standards.md`](docs-standards.md:1).
 
 ## 1) Memory Bank
 
-Memory Bank - долговременный контекст проекта. Он отвечает на вопросы: кто мы, зачем, как устроены, на чем работаем и какой текущий фокус.
+Memory Bank = долгоживущий контекст consuming project в `.kilocode/memory-bank/`.
 
-### Структура
-- `index.md` - точка входа, навигация по режимам.
-- `brief.md` - цели и краткое описание проекта.
-- `product.md` - зачем, проблемы пользователей, UX.
-- `architecture.md` - архитектурные решения, паттерны, структура.
-- `tech.md` - стек, зависимости, инструменты.
-- `context.md` - текущий фокус, статус, следующие шаги.
-
-### Принципы
-- **Memory First** - всегда начинай с `.kilocode/memory-bank/index.md`.
-- **Lazy Loading** - читай только нужные файлы.
-- **Keep It Concise** - каждый файл краткий, без лишнего.
-- **Update After Milestones** - обновляй после значимых изменений.
+| File                                        | Meaning                    |
+| ------------------------------------------- | -------------------------- |
+| [`index.md`](../memory-bank/index.md:1)     | навигация и правила чтения |
+| [`context.md`](../memory-bank/context.md:1) | текущий фокус              |
 
 ## 2) Protocols
 
-Protocol - изолированный контекст задачи. Он фиксирует требования, план и ход выполнения.
+Protocol = временный workspace задачи в `.protocols/YYYY-MM-DD-name/`.
 
-### Структура
-```
-.protocols/YYYY-MM-DD-feature-name/
-├── brief.md      # требования и Definition of Done
-├── plan.md       # план и файлы к изменению
-├── execution.md  # лог решений и прогресса
-└── context.md    # доп. материалы (опционально)
-```
+| File           | Meaning            |
+| -------------- | ------------------ |
+| `brief.md`     | требования и DoD   |
+| `plan.md`      | шаги и verify      |
+| `execution.md` | лог (если ведётся) |
 
-### Жизненный цикл
-1. Запрос пользователя.
-2. Architect/Orchestrator создает протокол.
-3. Code Mode реализует по plan.md.
-4. Reviewer проверяет качество.
-5. Architect закрывает протокол и обновляет Memory Bank.
+Процесс: [`protocol-new.md`](../workflows/protocol-new.md:1).
 
-## 3) Agents (Modes)
+## 3) Agents (modes)
 
-Агенты = режимы (modes). Каждый агент узко специализируется на типе задач.
-
-### Слои
-- Orchestration (координация)
-- Analysis (требования, анализ)
-- Architecture (дизайн решений)
-- Development (реализация)
-- Testing (тестирование)
-- Quality (ревью, аудит)
-
-**Правило (Kilo Code):** для делегирования используй `new_task`, `switch_mode` запрещён.  
-**Исключение (Codex CLI):** `new_task` нет, допускается роль-петля в одной сессии.
-
-## 4) Как это работает вместе
-1. Прочитать Memory Bank и подтвердить `[MB: OK]`.
-2. Создать протокол и план.
-3. Реализовать задачу по plan.md.
-4. Пройти тесты и ревью.
-5. Обновить Memory Bank и закрыть протокол.
-
-## Следующие документы
-- `~/.kilocode/workflows/overview.md`
-- `~/.kilocode/rules/agents-guide.md`
-- `~/.kilocode/workflows/protocol-examples.md`
+1. Один `task` MUST выполняться в одном `mode`.
+2. Делегирование MUST выполняться через `new_task` и strict handoff. SoT: [`context-handoff.md`](../patterns/orchestration/context-handoff.md:1).
+3. Выбор режима MUST следовать SoT: [`mode-selection/SKILL.md`](../skills/mode-selection/SKILL.md:1).

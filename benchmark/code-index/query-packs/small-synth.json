@@ -1,0 +1,27 @@
+{
+	"id": "small-synth-pack-001",
+	"datasetId": "small-synth",
+	"seed": 42,
+	"cases": [
+		{
+			"id": "q1-find-fib-ts",
+			"query": "найди реализацию функции fib в TypeScript",
+			"expected": [{ "filePath": "ts/math.ts", "line": 9 }]
+		},
+		{
+			"id": "q2-find-runExample",
+			"query": "где реализована функция runExample",
+			"expected": [{ "filePath": "ts/index.ts", "line": 4 }]
+		},
+		{
+			"id": "q3-find-formatNumber",
+			"query": "найди функцию formatNumber",
+			"expected": [{ "filePath": "ts/format.ts", "line": 1 }]
+		},
+		{
+			"id": "q4-python-class",
+			"query": "найди класс Calculator в python",
+			"expected": [{ "filePath": "py/math.py", "line": 11 }]
+		}
+	]
+}

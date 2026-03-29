@@ -116,7 +116,7 @@
 	"toolCallStyle": {
 		"title": "工具调用样式",
 		"description": "选择系统提示中工具调用的格式。JSON 格式目前处于实验阶段，主要面向有兴趣参与开发的用户。",
-		"automatic": "让 Kilo 决定",
+		"automatic": "让 AlfaCode assistant 决定",
 		"xml": "XML",
 		"json": "JSON"
 	},
@@ -249,7 +249,7 @@
 			},
 			"enableSmartInlineTaskKeybinding": {
 				"label": "手动自动补全（{{keybinding}}）",
-				"description": "需要快速修复、补全或重构？Kilo 将使用周围上下文提供即时改进，保持你的工作流。<DocsLink>查看快捷键</DocsLink>"
+				"description": "需要快速修复、补全或重构？AlfaCode assistant 将使用周围上下文提供即时改进，保持你的工作流。<DocsLink>查看快捷键</DocsLink>"
 			},
 			"keybindingNotFound": "未找到",
 			"configureAutocompleteProfile": "前往配置文件并配置自动补全类型的配置文件即可使用任意模型。",
@@ -355,7 +355,7 @@
 			"title": "语音转文字",
 			"openAiReason": "您需要一个有效的 OpenAI 提供商和 API 密钥才能使用语音转录功能。",
 			"description": "语音转文字功能不可用。语音转文字需要同时配置 FFmpeg 和有效的 OpenAI 提供商。<moreInfoLink>点击此处了解更多信息</moreInfoLink>。",
-			"ffmpegReason": "您需要安装 FFmpeg。<ffmpegLink>点击这里</ffmpegLink>让 Kilo 帮助您安装 FFmpeg。",
+			"ffmpegReason": "您需要安装 FFmpeg。<ffmpegLink>点击这里</ffmpegLink>让 AlfaCode assistant 帮助您安装 FFmpeg。",
 			"ffmpegMessage": "帮我安装 FFmpeg"
 		},
 		"misconfiguredState": "因配置问题而不可用",

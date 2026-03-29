@@ -17,7 +17,10 @@ CRITICAL REQUIREMENTS FOR USING THIS TOOL:
 
 3. VERIFICATION: Before using this tool:
    - If multiple instances exist, gather enough context to uniquely identify each one
-   - Plan separate tool calls for each instance`
+   - Plan separate tool calls for each instance
+
+4. HASHLINE REFERENCES: If a recovery preview shows tagged lines like \`#HL 42:abc|...\`, you may pass those tagged lines back as \`old_string\`. Valid \`#HL\` references are resolved to the file's exact current line text before matching, and \`#HL ...|\` prefixes are stripped from \`new_string\`.
+`
 
 const search_replace = {
 	type: "function",

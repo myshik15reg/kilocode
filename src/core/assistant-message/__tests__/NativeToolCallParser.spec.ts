@@ -169,6 +169,72 @@ describe("NativeToolCallParser", () => {
 					])
 				}
 			})
+
+			it("should normalize capitalized Files and Path keys", () => {
+				const toolCall = {
+					id: "toolu_caps_123",
+					name: "read_file" as const,
+					arguments: JSON.stringify({
+						Files: [
+							{
+								Path: "src/core/task/Task.ts",
+								LineRanges: [[10, 20]],
+							},
+						],
+					}),
+				}
+
+				const result = NativeToolCallParser.parseToolCall(toolCall)
+
+				expect(result).not.toBeNull()
+				expect(result?.type).toBe("tool_use")
+				if (result?.type === "tool_use") {
+					const nativeArgs = result.nativeArgs as {
+						files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+					}
+					expect(nativeArgs.files).toHaveLength(1)
+					expect(nativeArgs.files[0].path).toBe("src/core/task/Task.ts")
+					expect(nativeArgs.files[0].lineRanges).toEqual([{ start: 10, end: 20 }])
+				}
+			})
+		})
+
+		it("should normalize capitalized top-level keys for update_todo_list", () => {
+			const toolCall = {
+				id: "toolu_todos_123",
+				name: "update_todo_list" as const,
+				arguments: JSON.stringify({
+					Todos: "[-] Investigate\n[ ] Fix",
+				}),
+			}
+
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+
+			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
+			if (result?.type === "tool_use") {
+				expect(result.nativeArgs).toEqual({ todos: "[-] Investigate\n[ ] Fix" })
+			}
+		})
+
+		it("should normalize PascalCase top-level keys for search_files", () => {
+			const toolCall = {
+				id: "toolu_search_123",
+				name: "search_files" as const,
+				arguments: JSON.stringify({
+					Path: ".",
+					Regex: "TODO",
+					FilePattern: "*.ts",
+				}),
+			}
+
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+
+			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
+			if (result?.type === "tool_use") {
+				expect(result.nativeArgs).toEqual({ path: ".", regex: "TODO", file_pattern: "*.ts" })
+			}
 		})
 	})
 
@@ -201,6 +267,32 @@ describe("NativeToolCallParser", () => {
 					{ start: 10, end: 20 },
 					{ start: 30, end: 40 },
 				])
+			})
+
+			it("should normalize capitalized Files and Path keys during streaming", () => {
+				const id = "toolu_streaming_caps_123"
+				NativeToolCallParser.startStreamingToolCall(id, "read_file")
+
+				const result = NativeToolCallParser.processStreamingChunk(
+					id,
+					JSON.stringify({
+						Files: [
+							{
+								Path: "src/test.ts",
+								LineRanges: [[10, 20]],
+							},
+						],
+					}),
+				)
+
+				expect(result).not.toBeNull()
+				expect(result?.nativeArgs).toBeDefined()
+				const nativeArgs = result?.nativeArgs as {
+					files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+				}
+				expect(nativeArgs.files).toHaveLength(1)
+				expect(nativeArgs.files[0].path).toBe("src/test.ts")
+				expect(nativeArgs.files[0].lineRanges).toEqual([{ start: 10, end: 20 }])
 			})
 		})
 	})

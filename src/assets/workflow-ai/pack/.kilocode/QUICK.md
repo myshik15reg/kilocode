@@ -1,91 +1,40 @@
-# AlfaFlowAI Quick Start (Level 0)
+﻿# AlfaFlowAI Quick Start
 
-Читай только этот файл для старта. Детали только по ссылкам. Нормативная рамка: [`docs-standards.md`](rules/docs-standards.md:1).
+Read only this file to start. Details MUST stay in linked source-of-truth documents. Standard: [`docs-standards.md`](rules/docs-standards.md:1).
 
-## 1) Confirm context
+## Startup sequence
 
-1. Прочитай [`memory-bank/index.md`](memory-bank/index.md:1) и затем [`context.md`](memory-bank/context.md:1).
-2. Выведи строку:
+1. Read [`memory-bank/index.md`](memory-bank/index.md:1) and then [`context.md`](memory-bank/context.md:1).
+2. Print `[MB: OK]`.
+3. Prime context by [`context-priming.md`](workflows/context-priming.md:1).
+4. Clean the task contract by [`brief-refinement.md`](workflows/brief-refinement.md:1).
+5. If the repository changes, create a protocol by [`protocol-new.md`](workflows/protocol-new.md:1).
+6. If needed, shape `Spec` and `Plans` by [`spec-plans-generation.md`](workflows/spec-plans-generation.md:1).
+7. Select the narrowest suitable mode by [`mode-selection/SKILL.md`](skills/mode-selection/SKILL.md:1).
+8. If delegating, use `new_task` with the strict format from [`context-handoff.md`](patterns/orchestration/context-handoff.md:1).
+9. Finish only after the required gates from [`quality-gates.md`](rules/quality-gates.md:1) are satisfied.
 
-```text
-[MB: OK]
-```
+## Fast path
 
-## 2) Protocol is mandatory for repo changes
+| Situation                                   | Action                     | Source                                           |
+| ------------------------------------------- | -------------------------- | ------------------------------------------------ |
+| Exact micro-change with clear code fragment | Use quick-fix workflow     | [`quick-fix.md`](workflows/quick-fix.md:1)       |
+| Any repository change                       | Protocol is still required | [`protocol-new.md`](workflows/protocol-new.md:1) |
 
-Любое изменение репозитория MUST иметь протокол:
+## Quality gates
 
-```text
-.protocols/YYYY-MM-DD-name/
-  brief.md
-  plan.md
-  execution.md (optional)
-  artifacts/
-```
+| Gate     | Requirement                             | Source                                                 |
+| -------- | --------------------------------------- | ------------------------------------------------------ |
+| Coverage | 100% lines, branches, functions         | [`quality-gates.md`](rules/quality-gates.md:1)         |
+| Lint     | 0 errors and 0 warnings                 | [`quality-gates.md`](rules/quality-gates.md:1)         |
+| TDD      | Red -> Green -> Refactor                | [`testing-rules.md`](rules/testing-rules.md:1)         |
+| Waiver   | Exceptions only through waiver workflow | [`waiver-workflow.md`](workflows/waiver-workflow.md:1) |
 
-Source: [`protocol-new.md`](workflows/protocol-new.md:1).
+## Read next
 
-## 3) Choose mode (specialist-first)
-
-Алгоритм выбора режима: [`mode-selection/SKILL.md`](skills/mode-selection/SKILL.md:1).
-
-| If you do                                  | Use mode                                     |
-| ------------------------------------------ | -------------------------------------------- |
-| Планируешь/пишешь docs/закрываешь протокол | `architect`                                  |
-| Декомпозируешь и делегируешь               | `orchestrator`                               |
-| Реализуешь по стеку                        | narrowest `*-dev/*-specialist`, иначе `code` |
-| Работаешь с 1C                             | `1c-orchestrator`                            |
-
-## 4) Quality gates (non-negotiable)
-
-| Gate     | Requirement                     | Source                                                 |
-| -------- | ------------------------------- | ------------------------------------------------------ |
-| Coverage | 100% (lines/branches/functions) | [`quality-gates.md`](rules/quality-gates.md:1)         |
-| Lint     | 0 errors and 0 warnings         | [`quality-gates.md`](rules/quality-gates.md:1)         |
-| TDD      | Red -> Green -> Refactor        | [`testing-rules.md`](rules/testing-rules.md:1)         |
-| Waiver   | only via waiver workflow        | [`waiver-workflow.md`](workflows/waiver-workflow.md:1) |
-
-## 5) Delegation (strict handoff)
-
-В Alfa Code смена режима MUST быть через `new_task`; `switch_mode` MUST NOT использоваться. Handoff MUST соответствовать SoT: [`context-handoff.md`](patterns/orchestration/context-handoff.md:1).
-
-```text
-<new_task>
-<mode>react-dev</mode>
-<message>
-ЗАДАЧА: ...
-
-=== CONTEXT HANDOFF ===
-ROOT: <workspace-root>
-PROTOCOL: .protocols/YYYY-MM-DD-name/
-ORIGIN: architect -> react-dev
-DOMAIN: React
-PHASE: Implementation
-
-GOAL:
-...
-
-INPUTS:
-1. .protocols/YYYY-MM-DD-name/brief.md:1 - requirements
-2. .protocols/YYYY-MM-DD-name/plan.md:1 - steps
-
-CONSTRAINTS:
-1. TDD MUST be used.
-2. Coverage MUST be 100%.
-3. Lint MUST be 0/0.
-
-EXPECTED OUTPUT:
-...
-=======================
-</message>
-</new_task>
-```
-
-## What to read next
-
-| Need                               | Read                                                           |
-| ---------------------------------- | -------------------------------------------------------------- |
-| Меню процессов                     | [`quickref.md`](workflows/quickref.md:1)                       |
-| Карта процессов                    | [`overview.md`](workflows/overview.md:1)                       |
-| Путь к скриптам `workflowai-*.ps1` | [`scripts-entrypoints.md`](workflows/scripts-entrypoints.md:1) |
-| Правила и SoT индекс               | [`rules/index.md`](rules/index.md:1)                           |
+| Need            | File                                                           |
+| --------------- | -------------------------------------------------------------- |
+| Workflow menu   | [`quickref.md`](workflows/quickref.md:1)                       |
+| Process map     | [`overview.md`](workflows/overview.md:1)                       |
+| Script path SoT | [`scripts-entrypoints.md`](workflows/scripts-entrypoints.md:1) |
+| Rules index     | [`rules/index.md`](rules/index.md:1)                           |

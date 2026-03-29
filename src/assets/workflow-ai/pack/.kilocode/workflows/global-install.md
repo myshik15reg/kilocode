@@ -1,71 +1,89 @@
-# Рабочий процесс: Глобальная установка пакета WorkFlowAI для Kilo Code (global-install)
+# Workflow: global-install (global install для Alfa Code)
 
-Цель: установить этот пакет воркфлоу **глобально** для Kilo Code (в `~/~/.kilocode/`) и инициализировать новые проекты так, чтобы:
-- правила/воркфлоу были общими (глобально)
-- Memory Bank, `temp/`, `docs/` создавались **внутри проекта** (на уровне проекта)
+## Goal
 
-## Что ожидает Kilo Code (важно)
-- **Глобальные правила:** `~/~/.kilocode/rules/` (загружается автоматически)
-- **Глобальные воркфлоу:** `~/~/.kilocode/workflows/` (используется как библиотека воркфлоу)
-- **Правила/воркфлоу проекта:** `ПУТЬ_К_ПРОЕКТУ/~/.kilocode/rules/` и `ПУТЬ_К_ПРОЕКТУ/~/.kilocode/workflows/` (перекрывают глобальные при необходимости)
-- **Точка входа проекта:** `AGENTS.md` (или `AGENT.md`) в корне проекта
+Установить workflow-pack глобально в Alfa Code и описать переносимую схему, при которой:
 
-## Шаг 1: Установить pack глобально
-Запустите из репозитория WorkFlowAI:
+1. правила и workflows живут глобально;
+2. контекст проекта (Memory Bank), `temp/` и протоколы живут внутри consuming project.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/workflowai-install-global.ps1
-```
+Нормативная переносимость путей: [`docs-standards.md`](../rules/docs-standards.md:1).
+SoT по скриптам и путям: [`scripts-entrypoints.md`](scripts-entrypoints.md:1).
 
-Полезные параметры:
-- `-OnConflict Skip` — не перезаписывать существующие файлы
-- `-OnConflict BackupAndOverwrite` — сделать бэкап и перезаписать (по умолчанию)
-- `-OnConflict Overwrite` — перезаписать без бэкапа
-- `-WhatIf` — показать, что будет сделано (без изменений)
+## What Alfa Code expects
 
-Результат:
-- `~/~/.kilocode/rules/` - правила из pack
-- `~/~/.kilocode/workflows/` - воркфлоу из пакета
-- `~/~/.kilocode/workflowai/templates/` - шаблоны для инициализации проектов (включая `memory-bank/`, `patterns/`, `skills/`)
-- `~/~/.kilocode/workflowai/templates/quality-gates/` - шаблоны для CI/PR enforcement (опционально ставятся в проект)
-- `~/~/.kilocode/workflowai/scripts/` - копии скриптов (удобно запускать из любого проекта)
-  - включая: `workflowai-init-project.ps1`, `workflowai-doctor.ps1`, `workflowai-new-protocol.ps1`
+| Concern            | Location                                                                      | Meaning                                      |
+| ------------------ | ----------------------------------------------------------------------------- | -------------------------------------------- |
+| Global rules       | `~/.kilocode/rules/` (Unix) или `$HOME/.kilocode/rules/` (PowerShell)         | загружается автоматически                    |
+| Global workflows   | `~/.kilocode/workflows/` (Unix) или `$HOME/.kilocode/workflows/` (PowerShell) | библиотека workflows, вызов через `/name.md` |
+| Local overrides    | `<project>/.kilocode/rules/`, `<project>/.kilocode/workflows/`                | перекрывают global при необходимости         |
+| Project entrypoint | [`AGENTS.md`](../../AGENTS.md:1)                                              | точка входа агента в consuming project       |
 
-## Шаг 2: Инициализировать проект (Memory Bank + temp/docs)
-В нужном проекте выполните:
+## Step 1: Install pack globally
+
+Важно: в embedded workflow-pack репозитории каталога `./scripts/` может не быть, поэтому repo-local installer является условным сценарием. Условия и пути MUST следовать [`scripts-entrypoints.md`](scripts-entrypoints.md:1).
+
+### Option A (conditional): repo-local installer exists
+
+Условие: в репозитории реально существует `./scripts/workflowai-install-global.ps1`.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "$HOME/~/.kilocode/workflowai/scripts/workflowai-init-project.ps1" -ProjectPath .
+powershell -ExecutionPolicy Bypass -File ./scripts/workflowai-install-global.ps1
 ```
 
-Что создаётся:
-- `.kilocode/memory-bank/` (шаблоны Memory Bank)
-- `~/.kilocode/patterns/` (паттерны и стандарты; при global install обычно создаётся как junction/ссылка на `~/~/.kilocode/workflowai/templates/patterns`)
-- `~/.kilocode/skills/` (skills; при global install обычно создаётся как junction/ссылка на `~/~/.kilocode/workflowai/templates/skills`)
-- `.protocols/README.md`, `.protocols/index.md` (шаблоны протоколов)
-- `temp/` (включая `temp/scripts`, `temp/screenshot`, `temp/cache`)
-- `docs/`
-- (опционально) шаблоны гейтов качества для CI/PR, если запускаете init с `-InitQualityGates` (см. `~/.kilocode/workflows/quality-enforcement.md`)
-- обновление `.gitignore` (добавляет `.protocols/`, `temp/`, и при использовании глобальных шаблонов для `patterns/skills` - `~/.kilocode/patterns/`, `~/.kilocode/skills/`)
+### Option B: manual copy (portable default)
 
-## Шаг 2.1 (рекомендуется): Создать первый протокол
-```powershell
-powershell -ExecutionPolicy Bypass -File "$HOME/~/.kilocode/workflowai/scripts/workflowai-new-protocol.ps1" -ProjectPath . -Name "feature-name" -WithContext
-```
+1. Скопируй rules и workflows в home-dir Alfa Code.
 
-## Шаг 3: Проверка совместимости
-1. Откройте проект в VS Code с Kilo Code.
-2. Убедитесь, что в корне проекта есть `AGENTS.md`.
-3. В первой задаче агент должен прочитать `.kilocode/memory-bank/index.md` и подтвердить `[MB: OK]`.
-4. (Опционально) Прогоните диагностику:
+Windows (PowerShell):
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "$HOME/~/.kilocode/workflowai/scripts/workflowai-doctor.ps1" -ProjectPath .
+New-Item -ItemType Directory -Force -Path "$HOME/.kilocode/rules" | Out-Null
+New-Item -ItemType Directory -Force -Path "$HOME/.kilocode/workflows" | Out-Null
+Copy-Item -Recurse -Force ./.kilocode/rules/* "$HOME/.kilocode/rules/"
+Copy-Item -Recurse -Force ./.kilocode/workflows/* "$HOME/.kilocode/workflows/"
 ```
 
-## Локальные переопределения (если нужно)
-Если проект требует отклонений от глобальных правил - добавьте локальные файлы в:
-- `ПУТЬ_К_ПРОЕКТУ/~/.kilocode/rules/` (локальные правила)
-- `ПУТЬ_К_ПРОЕКТУ/~/.kilocode/workflows/` (локальные воркфлоу)
+Unix/macOS:
 
-Kilo Code загрузит глобальные + локальные (локальные могут перекрывать глобальные).
+```bash
+mkdir -p ~/.kilocode/rules ~/.kilocode/workflows
+cp -R ./.kilocode/rules/* ~/.kilocode/rules/
+cp -R ./.kilocode/workflows/* ~/.kilocode/workflows/
+```
+
+2. (Optional) Скопируй templates в `~/.kilocode/workflowai/templates/` (Unix) или `$HOME/.kilocode/workflowai/templates/` (PowerShell), если используешь global install как источник шаблонов для проектов.
+
+Windows (PowerShell):
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME/.kilocode/workflowai/templates" | Out-Null
+Copy-Item -Recurse -Force ./.kilocode/templates/* "$HOME/.kilocode/workflowai/templates/"
+```
+
+Unix/macOS:
+
+```bash
+mkdir -p ~/.kilocode/workflowai/templates
+cp -R ./.kilocode/templates/* ~/.kilocode/workflowai/templates/
+```
+
+## Step 2: Initialize a consuming project
+
+Процесс инициализации проекта: [`project-setup.md`](project-setup.md:1).
+
+Правило: любые упоминания repo-local `./scripts/...` MUST быть условными и проверяемыми; см. [`evidence-rules.md`](../rules/evidence-rules.md:1) и [`scripts-entrypoints.md`](scripts-entrypoints.md:1).
+
+## Step 3: Verify
+
+1. Открой consuming project в VS Code с Alfa Code.
+2. Убедись, что entrypoint существует: [`AGENTS.md`](../../AGENTS.md:1).
+3. Убедись, что agent читает Memory Bank и подтверждает контекст строкой `[MB: OK]`. Source: [`memory-bank/index.md`](../memory-bank/index.md:1).
+
+## References
+
+| Topic               | Link                                                      |
+| ------------------- | --------------------------------------------------------- |
+| Integration options | [`integration-guide.md`](../rules/integration-guide.md:1) |
+| Project init        | [`project-setup.md`](project-setup.md:1)                  |
+| Script path SoT     | [`scripts-entrypoints.md`](scripts-entrypoints.md:1)      |

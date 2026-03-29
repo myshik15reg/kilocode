@@ -1,85 +1,35 @@
----
+﻿---
 name: roles-guide
-description: Complete role definitions for AlfaFlow methodology - Architect, Code, Reviewer, Test modes with responsibilities, actions, and delegation rules.
+description: Compact guide to role boundaries and responsibilities across the main AlfaFlow modes.
 ---
 
-# AlfaFlow Role Models
+# Roles Guide
 
-## Ролевые модели (Role Models)
+Use this skill when the task depends on understanding who should plan, implement, verify, or review work.
 
-### Architect Mode
-**Роль:** Менеджер Проекта / Системный Архитектор
-**Этап:** Планирование и Завершение
+## Core roles
 
-**Обязанности:**
-- Инициализация и обновление `.kilocode/memory-bank`
-- Создание протокола `.protocols/XXX/`
-- Написание `brief.md` и `plan.md`
-- Code Review после реализации
-- Merge и закрытие протокола
+| Mode                     | Primary responsibility                                |
+| ------------------------ | ----------------------------------------------------- |
+| `architect`              | planning, protocol management, design-level decisions |
+| `orchestrator`           | routing, delegation, and integration across modes     |
+| `code` or specialist dev | implementation work                                   |
+| tester modes             | verification and test delivery                        |
+| `reviewer`               | review, acceptance, and issue identification          |
 
-**ЗАПРЕЩЕНО:** Писать код, запускать тесты
-**Делегирование:** Создать `new_task` для Code Mode
+## Boundary rules
 
-### Code Mode
-**Роль:** Разработчик
-**Этап:** Реализация
+1. `architect` should not become the main implementation worker.
+2. `orchestrator` should route and integrate, not absorb all work itself.
+3. implementation modes should stay within the approved task scope.
+4. tester and reviewer roles should verify rather than silently redesign the task.
 
-**Обязанности:**
-- Чтение `brief.md` и `plan.md`
-- Написание кода по плану
-- Обновление `plan.md` и `execution.md`
-- Запуск тестов
+## Delegation rule
 
-**ЗАПРЕЩЕНО:** Изменять код без протокола
-**Делегирование:** `new_task` для Test/Reviewer Mode
+When work must move between roles, use `new_task` with the canonical handoff format.
 
-### Reviewer Mode
-**Роль:** Code Reviewer / QA Specialist
-**Этап:** Review
+## Related sources
 
-**Checklist:**
-- [ ] Код соответствует brief.md
-- [ ] SOLID соблюдены
-- [ ] Unit tests (100% coverage)
-- [ ] Security issues проверены
-- [ ] Error handling корректен
-
-### Test Mode
-**Роль:** QA Engineer
-**Этап:** Тестирование
-
-**Обязанности:**
-- Написание/запуск тестов
-- Проверка coverage (100%)
-- Edge cases и regression testing
-
-### Orchestrator Mode
-**Роль:** Координатор сложных задач
-**Этап:** Декомпозиция и координация
-
-**Обязанности:**
-- Декомпозиция complex tasks
-- Выбор специалистов
-- Координация через subtasks
-
-**ЗАПРЕЩЕНО:** Писать код, редактировать файлы
-**Разрешено:** MCP, read_file, subtasks, switch_mode
-
-## Delegation Matrix
-
-| From | To | Via |
-|------|----|----|
-| Architect | Code | new_task |
-| Code | Test | new_task |
-| Code | Reviewer | new_task |
-| Orchestrator | Any Specialist | new_task |
-
-## Protocol-Driven Development
-Каждый режим **ОБЯЗАН** работать в рамках протокола:
-```
-.protocols/YYYY-MM-DD-task-name/
-├── brief.md     # Что делать
-├── plan.md      # Как делать
-└── execution.md # Лог выполнения
-```
+- Roles wrapper: [`../../rules/roles.md`](../../rules/roles.md:1)
+- Routing rules: [`../../rules/agent-routing.md`](../../rules/agent-routing.md:1)
+- Handoff protocol: [`../../patterns/orchestration/context-handoff.md`](../../patterns/orchestration/context-handoff.md:1)

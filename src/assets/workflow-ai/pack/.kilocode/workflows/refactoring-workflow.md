@@ -1,68 +1,49 @@
-# Рефакторинг
+﻿# Workflow: refactoring
 
-Процесс для системного улучшения кода без изменения внешнего поведения (если изменение не согласовано отдельно).
+## Goal
 
-## Когда использовать
-- Сложная логика, высокий уровень вложенности, высокая когнитивная сложность.
-- Дублирование (одинаковые фрагменты в 3+ местах).
-- Непонятные границы модулей/слои "протекают".
-- Низкое покрытие тестами или нестабильные тесты.
+Improve structure, clarity, or maintainability while preserving intended behavior unless a behavior change is explicitly requested.
 
-## Принципы
-- Поведение сохраняем: сначала фиксируем контракт тестами, потом меняем код.
-- Маленькие шаги: изменение -> тесты -> фиксация.
-- Никаких "массовых" рефакторингов без плана и без измеримых критериев успеха.
+## Use when
 
-## Входные данные (если нет - спроси)
-- Какой модуль/часть системы рефакторим и почему.
-- Какое поведение считается "сохранённым" (контракт, публичные API, побочные эффекты).
-- Какие тесты/метрики подтвердят успех.
-- Ограничения по срокам/рискам (это рефакторинг или инцидент?).
+- code is hard to read or maintain
+- duplication or poor boundaries are slowing safe changes
+- the behavior is mostly correct but the structure is weak
+- a planned cleanup is part of a broader task
 
-## Шаги
+## Core rules
 
-### Шаг 1: Зафиксировать цель и границы
-1. Опиши проблему и цель рефакторинга.
-2. Зафиксируй ограничения: публичные API не менять без явного согласования.
-3. Определи "Done": какие метрики/сигналы должны улучшиться.
+1. Preserve behavior unless the brief says otherwise.
+2. Keep the refactor scoped and explain the target improvement.
+3. Prefer small verified steps over one large rewrite.
+4. Update tests or add focused coverage when needed to protect the behavior.
 
-### Шаг 2: Защитная сетка (tests first)
-1. Если тестов не хватает - добавь минимально необходимые тесты, чтобы зафиксировать поведение.
-2. Убедись, что тесты надёжны и воспроизводимы.
+## Process
 
-### Шаг 3: План маленьких шагов
-1. Составь короткий план (3-7 пунктов) с ожидаемым эффектом.
-2. На каждый пункт: что меняем, как проверяем, как откатываем.
+| Step | Outcome                                        |
+| ---- | ---------------------------------------------- |
+| 1    | define the refactoring goal                    |
+| 2    | identify the behavior that must stay stable    |
+| 3    | make the smallest safe structural step         |
+| 4    | verify after each meaningful step              |
+| 5    | stop when the targeted improvement is achieved |
 
-### Шаг 4: Выполнение итерациями
-Повторяй до завершения:
-1. Внести одно небольшое изменение.
-2. Запустить релевантные тесты.
-3. Если сломалось - откатить и уменьшить шаг.
-4. Фиксировать прогресс в протоколе (если он есть).
+## Good targets
 
-### Шаг 5: Финальные проверки
-Пример (адаптируй под проект):
-```powershell
-npm test
-npm test -- --coverage
-npm run lint
-npm run typecheck
-```
+- simplify branching
+- extract small helpers
+- reduce duplication
+- improve naming and local cohesion
+- separate concerns without expanding scope
 
-### Шаг 6: Обновить документацию и знания
-1. Обнови документацию (если затронуты контракты/гайды).
-2. Обнови Memory Bank, если изменились ключевые решения или структура.
+## Bad targets
 
-## Контрольный список ревью
-- [ ] Поведение сохранено (есть тесты/доказательства).
-- [ ] Покрытие 100% (если это правило проекта).
-- [ ] Нет деградации производительности (если это было критично).
-- [ ] Имена и структура улучшились (читабельность выше).
-- [ ] Документация обновлена (если нужно).
+- opportunistic redesign during an unrelated task
+- hidden behavior changes packaged as cleanup
+- cross-repo style crusades with no acceptance criteria
 
-## Связанные процессы
-- Оркестрация: `agent-orchestration.md`
-- Документация: `documentation-workflow.md`
-- Инциденты (если рефакторинг вынужденный): `hotfix-emergency.md`
+## Verification
 
+- behavior remains aligned with tests or known expectations
+- diff stays focused on the stated refactor goal
+- complexity or duplication is measurably reduced

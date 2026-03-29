@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Agent Manager Types
  *
  * Re-exports types from @kilocode/core-schemas for consistency
@@ -7,9 +7,7 @@
 
 import type { Session as RemoteSession } from "../../../shared/kilocode/cli-sessions/core/SessionClient"
 
-// Re-export all agent manager types from core-schemas
 export {
-	// Schemas
 	agentStatusSchema,
 	sessionSourceSchema,
 	parallelModeInfoSchema,
@@ -21,7 +19,6 @@ export {
 	availableModelSchema,
 	availableModeSchema,
 	startSessionMessageSchema,
-	// Types
 	type AgentStatus,
 	type SessionSource,
 	type ParallelModeInfo,
@@ -34,6 +31,19 @@ export {
 	type AvailableMode,
 	type StartSessionMessage,
 } from "@kilocode/core-schemas"
+export {
+	sessionGroupSchema,
+	// kilocode_change
+	sessionGroupEventSchema,
+	sessionGroupMessageSchema,
+	rootTaskMessageSchema,
+	schedulerStateSchema,
+	type SessionGroup,
+	// kilocode_change
+	type SessionGroupEvent,
+	type SessionGroupMessage,
+	type RootTaskMessage,
+	type SchedulerState,
+} from "../../../../packages/core-schemas/src/agent-manager/session-group"
 
-// Re-export remote session shape from shared session client for consistency
 export type { RemoteSession }

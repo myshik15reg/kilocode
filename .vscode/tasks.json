@@ -20,8 +20,9 @@
 		{
 			"label": "watch:pnpm",
 			"type": "shell",
-			"command": "npx",
+			"command": "pnpm",
 			"args": [
+				"dlx",
 				"nodemon",
 				"--watch",
 				"package.json",
@@ -74,7 +75,7 @@
 			"label": "watch:bundle",
 			"dependsOn": ["watch:pnpm"],
 			"type": "shell",
-			"command": "npx turbo watch:bundle",
+			"command": "pnpm turbo watch:bundle",
 			"group": "build",
 			"problemMatcher": {
 				"owner": "esbuild",
@@ -97,7 +98,7 @@
 			"label": "watch:tsc",
 			"dependsOn": ["watch:pnpm"],
 			"type": "shell",
-			"command": "npx turbo watch:tsc",
+			"command": "pnpm turbo watch:tsc",
 			"group": "build",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,

@@ -62,7 +62,7 @@
 		"contact": {
 			"label": "हमसे बात करने की जरूरत है? लिखें"
 		},
-		"community": "सुझाव चाहिए या बस अन्य AlfaCode assistant उपयोगकर्ताओं के साथ घूमना चाहते हैं? <redditLink>reddit.com/r/kilocode</redditLink> या <discordLink>kilo.ai/discord</discordLink> में शामिल हों",
+		"community": "सुझाव चाहिए या बस अन्य AlfaCode assistant उपयोगकर्ताओं के साथ घूमना चाहते हैं? <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> या <discordLink>alfacode.ai/discord</discordLink> में शामिल हों",
 		"contactAndCommunity": "संपर्क और समुदाय",
 		"manageSettings": "सेटिंग्स प्रबंधित करें",
 		"debugMode": {
@@ -558,8 +558,8 @@
 			"instructions": "उपयोग के दौरान, एक डायलॉग बॉक्स पॉप अप होगा और वर्तमान संदेश स्वचालित रूप से क्लिपबोर्ड पर कॉपी हो जाएगा। आपको इन्हें AI के वेब संस्करणों (जैसे ChatGPT या Claude) में पेस्ट करना होगा, फिर AI की प्रतिक्रिया को डायलॉग बॉक्स में वापस कॉपी करें और पुष्टि बटन पर क्लिक करें।"
 		},
 		"roo": {
-			"authenticatedMessage": "आपके Roo Code Cloud खाते के माध्यम से सुरक्षित रूप से प्रमाणित।",
-			"connectButton": "Roo Code Cloud से कनेक्ट करें"
+			"authenticatedMessage": "आपके AlfaCode assistant Cloud खाते के माध्यम से सुरक्षित रूप से प्रमाणित।",
+			"connectButton": "AlfaCode assistant Cloud से कनेक्ट करें"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -629,10 +629,9 @@
 			"none": "कोई नहीं",
 			"minimal": "न्यूनतम (सबसे तेज़)",
 			"high": "उच्च",
-			"xhigh": "बहुत उच्च",
+			"xhigh": "अत्यंत उच्च",
 			"medium": "मध्यम",
-			"low": "निम्न",
-			"xhigh": "अत्यंत उच्च"
+			"low": "निम्न"
 		},
 		"verbosity": {
 			"label": "आउटपुट वर्बोसिटी",
@@ -856,11 +855,11 @@
 		},
 		"outputLineLimit": {
 			"label": "टर्मिनल आउटपुट सीमा",
-			"description": "सीमा के अंदर रहने के लिए पहली और आखिरी पंक्तियाँ रखता है और बीच वाली हटा देता है। token बचाने के लिए कम करें; Kilo को अधिक मध्य विवरण देने के लिए बढ़ाएं। Kilo उस स्थान पर प्लेसहोल्डर देखता है जहां सामग्री छोड़ी गई है।<0>अधिक जानें</0>"
+			"description": "सीमा के अंदर रहने के लिए पहली और आखिरी पंक्तियाँ रखता है और बीच वाली हटा देता है। token बचाने के लिए कम करें; AlfaCode assistant को अधिक मध्य विवरण देने के लिए बढ़ाएं। AlfaCode assistant उस स्थान पर प्लेसहोल्डर देखता है जहां सामग्री छोड़ी गई है।<0>अधिक जानें</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "टर्मिनल वर्ण सीमा",
-			"description": "मेमोरी समस्याओं को रोकने के लिए आउटपुट आकार पर कठोर सीमा लगाकर लाइन सीमा को ओवरराइड करता है। यदि पार हो जाती है, तो शुरुआत और अंत रखता है और Kilo को प्लेसहोल्डर दिखाता है जहां सामग्री छोड़ी गई है। <0>अधिक जानें</0>"
+			"description": "मेमोरी समस्याओं को रोकने के लिए आउटपुट आकार पर कठोर सीमा लगाकर लाइन सीमा को ओवरराइड करता है। यदि पार हो जाती है, तो शुरुआत और अंत रखता है और AlfaCode assistant को प्लेसहोल्डर दिखाता है जहां सामग्री छोड़ी गई है। <0>अधिक जानें</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "टर्मिनल शेल एकीकरण टाइमआउट",
@@ -868,7 +867,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "इनलाइन टर्मिनल का उपयोग करें (अनुशंसित)",
-			"description": "तेज़, अधिक विश्वसनीय रन के लिए शेल प्रोफ़ाइल/एकीकरण को बायपास करने हेतु इनलाइन टर्मिनल (चैट) में कमांड चलाएं। अक्षम होने पर, Kilo आपकी शेल प्रोफ़ाइल, प्रॉम्प्ट और प्लगइन के साथ VS Code टर्मिनल का उपयोग करता है। <0>अधिक जानें</0>"
+			"description": "तेज़, अधिक विश्वसनीय रन के लिए शेल प्रोफ़ाइल/एकीकरण को बायपास करने हेतु इनलाइन टर्मिनल (चैट) में कमांड चलाएं। अक्षम होने पर, AlfaCode assistant आपकी शेल प्रोफ़ाइल, प्रॉम्प्ट और प्लगइन के साथ VS Code टर्मिनल का उपयोग करता है। <0>अधिक जानें</0>"
 		},
 		"commandDelay": {
 			"label": "टर्मिनल कमांड विलंब",
@@ -917,7 +916,7 @@
 	"advanced": {
 		"diff": {
 			"label": "diffs के माध्यम से संपादन सक्षम करें",
-			"description": "जब सक्षम होता है, Kilo फाइलों को तेजी से संपादित कर सकेगा और स्वचालित रूप से काटे गए पूर्ण-फाइल लेखन को अस्वीकार करेगा।",
+			"description": "जब सक्षम होता है, AlfaCode assistant फाइलों को तेजी से संपादित कर सकेगा और स्वचालित रूप से काटे गए पूर्ण-फाइल लेखन को अस्वीकार करेगा।",
 			"strategy": {
 				"label": "Diff रणनीति",
 				"options": {
@@ -972,7 +971,7 @@
 		},
 		"MORPH_FAST_APPLY": {
 			"name": "Fast Apply सक्षम करें",
-			"description": "जब सक्षम होता है, तो AlfaCode assistant कोड संशोधनों के लिए अनुकूलित विशेष मॉडल के साथ Fast Apply का उपयोग करके फ़ाइलें संपादित कर सकता है। Kilo Gateway Provider, OpenRouter, या Morph API कुंजी की आवश्यकता है।",
+			"description": "जब सक्षम होता है, तो AlfaCode assistant कोड संशोधनों के लिए अनुकूलित विशेष मॉडल के साथ Fast Apply का उपयोग करके फ़ाइलें संपादित कर सकता है। AlfaCode Gateway, OpenRouter, या Morph API कुंजी की आवश्यकता है।",
 			"apiProvider": "API प्रदाता",
 			"apiProviderList": {
 				"current": "वर्तमान"
@@ -1035,7 +1034,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "कस्टम टूल सक्षम करें",
-			"description": "सक्षम होने पर, Kilo आपके प्रोजेक्ट की .kilocode/tools निर्देशिका या वैश्विक टूल के लिए ~/.kilocode/tools से कस्टम TypeScript/JavaScript टूल लोड और उपयोग कर सकता है। नोट: ये टूल स्वचालित रूप से स्वत:-अनुमोदित होंगे।",
+			"description": "सक्षम होने पर, AlfaCode assistant आपके प्रोजेक्ट की .kilocode/tools निर्देशिका या वैश्विक टूल के लिए ~/.kilocode/tools से कस्टम TypeScript/JavaScript टूल लोड और उपयोग कर सकता है। नोट: ये टूल स्वचालित रूप से स्वत:-अनुमोदित होंगे।",
 			"toolsHeader": "उपलब्ध कस्टम टूल",
 			"noTools": "कोई कस्टम टूल लोड नहीं हुआ। अपने प्रोजेक्ट की .kilocode/tools निर्देशिका या वैश्विक टूल के लिए ~/.kilocode/tools में .ts या .js फ़ाइलें जोड़ें।",
 			"refreshButton": "रिफ्रेश करें",
@@ -1087,8 +1086,8 @@
 		"allModels": "सभी मॉडल"
 	},
 	"footer": {
-		"feedback": "यदि आपके कोई प्रश्न या प्रतिक्रिया है, तो <githubLink>github.com/Kilo-Org/kilocode</githubLink> पर एक मुद्दा खोलने या <redditLink>reddit.com/r/kilocode</redditLink> या <discordLink>kilo.ai/discord</discordLink> में शामिल होने में संकोच न करें",
-		"support": "वित्तीय प्रश्नों के लिए, कृपया <supportLink>https://kilo.ai/support</supportLink> पर ग्राहक सहायता से संपर्क करें",
+		"feedback": "यदि आपके कोई प्रश्न या प्रतिक्रिया है, तो <githubLink>github.com/Alfa-Org/alfacode</githubLink> पर एक मुद्दा खोलने या <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> या <discordLink>alfacode.ai/discord</discordLink> में शामिल होने में संकोच न करें",
+		"support": "वित्तीय प्रश्नों के लिए, कृपया <supportLink>https://alfacode.ai/support</supportLink> पर ग्राहक सहायता से संपर्क करें",
 		"telemetry": {
 			"label": "त्रुटि और उपयोग रिपोर्टिंग की अनुमति दें",
 			"description": "उपयोग डेटा और त्रुटि रिपोर्ट भेजकर AlfaCode assistant को बेहतर बनाने में मदद करें। कोड, प्रॉम्प्ट, या व्यक्तिगत जानकारी कभी भी नहीं भेजी जाती है। अधिक विवरण के लिए हमारी गोपनीयता नीति देखें।"

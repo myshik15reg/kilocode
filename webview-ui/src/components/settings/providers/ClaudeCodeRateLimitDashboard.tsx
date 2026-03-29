@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react"
 import type { ClaudeCodeRateLimitInfo } from "@roo-code/types"
+import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { vscode } from "@src/utils/vscode"
 
 interface ClaudeCodeRateLimitDashboardProps {
@@ -9,13 +10,13 @@ interface ClaudeCodeRateLimitDashboardProps {
 /**
  * Formats a Unix timestamp reset time into a human-readable duration
  */
-function formatResetTime(resetTimestamp: number): string {
-	if (!resetTimestamp) return "N/A"
+function formatDuration(resetTimestamp: number, t: (key: string, options?: Record<string, any>) => string): string {
+	if (!resetTimestamp) return t("settings:providers.claudeCodeRateLimits.time.notAvailable")
 
 	const now = Date.now() / 1000 // Current time in seconds
 	const diff = resetTimestamp - now
 
-	if (diff <= 0) return "Now"
+	if (diff <= 0) return t("settings:providers.claudeCodeRateLimits.time.now")
 
 	const hours = Math.floor(diff / 3600)
 	const minutes = Math.floor((diff % 3600) / 60)
@@ -23,14 +24,14 @@ function formatResetTime(resetTimestamp: number): string {
 	if (hours > 24) {
 		const days = Math.floor(hours / 24)
 		const remainingHours = hours % 24
-		return `${days}d ${remainingHours}h`
+		return t("settings:providers.claudeCodeRateLimits.duration.daysHours", { days, hours: remainingHours })
 	}
 
 	if (hours > 0) {
-		return `${hours}h ${minutes}m`
+		return t("settings:providers.claudeCodeRateLimits.duration.hoursMinutes", { hours, minutes })
 	}
 
-	return `${minutes}m`
+	return t("settings:providers.claudeCodeRateLimits.duration.minutes", { minutes })
 }
 
 /**
@@ -68,6 +69,7 @@ const UsageProgressBar: React.FC<{ utilization: number; label: string }> = ({ ut
 }
 
 export const ClaudeCodeRateLimitDashboard: React.FC<ClaudeCodeRateLimitDashboardProps> = ({ isAuthenticated }) => {
+	const { t } = useAppTranslation()
 	const [rateLimits, setRateLimits] = useState<ClaudeCodeRateLimitInfo | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
@@ -117,7 +119,9 @@ export const ClaudeCodeRateLimitDashboard: React.FC<ClaudeCodeRateLimitDashboard
 	if (isLoading && !rateLimits) {
 		return (
 			<div className="bg-vscode-editor-background border border-vscode-panel-border rounded-md p-3">
-				<div className="text-sm text-vscode-descriptionForeground">Loading rate limits...</div>
+				<div className="text-sm text-vscode-descriptionForeground">
+					{t("settings:providers.claudeCodeRateLimits.loading")}
+				</div>
 			</div>
 		)
 	}
@@ -126,13 +130,16 @@ export const ClaudeCodeRateLimitDashboard: React.FC<ClaudeCodeRateLimitDashboard
 		return (
 			<div className="bg-vscode-editor-background border border-vscode-panel-border rounded-md p-3">
 				<div className="flex items-center justify-between">
-					<div className="text-sm text-vscode-errorForeground">Failed to load rate limits</div>
+					<div className="text-sm text-vscode-errorForeground">
+						{t("settings:providers.claudeCodeRateLimits.loadError")}
+					</div>
 					<button
 						onClick={fetchRateLimits}
 						className="text-xs text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground cursor-pointer bg-transparent border-none">
-						Retry
+						{t("settings:providers.claudeCodeRateLimits.retry")}
 					</button>
 				</div>
+				<div className="mt-2 text-xs text-vscode-descriptionForeground break-words">{error}</div>
 			</div>
 		)
 	}
@@ -141,35 +148,49 @@ export const ClaudeCodeRateLimitDashboard: React.FC<ClaudeCodeRateLimitDashboard
 		return null
 	}
 
+	const fiveHourLimit = rateLimits.representativeClaim || t("settings:providers.claudeCodeRateLimits.window.fiveHour")
+	const fiveHourUsage = t("settings:providers.claudeCodeRateLimits.usedPercent", {
+		percent: formatUtilization(rateLimits.fiveHour.utilization),
+	})
+	const fiveHourReset = t("settings:providers.claudeCodeRateLimits.resetsIn", {
+		time: formatDuration(rateLimits.fiveHour.resetTime, t),
+	})
+
 	return (
 		<div className="bg-vscode-editor-background border border-vscode-panel-border rounded-md p-3">
 			<div className="mb-3">
-				<div className="text-sm font-medium text-vscode-foreground">Usage Limits</div>
+				<div className="text-sm font-medium text-vscode-foreground">
+					{t("settings:providers.claudeCodeRateLimits.title")}
+				</div>
 			</div>
 
 			<div className="space-y-3">
-				{/* 5-hour limit */}
 				<div className="flex flex-col gap-1">
 					<div className="flex items-center justify-between text-xs">
 						<span className="text-vscode-foreground">
-							Limit: {rateLimits.representativeClaim || "5-hour"}
+							{t("settings:providers.claudeCodeRateLimits.limitLabel", { limit: fiveHourLimit })}
 						</span>
 						<span className="text-vscode-descriptionForeground">
-							{formatUtilization(rateLimits.fiveHour.utilization)} used • resets in{" "}
-							{formatResetTime(rateLimits.fiveHour.resetTime)}
+							{fiveHourUsage} • {fiveHourReset}
 						</span>
 					</div>
 					<UsageProgressBar utilization={rateLimits.fiveHour.utilization} label="" />
 				</div>
 
-				{/* Weekly limit (if available) */}
 				{rateLimits.weeklyUnified && rateLimits.weeklyUnified.utilization > 0 && (
 					<div className="flex flex-col gap-1">
 						<div className="flex items-center justify-between text-xs">
-							<span className="text-vscode-foreground">Weekly</span>
+							<span className="text-vscode-foreground">
+								{t("settings:providers.claudeCodeRateLimits.window.weekly")}
+							</span>
 							<span className="text-vscode-descriptionForeground">
-								{formatUtilization(rateLimits.weeklyUnified.utilization)} used • resets in{" "}
-								{formatResetTime(rateLimits.weeklyUnified.resetTime)}
+								{t("settings:providers.claudeCodeRateLimits.usedPercent", {
+									percent: formatUtilization(rateLimits.weeklyUnified.utilization),
+								})}{" "}
+								•{" "}
+								{t("settings:providers.claudeCodeRateLimits.resetsIn", {
+									time: formatDuration(rateLimits.weeklyUnified.resetTime, t),
+								})}
 							</span>
 						</div>
 						<UsageProgressBar utilization={rateLimits.weeklyUnified.utilization} label="" />

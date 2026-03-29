@@ -57,6 +57,12 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calls", () => 
 					}),
 				}),
 			},
+			dispatchOrchestrationExecution: vi.fn().mockResolvedValue({
+				handled: false,
+				route: "direct",
+				decision: { kind: "direct", reason: "direct", confidence: "high" },
+				reason: "direct",
+			}),
 			say: vi.fn().mockResolvedValue(undefined),
 			ask: vi.fn().mockResolvedValue({ response: "yesButtonClicked" }),
 		}

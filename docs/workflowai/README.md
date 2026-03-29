@@ -1,6 +1,6 @@
-# WorkFlowAI - workflow pack для Kilo Code
+# WorkFlowAI - workflow pack для AlfaCode assistant
 
-WorkFlowAI - набор правил, шаблонов и workflow для Kilo Code, который встраивается в другие проекты.
+WorkFlowAI - набор правил, шаблонов и workflow для AlfaCode assistant, который встраивается в другие проекты.
 Фокус: абсолютное качество (TDD, 100% coverage, нулевые lint ошибки) и дисциплина через Memory Bank.
 
 ## Быстрый старт

@@ -292,7 +292,7 @@ describe("HuggingFace Component", () => {
 
 		// Check that model capabilities are displayed
 		expect(screen.getByText("Does not support images")).toBeInTheDocument()
-		expect(screen.getByText("8,192 tokens")).toBeInTheDocument()
+		expect(screen.getByText(/8[\s,\u00A0\u202F]?192 tokens/)).toBeInTheDocument() // kilocode_change
 		// Check that both input and output prices are displayed
 		const priceElements = screen.getAllByText("$0.00 / 1M tokens")
 		expect(priceElements).toHaveLength(2) // One for input, one for output

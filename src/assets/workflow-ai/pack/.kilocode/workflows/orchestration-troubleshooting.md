@@ -1,55 +1,39 @@
-# Диагностика оркестрации (orchestration-troubleshooting)
+﻿# Workflow: orchestration-troubleshooting
 
-Назначение: быстрые действия, когда цепочка режимов/подзадач в Kilo Code работает нестабильно.
+## Goal
 
-## Сбой оркестрации
-Симптомы:
-- неверный режим
-- подзадача не стартует или "зависла"
-- результат подзадачи не вернулся в родительскую задачу
+Recover when multi-mode coordination becomes confused, wasteful, or blocked.
 
-Действия:
-1. Убедись, что есть протокол `.protocols/YYYY-MM-DD-name/` (обязателен всегда).
-2. Перечитай `brief.md` и `plan.md` и зафиксируй текущий "следующий шаг" одним предложением.
-3. Перезапусти проблемный участок через `new_task` в правильном режиме, передав минимально нужный контекст.
-4. Если оркестратор продолжает сбоить, выполни цепочку вручную: `ask` -> `architect` -> `code` -> `tests` -> `review` (role-loop в одной сессии допустим в CLI/без subagents).
-5. Зафиксируй отклонения и принятые решения в `.protocols/YYYY-MM-DD-name/execution.md`.
+## Symptoms
 
-## Расхождение протокола
-Симптомы:
-- работа идёт вне плана
-- `plan.md` больше не отражает реальность
+Use this workflow when one or more of these appears:
 
-Действия:
-1. Обнови `plan.md` так, чтобы он отражал реальность (добавь/удали шаги, поправь статусы).
-2. Запиши "почему" в `execution.md`.
-3. Если изменения большие - вернись в `architect` и переоцени объём работ.
+- handoffs are too vague
+- specialists are duplicating work
+- context is too large or noisy
+- orchestration keeps looping without progress
+- the next responsible mode is unclear
 
-## Падающие тесты
-1. Сначала прочитай вывод падения; не гадай.
-2. Изолируй один падающий тест и воспроизведи локально.
-3. Держи TDD: падающий тест -> минимальный фикс -> рефакторинг.
+## Triage steps
 
-## Покрытие ниже 100%
-1. По отчёту покрытия найди непокрытые ветки.
-2. Добавь тесты на каждую ветку и крайние случаи.
-3. Перезапусти покрытие и убедись, что `lines/branches/functions = 100%`.
+1. Re-state the actual goal.
+2. Check whether orchestration is still needed.
+3. Identify the last good handoff or verified result.
+4. Remove stale or irrelevant context.
+5. Delegate the next smallest clear subtask.
 
-## Ошибки линтера
-1. Исправляй нарушения правил напрямую.
-2. Не отключай правила без явного согласования.
-3. Перезапусти линтер и убедись, что `0 warnings`.
+## Common fixes
 
-## Проблемы с Memory Bank
-1. Прочитай `.kilocode/memory-bank/index.md`.
-2. Обнови `context.md` (и другие файлы Memory Bank при необходимости).
-3. Подтверди актуальность контекста строкой `[MB: OK]`.
+| Problem               | Correction                                                |
+| --------------------- | --------------------------------------------------------- |
+| vague handoff         | rewrite it using the canonical handoff format             |
+| too much context      | replace bulk text with a small capsule and file list      |
+| wrong specialist      | reroute using mode-selection rules                        |
+| overlapping ownership | assign one area to one mode at a time                     |
+| endless routing       | stop and ask one blocking question or pick a safe default |
 
-## Сбои команд или инструментов
-1. Проверь, что инструмент доступен в `PATH`.
-2. Используй запасной вариант: `rg` -> `Get-ChildItem`.
-3. Запиши обходной путь в `execution.md`.
+## References
 
-## Эскалация
-- Прод-инциденты: `~/.kilocode/workflows/hotfix-emergency.md`
-- Хаос в оркестрации: этот файл + `~/.kilocode/workflows/agent-orchestration.md`
+- Orchestration flow: [`agent-orchestration.md`](agent-orchestration.md:1)
+- Handoff protocol: [`../patterns/orchestration/context-handoff.md`](../patterns/orchestration/context-handoff.md:1)
+- Mode selection: [`../skills/mode-selection/SKILL.md`](../skills/mode-selection/SKILL.md:1)

@@ -8,6 +8,7 @@ import { isPathOutsideWorkspace } from "../../../utils/pathUtils"
 import { getReadablePath } from "../../../utils/path"
 import { ToolUse, ToolResponse } from "../../../shared/tools"
 import { editFileTool } from "../EditFileTool"
+import { annotateWithHashline } from "../helpers/hashline"
 
 vi.mock("fs/promises", () => ({
 	default: {
@@ -358,6 +359,8 @@ describe("editFileTool", () => {
 
 			expect(result).toContain("No match found")
 			expect(result).toContain("<error_details>")
+			expect(result).toContain("Selective hashline preview")
+			expect(result).toContain("#HL 1:")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.didToolFailInCurrentTurn).toBe(true)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith(
@@ -381,6 +384,8 @@ describe("editFileTool", () => {
 
 			expect(result).toContain("Expected 1 occurrence(s) but found 3")
 			expect(result).toContain("<error_details>")
+			expect(result).toContain("Selective hashline preview")
+			expect(result).toContain("#HL 1:")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.didToolFailInCurrentTurn).toBe(true)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith(
@@ -413,6 +418,39 @@ describe("editFileTool", () => {
 			expect(mockTask.diffViewProvider.editType).toBe("modify")
 			expect(mockAskApproval).toHaveBeenCalled()
 		})
+
+		// kilocode_change start
+		it("resolves hashline references in old_string", async () => {
+			const fileContent = "Line 1\nLine 2\nLine 3"
+			const hashlineReference = annotateWithHashline(fileContent).split("\n")[1].split("|")[0]
+
+			await executeEditFileTool(
+				{
+					old_string: hashlineReference,
+					new_string: "Modified Line 2",
+				},
+				{ fileContent },
+			)
+
+			expect(mockTask.consecutiveMistakeCount).toBe(0)
+			expect(mockTask.diffViewProvider.editType).toBe("modify")
+			expect(mockAskApproval).toHaveBeenCalled()
+		})
+
+		it("strips hashline prefixes from new_string before writing", async () => {
+			const fileContent = "Line 1\nLine 2\nLine 3"
+
+			await executeEditFileTool(
+				{
+					old_string: "Line 2",
+					new_string: "#HL 2:abc|Modified Line 2",
+				},
+				{ fileContent },
+			)
+
+			expect(mockTask.diffViewProvider.update).toHaveBeenCalledWith("Line 1\nModified Line 2\nLine 3", true)
+		})
+		// kilocode_change end
 
 		it("defaults expected_replacements to 1", async () => {
 			const result = await executeEditFileTool(
@@ -476,7 +514,10 @@ describe("editFileTool", () => {
 			)
 
 			expect(mockTask.consecutiveMistakeCountForEditFile.get(testFilePath)).toBe(2)
-			expect(mockTask.say).toHaveBeenCalledWith("diff_error", expect.stringContaining("Occurrence count mismatch"))
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"diff_error",
+				expect.stringContaining("Occurrence count mismatch"),
+			)
 		})
 
 		it("resets consecutive error counter on successful edit", async () => {

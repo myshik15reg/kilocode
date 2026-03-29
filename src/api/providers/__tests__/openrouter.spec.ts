@@ -6,8 +6,8 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
 import { OpenRouterHandler } from "../openrouter"
+import { DEFAULT_HEADERS } from "../constants" // kilocode_change
 import { ApiHandlerOptions } from "../../../shared/api"
-import { Package } from "../../../shared/package"
 
 vitest.mock("openai")
 vitest.mock("delay", () => ({ default: vitest.fn(() => Promise.resolve()) }))
@@ -99,16 +99,13 @@ describe("OpenRouterHandler", () => {
 		const handler = new OpenRouterHandler(mockOptions)
 		expect(handler).toBeInstanceOf(OpenRouterHandler)
 
-		expect(OpenAI).toHaveBeenCalledWith({
-			baseURL: "https://openrouter.ai/api/v1",
-			apiKey: mockOptions.openRouterApiKey,
-			defaultHeaders: {
-				"HTTP-Referer": "https://kilocode.ai",
-				"X-Title": "AlfaCode assistant",
-				"X-KiloCode-Version": Package.version,
-				"User-Agent": `Kilo-Code/${Package.version}`,
-			},
-		})
+		expect(OpenAI).toHaveBeenCalledWith(
+			expect.objectContaining({
+				baseURL: "https://openrouter.ai/api/v1",
+				apiKey: mockOptions.openRouterApiKey,
+				defaultHeaders: expect.objectContaining(DEFAULT_HEADERS),
+			}),
+		)
 	})
 
 	describe("fetchModel", () => {

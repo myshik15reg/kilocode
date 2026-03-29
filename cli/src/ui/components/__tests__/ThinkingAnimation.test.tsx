@@ -80,13 +80,14 @@ describe("ThinkingAnimation", () => {
 		const { lastFrame } = render(<ThinkingAnimation />)
 
 		// Ensure the interval has started ticking before asserting about looping
-		await advanceUntilFrame(lastFrame, ANIMATION_FRAMES[1])
+		await advanceUntilFrame(lastFrame, ANIMATION_FRAMES[2])
 
-		// After reaching frame[1], it should loop back to frame[0] within one cycle
-		await advanceUntilFrame(lastFrame, ANIMATION_FRAMES[0], ANIMATION_FRAMES.length)
+		const referenceFrame = getDisplayedFrame(lastFrame())
+		expect(referenceFrame).toBeDefined()
 
-		// Should be back at first frame
-		expect(lastFrame()).toContain(ANIMATION_FRAMES[0])
+		// After one full cycle, we should return to the same frame again.
+		await vi.advanceTimersByTimeAsync(TIMER_STEP * ANIMATION_FRAMES.length)
+		expect(getDisplayedFrame(lastFrame())).toBe(referenceFrame)
 	})
 
 	it("should clean up interval on unmount", () => {

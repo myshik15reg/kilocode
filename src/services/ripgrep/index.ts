@@ -111,6 +111,11 @@ async function execRipgrep(bin: string, args: string[]): Promise<string> {
 		let output = ""
 		let lineCount = 0
 		const maxLines = MAX_RESULTS * 5 // limiting ripgrep output with max lines since there's no other way to limit results. it's okay that we're outputting as json, since we're parsing it line by line and ignore anything that's not part of a match. This assumes each result is at most 5 lines.
+		// kilocode_change start
+		const stderrDecoder = new TextDecoder("utf-8")
+		const decodeUtf8Chunk = (chunk: string | Uint8Array) =>
+			typeof chunk === "string" ? chunk : stderrDecoder.decode(chunk, { stream: true })
+		// kilocode_change end
 
 		rl.on("line", (line) => {
 			if (lineCount < maxLines) {
@@ -123,10 +128,12 @@ async function execRipgrep(bin: string, args: string[]): Promise<string> {
 		})
 
 		let errorOutput = ""
-		rgProcess.stderr.on("data", (data) => {
-			errorOutput += data.toString()
+		rgProcess.stderr.on("data", (data: string | Uint8Array) => {
+			// kilocode_change - decode UTF-8 as a stream to preserve multibyte characters across chunk boundaries
+			errorOutput += decodeUtf8Chunk(data)
 		})
 		rl.on("close", () => {
+			errorOutput += stderrDecoder.decode()
 			if (errorOutput) {
 				reject(new Error(`ripgrep process error: ${errorOutput}`))
 			} else {

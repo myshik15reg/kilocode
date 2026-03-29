@@ -1,0 +1,18 @@
+{
+	"sourceRoot": "src/assets/workflow-ai/pack",
+	"targetRoot": "WorkFlowAI",
+	"include": [
+		".clinerules",
+		".kilocodemodes",
+		".gitattributes",
+		"AGENTS.md",
+		"README.md",
+		"THIRD_PARTY_NOTICES.md",
+		"docs/**",
+		"third_party/**",
+		".kilocode/**",
+		".protocols/README.md",
+		".protocols/index.md"
+	],
+	"exclude": [".kilocode/evidence/**", "**/.DS_Store", "**/Thumbs.db"]
+}

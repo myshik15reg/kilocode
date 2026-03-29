@@ -6,7 +6,6 @@ import EventEmitter from "events"
 import { Anthropic } from "@anthropic-ai/sdk"
 import delay from "delay"
 import axios from "axios"
-import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
 
 import {
@@ -32,12 +31,14 @@ import {
 	type CloudUserInfo,
 	type CloudOrganizationMembership,
 	type CreateTaskOptions,
+	type TaskResumeControl,
 	type TokenUsage,
 	type ToolUsage,
 	type ExtensionMessage,
 	type ExtensionState,
 	type MarketplaceInstalledMetadata,
 	RooCodeEventName,
+	TaskStatus,
 	TelemetryEventName, // kilocode_change
 	requestyDefaultModelId,
 	openRouterDefaultModelId,
@@ -48,6 +49,9 @@ import {
 	DEFAULT_MODES,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	getModelId,
+	type BranchTaskOptions,
+	type TechDebtItem,
+	type TechDebtStatus,
 } from "@roo-code/types"
 import { aggregateTaskCostsRecursive, type AggregatedCosts } from "./aggregateTaskCosts"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -57,17 +61,17 @@ import { Package } from "../../shared/package"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
-import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
+import { Mode, defaultModeSlug } from "../../shared/modes"
 import { experimentDefault } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
-import { ProfileValidator } from "../../shared/ProfileValidator"
 
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { downloadTask } from "../../integrations/misc/export-markdown"
 import { getTheme } from "../../integrations/theme/getTheme"
 import WorkspaceTracker from "../../integrations/workspace/WorkspaceTracker"
+import { showSystemNotification } from "../../integrations/notifications" // kilocode_change
 
 import { McpHub } from "../../services/mcp/McpHub"
 import { McpServerManager } from "../../services/mcp/McpServerManager"
@@ -78,6 +82,7 @@ import type { IndexProgressUpdate } from "../../services/code-index/interfaces/m
 import { MdmService } from "../../services/mdm/MdmService"
 import { SessionManager } from "../../shared/kilocode/cli-sessions/core/SessionManager"
 import { SkillsManager } from "../../services/skills/SkillsManager"
+import type { ApiMessage } from "../task-persistence/apiMessages"
 
 import { fileExistsAtPath } from "../../utils/fs"
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
@@ -85,7 +90,7 @@ import { getWorkspaceGitInfo } from "../../utils/git"
 import { getWorkspacePath } from "../../utils/path"
 import { OrganizationAllowListViolationError } from "../../utils/errors"
 
-import { setPanel } from "../../activate/registerCommands"
+import { getAgentManagerProvider, setPanel } from "../../activate/registerCommands"
 
 import { t } from "../../i18n"
 
@@ -101,13 +106,43 @@ import { Task } from "../task/Task"
 import { getSystemPromptFilePath } from "../prompts/sections/custom-system-prompt"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
-import type { ClineMessage, TodoItem } from "@roo-code/types"
-import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
-import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 import { REQUESTY_BASE_URL } from "../../shared/utils/requesty"
-import { validateAndFixToolResultIds } from "../task/validateToolResultIds"
+import { orchestrationEventStore } from "../orchestration/events/store"
+import { getActivityProjection } from "../orchestration/events/projections"
+import { type OrchestrationActivityPersistence, publishOrchestrationActivity } from "../orchestration/events/publish"
+import { SubagentCoordinator } from "../orchestration/subagents/SubagentCoordinator"
+import {
+	SubagentDelegationService,
+	type DelegateParentAndOpenChildParams,
+	type LaunchBackgroundSubagentParams,
+} from "../orchestration/subagents/SubagentDelegationService"
+import {
+	SubagentResumeService,
+	type ReopenParentFromDelegationParams,
+} from "../orchestration/subagents/SubagentResumeService"
+import { TaskCancellationService } from "../orchestration/task-control/TaskCancellationService"
+import { TaskControlService } from "../orchestration/task-control/TaskControlService"
+import {
+	TaskRecoveryPacketService,
+	type TaskRecoveryPacket,
+} from "../orchestration/task-control/TaskRecoveryPacketService"
+import { TaskDetachmentService } from "../orchestration/task-control/TaskDetachmentService"
+import { TaskRootStackLifecycleService } from "../orchestration/task-control/TaskRootStackLifecycleService"
+import { TaskRehydrationService } from "../orchestration/task-control/TaskRehydrationService"
+import { TaskRestartService } from "../orchestration/task-control/TaskRestartService"
+import { TaskBranchService } from "../orchestration/task-control/TaskBranchService"
+import { prepareTaskBirthOrchestration } from "../orchestration/task-control/TaskBirthOrchestrationService" // kilocode_change
+// kilocode_change start
+import {
+	createSubagentServices as composeSubagentServices,
+	type SubagentServiceRuntime,
+} from "../orchestration/subagents/SubagentServiceComposition"
+// kilocode_change end
+import { AgentManagerBridge } from "../orchestration/bridge/AgentManagerBridge"
+import { HelperModelRouter } from "../helper-routing/HelperModelRouter"
+import { TechDebtService } from "../tech-debt/TechDebtService"
 
 //kilocode_change start
 import { McpDownloadResponse, McpMarketplaceCatalog } from "../../shared/kilocode/mcp"
@@ -123,7 +158,7 @@ import { kilo_execIfExtension } from "../../shared/kilocode/cli-sessions/extensi
 import { DeviceAuthHandler } from "../kilocode/webview/deviceAuthHandler"
 
 export type ClineProviderState = Awaited<ReturnType<ClineProvider["getState"]>>
-// kilocode_change end
+export type { TaskRecoveryPacket } from "../orchestration/task-control/TaskRecoveryPacketService"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -158,6 +193,8 @@ export class ClineProvider
 	private webviewDisposables: vscode.Disposable[] = []
 	private view?: vscode.WebviewView | vscode.WebviewPanel
 	private clineStack: Task[] = []
+	private backgroundRootTaskStacks: Map<string, Task[]> = new Map() // kilocode_change
+	private focusedRootTaskId?: string // kilocode_change
 	private codeIndexStatusSubscription?: vscode.Disposable
 	private codeIndexManager?: CodeIndexManager
 	private _workspaceTracker?: WorkspaceTracker // workSpaceTracker read-only for access outside this class
@@ -173,6 +210,18 @@ export class ClineProvider
 
 	private recentTasksCache?: string[]
 	private pendingOperations: Map<string, PendingEditOperation> = new Map()
+	private recoveryPacketCache: Map<string, TaskRecoveryPacket> = new Map() // kilocode_change
+	private subagentCoordinator?: SubagentCoordinator
+	private subagentDelegationService: SubagentDelegationService
+	private subagentResumeService: SubagentResumeService
+	private taskControlService: TaskControlService
+	private taskCancellationService: TaskCancellationService
+	private taskRecoveryPacketService: TaskRecoveryPacketService
+	private taskDetachmentService: TaskDetachmentService
+	private taskRootStackLifecycleService: TaskRootStackLifecycleService
+	private taskRehydrationService: TaskRehydrationService
+	private taskRestartService: TaskRestartService
+	private taskBranchService: TaskBranchService
 	private static readonly PENDING_OPERATION_TIMEOUT_MS = 30000 // 30 seconds
 
 	private cloudOrganizationsCache: CloudOrganizationMembership[] | null = null
@@ -232,6 +281,29 @@ export class ClineProvider
 		})
 
 		this.marketplaceManager = new MarketplaceManager(this.context, this.customModesManager)
+		const {
+			subagentDelegationService,
+			subagentResumeService,
+			taskControlService,
+			taskCancellationService,
+			taskRecoveryPacketService,
+			taskDetachmentService,
+			rootStackLifecycleService,
+			taskRehydrationService,
+			taskRestartService,
+			taskBranchService,
+		} = this.createSubagentServices() // kilocode_change
+		this.subagentDelegationService = subagentDelegationService
+		this.subagentResumeService = subagentResumeService
+		this.taskControlService = taskControlService
+		this.taskCancellationService = taskCancellationService
+		this.taskRecoveryPacketService = taskRecoveryPacketService
+		this.taskDetachmentService = taskDetachmentService
+		this.taskRootStackLifecycleService = rootStackLifecycleService
+		this.taskRehydrationService = taskRehydrationService
+		this.taskRestartService = taskRestartService
+		this.taskBranchService = taskBranchService
+		this.initializeSubagentCoordinator()
 
 		// Forward <most> task events to the provider.
 		// We do something fairly similar for the IPC-based API.
@@ -241,6 +313,7 @@ export class ClineProvider
 			// Create named listener functions so we can remove them later.
 			const onTaskStarted = () => this.emit(RooCodeEventName.TaskStarted, instance.taskId)
 			const onTaskCompleted = (taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage) => {
+				void this.handleTaskCompletionLifecycle(taskId) // kilocode_change
 				kilo_execIfExtension(() => {
 					SessionManager.init()?.doSync(true)
 				})
@@ -248,6 +321,13 @@ export class ClineProvider
 				return this.emit(RooCodeEventName.TaskCompleted, taskId, tokenUsage, toolUsage) // kilocode_change: return
 			}
 			const onTaskAborted = async () => {
+				void this.persistTaskStopState(
+					instance.taskId,
+					instance.abortReason ?? "user_cancelled",
+					instance.abortReason === "streaming_failed"
+						? "Task stopped because the model stream failed."
+						: "Task execution was stopped before completion.",
+				) // kilocode_change
 				this.emit(RooCodeEventName.TaskAborted, instance.taskId)
 
 				try {
@@ -496,6 +576,7 @@ export class ClineProvider
 		// Add this cline instance into the stack that represents the order of
 		// all the called tasks.
 		this.clineStack.push(task)
+		this.focusedRootTaskId = task.rootTaskId ?? task.rootTask?.taskId ?? task.taskId // kilocode_change
 		task.emit(RooCodeEventName.TaskFocused)
 
 		// Perform special setup provider specific tasks.
@@ -948,227 +1029,60 @@ export class ClineProvider
 		})
 		this.webviewDisposables.push(configDisposable)
 
-		// If the extension is starting a new session, clear previous task state.
-		await this.removeClineFromStack()
+		// kilocode_change start
+		// Reopening the webview must not abort or clear active/background root tasks.
+		// Task focus/restoration is handled through explicit clear/show flows instead.
+		if (this.clineStack.length > 0) {
+			this.taskRootStackLifecycleService.snapshotCurrentStackToBackground()
+		}
+		// kilocode_change end
 	}
 
 	public async createTaskWithHistoryItem(
 		historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task },
 		options?: { startTask?: boolean },
 	) {
-		// Check if we're rehydrating the current task to avoid flicker
-		const currentTask = this.getCurrentTask()
-		const isRehydratingCurrentTask = currentTask && currentTask.taskId === historyItem.id
-
-		if (!isRehydratingCurrentTask) {
-			await this.removeClineFromStack()
+		const { targetRootTaskId, isRehydratingCurrentTask, restoredTask } =
+			await this.taskRehydrationService.prepareRehydration(historyItem) // kilocode_change
+		if (restoredTask) {
+			return restoredTask
 		}
 
-		// If the history item has a saved mode, restore it and its associated API configuration.
-		if (historyItem.mode) {
-			// Validate that the mode still exists
-			const customModes = await this.customModesManager.getCustomModes()
-			const modeExists = getModeBySlug(historyItem.mode, customModes) !== undefined
+		await this.taskRehydrationService.restoreModeAndProfile(historyItem) // kilocode_change
 
-			if (!modeExists) {
-				// Mode no longer exists, fall back to default mode.
-				this.log(
-					`Mode '${historyItem.mode}' from history no longer exists. Falling back to default mode '${defaultModeSlug}'.`,
-				)
-				historyItem.mode = defaultModeSlug
-			}
-
-			await this.updateGlobalState("mode", historyItem.mode)
-
-			// Load the saved API config for the restored mode if it exists.
-			// Skip mode-based profile activation if historyItem.apiConfigName exists,
-			// since the task's specific provider profile will override it anyway.
-			if (!historyItem.apiConfigName) {
-				const savedConfigId = await this.providerSettingsManager.getModeConfigId(historyItem.mode)
-				const listApiConfig = await this.providerSettingsManager.listConfig()
-
-				// Update listApiConfigMeta first to ensure UI has latest data.
-				await this.updateGlobalState("listApiConfigMeta", listApiConfig)
-
-				// If this mode has a saved config, use it.
-				if (savedConfigId) {
-					const profile = listApiConfig.find(({ id }) => id === savedConfigId)
-
-					if (profile?.name) {
-						try {
-							// Check if the profile has actual API configuration (not just an id).
-							// In CLI mode, the ProviderSettingsManager may return empty default profiles
-							// that only contain 'id' and 'name' fields. Activating such a profile would
-							// overwrite the CLI's working API configuration with empty settings.
-							const fullProfile = await this.providerSettingsManager.getProfile({ name: profile.name })
-							const hasActualSettings = !!fullProfile.apiProvider
-
-							if (hasActualSettings) {
-								await this.activateProviderProfile({ name: profile.name })
-							} else {
-								// The task will continue with the current/default configuration.
-							}
-						} catch (error) {
-							// Log the error but continue with task restoration.
-							this.log(
-								`Failed to restore API configuration for mode '${historyItem.mode}': ${
-									error instanceof Error ? error.message : String(error)
-								}. Continuing with default configuration.`,
-							)
-							// The task will continue with the current/default configuration.
-						}
-					}
-				}
-			}
-		}
-
-		// If the history item has a saved API config name (provider profile), restore it.
-		// This overrides any mode-based config restoration above, because the task's
-		// specific provider profile takes precedence over mode defaults.
-		if (historyItem.apiConfigName) {
-			const listApiConfig = await this.providerSettingsManager.listConfig()
-			// Keep global state/UI in sync with latest profiles for parity with mode restoration above.
-			await this.updateGlobalState("listApiConfigMeta", listApiConfig)
-			const profile = listApiConfig.find(({ name }) => name === historyItem.apiConfigName)
-
-			if (profile?.name) {
-				try {
-					await this.activateProviderProfile(
-						{ name: profile.name },
-						{ persistModeConfig: false, persistTaskHistory: false },
-					)
-				} catch (error) {
-					// Log the error but continue with task restoration.
-					this.log(
-						`Failed to restore API configuration '${historyItem.apiConfigName}' for task: ${
-							error instanceof Error ? error.message : String(error)
-						}. Continuing with current configuration.`,
-					)
-				}
-			} else {
-				// Profile no longer exists, log warning but continue
-				this.log(
-					`Provider profile '${historyItem.apiConfigName}' from history no longer exists. Using current configuration.`,
-				)
-			}
-		}
-
-		const {
-			apiConfiguration,
-			diffEnabled: enableDiff,
-			enableCheckpoints,
-			checkpointTimeout,
-			fuzzyMatchThreshold,
-			experiments,
-			cloudUserInfo,
-			taskSyncEnabled,
-		} = await this.getState()
-
-		const task = new Task({
-			context: this.context, // kilocode_change
+		// kilocode_change start
+		const { instantiateHistoryTask, placeTask } = await prepareTaskBirthOrchestration({
+			context: this.context,
 			provider: this,
-			apiConfiguration,
-			enableDiff,
-			enableCheckpoints,
-			checkpointTimeout,
-			fuzzyMatchThreshold,
-			consecutiveMistakeLimit: apiConfiguration.consecutiveMistakeLimit,
-			historyItem,
-			experiments,
-			rootTask: historyItem.rootTask,
-			parentTask: historyItem.parentTask,
-			taskNumber: historyItem.number,
-			workspacePath: historyItem.workspace,
-			onCreated: this.taskCreationCallback,
-			startTask: options?.startTask ?? true,
-			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, taskSyncEnabled),
-			// Preserve the status from the history item to avoid overwriting it when the task saves messages
-			initialStatus: historyItem.status,
+			taskCreationCallback: this.taskCreationCallback,
+			getState: () => this.getState(),
+			getCurrentStack: () => this.clineStack,
+			setCurrentStack: (stack) => {
+				this.clineStack = stack
+			},
+			snapshotCurrentStackToBackground: () => this.snapshotCurrentStackToBackground(),
+			addClineToStack: (task) => this.addClineToStack(task),
+			rootStackLifecycle: this.taskRootStackLifecycleService,
+			log: (message) => this.log(message),
 		})
 
+		const task = instantiateHistoryTask({
+			historyItem,
+			startTask: options?.startTask ?? true,
+		})
+		// kilocode_change end
+
 		if (isRehydratingCurrentTask) {
-			// Replace the current task in-place to avoid UI flicker
-			const stackIndex = this.clineStack.length - 1
-
-			// Properly dispose of the old task to ensure garbage collection
-			const oldTask = this.clineStack[stackIndex]
-
-			// Abort the old task to stop running processes and mark as abandoned
-			try {
-				await oldTask.abortTask(true)
-			} catch (e) {
-				this.log(
-					`[createTaskWithHistoryItem] abortTask() failed for old task ${oldTask.taskId}.${oldTask.instanceId}: ${e.message}`,
-				)
-			}
-
-			// Remove event listeners from the old task
-			const cleanupFunctions = this.taskEventListeners.get(oldTask)
-			if (cleanupFunctions) {
-				cleanupFunctions.forEach((cleanup) => cleanup())
-				this.taskEventListeners.delete(oldTask)
-			}
-
-			// Replace the task in the stack
-			this.clineStack[stackIndex] = task
-			task.emit(RooCodeEventName.TaskFocused)
-
-			// Perform preparation tasks and set up event listeners
-			await this.performPreparationTasks(task)
-
-			this.log(
-				`[createTaskWithHistoryItem] rehydrated task ${task.taskId}.${task.instanceId} in-place (flicker-free)`,
-			)
+			await this.taskRehydrationService.replaceCurrentTaskInPlace(task) // kilocode_change
 		} else {
-			await this.addClineToStack(task)
-
-			this.log(
-				`[createTaskWithHistoryItem] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
-			)
+			await placeTask({
+				task,
+				rootTaskId: targetRootTaskId,
+				logContext: "createTaskWithHistoryItem",
+			})
 		}
 
-		// Check if there's a pending edit after checkpoint restoration
-		const operationId = `task-${task.taskId}`
-		const pendingEdit = this.getPendingEditOperation(operationId)
-		if (pendingEdit) {
-			this.clearPendingEditOperation(operationId) // Clear the pending edit
-
-			this.log(`[createTaskWithHistoryItem] Processing pending edit after checkpoint restoration`)
-
-			// Process the pending edit after a short delay to ensure the task is fully initialized
-			setTimeout(async () => {
-				try {
-					// Find the message index in the restored state
-					const { messageIndex, apiConversationHistoryIndex } = (() => {
-						const messageIndex = task.clineMessages.findIndex((msg) => msg.ts === pendingEdit.messageTs)
-						const apiConversationHistoryIndex = task.apiConversationHistory.findIndex(
-							(msg) => msg.ts === pendingEdit.messageTs,
-						)
-						return { messageIndex, apiConversationHistoryIndex }
-					})()
-
-					if (messageIndex !== -1) {
-						// Remove the target message and all subsequent messages
-						await task.overwriteClineMessages(task.clineMessages.slice(0, messageIndex))
-
-						if (apiConversationHistoryIndex !== -1) {
-							await task.overwriteApiConversationHistory(
-								task.apiConversationHistory.slice(0, apiConversationHistoryIndex),
-							)
-						}
-
-						// Process the edited message
-						await task.handleWebviewAskResponse(
-							"messageResponse",
-							pendingEdit.editedContent,
-							pendingEdit.images,
-						)
-					}
-				} catch (error) {
-					this.log(`[createTaskWithHistoryItem] Error processing pending edit: ${error}`)
-				}
-			}, 100) // Small delay to ensure task is fully ready
-		}
+		this.taskRehydrationService.replayPendingEditIfNeeded(task) // kilocode_change
 
 		return task
 	}
@@ -1961,7 +1875,10 @@ export class ClineProvider
 		if (id !== this.getCurrentTask()?.taskId) {
 			// Non-current task.
 			const { historyItem } = await this.getTaskWithId(id)
+			await this.markTaskStatusAsViewed(id)
 			await this.createTaskWithHistoryItem(historyItem) // Clears existing task.
+		} else {
+			await this.markTaskStatusAsViewed(id)
 		}
 
 		await this.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
@@ -2224,6 +2141,10 @@ export class ClineProvider
 			allowedMaxCost,
 			autoCondenseContext,
 			autoCondenseContextPercent,
+			autoRestartProblematicProcesses, // kilocode_change
+			problematicProcessRestartLimit, // kilocode_change
+			parallelAgentsEnabled, // kilocode_change
+			parallelAgentCount, // kilocode_change
 			contextRoutingEnabled, // kilocode_change: 2026-01-24 Context routing toggle
 			contextRoutingFastThresholdPercent,
 			contextRoutingDeepThresholdPercent,
@@ -2233,7 +2154,7 @@ export class ClineProvider
 			diffEnabled,
 			enableCheckpoints,
 			checkpointTimeout,
-			// taskHistory, // kilocode_change
+			taskHistory, // kilocode_change
 			soundVolume,
 			browserViewportSize,
 			screenshotQuality,
@@ -2376,8 +2297,18 @@ export class ClineProvider
 
 		// kilocode_change start wrapper information
 		const kiloCodeWrapperProperties = getKiloCodeWrapperProperties()
-		const taskHistory = this.getTaskHistory()
-		this.kiloCodeTaskHistorySizeForTelemetryOnly = taskHistory.length
+		const runtimeTaskHistory = this.getTaskHistory()
+		// kilocode_change start
+		const currentTaskId = this.getCurrentTask()?.taskId
+		const currentTaskHistoryItem = currentTaskId
+			? (runtimeTaskHistory || []).find((item: HistoryItem) => item.id === currentTaskId)
+			: undefined
+		const currentTaskActivityProjection = getActivityProjection(
+			currentTaskHistoryItem?.activity,
+			currentTaskId ? orchestrationEventStore.get(currentTaskId) : undefined,
+		)
+		// kilocode_change end
+		this.kiloCodeTaskHistorySizeForTelemetryOnly = runtimeTaskHistory.length
 		// kilocode_change end
 
 		return {
@@ -2401,23 +2332,31 @@ export class ClineProvider
 			allowedMaxRequests,
 			allowedMaxCost,
 			autoCondenseContext: autoCondenseContext ?? true,
-			autoCondenseContextPercent: autoCondenseContextPercent ?? 100,
-			contextRoutingEnabled: contextRoutingEnabled ?? false, // kilocode_change: 2026-01-24 Context routing toggle
-			contextRoutingFastThresholdPercent: contextRoutingFastThresholdPercent ?? 50,
-			contextRoutingDeepThresholdPercent: contextRoutingDeepThresholdPercent ?? 80,
+			autoCondenseContextPercent: autoCondenseContextPercent ?? 85,
+			autoRestartProblematicProcesses: autoRestartProblematicProcesses ?? false, // kilocode_change
+			problematicProcessRestartLimit: problematicProcessRestartLimit ?? 1, // kilocode_change
+			parallelAgentsEnabled: parallelAgentsEnabled ?? false, // kilocode_change
+			parallelAgentCount: parallelAgentCount ?? 2, // kilocode_change
+			contextRoutingEnabled: contextRoutingEnabled ?? true, // kilocode_change: enable token-saving routing by default
+			contextRoutingFastThresholdPercent: contextRoutingFastThresholdPercent ?? 35,
+			contextRoutingDeepThresholdPercent: contextRoutingDeepThresholdPercent ?? 65,
 			uriScheme: vscode.env.uriScheme,
 			uiKind: vscode.UIKind[vscode.env.uiKind], // kilocode_change
 			kiloCodeWrapperProperties, // kilocode_change wrapper information
 			kilocodeDefaultModel: (
 				await getKilocodeDefaultModel(apiConfiguration.kilocodeToken, apiConfiguration.kilocodeOrganizationId)
 			).defaultModel,
-			currentTaskItem: this.getCurrentTask()?.taskId
-				? (taskHistory || []).find((item: HistoryItem) => item.id === this.getCurrentTask()?.taskId)
-				: undefined,
+			currentTaskItem: currentTaskHistoryItem,
+			currentTaskActivity: currentTaskId ? currentTaskActivityProjection.items : [],
+			techDebtBacklog: (runtimeTaskHistory || []).flatMap((item: HistoryItem) => item.techDebtItems ?? []),
+			activeRootTaskIds: this.taskRootStackLifecycleService.getActiveRootTaskIds(), // kilocode_change
+			runningRootTaskIds: this.taskRootStackLifecycleService.getRunningRootTaskIds(), // kilocode_change
+			focusedRootTaskId: this.focusedRootTaskId, // kilocode_change
 			clineMessages: this.getCurrentTask()?.clineMessages || [],
 			currentTaskTodos: this.getCurrentTask()?.todoList || [],
 			messageQueue: this.getCurrentTask()?.messageQueueService?.messages,
-			taskHistoryFullLength: taskHistory.length, // kilocode_change
+			taskHistory: runtimeTaskHistory, // kilocode_change
+			taskHistoryFullLength: runtimeTaskHistory.length, // kilocode_change
 			taskHistoryVersion: this.kiloCodeTaskHistoryVersion, // kilocode_change
 			soundEnabled: soundEnabled ?? false,
 			ttsEnabled: ttsEnabled ?? false,
@@ -2751,11 +2690,15 @@ export class ClineProvider
 			allowedMaxRequests: stateValues.allowedMaxRequests,
 			allowedMaxCost: stateValues.allowedMaxCost,
 			autoCondenseContext: stateValues.autoCondenseContext ?? true,
-			autoCondenseContextPercent: stateValues.autoCondenseContextPercent ?? 100,
-			contextRoutingEnabled: stateValues.contextRoutingEnabled ?? false, // kilocode_change: 2026-01-24 Context routing toggle
-			contextRoutingFastThresholdPercent: stateValues.contextRoutingFastThresholdPercent ?? 50,
-			contextRoutingDeepThresholdPercent: stateValues.contextRoutingDeepThresholdPercent ?? 80,
-			// taskHistory: stateValues.taskHistory ?? [], // kilocode_change
+			autoCondenseContextPercent: stateValues.autoCondenseContextPercent ?? 85,
+			autoRestartProblematicProcesses: stateValues.autoRestartProblematicProcesses ?? false, // kilocode_change
+			problematicProcessRestartLimit: stateValues.problematicProcessRestartLimit ?? 1, // kilocode_change
+			parallelAgentsEnabled: stateValues.parallelAgentsEnabled ?? false, // kilocode_change
+			parallelAgentCount: stateValues.parallelAgentCount ?? 2, // kilocode_change
+			contextRoutingEnabled: stateValues.contextRoutingEnabled ?? true, // kilocode_change: enable token-saving routing by default
+			contextRoutingFastThresholdPercent: stateValues.contextRoutingFastThresholdPercent ?? 35,
+			contextRoutingDeepThresholdPercent: stateValues.contextRoutingDeepThresholdPercent ?? 65,
+			taskHistory: stateValues.taskHistory ?? [], // kilocode_change
 			allowedCommands: stateValues.allowedCommands,
 			deniedCommands: stateValues.deniedCommands,
 			soundEnabled: stateValues.soundEnabled ?? false,
@@ -2960,6 +2903,173 @@ export class ClineProvider
 		this.recentTasksCache = undefined
 
 		return history
+	}
+
+	// kilocode_change start - explicit provider activity persistence seam
+	private getActivityPersistence(): OrchestrationActivityPersistence {
+		return {
+			loadPersistedActivity: async (persistedTaskId) => {
+				const { historyItem } = await this.getTaskWithId(persistedTaskId)
+				return historyItem.activity ?? []
+			},
+			persistActivity: async (persistedTaskId, nextActivity) => {
+				const { historyItem } = await this.getTaskWithId(persistedTaskId)
+				await this.updateTaskHistory({
+					...historyItem,
+					activity: nextActivity,
+				})
+			},
+		}
+	}
+
+	private async publishActivity(
+		taskId: string,
+		activity: NonNullable<HistoryItem["activity"]>[number],
+	): Promise<void> {
+		await publishOrchestrationActivity({
+			taskId,
+			activity,
+			persistence: this.getActivityPersistence(),
+		})
+	}
+	// kilocode_change end
+
+	public async recordTaskActivity(
+		taskId: string,
+		activity: NonNullable<HistoryItem["activity"]>[number],
+	): Promise<void> {
+		try {
+			await this.publishActivity(taskId, activity)
+		} catch (error) {
+			this.log(
+				`Failed to persist orchestration activity for ${taskId}: ${(error as Error)?.message ?? String(error)}`,
+			)
+		}
+		await this.postStateToWebview()
+	}
+
+	public async addTechDebtItems(taskId: string, items: TechDebtItem[]): Promise<TechDebtItem[]> {
+		if (items.length === 0) {
+			return []
+		}
+
+		const { historyItem } = await this.getTaskWithId(taskId)
+		const existingItems = historyItem.techDebtItems ?? []
+		const dedupedItems = TechDebtService.dedupeItems(existingItems, items)
+		if (dedupedItems.length === 0) {
+			return []
+		}
+
+		const nextItems = [...existingItems, ...dedupedItems]
+		await this.updateTaskHistory({
+			...historyItem,
+			techDebtItems: nextItems,
+		})
+
+		for (const item of dedupedItems) {
+			const activity = {
+				kind: "techDebt" as const,
+				id: `tech-debt-${item.id}`,
+				taskId,
+				itemId: item.id,
+				status: item.status,
+				summary: `Tech debt suggested: ${item.title}`,
+				timestamp: Date.now(),
+			}
+			await this.publishActivity(taskId, activity)
+		}
+
+		await this.postStateToWebview()
+		return dedupedItems
+	}
+
+	public async updateTechDebtStatus(
+		taskId: string,
+		itemId: string,
+		status: TechDebtStatus,
+	): Promise<TechDebtItem | undefined> {
+		const { historyItem } = await this.getTaskWithId(taskId)
+		const existingItems = historyItem.techDebtItems ?? []
+		const nextItems = TechDebtService.updateStatus(existingItems, itemId, status)
+		const updatedItem = nextItems.find((item) => item.id === itemId)
+		if (!updatedItem) {
+			return undefined
+		}
+
+		await this.updateTaskHistory({
+			...historyItem,
+			techDebtItems: nextItems,
+		})
+
+		const activity = {
+			kind: "techDebt" as const,
+			id: `tech-debt-${itemId}-${status}-${Date.now()}`,
+			taskId,
+			itemId,
+			status,
+			summary: `Tech debt ${status}: ${updatedItem.title}`,
+			timestamp: Date.now(),
+		}
+		await this.publishActivity(taskId, activity)
+		await this.postStateToWebview()
+		return updatedItem
+	}
+
+	public async extractTechDebtForTask(params: {
+		taskId: string
+		completionSummary: string
+		recentContext?: string
+	}): Promise<TechDebtItem[]> {
+		const { historyItem } = await this.getTaskWithId(params.taskId)
+		const state = await this.getState()
+		const route = await HelperModelRouter.selectConfig({
+			job: "tech_debt_extract",
+			state: {
+				apiConfiguration: state.apiConfiguration,
+				condensingApiConfigId: state.condensingApiConfigId,
+				listApiConfigMeta: state.listApiConfigMeta,
+			},
+			providerSettingsManager: this.providerSettingsManager,
+		})
+
+		const extracted = await TechDebtService.extractItems({
+			sourceTaskId: params.taskId,
+			rootTaskId: historyItem.rootTaskId ?? params.taskId,
+			task: historyItem.task,
+			completionSummary: params.completionSummary,
+			recentContext: params.recentContext,
+			existingItems: historyItem.techDebtItems ?? [],
+			config: route.config,
+		})
+
+		return this.addTechDebtItems(params.taskId, extracted)
+	}
+
+	public async convertTechDebtToTask(params: { taskId: string; itemId: string }): Promise<Task> {
+		const { historyItem } = await this.getTaskWithId(params.taskId)
+		const item = (historyItem.techDebtItems ?? []).find((entry) => entry.id === params.itemId)
+		if (!item) {
+			throw new Error(`Tech debt item ${params.itemId} not found`)
+		}
+
+		await this.updateTechDebtStatus(params.taskId, params.itemId, "accepted")
+		const task = await this.createTask(TechDebtService.getConvertToTaskPrompt(item))
+		await this.updateTechDebtStatus(params.taskId, params.itemId, "converted_to_task")
+		return task
+	}
+
+	private async markTaskStatusAsViewed(taskId: string): Promise<void> {
+		const history = (this.getGlobalState("taskHistory") as HistoryItem[] | undefined) || []
+		const historyItem = history.find((item) => item.id === taskId)
+		if (!historyItem) {
+			return
+		}
+
+		await this.updateTaskHistory({
+			...historyItem,
+			lastStatusViewedAt: Date.now(),
+		})
+		await this.postStateToWebview()
 	}
 
 	// ContextProxy
@@ -3193,6 +3303,30 @@ export class ClineProvider
 		return this.clineStack[this.clineStack.length - 1]
 	}
 
+	private getRootTaskIdForStack(stack: Task[]): string | undefined {
+		return this.taskRootStackLifecycleService.getRootTaskIdForStack(stack)
+	}
+
+	private snapshotCurrentStackToBackground(): void {
+		this.taskRootStackLifecycleService.snapshotCurrentStackToBackground()
+	}
+
+	private restoreBackgroundStack(rootTaskId: string): boolean {
+		return this.taskRootStackLifecycleService.restoreBackgroundStack(rootTaskId)
+	}
+
+	private getNextActiveRootTaskId(excludeRootTaskId?: string): string | undefined {
+		return this.taskRootStackLifecycleService.getNextActiveRootTaskId(excludeRootTaskId)
+	}
+
+	private getActiveRootTaskIds(): string[] {
+		return this.taskRootStackLifecycleService.getActiveRootTaskIds()
+	}
+
+	private getRunningRootTaskIds(): string[] {
+		return this.taskRootStackLifecycleService.getRunningRootTaskIds()
+	}
+
 	public getRecentTasks(): string[] {
 		if (this.recentTasksCache) {
 			return this.recentTasksCache
@@ -3238,6 +3372,149 @@ export class ClineProvider
 		return this.recentTasksCache
 	}
 
+	private getDescendantTaskIds(taskId: string, history: HistoryItem[]): string[] {
+		const itemById = new Map(history.map((item) => [item.id, item]))
+		const descendantIds: string[] = []
+
+		for (const item of history) {
+			if (item.id === taskId) {
+				continue
+			}
+
+			let isDescendant = item.rootTaskId === taskId
+			let currentParentId = item.parentTaskId
+			const visitedParentIds = new Set<string>()
+
+			while (!isDescendant && currentParentId && !visitedParentIds.has(currentParentId)) {
+				if (currentParentId === taskId) {
+					isDescendant = true
+					break
+				}
+
+				visitedParentIds.add(currentParentId)
+				currentParentId = itemById.get(currentParentId)?.parentTaskId
+			}
+
+			if (isDescendant) {
+				descendantIds.push(item.id)
+			}
+		}
+
+		return descendantIds
+	}
+
+	private async persistTaskStopState(
+		taskId: string,
+		lastStopReason: HistoryItem["lastStopReason"] | undefined,
+		lastStopSummary: string,
+		status?: HistoryItem["status"],
+		extra: Partial<HistoryItem> = {},
+	): Promise<HistoryItem | undefined> {
+		try {
+			const { historyItem } = await this.getTaskWithId(taskId)
+			if (!historyItem) {
+				return undefined
+			}
+
+			const updatedHistoryItem: HistoryItem = {
+				...historyItem,
+				...(status ? { status, statusUpdatedAt: Date.now() } : {}),
+				...(this.getCurrentTask()?.taskId === taskId && status ? { lastStatusViewedAt: Date.now() } : {}),
+				lastStopReason,
+				lastStopSummary,
+				...extra,
+			}
+
+			await this.updateTaskHistory(updatedHistoryItem)
+			return updatedHistoryItem
+		} catch (error) {
+			this.log(
+				`[persistTaskStopState] Failed to persist stop state for ${taskId}: ${error instanceof Error ? error.message : String(error)}`,
+			)
+			return undefined
+		}
+	}
+
+	private async cascadeStopDescendantTasks(
+		taskId: string,
+		lastStopReason: HistoryItem["lastStopReason"],
+		lastStopSummary: string,
+	): Promise<string[]> {
+		const history = this.getTaskHistory()
+		const descendantIds = this.getDescendantTaskIds(taskId, history)
+
+		for (const descendantId of descendantIds) {
+			const historyItem = history.find((item) => item.id === descendantId)
+			if (!historyItem || historyItem.status === "completed" || historyItem.status === "aborted") {
+				continue
+			}
+
+			await this.updateTaskHistory({
+				...historyItem,
+				status: "aborted",
+				statusUpdatedAt: Date.now(),
+				awaitingChildId: undefined,
+				lastStopReason,
+				lastStopSummary,
+			})
+
+			const activeDescendant = this.clineStack.find((task) => task.taskId === descendantId)
+			if (activeDescendant) {
+				activeDescendant.cancelCurrentRequest()
+				activeDescendant.abandoned = true
+				void activeDescendant.abortTask(true)
+			}
+		}
+
+		return descendantIds
+	}
+
+	private async handleTaskCompletionLifecycle(taskId: string): Promise<void> {
+		await this.persistTaskStopState(taskId, undefined, "Task completed successfully.", "completed")
+		await this.cascadeStopDescendantTasks(taskId, "parent_completed", `Parent task ${taskId} completed.`)
+		this.taskRootStackLifecycleService.removeCompletedBackgroundRoot(taskId) // kilocode_change
+	}
+
+	// kilocode_change start
+	public async buildRecoveryPacket(params: {
+		historyItem: HistoryItem
+		apiConversationHistory?: ApiMessage[]
+		useCache?: boolean
+	}): Promise<TaskRecoveryPacket> {
+		return this.taskRecoveryPacketService.buildRecoveryPacket(params)
+	}
+	// kilocode_change end
+
+	// kilocode_change start
+	public async showProblematicProcessNotification(params: {
+		taskId: string
+		reason: HistoryItem["lastStopReason"]
+		restartAttempt?: number
+		restartPlanned: boolean
+	}): Promise<void> {
+		const { systemNotificationsEnabled = true } = await this.getState()
+		if (!systemNotificationsEnabled) {
+			return
+		}
+
+		const suffix = params.restartPlanned
+			? `Restart attempt ${params.restartAttempt ?? 1} has been scheduled.`
+			: "Automatic restarts are unavailable."
+		await showSystemNotification({
+			title: "Problematic task detected",
+			subtitle: params.taskId,
+			message: `Execution stopped due to ${params.reason}. ${suffix}`,
+		})
+	}
+	// kilocode_change end
+
+	private async restartTaskFromHistoryWithHandoff(
+		taskId: string,
+		options: { force?: boolean } = {},
+	): Promise<boolean> {
+		return this.taskRestartService.restartTaskFromHistoryWithHandoff(taskId, options)
+	}
+
 	// When initializing a new task, (not from history but from a tool command
 	// new_task) there is no need to remove the previous task since the new
 	// task is a subtask of the previous one, and when it finishes it is removed
@@ -3281,148 +3558,69 @@ export class ClineProvider
 			}
 		}
 
-		const {
-			apiConfiguration,
-			organizationAllowList,
-			diffEnabled: enableDiff,
-			enableCheckpoints,
-			checkpointTimeout,
-			fuzzyMatchThreshold,
-			experiments,
-			cloudUserInfo,
-			remoteControlEnabled,
-		} = await this.getState()
-
-		// Single-open-task invariant: always enforce for user-initiated top-level tasks
-		if (!parentTask) {
-			try {
-				await this.removeClineFromStack()
-			} catch {
-				// Non-fatal
-			}
-		}
-
-		if (!ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList)) {
-			throw new OrganizationAllowListViolationError(t("common:errors.violated_organization_allowlist"))
-		}
-
-		const task = new Task({
+		// kilocode_change start
+		const { admitFreshTask, instantiateFreshTask, placeTask } = await prepareTaskBirthOrchestration({
+			context: this.context,
 			provider: this,
-			context: this.context, // kilocode_change
-			apiConfiguration,
-			enableDiff,
-			enableCheckpoints,
-			checkpointTimeout,
-			fuzzyMatchThreshold,
-			consecutiveMistakeLimit: apiConfiguration.consecutiveMistakeLimit,
-			task: text,
-			images,
-			experiments,
-			rootTask: this.clineStack.length > 0 ? this.clineStack[0] : undefined,
+			taskCreationCallback: this.taskCreationCallback,
+			getState: () => this.getState(),
+			getCurrentStack: () => this.clineStack,
+			setCurrentStack: (stack) => {
+				this.clineStack = stack
+			},
+			snapshotCurrentStackToBackground: () => this.snapshotCurrentStackToBackground(),
+			addClineToStack: (task) => this.addClineToStack(task),
+			rootStackLifecycle: this.taskRootStackLifecycleService,
+			log: (message) => this.log(message),
+		})
+		const admission = admitFreshTask({
 			parentTask,
-			taskNumber: this.clineStack.length + 1,
-			onCreated: this.taskCreationCallback,
-			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, remoteControlEnabled),
-			initialTodos: options.initialTodos,
-			...options,
+			detachFromParentRoot: options.detachFromParentRoot,
+		})
+		const task = instantiateFreshTask({
+			text,
+			images,
+			parentTask,
+			options,
+			admission,
 		})
 
-		await this.addClineToStack(task)
-
-		this.log(
-			`[createTask] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
-		)
+		await placeTask({
+			task,
+			logContext: "createTask",
+		})
 
 		return task
 	}
 
 	public async cancelTask(): Promise<void> {
-		const task = this.getCurrentTask()
+		return this.taskCancellationService.cancelTask()
+	}
 
-		if (!task) {
-			return
-		}
-
-		console.log(`[cancelTask] cancelling task ${task.taskId}.${task.instanceId}`)
-
-		const { historyItem, uiMessagesFilePath } = await this.getTaskWithId(task.taskId)
-
-		// Preserve parent and root task information for history item.
-		const rootTask = task.rootTask
-		const parentTask = task.parentTask
-
-		// Mark this as a user-initiated cancellation so provider-only rehydration can occur
-		task.abortReason = "user_cancelled"
-
-		// Capture the current instance to detect if rehydrate already occurred elsewhere
-		const originalInstanceId = task.instanceId
-
-		// Immediately cancel the underlying HTTP request if one is in progress
-		// This ensures the stream fails quickly rather than waiting for network timeout
-		task.cancelCurrentRequest()
-
-		// Begin abort (non-blocking)
-		task.abortTask()
-
-		// Immediately mark the original instance as abandoned to prevent any residual activity
-		task.abandoned = true
-
-		await pWaitFor(
-			() =>
-				this.getCurrentTask()! === undefined ||
-				this.getCurrentTask()!.isStreaming === false ||
-				this.getCurrentTask()!.didFinishAbortingStream ||
-				// If only the first chunk is processed, then there's no
-				// need to wait for graceful abort (closes edits, browser,
-				// etc).
-				this.getCurrentTask()!.isWaitingForFirstChunk,
-			{
-				timeout: 3_000,
-			},
-		).catch(() => {
-			console.error("Failed to abort task")
-		})
-
-		// Defensive safeguard: if current instance already changed, skip rehydrate
-		const current = this.getCurrentTask()
-		if (current && current.instanceId !== originalInstanceId) {
-			this.log(
-				`[cancelTask] Skipping rehydrate: current instance ${current.instanceId} != original ${originalInstanceId}`,
-			)
-			return
-		}
-
-		// Final race check before rehydrate to avoid duplicate rehydration
-		{
-			const currentAfterCheck = this.getCurrentTask()
-			if (currentAfterCheck && currentAfterCheck.instanceId !== originalInstanceId) {
-				this.log(
-					`[cancelTask] Skipping rehydrate after final check: current instance ${currentAfterCheck.instanceId} != original ${originalInstanceId}`,
-				)
-				return
-			}
-		}
-
-		// Clears task again, so we need to abortTask manually above.
-		await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask })
+	public async pauseTask(taskId?: string, reason = "Paused by user"): Promise<void> {
+		return this.taskControlService.pauseTask(taskId, reason)
 	}
 
 	// Clear the current task without treating it as a subtask.
 	// This is used when the user cancels a task that is not a subtask.
 	public async clearTask(): Promise<void> {
-		if (this.clineStack.length > 0) {
-			const task = this.clineStack[this.clineStack.length - 1]
-			console.log(`[clearTask] clearing task ${task.taskId}.${task.instanceId}`)
-			await this.removeClineFromStack()
-		}
+		return this.taskDetachmentService.clearTask()
 	}
 
-	public resumeTask(taskId: string): void {
-		// Use the existing showTaskWithId method which handles both current and
-		// historical tasks.
-		this.showTaskWithId(taskId).catch((error) => {
-			this.log(`Failed to resume task ${taskId}: ${error.message}`)
-		})
+	// kilocode_change start
+	public async closeTaskToHistory(): Promise<void> {
+		return this.taskDetachmentService.closeTaskToHistory()
+	}
+	// kilocode_change end
+
+	// kilocode_change start
+	public resumeTask(taskId: string, control: TaskResumeControl = "resume"): void {
+		this.taskControlService.resumeTask(taskId, control)
+	}
+	// kilocode_change end
+
+	public async branchTask(taskId: string, options?: BranchTaskOptions): Promise<Task> {
+		return this.taskBranchService.branchTask(taskId, options)
 	}
 
 	// Modes
@@ -3963,312 +4161,125 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 		return this.currentWorkspacePath || getWorkspacePath()
 	}
 
+	private initializeSubagentCoordinator(): void {
+		const agentManagerProvider = getAgentManagerProvider()
+		if (!agentManagerProvider) {
+			return
+		}
+
+		this.subagentCoordinator?.dispose()
+		this.subagentCoordinator = new SubagentCoordinator(this, new AgentManagerBridge(agentManagerProvider))
+	}
+
+	// kilocode_change start
+	private createSubagentServices(): {
+		subagentDelegationService: SubagentDelegationService
+		subagentResumeService: SubagentResumeService
+		taskControlService: TaskControlService
+		taskCancellationService: TaskCancellationService
+		taskRecoveryPacketService: TaskRecoveryPacketService
+		taskDetachmentService: TaskDetachmentService
+		rootStackLifecycleService: TaskRootStackLifecycleService
+		taskRehydrationService: TaskRehydrationService
+		taskRestartService: TaskRestartService
+		taskBranchService: TaskBranchService
+	} {
+		const runtime = {
+			getCurrentTask: () => this.getCurrentTask(),
+			getCurrentStack: () => [...this.clineStack],
+			setCurrentStack: (stack) => {
+				this.clineStack = [...stack]
+			},
+			getRootTaskIdForStack: (stack) => this.getRootTaskIdForStack(stack),
+			hasBackgroundRootTaskStack: (rootTaskId) => this.backgroundRootTaskStacks.has(rootTaskId),
+			getBackgroundRootTaskStack: (rootTaskId) => this.backgroundRootTaskStacks.get(rootTaskId),
+			getBackgroundRootTaskEntries: () => this.backgroundRootTaskStacks.entries(),
+			setBackgroundRootTaskStack: (rootTaskId, stack) => {
+				this.backgroundRootTaskStacks.set(rootTaskId, [...stack])
+			},
+			deleteBackgroundRootTaskStack: (rootTaskId) => {
+				this.backgroundRootTaskStacks.delete(rootTaskId)
+			},
+			setFocusedRootTaskId: (rootTaskId) => {
+				this.focusedRootTaskId = rootTaskId
+			},
+			getFocusedRootTaskId: () => this.focusedRootTaskId,
+			snapshotCurrentStackToBackground: () => this.snapshotCurrentStackToBackground(),
+			restoreBackgroundStack: (rootTaskId) => this.restoreBackgroundStack(rootTaskId),
+			getNextActiveRootTaskId: (excludeRootTaskId) => this.getNextActiveRootTaskId(excludeRootTaskId),
+			postStateToWebview: () => this.postStateToWebview(),
+			cleanupTaskEventListeners: (task) => {
+				const cleanupFunctions = this.taskEventListeners.get(task)
+				if (cleanupFunctions) {
+					cleanupFunctions.forEach((cleanup) => cleanup())
+					this.taskEventListeners.delete(task)
+				}
+			},
+			performPreparationTasks: (task) => this.performPreparationTasks(task),
+			removeClineFromStack: () => this.removeClineFromStack(),
+			handleModeSwitch: (mode) => this.handleModeSwitch(mode as any),
+			createTask: (text, images, parentTask, options) => this.createTask(text, images, parentTask, options),
+			getTaskWithId: (taskId) => this.getTaskWithId(taskId),
+			getTaskWithIdWithoutMessage: (taskId) => this.getTaskWithId(taskId, false),
+			updateTaskHistory: (item) => this.updateTaskHistory(item),
+			publishActivity: (taskId, activity) => this.publishActivity(taskId, activity),
+			cascadeStopDescendantTasks: (taskId, lastStopReason, lastStopSummary) =>
+				this.cascadeStopDescendantTasks(taskId, lastStopReason, lastStopSummary),
+			emitTaskDelegated: (parentTaskId, childTaskId) => {
+				this.emit(RooCodeEventName.TaskDelegated, parentTaskId, childTaskId)
+			},
+			getGlobalStoragePath: () => this.contextProxy.globalStorageUri.fsPath,
+			getState: () => this.getState(),
+			getCustomModes: () => this.customModesManager.getCustomModes(),
+			updateGlobalState: (key, value) => this.updateGlobalState(key as never, value as never),
+			getModeConfigId: (mode) => this.providerSettingsManager.getModeConfigId(mode as Mode),
+			listProviderProfiles: () => this.providerSettingsManager.listConfig(),
+			getProviderProfile: (params) => this.providerSettingsManager.getProfile(params),
+			activateProviderProfile: (args, options) => this.activateProviderProfile(args, options),
+			getPendingEditOperation: (operationId) => this.getPendingEditOperation(operationId),
+			clearPendingEditOperation: (operationId) => this.clearPendingEditOperation(operationId),
+			providerSettingsManager: this.providerSettingsManager,
+			showTaskWithId: (taskId) => this.showTaskWithId(taskId),
+			createTaskWithHistoryItem: (historyItem, options) => this.createTaskWithHistoryItem(historyItem, options),
+			persistTaskStopState: (taskId, lastStopReason, lastStopSummary, status, extra) =>
+				this.persistTaskStopState(taskId, lastStopReason, lastStopSummary, status, extra),
+			showProblematicProcessNotification: (params) => this.showProblematicProcessNotification(params),
+			buildRecoveryPacket: (params) => this.buildRecoveryPacket(params),
+			emitTaskDelegationCompleted: (parentTaskId, childTaskId, completionResultSummary) => {
+				this.emit(RooCodeEventName.TaskDelegationCompleted, parentTaskId, childTaskId, completionResultSummary)
+			},
+			emitTaskDelegationResumed: (parentTaskId, childTaskId) => {
+				this.emit(RooCodeEventName.TaskDelegationResumed, parentTaskId, childTaskId)
+			},
+			log: (message) => this.log(message),
+			getSubagentCoordinator: () => this.subagentCoordinator,
+		} satisfies SubagentServiceRuntime
+
+		return composeSubagentServices(runtime)
+	}
+	// kilocode_change end
+
 	/**
 	 * Delegate parent task and open child task.
 	 *
 	 * - Enforce single-open invariant
 	 * - Persist parent delegation metadata
 	 * - Emit TaskDelegated (task-level; API forwards to provider/bridge)
-	 * - Create child as sole active and switch mode to child's mode
+	 * - Create child task, then restore parent focus while keeping child reachable
 	 */
-	public async delegateParentAndOpenChild(params: {
-		parentTaskId: string
-		message: string
-		initialTodos: TodoItem[]
-		mode: string
-	}): Promise<Task> {
-		const { parentTaskId, message, initialTodos, mode } = params
-
-		// Metadata-driven delegation is always enabled
-
-		// 1) Get parent (must be current task)
-		const parent = this.getCurrentTask()
-		if (!parent) {
-			throw new Error("[delegateParentAndOpenChild] No current task")
-		}
-		if (parent.taskId !== parentTaskId) {
-			throw new Error(
-				`[delegateParentAndOpenChild] Parent mismatch: expected ${parentTaskId}, current ${parent.taskId}`,
-			)
-		}
-		// 2) Flush pending tool results to API history BEFORE disposing the parent.
-		//    This is critical for native tool protocol: when tools are called before new_task,
-		//    their tool_result blocks are in userMessageContent but not yet saved to API history.
-		//    If we don't flush them, the parent's API conversation will be incomplete and
-		//    cause 400 errors when resumed (missing tool_result for tool_use blocks).
-		//
-		//    NOTE: We do NOT pass the assistant message here because the assistant message
-		//    is already added to apiConversationHistory by the normal flow in
-		//    recursivelyMakeClineRequests BEFORE tools start executing. We only need to
-		//    flush the pending user message with tool_results.
-		try {
-			await parent.flushPendingToolResultsToHistory()
-		} catch (error) {
-			this.log(
-				`[delegateParentAndOpenChild] Error flushing pending tool results (non-fatal): ${
-					error instanceof Error ? error.message : String(error)
-				}`,
-			)
-		}
-
-		// 3) Enforce single-open invariant by closing/disposing the parent first
-		//    This ensures we never have >1 tasks open at any time during delegation.
-		//    Await abort completion to ensure clean disposal and prevent unhandled rejections.
-		try {
-			await this.removeClineFromStack()
-		} catch (error) {
-			this.log(
-				`[delegateParentAndOpenChild] Error during parent disposal (non-fatal): ${
-					error instanceof Error ? error.message : String(error)
-				}`,
-			)
-			// Non-fatal: proceed with child creation even if parent cleanup had issues
-		}
-
-		// 3) Switch provider mode to child's requested mode BEFORE creating the child task
-		//    This ensures the child's system prompt and configuration are based on the correct mode.
-		//    The mode switch must happen before createTask() because the Task constructor
-		//    initializes its mode from provider.getState() during initializeTaskMode().
-		try {
-			await this.handleModeSwitch(mode as any)
-		} catch (e) {
-			this.log(
-				`[delegateParentAndOpenChild] handleModeSwitch failed for mode '${mode}': ${
-					(e as Error)?.message ?? String(e)
-				}`,
-			)
-		}
-
-		// 4) Create child as sole active (parent reference preserved for lineage)
-		// Pass initialStatus: "active" to ensure the child task's historyItem is created
-		// with status from the start, avoiding race conditions where the task might
-		// call attempt_completion before status is persisted separately.
-		const child = await this.createTask(message, undefined, parent as any, {
-			initialTodos,
-			initialStatus: "active",
-		})
-
-		// 5) Persist parent delegation metadata
-		try {
-			const { historyItem } = await this.getTaskWithId(parentTaskId)
-			const childIds = Array.from(new Set([...(historyItem.childIds ?? []), child.taskId]))
-			const updatedHistory: typeof historyItem = {
-				...historyItem,
-				status: "delegated",
-				delegatedToId: child.taskId,
-				awaitingChildId: child.taskId,
-				childIds,
-			}
-			await this.updateTaskHistory(updatedHistory)
-		} catch (err) {
-			this.log(
-				`[delegateParentAndOpenChild] Failed to persist parent metadata for ${parentTaskId} -> ${child.taskId}: ${
-					(err as Error)?.message ?? String(err)
-				}`,
-			)
-		}
-
-		// 6) Emit TaskDelegated (provider-level)
-		try {
-			this.emit(RooCodeEventName.TaskDelegated, parentTaskId, child.taskId)
-		} catch {
-			// non-fatal
-		}
-
-		return child
+	public async delegateParentAndOpenChild(params: DelegateParentAndOpenChildParams): Promise<Task> {
+		return this.subagentDelegationService.delegateParentAndOpenChild(params)
 	}
 
 	/**
 	 * Reopen parent task from delegation with write-back and events.
 	 */
-	public async reopenParentFromDelegation(params: {
-		parentTaskId: string
-		childTaskId: string
-		completionResultSummary: string
-	}): Promise<void> {
-		const { parentTaskId, childTaskId, completionResultSummary } = params
-		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+	public async reopenParentFromDelegation(params: ReopenParentFromDelegationParams): Promise<void> {
+		return this.subagentResumeService.reopenParentFromDelegation(params)
+	}
 
-		// 1) Load parent from history and current persisted messages
-		const { historyItem } = await this.getTaskWithId(parentTaskId)
-
-		let parentClineMessages: ClineMessage[] = []
-		try {
-			parentClineMessages = await readTaskMessages({
-				taskId: parentTaskId,
-				globalStoragePath,
-			})
-		} catch {
-			parentClineMessages = []
-		}
-
-		let parentApiMessages: any[] = []
-		try {
-			parentApiMessages = (await readApiMessages({
-				taskId: parentTaskId,
-				globalStoragePath,
-			})) as any[]
-		} catch {
-			parentApiMessages = []
-		}
-
-		// 2) Inject synthetic records: UI subtask_result and update API tool_result
-		const ts = Date.now()
-
-		// Defensive: ensure arrays
-		if (!Array.isArray(parentClineMessages)) parentClineMessages = []
-		if (!Array.isArray(parentApiMessages)) parentApiMessages = []
-
-		const subtaskUiMessage: ClineMessage = {
-			type: "say",
-			say: "subtask_result",
-			text: completionResultSummary,
-			ts,
-		}
-		parentClineMessages.push(subtaskUiMessage)
-		await saveTaskMessages({ messages: parentClineMessages, taskId: parentTaskId, globalStoragePath })
-
-		// Find the tool_use_id from the last assistant message's new_task tool_use
-		let toolUseId: string | undefined
-		for (let i = parentApiMessages.length - 1; i >= 0; i--) {
-			const msg = parentApiMessages[i]
-			if (msg.role === "assistant" && Array.isArray(msg.content)) {
-				for (const block of msg.content) {
-					if (block.type === "tool_use" && block.name === "new_task") {
-						toolUseId = block.id
-						break
-					}
-				}
-				if (toolUseId) break
-			}
-		}
-
-		// The API expects: user → assistant (with tool_use) → user (with tool_result)
-		// We need to add a NEW user message with the tool_result AFTER the assistant's tool_use
-		// NOT add it to an existing user message
-		if (toolUseId) {
-			// Check if the last message is already a user message with a tool_result for this tool_use_id
-			// (in case this is a retry or the history was already updated)
-			const lastMsg = parentApiMessages[parentApiMessages.length - 1]
-			let alreadyHasToolResult = false
-			if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
-				for (const block of lastMsg.content) {
-					if (block.type === "tool_result" && block.tool_use_id === toolUseId) {
-						// Update the existing tool_result content
-						block.content = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
-						alreadyHasToolResult = true
-						break
-					}
-				}
-			}
-
-			// If no existing tool_result found, create a NEW user message with the tool_result
-			if (!alreadyHasToolResult) {
-				parentApiMessages.push({
-					role: "user",
-					content: [
-						{
-							type: "tool_result" as const,
-							tool_use_id: toolUseId,
-							content: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
-						},
-					],
-					ts,
-				})
-			}
-		} else {
-			// Fallback for XML protocol or when toolUseId couldn't be found:
-			// Add a text block (not ideal but maintains backward compatibility)
-			parentApiMessages.push({
-				role: "user",
-				content: [
-					{
-						type: "text",
-						text: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
-					},
-				],
-				ts,
-			})
-		}
-
-		// Validate the newly injected tool_result against the preceding assistant message.
-		// This ensures the tool_result's tool_use_id matches a tool_use in the immediately
-		// preceding assistant message (Anthropic API requirement).
-		const lastMessage = parentApiMessages[parentApiMessages.length - 1]
-		if (lastMessage?.role === "user") {
-			const validatedMessage = validateAndFixToolResultIds(lastMessage, parentApiMessages.slice(0, -1))
-			parentApiMessages[parentApiMessages.length - 1] = validatedMessage
-		}
-
-		await saveApiMessages({ messages: parentApiMessages as any, taskId: parentTaskId, globalStoragePath })
-
-		// 3) Update child metadata to "completed" status
-		try {
-			const { historyItem: childHistory } = await this.getTaskWithId(childTaskId)
-			await this.updateTaskHistory({
-				...childHistory,
-				status: "completed",
-			})
-		} catch (err) {
-			this.log(
-				`[reopenParentFromDelegation] Failed to persist child completed status for ${childTaskId}: ${
-					(err as Error)?.message ?? String(err)
-				}`,
-			)
-		}
-
-		// 4) Update parent metadata and persist BEFORE emitting completion event
-		const childIds = Array.from(new Set([...(historyItem.childIds ?? []), childTaskId]))
-		const updatedHistory: typeof historyItem = {
-			...historyItem,
-			status: "active",
-			completedByChildId: childTaskId,
-			completionResultSummary,
-			awaitingChildId: undefined,
-			childIds,
-		}
-		await this.updateTaskHistory(updatedHistory)
-
-		// 5) Emit TaskDelegationCompleted (provider-level)
-		try {
-			this.emit(RooCodeEventName.TaskDelegationCompleted, parentTaskId, childTaskId, completionResultSummary)
-		} catch {
-			// non-fatal
-		}
-
-		// 6) Close child instance if still open (single-open-task invariant)
-		const current = this.getCurrentTask()
-		if (current?.taskId === childTaskId) {
-			await this.removeClineFromStack()
-		}
-
-		// 7) Reopen the parent from history as the sole active task (restores saved mode)
-		//    IMPORTANT: startTask=false to suppress resume-from-history ask scheduling
-		const parentInstance = await this.createTaskWithHistoryItem(updatedHistory, { startTask: false })
-
-		// 8) Inject restored histories into the in-memory instance before resuming
-		if (parentInstance) {
-			try {
-				await parentInstance.overwriteClineMessages(parentClineMessages)
-			} catch {
-				// non-fatal
-			}
-			try {
-				await parentInstance.overwriteApiConversationHistory(parentApiMessages as any)
-			} catch {
-				// non-fatal
-			}
-
-			// Auto-resume parent without ask("resume_task")
-			await parentInstance.resumeAfterDelegation()
-		}
-
-		// 9) Emit TaskDelegationResumed (provider-level)
-		try {
-			this.emit(RooCodeEventName.TaskDelegationResumed, parentTaskId, childTaskId)
-		} catch {
-			// non-fatal
-		}
+	private async launchBackgroundSubagent(params: LaunchBackgroundSubagentParams): Promise<Task | undefined> {
+		return this.subagentDelegationService.launchBackgroundSubagent(params)
 	}
 
 	/**

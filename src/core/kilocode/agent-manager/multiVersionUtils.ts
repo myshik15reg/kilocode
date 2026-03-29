@@ -10,6 +10,12 @@ export interface SessionConfig {
 	label: string
 	parallelMode: boolean
 	existingBranch?: string
+	sessionId?: string
+	sessionIndex?: number
+	sessionCount?: number
+	groupId?: string
+	groupLabel?: string
+	rootSessionId?: string
 }
 
 export interface StartSessionMessage {
@@ -35,7 +41,6 @@ export interface StartSessionMessage {
  */
 export function extractSessionConfigs(message: StartSessionMessage): SessionConfig[] {
 	const { prompt, versions = 1, labels, parallelMode = false, existingBranch } = message
-
 	// Single version case
 	if (versions === 1) {
 		return [
@@ -52,11 +57,24 @@ export function extractSessionConfigs(message: StartSessionMessage): SessionConf
 	// Users can click the "Finish to Branch" button on individual sessions to commit their changes
 	// Note: existingBranch is not supported in multi-version mode as each version needs isolated branches
 	const effectiveLabels = labels ?? Array.from({ length: versions }, (_, i) => `${prompt.slice(0, 50)} (v${i + 1})`)
+	const groupId = `group_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+	const groupLabel = prompt.slice(0, 50)
+	const sessionIds = Array.from(
+		{ length: versions },
+		(_, index) => `agent_${Date.now()}_${index}_${Math.random().toString(36).substring(2, 8)}`,
+	)
+	const rootSessionId = sessionIds[0]
 
-	return effectiveLabels.map((label) => ({
+	return effectiveLabels.map((label, index) => ({
 		prompt,
 		label,
 		parallelMode: true,
+		sessionId: sessionIds[index],
+		sessionIndex: index,
+		sessionCount: versions,
+		groupId,
+		groupLabel,
+		rootSessionId,
 		// existingBranch is deliberately excluded in multi-version mode
 	}))
 }

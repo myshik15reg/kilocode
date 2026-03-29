@@ -62,7 +62,7 @@
 		"contact": {
 			"label": "Moet je met ons praten? Schrijf"
 		},
-		"community": "Wil je tips of gewoon even hangen met andere AlfaCode assistant-gebruikers? Sluit je aan bij <redditLink>reddit.com/r/kilocode</redditLink> of <discordLink>kilo.ai/discord</discordLink>",
+		"community": "Wil je tips of gewoon even hangen met andere AlfaCode assistant-gebruikers? Sluit je aan bij <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> of <discordLink>alfacode.ai/discord</discordLink>",
 		"contactAndCommunity": "Contact & Gemeenschap",
 		"manageSettings": "Instellingen Beheren",
 		"debugMode": {
@@ -532,8 +532,8 @@
 			"instructions": "Tijdens gebruik verschijnt een dialoogvenster en wordt het huidige bericht automatisch naar het klembord gekopieerd. Je moet deze plakken in webversies van AI (zoals ChatGPT of Claude), vervolgens het antwoord van de AI terugkopiëren naar het dialoogvenster en op bevestigen klikken."
 		},
 		"roo": {
-			"authenticatedMessage": "Veilig geauthenticeerd via je Roo Code Cloud-account.",
-			"connectButton": "Verbinden met Roo Code Cloud"
+			"authenticatedMessage": "Veilig geauthenticeerd via je AlfaCode assistant Cloud-account.",
+			"connectButton": "Verbinden met AlfaCode assistant Cloud"
 		},
 		"sapAiCore": {
 			"serviceKey": "AI Core Servicesleutel",
@@ -620,7 +620,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Fout- & Herhalingslimiet",
-			"description": "Aantal opeenvolgende fouten of herhaalde acties voordat het dialoogvenster 'Kilo ondervindt problemen' wordt weergegeven. Zet op 0 om dit veiligheidsmechanisme uit te schakelen (wordt nooit geactiveerd).",
+			"description": "Aantal opeenvolgende fouten of herhaalde acties voordat het dialoogvenster 'AlfaCode assistant ondervindt problemen' wordt weergegeven. Zet op 0 om dit veiligheidsmechanisme uit te schakelen (wordt nooit geactiveerd).",
 			"unlimitedDescription": "Onbeperkt aantal nieuwe pogingen ingeschakeld (automatisch doorgaan). Het dialoogvenster zal nooit verschijnen.",
 			"warning": "⚠️ Instellen op 0 staat onbeperkte nieuwe pogingen toe, wat aanzienlijk API-gebruik kan verbruiken"
 		},
@@ -629,10 +629,9 @@
 			"none": "Geen",
 			"minimal": "Minimaal (Snelst)",
 			"high": "Hoog",
-			"xhigh": "Zeer hoog",
+			"xhigh": "Extra Hoog",
 			"medium": "Middel",
-			"low": "Laag",
-			"xhigh": "Extra Hoog"
+			"low": "Laag"
 		},
 		"verbosity": {
 			"label": "Uitvoerbaarheid",
@@ -856,11 +855,11 @@
 		},
 		"outputLineLimit": {
 			"label": "Terminaluitvoerlimiet",
-			"description": "Behoudt eerste en laatste regels en verwijdert middelste om onder de limiet te blijven. Verlaag om tokens te besparen; verhoog om Kilo meer tussendetails te geven. Kilo ziet een placeholder waar inhoud wordt overgeslagen.<0>Meer informatie</0>"
+			"description": "Behoudt eerste en laatste regels en verwijdert middelste om onder de limiet te blijven. Verlaag om tokens te besparen; verhoog om AlfaCode assistant meer tussendetails te geven. AlfaCode assistant ziet een placeholder waar inhoud wordt overgeslagen.<0>Meer informatie</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Terminal-tekenlimiet",
-			"description": "Overschrijft de regellimiet om geheugenproblemen te voorkomen door een harde limiet op uitvoergrootte af te dwingen. Bij overschrijding behoudt het begin en einde en toont een placeholder aan Kilo waar inhoud wordt overgeslagen. <0>Meer informatie</0>"
+			"description": "Overschrijft de regellimiet om geheugenproblemen te voorkomen door een harde limiet op uitvoergrootte af te dwingen. Bij overschrijding behoudt het begin en einde en toont een placeholder aan AlfaCode assistant waar inhoud wordt overgeslagen. <0>Meer informatie</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal-shell-integratie timeout",
@@ -868,7 +867,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Inline Terminal gebruiken (aanbevolen)",
-			"description": "Voer commando's uit in de Inline Terminal (chat) om shell-profielen/integratie te omzeilen voor snellere, betrouwbaardere runs. Wanneer uitgeschakeld gebruikt Kilo de VS Code-terminal met je shell-profiel, prompts en plugins. <0>Meer informatie</0>"
+			"description": "Voer commando's uit in de Inline Terminal (chat) om shell-profielen/integratie te omzeilen voor snellere, betrouwbaardere runs. Wanneer uitgeschakeld gebruikt AlfaCode assistant de VS Code-terminal met je shell-profiel, prompts en plugins. <0>Meer informatie</0>"
 		},
 		"commandDelay": {
 			"label": "Terminal-commandovertraging",
@@ -972,7 +971,7 @@
 		},
 		"MORPH_FAST_APPLY": {
 			"name": "Fast Apply inschakelen",
-			"description": "Wanneer ingeschakeld, kan AlfaCode assistant bestanden bewerken met Fast Apply met gespecialiseerde modellen geoptimaliseerd voor codewijzigingen. Vereist de Kilo Gateway Provider, OpenRouter, of een Morph API-sleutel.",
+			"description": "Wanneer ingeschakeld, kan AlfaCode assistant bestanden bewerken met Fast Apply met gespecialiseerde modellen geoptimaliseerd voor codewijzigingen. Vereist de AlfaCode Gateway, OpenRouter, of een Morph API-sleutel.",
 			"apiProvider": "API-provider",
 			"apiProviderList": {
 				"current": "Huidig"
@@ -1035,7 +1034,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Aangepaste tools inschakelen",
-			"description": "Indien ingeschakeld kan Kilo aangepaste TypeScript/JavaScript-tools laden en gebruiken uit de map .kilocode/tools van je project of ~/.kilocode/tools voor globale tools. Opmerking: deze tools worden automatisch goedgekeurd.",
+			"description": "Indien ingeschakeld kan AlfaCode assistant aangepaste TypeScript/JavaScript-tools laden en gebruiken uit de map .kilocode/tools van je project of ~/.kilocode/tools voor globale tools. Opmerking: deze tools worden automatisch goedgekeurd.",
 			"toolsHeader": "Beschikbare aangepaste tools",
 			"noTools": "Geen aangepaste tools geladen. Voeg .ts- of .js-bestanden toe aan de map .kilocode/tools van je project of ~/.kilocode/tools voor globale tools.",
 			"refreshButton": "Vernieuwen",
@@ -1087,8 +1086,8 @@
 		"allModels": "Alle modellen"
 	},
 	"footer": {
-		"feedback": "Heb je vragen of feedback? Open gerust een issue op <githubLink>github.com/Kilo-Org/kilocode</githubLink> of sluit je aan bij <redditLink>reddit.com/r/kilocode</redditLink> of <discordLink>kilo.ai/discord</discordLink>",
-		"support": "Voor financiële vragen kunt u contact opnemen met de klantenservice via <supportLink>https://kilo.ai/support</supportLink>",
+		"feedback": "Heb je vragen of feedback? Open gerust een issue op <githubLink>github.com/Alfa-Org/alfacode</githubLink> of sluit je aan bij <redditLink>reddit.com/r/AlfaCodeAssistant</redditLink> of <discordLink>alfacode.ai/discord</discordLink>",
+		"support": "Voor financiële vragen kunt u contact opnemen met de klantenservice via <supportLink>https://alfacode.ai/support</supportLink>",
 		"telemetry": {
 			"label": "Fout- en gebruiksrapportage toestaan",
 			"description": "Help AlfaCode assistant te verbeteren door gebruiksgegevens en foutmeldingen te verzenden. Er worden nooit code, prompts of persoonlijke gegevens verzonden. Zie ons privacybeleid voor meer informatie."

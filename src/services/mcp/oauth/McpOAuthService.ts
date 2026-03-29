@@ -4,6 +4,7 @@ import { McpAuthorizationDiscovery, AuthorizationServerMetadata } from "./McpAut
 import { McpOAuthBrowserFlow, DEFAULT_AUTH_FLOW_PORT } from "./McpOAuthBrowserFlow"
 import { McpOAuthTokenStorage, OAuthTokens, StoredTokenData } from "./McpOAuthTokenStorage"
 import { generateCodeChallenge, generateCodeVerifier, generateState } from "./utils"
+import { mcpHttpFetch } from "./mcpHttpFetch"
 
 // Buffer time before token expiration to trigger proactive refresh (5 minutes)
 const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000
@@ -382,7 +383,7 @@ export class McpOAuthService {
 				body.set("client_secret", tokenData.clientSecret)
 			}
 
-			const response = await fetch(tokenData.tokenEndpoint, {
+			const response = await mcpHttpFetch(tokenData.tokenEndpoint, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/x-www-form-urlencoded",
@@ -465,7 +466,7 @@ export class McpOAuthService {
 
 		console.log(`[McpOAuthService] Client Registration Request:`, JSON.stringify(clientMetadata, null, 2))
 
-		const response = await fetch(registrationEndpoint, {
+		const response = await mcpHttpFetch(registrationEndpoint, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -615,7 +616,7 @@ export class McpOAuthService {
 	private async probeServerForAuthHeader(serverUrl: string): Promise<string | undefined> {
 		try {
 			// Make a GET request to the server URL to trigger a 401 response
-			const response = await fetch(serverUrl, {
+			const response = await mcpHttpFetch(serverUrl, {
 				method: "GET",
 				headers: {
 					Accept: "application/json",
@@ -662,7 +663,7 @@ export class McpOAuthService {
 			body.set("client_secret", clientSecret)
 		}
 
-		const response = await fetch(tokenEndpoint, {
+		const response = await mcpHttpFetch(tokenEndpoint, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",

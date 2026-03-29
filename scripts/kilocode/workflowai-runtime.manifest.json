@@ -1,0 +1,13 @@
+{
+	"sourceRoot": "WorkFlowAI/.kilocode",
+	"targetRoot": ".kilocode",
+	"include": [
+		"QUICK.md",
+		"modes/REGISTRY.md",
+		"modes/index.md",
+		"workflows/index.md",
+		"workflows/quick-fix.md",
+		"workflows/quickref.md"
+	],
+	"exclude": ["**/.DS_Store", "**/Thumbs.db"]
+}

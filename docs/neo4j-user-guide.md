@@ -2,7 +2,8 @@
 
 ## Обзор
 
-Kilocode теперь поддерживает **гибридный поиск кода**, комбинирующий:
+AlfaCode assistant теперь поддерживает **гибридный поиск кода**, комбинирующий:
+
 - **Семантический поиск** (Qdrant) - находит код по смыслу, а не по ключевым словам
 - **Графовый поиск** (Neo4j) - понимает связи между компонентами кода
 
@@ -11,15 +12,17 @@ Kilocode теперь поддерживает **гибридный поиск �
 ## Что такое гибридный поиск?
 
 ### Традиционный семантический поиск
+
 ```
 Запрос: "функция для сложения чисел"
 Результат: Находит функции add(), sum(), calculate() по сходству векторов
 ```
 
 ### Гибридный поиск (Семантический + Графовый)
+
 ```
 Запрос: "функция для сложения чисел"
-Результат: 
+Результат:
 1. Находит add(), sum(), calculate() (семантика)
 2. Анализирует, где эти функции используются (граф зависимостей)
 3. Учитывает важность функции в проекте
@@ -29,16 +32,19 @@ Kilocode теперь поддерживает **гибридный поиск �
 ## Преимущества
 
 ### 1. Лучшая точность поиска
+
 - Учитывает контекст использования кода
 - Отличает важные функции от вспомогательных
 - Понимает связи между компонентами
 
 ### 2. Анализ влияния изменений
+
 - Показывает, какой код зависит от данной функции
 - Помогает оценить риски рефакторинга
 - Визуализирует граф зависимостей
 
 ### 3. Навигация по кодовой базе
+
 - Быстро находит связанные файлы
 - Показывает цепочки вызовов
 - Помогает понять архитектуру
@@ -55,35 +61,37 @@ Kilocode теперь поддерживает **гибридный поиск �
 4. Проверьте доступность: http://localhost:7474
 
 **Альтернативы:**
+
 - Docker: `docker run -p 7474:7474 -p 7687:7687 neo4j:5.25.1`
 - Neo4j Aura (облачная версия)
 
-### Шаг 2: Настройка Kilocode
+### Шаг 2: Настройка AlfaCode assistant
 
 1. Откройте настройки VSCode (Ctrl+,)
-2. Найдите "Kilocode: Neo4j"
+2. Найдите "AlfaCode assistant: Neo4j"
 3. Укажите параметры подключения:
 
 ```json
 {
-  "kilocode.neo4j.enabled": true,
-  "kilocode.neo4j.uri": "bolt://localhost:7687",
-  "kilocode.neo4j.username": "neo4j",
-  "kilocode.neo4j.database": "neo4j"
+	"kilocode.neo4j.enabled": true,
+	"kilocode.neo4j.uri": "bolt://localhost:7687",
+	"kilocode.neo4j.username": "neo4j",
+	"kilocode.neo4j.database": "neo4j"
 }
 ```
 
 4. Установите пароль через Command Palette:
-   - `Ctrl+Shift+P` → "Kilocode: Set Neo4j Password"
-   - Введите пароль (по умолчанию: `neo4j`, но рекомендуется сменить)
+    - `Ctrl+Shift+P` → "AlfaCode assistant: Set Neo4j Password"
+    - Введите пароль (по умолчанию: `neo4j`, но рекомендуется сменить)
 
 ### Шаг 3: Индексация проекта
 
 1. Откройте Command Palette (`Ctrl+Shift+P`)
-2. Выполните команду: "Kilocode: Start Code Indexing"
+2. Выполните команду: "AlfaCode assistant: Start Code Indexing"
 3. Дождитесь завершения (будут индексированы Qdrant + Neo4j)
 
 **Статус индексации:**
+
 - Qdrant: Векторные эмбеддинги для семантического поиска
 - Neo4j: Граф зависимостей (imports, calls, inherits, etc.)
 
@@ -91,25 +99,26 @@ Kilocode теперь поддерживает **гибридный поиск �
 
 ### Обычный поиск
 
-Kilocode **автоматически** использует гибридный поиск, если Neo4j включен:
+AlfaCode assistant **автоматически** использует гибридный поиск, если Neo4j включен:
 
 1. Откройте палитру команд (`Ctrl+Shift+P`)
-2. "Kilocode: Search Code Index"
+2. "AlfaCode assistant: Search Code Index"
 3. Введите запрос: "функция для валидации email"
 4. Получите результаты с учетом контекста
 
 **Как это работает под капотом:**
+
 ```typescript
 // Пользователь видит обычный поиск
 searchIndex("email validation")
 
-// Внутри Kilocode:
+// Внутри AlfaCode assistant:
 if (neo4jEnabled && neo4jAvailable) {
-  // Используется HybridSearchService
-  return hybridSearch(query) // Qdrant + Neo4j
+	// Используется HybridSearchService
+	return hybridSearch(query) // Qdrant + Neo4j
 } else {
-  // Fallback на семантический поиск
-  return semanticSearch(query) // Только Qdrant
+	// Fallback на семантический поиск
+	return semanticSearch(query) // Только Qdrant
 }
 ```
 
@@ -157,6 +166,7 @@ dependents.forEach(dep => {
 ```
 
 **Вывод:**
+
 ```
 src/checkout.ts зависит от calculateTotal (Depth: 1)
 src/payment.ts зависит от calculateTotal (Depth: 2)
@@ -170,6 +180,7 @@ src/analytics.ts зависит от calculateTotal (Depth: 3)
 **Запрос:** "where is user authentication implemented"
 
 **Результаты:**
+
 ```
 1. src/auth/authenticate.ts (Score: 0.95)
    - Semantic: 0.9 (высокое сходство с запросом)
@@ -187,6 +198,7 @@ src/analytics.ts зависит от calculateTotal (Depth: 3)
 **Запрос:** "API endpoints that use database transactions"
 
 **Результаты показывают:**
+
 - Файлы с эндпоинтами
 - Связи с database service
 - Цепочки вызовов до транзакций
@@ -196,15 +208,16 @@ src/analytics.ts зависит от calculateTotal (Depth: 3)
 **Задача:** Переименовать `UserService` → `AccountService`
 
 **Действия:**
+
 1. Найдите класс: `"UserService class definition"`
 2. Используйте `searchDependents()` для анализа влияния
 3. Список файлов для изменения:
-   ```
-   src/services/user.ts (определение)
-   src/controllers/user.controller.ts (импорт)
-   src/routes/api.ts (использование)
-   tests/user.spec.ts (тесты)
-   ```
+    ```
+    src/services/user.ts (определение)
+    src/controllers/user.controller.ts (импорт)
+    src/routes/api.ts (использование)
+    tests/user.spec.ts (тесты)
+    ```
 
 ## Настройка весов поиска
 
@@ -215,14 +228,14 @@ src/analytics.ts зависит от calculateTotal (Depth: 3)
 ```typescript
 // Больше семантики (для абстрактных запросов)
 const results = await searchService.hybridSearch("algorithm for sorting", {
-  semanticWeight: 0.8,  // 80% семантика
-  graphWeight: 0.2      // 20% граф
+	semanticWeight: 0.8, // 80% семантика
+	graphWeight: 0.2, // 20% граф
 })
 
 // Больше графа (для структурных запросов)
 const results = await searchService.hybridSearch("dependencies of module X", {
-  semanticWeight: 0.3,  // 30% семантика
-  graphWeight: 0.7      // 70% граф
+	semanticWeight: 0.3, // 30% семантика
+	graphWeight: 0.7, // 70% граф
 })
 ```
 
@@ -230,12 +243,12 @@ const results = await searchService.hybridSearch("dependencies of module X", {
 
 Neo4j индексация поддерживает:
 
-| Язык | Entities | Relationships |
-|------|----------|---------------|
+| Язык                      | Entities                                    | Relationships                                    |
+| ------------------------- | ------------------------------------------- | ------------------------------------------------ |
 | **TypeScript/JavaScript** | ✅ function, class, interface, type, import | ✅ imports, calls, inherits, implements, exports |
-| **Python** | ✅ function, class, import | ✅ imports, calls, inherits |
-| **Java** | ✅ class, method, import | ✅ imports, extends, implements |
-| **Другие** | ✅ fallback (file entity) | ⚠️ ограниченная поддержка |
+| **Python**                | ✅ function, class, import                  | ✅ imports, calls, inherits                      |
+| **Java**                  | ✅ class, method, import                    | ✅ imports, extends, implements                  |
+| **Другие**                | ✅ fallback (file entity)                   | ⚠️ ограниченная поддержка                        |
 
 ## Troubleshooting
 
@@ -244,14 +257,15 @@ Neo4j индексация поддерживает:
 **Проблема:** "Failed to connect to Neo4j at bolt://localhost:7687"
 
 **Решение:**
+
 1. Проверьте, запущен ли Neo4j:
-   ```cmd
-   sc query Neo4j
-   ```
+    ```cmd
+    sc query Neo4j
+    ```
 2. Проверьте порт 7687:
-   ```cmd
-   netstat -an | findstr 7687
-   ```
+    ```cmd
+    netstat -an | findstr 7687
+    ```
 3. Проверьте пароль в VSCode Settings
 
 ### Индексация Neo4j не запускается
@@ -259,20 +273,22 @@ Neo4j индексация поддерживает:
 **Проблема:** Qdrant работает, но Neo4j не индексирует
 
 **Решение:**
-1. Проверьте логи: Output → Kilocode
+
+1. Проверьте логи: Output → AlfaCode assistant
 2. Убедитесь, что `neo4j.enabled = true`
-3. Переиндексируйте: "Kilocode: Clear Index Data" → "Start Code Indexing"
+3. Переиндексируйте: "AlfaCode assistant: Clear Index Data" → "Start Code Indexing"
 
 ### Медленный поиск
 
 **Проблема:** Гибридный поиск работает медленно
 
 **Решение:**
+
 1. Создайте индексы в Neo4j:
-   ```cypher
-   CREATE INDEX entity_file_path IF NOT EXISTS FOR (e:CodeEntity) ON (e.filePath)
-   CREATE INDEX entity_type IF NOT EXISTS FOR (e:CodeEntity) ON (e.type)
-   ```
+    ```cypher
+    CREATE INDEX entity_file_path IF NOT EXISTS FOR (e:CodeEntity) ON (e.filePath)
+    CREATE INDEX entity_type IF NOT EXISTS FOR (e:CodeEntity) ON (e.type)
+    ```
 2. Уменьшите `maxResults` в настройках
 3. Используйте `directoryPrefix` для ограничения области поиска
 
@@ -280,9 +296,10 @@ Neo4j индексация поддерживает:
 
 **Ситуация:** Neo4j временно недоступен
 
-**Поведение:** Kilocode автоматически использует только Qdrant
+**Поведение:** AlfaCode assistant автоматически использует только Qdrant
 
 **Логи:**
+
 ```
 [CodeIndexSearchService] Neo4j unavailable, using semantic-only search
 ```

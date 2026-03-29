@@ -1,54 +1,38 @@
-# Рабочий процесс: Трекинг задач в Beads (beads-task-tracking)
+﻿# Workflow: Beads task tracking (`beads-task-tracking`)
 
-## Описание
-Использовать трекер задач `bd` (beads) для управления долгими задачами с зависимостями
-и работой в несколько сессий - так, чтобы всё переживало сжатие контекста (compaction) и поддерживало
-координацию нескольких агентов.
+## Purpose
 
-## Когда использовать
-- Работа растягивается на несколько сессий или compaction-циклов.
-- Сложные зависимости требуют устойчивого графа.
-- Для оркестрации нескольких агентов нужно общее состояние.
+Use `bd` only for long-running or multi-session work where persistent task state reduces coordination cost.
 
-## Предусловия
-- CLI `bd` установлен и доступен в PATH.
-- В проекте настроен `.beads/` или переменная `BEADS_DIR`.
+## When it helps
 
-## Шаги
-1. Инициализация
-   - Выполнить `bd init` (локально в проекте) или указать `BEADS_DIR` на внешний репозиторий.
-   - Для `git worktree` предпочитай `bd config set sync.branch beads-sync` или внешний `BEADS_DIR`, чтобы избежать блокировок ветки.
+- work spans multiple sessions
+- dependencies between tasks matter
+- several agents or contributors need shared state
 
-2. Старт сессии
-   - Выполнить `bd ready` и выбрать незаблокированную задачу.
-   - Пометить её как `in_progress` до начала работы.
+## Prerequisites
 
-3. В процессе
-   - Находки фиксировать отдельными задачами и связывать через `discovered-from`.
-   - Моделировать зависимости как `X требует Y` (например, `bd dep add X Y`).
-   - Вести заметки и фиксировать решения по мере появления контекста.
+- `bd` is installed and available in `PATH`
+- `.beads/` or `BEADS_DIR` is configured for the project
 
-4. Координация нескольких агентов (опционально)
-   - Создавать beads-агенты (`--type=agent`) и beads-роли (`--type=role`).
-   - Использовать слоты (`hook`, `role`), чтобы записать, какой агент владеет какой частью работы.
+## Workflow
 
-5. Завершение
-   - Закрыть задачу коротким резюме.
-   - Выполнить `bd ready`, чтобы увидеть недавно разблокированную работу.
+1. Initialize once with `bd init` or point `BEADS_DIR` to shared storage.
+2. Start a session with `bd ready` and pick an unblocked task.
+3. Mark the task `in_progress` before implementation.
+4. Add discovered work as separate tasks and connect dependencies.
+5. Close tasks with a short summary.
+6. End the session with `bd sync`.
 
-6. Синхронизация и передача контекста
-   - В конце сессии выполнить `bd sync`, чтобы сбросить JSONL и git-состояние.
-   - Обновить заметки в формате `COMPLETED/IN_PROGRESS/NEXT` (готово/в работе/дальше) для быстрого восстановления.
+## Rules
 
-## Примечания
-- Правила WorkFlowAI (TDD и 100% coverage) остаются обязательными; `bd` трекает работу, а не качество.
-- Для совместного планирования лучше внешний `BEADS_DIR`, чтобы не создавать лишний шум в истории кода.
-- Для больших фич используй эпики, а для реализуемых кусочков - задачи.
+- `bd` does not replace `.protocols/`.
+- Memory Bank and protocol state stay task-specific in the workspace.
+- Use external `BEADS_DIR` for multi-worktree or multi-agent coordination when possible.
 
-## Чеклист
-- [ ] `bd` инициализирован (локально или во внешнем `BEADS_DIR`)
-- [ ] выбрана задача и отмечена `in_progress`
-- [ ] зависимости выставлены (X требует Y)
-- [ ] находки записаны отдельными задачами
-- [ ] резюме и заметки обновлены при закрытии
-- [ ] выполнен `bd sync`
+## Checklist
+
+- tracker initialized
+- active task selected
+- dependencies recorded
+- session synced

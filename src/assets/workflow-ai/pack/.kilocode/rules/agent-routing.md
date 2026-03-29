@@ -1,80 +1,58 @@
-# Agent Routing Rules (SoT)
+# Agent Routing Rules
 
-## Purpose
+This document defines source-of-truth routing behavior for `orchestrator`.
 
-Этот документ задаёт единственный канонический набор правил маршрутизации (`routing`) для режима `orchestrator`.
+## Core rules
 
-1. Orchestrator MUST маршрутизировать и делегировать.
-2. Orchestrator MUST NOT выполнять аналитику требований/кода/архитектуры.
-3. Specialist-first MUST применяться всегда: выбирать самый узкий подходящий `mode`.
+1. `orchestrator` routes and delegates.
+2. `orchestrator` must not perform deep implementation, architecture, or debugging work itself.
+3. Specialist-first selection is mandatory.
+4. If no specialist fits, fall back to a broader safe mode.
 
-Термины: [`terminology.md`](terminology.md:1).
-Handoff: [`context-handoff.md`](../patterns/orchestration/context-handoff.md:1).
-Правила доказательности: [`evidence-rules.md`](evidence-rules.md:1).
+## Deterministic routing
 
-## Zero-analytics policy (mandatory)
+1. Identify the task type.
+2. Identify domain triggers.
+3. If the task is non-trivial, ensure context is primed and the brief is cleaned before broad delegation.
+4. Pick the narrowest valid mode.
+5. Delegate using the canonical handoff format from [`context-handoff.md`](../patterns/orchestration/context-handoff.md:1).
 
-Таблица фиксирует запреты и обязательную эскалацию.
+## Pre-delegation flow for non-trivial work
 
-| Если требуется                                   | Orchestrator MUST delegate to                                                            | Notes                                                                                                         |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| бизнес-требования, BRD, user stories, AC         | `business-analyst` / `1c-business-analyst`                                               | Оркестратор не уточняет продукт сам, кроме 1 blocking question по [`evidence-rules.md`](evidence-rules.md:1). |
-| системный анализ, ТЗ, алгоритмы, Impact analysis | `system-analyst` / `1c-system-analyst`                                                   |                                                                                                               |
-| архитектура, ADR, проектирование интерфейсов     | `architect` / `solution-architect` / `api-architect` / `data-architect` / `1c-architect` |                                                                                                               |
-| поиск root cause, triage, воспроизведение бага   | `debug`                                                                                  |                                                                                                               |
-| исправление известной причины                    | `code-fixer` или соответствующий `*-dev`                                                 |                                                                                                               |
-| код-ревью                                        | `reviewer` (или доменный QA-режим)                                                       |                                                                                                               |
-| документация workflow-pack / протоколы           | `architect`                                                                              | Отдельного `technical-writer` в pack не предполагается.                                                       |
+1. Prime context by [`../workflows/context-priming.md`](../workflows/context-priming.md:1).
+2. Clean the task contract by [`../workflows/brief-refinement.md`](../workflows/brief-refinement.md:1).
+3. If needed, shape target-state and execution artifacts by [`../workflows/spec-plans-generation.md`](../workflows/spec-plans-generation.md:1).
+4. Delegate only the minimal approved slice.
 
-## Routing algorithm (deterministic)
+## Task type mapping
 
-1. Определи `task type` по таблице "Task type -> mode".
-2. Определи `domain trigger` по таблице "Domain triggers".
-3. Если найден specialist, MUST выбрать его.
-4. Если specialist не найден, MAY использовать общий `code`.
-5. Для любой делегации MUST использовать шаблон [`context-handoff.md`](../patterns/orchestration/context-handoff.md:1).
+| Task type                     | Preferred mode                                    |
+| ----------------------------- | ------------------------------------------------- |
+| Planning, protocol, docs-only | `architect`                                       |
+| Multi-step coordination       | `orchestrator`                                    |
+| Unknown-cause bug             | `debug`                                           |
+| Known-cause fix               | `code-fixer` or specialist dev                    |
+| Testing                       | `unit-tester`, `integration-tester`, `e2e-tester` |
+| Review                        | `reviewer`                                        |
+| 1C domain                     | `1c-orchestrator`                                 |
 
-## Task type -> mode
+## Domain triggers
 
-| Task type (observable intent)                                   | Mode                                                                    | Stop condition                                      |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------- |
-| Планирование, создание/закрытие протокола, редактирование `.md` | `architect`                                                             | Нет изменений кода, только docs.                    |
-| Координация multi-step, декомпозиция, параллельные подзадачи    | `orchestrator`                                                          | Orchestrator не делает содержательную работу.       |
-| Вопросы/исследование без изменений                              | `ask` / `planning-research-codebase` / `planning-research-web`          | Findings only; no writes.                           |
-| Баг: причина неизвестна                                         | `debug`                                                                 | Выдать root cause + план фикса.                     |
-| Баг: причина известна, нужен фикс                               | `code-fixer` или доменный `*-dev`                                       | Выдать фикс + тесты.                                |
-| Тестирование                                                    | `unit-tester` / `integration-tester` / `e2e-tester` / `security-tester` | Coverage/детерминизм соблюдены.                     |
-| Code review                                                     | `reviewer`                                                              | Выдать замечания или approval.                      |
-| Рефакторинг                                                     | `refactorer` (или `refactorer --simplify`)                              | Не менять поведение без явного решения в протоколе. |
-| Локализация                                                     | `translate`                                                             | Только i18n/локализация.                            |
+| Trigger                         | Route                   |
+| ------------------------------- | ----------------------- |
+| React, JSX, hooks               | `react-dev`             |
+| Vue, Nuxt                       | `vue-dev`               |
+| Node.js, Express, NestJS        | `nodejs-dev`            |
+| Python, Django, FastAPI         | `python-dev`            |
+| PostgreSQL, indexes, SQL tuning | `postgresql-specialist` |
+| Docker, CI, GitHub Actions      | `devops` or `cicd`      |
+| Security audit                  | `security-auditor`      |
+| 1C, BSL, EDT, metadata objects  | `1c-orchestrator`       |
 
-## Domain triggers (specialist-first)
+## Blocking ambiguity
 
-Таблица задаёт стоп-условия. Если триггер сработал, orchestrator MUST делегировать в указанный `mode`.
+If a missing fact blocks safe routing:
 
-| Trigger                   | Examples                                                              | Route to                                                   |
-| ------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------- |
-| 1C:Enterprise (immediate) | `1C`, `1С`, `BSL`, `EDT`, `.bsl`, `справочник`, `документ`, `регистр` | `1c-orchestrator`                                          |
-| React                     | `react`, `jsx`, `hook`, `component`                                   | `react-dev`                                                |
-| Vue                       | `vue`, `nuxt`, `composition api`                                      | `vue-dev`                                                  |
-| Node.js backend           | `node`, `express`, `nestjs`, `npm`                                    | `nodejs-dev`                                               |
-| Python backend            | `python`, `django`, `fastapi`                                         | `python-dev` (или более узкий specialist)                  |
-| Database: PostgreSQL      | `postgres`, `sql`, `index`, `migration`                               | `postgresql-specialist` (или `data-architect` для дизайна) |
-| Database: Prisma          | `prisma`, `schema.prisma`                                             | `prisma-specialist`                                        |
-| DevOps/CI                 | `docker`, `k8s`, `pipeline`, `github actions`                         | `devops` или `cicd`                                        |
-| Security audit            | `vulnerability`, `OWASP`, `SAST`                                      | `security-auditor`                                         |
-
-## Escalation rules
-
-1. Если задача пересекает более 2 доменов (например, backend + DB + infra), orchestrator SHOULD:
-    1. делегировать анализ `architect` (или профильному архитектору),
-    2. затем делегировать реализацию доменным `*-dev/*-specialist` по отдельным подзадачам.
-2. Если требование неоднозначно и блокирует работу, orchestrator MUST:
-    1. задать ровно 1 уточняющий вопрос,
-    2. указать `TEMP:` правило safe default до ответа,
-    3. зафиксировать это в handoff по [`context-handoff.md`](../patterns/orchestration/context-handoff.md:1).
-
-## Evidence discipline during routing
-
-1. Любое утверждение про файлы/пути MUST иметь source-ссылку. См. [`evidence-rules.md`](evidence-rules.md:1).
-2. Если в handoff упоминаются скрипты, пути MUST следовать SoT [`scripts-entrypoints.md`](../workflows/scripts-entrypoints.md:1).
+- ask at most one blocking question
+- state a safe temporary default
+- carry both into the handoff

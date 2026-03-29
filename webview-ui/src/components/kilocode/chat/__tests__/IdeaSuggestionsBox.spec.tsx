@@ -112,14 +112,14 @@ describe("IdeaSuggestionsBox", () => {
 		})
 	})
 
-	it("should display Kilo logo", () => {
+	it("should display AlfaCode assistant logo", () => {
 		vi.mocked(useTaskHistory).mockReturnValue({
 			data: { historyItems: [] },
 		} as any)
 
 		render(<IdeaSuggestionsBox />)
 
-		const logo = screen.getByAltText("Kilo Code")
+		const logo = screen.getByAltText("AlfaCode assistant")
 		expect(logo).toBeInTheDocument()
 		expect(logo).toHaveAttribute("src", "/icons/kilo-dark.svg")
 	})

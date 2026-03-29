@@ -208,8 +208,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Gib den benutzerdefinierten Speicherpfad für den Gesprächsverlauf ein, leer lassen für Standardspeicherort",
-		"path_placeholder": "D:\\KiloCodeStorage",
-		"enter_absolute_path": "Bitte gib einen absoluten Pfad ein (z.B. D:\\KiloCodeStorage oder /home/user/storage)",
+		"path_placeholder": "D:\\AlfaCodeAssistantStorage",
+		"enter_absolute_path": "Bitte gib einen absoluten Pfad ein (z.B. D:\\AlfaCodeAssistantStorage oder /home/user/storage)",
 		"enter_valid_path": "Bitte gib einen gültigen Pfad ein"
 	},
 	"input": {

@@ -1,5 +1,5 @@
 {
-	"greeting": "Què pot fer AlfaCode assistant per tu?",
+	"greeting": "Què pot fer AlfaCode per tu?",
 	"task": {
 		"title": "Tasca",
 		"expand": "Expandir tasca",
@@ -22,12 +22,12 @@
 		"sharePublicly": "Compartir públicament",
 		"sharePubliclyDescription": "Qualsevol amb l'enllaç pot accedir",
 		"connectToCloud": "Connecta al núvol",
-		"connectToCloudDescription": "Inicia sessió a AlfaCode assistant Cloud per compartir tasques",
+		"connectToCloudDescription": "Inicia sessió a AlfaCode Cloud per compartir tasques",
 		"sharingDisabledByOrganization": "Compartició deshabilitada per l'organització",
 		"shareSuccessOrganization": "Enllaç d'organització copiat al porta-retalls",
 		"shareSuccessPublic": "Enllaç públic copiat al porta-retalls",
-		"openInCloud": "Obrir tasca a Roo Code Cloud",
-		"openInCloudIntro": "Continua monitoritzant o interactuant amb Roo des de qualsevol lloc. Escaneja, fes clic o copia per obrir.",
+		"openInCloud": "Obrir tasca a AlfaCode Cloud",
+		"openInCloudIntro": "Continua monitoritzant o interactuant amb AlfaCode des de qualsevol lloc. Escaneja, fes clic o copia per obrir.",
 		"openApiHistory": "Obrir historial d'API",
 		"openUiHistory": "Obrir historial d'UI"
 	},
@@ -101,7 +101,7 @@
 	"scrollToBottom": "Desplaça't al final del xat",
 	"about": "Genera, refactoritza i depura codi amb l'ajuda de la IA. Consulta la nostra <DocsLink>documentació</DocsLink> per a més informació.",
 	"docs": "Consulta els nostres <DocsLink>documents</DocsLink> per a més informació.",
-	"onboarding": "<strong> La vostra llista de tasques en aquest espai de treball està buida. </strong> Comença escrivint una tasca a continuació. \nNo esteu segur per on començar? \nMés informació sobre què pot fer AlfaCode assistant als documents.",
+	"onboarding": "<strong> La vostra llista de tasques en aquest espai de treball està buida. </strong> Comença escrivint una tasca a continuació. \nNo esteu segur per on començar? \nMés informació sobre què pot fer AlfaCode als documents.",
 	"rooTips": {
 		"customizableModes": {
 			"title": "Modes personalitzables",
@@ -130,7 +130,7 @@
 		"title": "Modes",
 		"marketplace": "Marketplace de Modes",
 		"settings": "Configuració de Modes",
-		"description": "Personalitats especialitzades que adapten el comportament de AlfaCode assistant.",
+		"description": "Personalitats especialitzades que adapten el comportament de AlfaCode.",
 		"searchPlaceholder": "Cerca modes...",
 		"noResults": "No s'han trobat resultats",
 		"organizationModes": "Modes d'organització"
@@ -145,7 +145,7 @@
 	"diffError": {
 		"title": "Edició fallida"
 	},
-	"troubleMessage": "AlfaCode assistant està tenint problemes...",
+	"troubleMessage": "AlfaCode està tenint problemes...",
 	"apiRequest": {
 		"title": "Sol·licitud API",
 		"failed": "Sol·licitud API ha fallat",
@@ -155,14 +155,14 @@
 		"rateLimitWait": "Limitació de taxa",
 		"errorTitle": "Error de proveïdor {{code}}",
 		"errorMessage": {
-			"docs": "Documentació",
-			"goToSettings": "Configuració",
 			"400": "El proveïdor no ha pogut processar la sol·licitud tal com es va fer. Interromp la tasca i prova una abordatge diferent.",
 			"401": "No s'ha pogut autenticar amb el proveïdor. Si us plau, verifica la teva configuració de clau API.",
 			"402": "Sembla que se t'han acabat els fons/crèdits al teu compte. Vés al teu proveïdor i afegeix més per continuar.",
 			"403": "No autoritzat. La teva clau API és vàlida, però el proveïdor ha rebutjat completar aquesta sol·licitud.",
 			"429": "Massa sol·licituds. Estàs sent limitat pel proveïdor. Si us plau espera una mica abans de la teva propera crida API.",
 			"500": "Error del servidor del proveïdor. Quelcom va malament del costat del proveïdor, no hi ha res de malament amb la teva sol·licitud.",
+			"docs": "Documentació",
+			"goToSettings": "Configuració",
 			"connection": "Error de connexió. Assegureu-vos que teniu una connexió a Internet funcional.",
 			"claudeCodeNotAuthenticated": "Has d'iniciar sessió per utilitzar Claude Code. Vés a Configuració i fes clic a \"Iniciar sessió a Claude Code\" per autenticar-te.",
 			"unknown": "Error API desconegut, fes clic a Detalls per a més informació."
@@ -188,48 +188,48 @@
 		"current": "Actual"
 	},
 	"instructions": {
-		"wantsToFetch": "AlfaCode assistant vol obtenir instruccions detallades per ajudar amb la tasca actual."
+		"wantsToFetch": "AlfaCode vol obtenir instruccions detallades per ajudar amb la tasca actual."
 	},
 	"fileOperations": {
-		"wantsToRead": "AlfaCode assistant vol llegir aquest fitxer",
-		"wantsToReadOutsideWorkspace": "AlfaCode assistant vol llegir aquest fitxer fora de l'espai de treball",
-		"didRead": "AlfaCode assistant ha llegit aquest fitxer",
-		"wantsToEdit": "AlfaCode assistant vol editar aquest fitxer",
-		"wantsToEditOutsideWorkspace": "AlfaCode assistant vol editar aquest fitxer fora de l'espai de treball",
-		"wantsToEditProtected": "AlfaCode assistant vol editar un fitxer de configuració protegit",
-		"wantsToCreate": "AlfaCode assistant vol crear un nou fitxer",
-		"wantsToSearchReplace": "AlfaCode assistant vol realitzar cerca i substitució en aquest fitxer",
-		"didSearchReplace": "AlfaCode assistant ha realitzat cerca i substitució en aquest fitxer",
-		"wantsToInsert": "AlfaCode assistant vol inserir contingut en aquest fitxer",
-		"wantsToInsertWithLineNumber": "AlfaCode assistant vol inserir contingut a la línia {{lineNumber}} d'aquest fitxer",
-		"wantsToInsertAtEnd": "AlfaCode assistant vol afegir contingut al final d'aquest fitxer",
-		"wantsToReadAndXMore": "En AlfaCode assistant vol llegir aquest fitxer i {{count}} més",
-		"wantsToReadMultiple": "AlfaCode assistant vol llegir diversos fitxers",
-		"wantsToApplyBatchChanges": "AlfaCode assistant vol aplicar canvis a múltiples fitxers",
-		"wantsToGenerateImage": "AlfaCode assistant vol generar una imatge",
-		"wantsToGenerateImageOutsideWorkspace": "AlfaCode assistant vol generar una imatge fora de l'espai de treball",
-		"wantsToGenerateImageProtected": "AlfaCode assistant vol generar una imatge en una ubicació protegida",
-		"didGenerateImage": "AlfaCode assistant ha generat una imatge",
-		"wantsToDelete": "AlfaCode assistant vol eliminar aquest fitxer",
-		"wantsToDeleteDirectory": "AlfaCode assistant vol eliminar aquest directori"
+		"wantsToRead": "AlfaCode vol llegir aquest fitxer",
+		"wantsToReadOutsideWorkspace": "AlfaCode vol llegir aquest fitxer fora de l'espai de treball",
+		"didRead": "AlfaCode ha llegit aquest fitxer",
+		"wantsToEdit": "AlfaCode vol editar aquest fitxer",
+		"wantsToEditOutsideWorkspace": "AlfaCode vol editar aquest fitxer fora de l'espai de treball",
+		"wantsToEditProtected": "AlfaCode vol editar un fitxer de configuració protegit",
+		"wantsToCreate": "AlfaCode vol crear un nou fitxer",
+		"wantsToSearchReplace": "AlfaCode vol realitzar cerca i substitució en aquest fitxer",
+		"didSearchReplace": "AlfaCode ha realitzat cerca i substitució en aquest fitxer",
+		"wantsToInsert": "AlfaCode vol inserir contingut en aquest fitxer",
+		"wantsToInsertWithLineNumber": "AlfaCode vol inserir contingut a la línia {{lineNumber}} d'aquest fitxer",
+		"wantsToInsertAtEnd": "AlfaCode vol afegir contingut al final d'aquest fitxer",
+		"wantsToReadAndXMore": "En AlfaCode vol llegir aquest fitxer i {{count}} més",
+		"wantsToReadMultiple": "AlfaCode vol llegir diversos fitxers",
+		"wantsToApplyBatchChanges": "AlfaCode vol aplicar canvis a múltiples fitxers",
+		"wantsToGenerateImage": "AlfaCode vol generar una imatge",
+		"wantsToGenerateImageOutsideWorkspace": "AlfaCode vol generar una imatge fora de l'espai de treball",
+		"wantsToGenerateImageProtected": "AlfaCode vol generar una imatge en una ubicació protegida",
+		"didGenerateImage": "AlfaCode ha generat una imatge",
+		"wantsToDelete": "AlfaCode vol eliminar aquest fitxer",
+		"wantsToDeleteDirectory": "AlfaCode vol eliminar aquest directori"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "AlfaCode assistant vol veure els fitxers de nivell superior en aquest directori",
-		"didViewTopLevel": "AlfaCode assistant ha vist els fitxers de nivell superior en aquest directori",
-		"wantsToViewRecursive": "AlfaCode assistant vol veure recursivament tots els fitxers en aquest directori",
-		"didViewRecursive": "AlfaCode assistant ha vist recursivament tots els fitxers en aquest directori",
-		"wantsToViewDefinitions": "AlfaCode assistant vol veure noms de definicions de codi font utilitzats en aquest directori",
-		"didViewDefinitions": "AlfaCode assistant ha vist noms de definicions de codi font utilitzats en aquest directori",
-		"wantsToSearch": "AlfaCode assistant vol cercar en aquest directori <code>{{regex}}</code>",
-		"didSearch": "AlfaCode assistant ha cercat en aquest directori <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "AlfaCode assistant vol cercar en aquest directori (fora de l'espai de treball) <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "AlfaCode assistant ha cercat en aquest directori (fora de l'espai de treball) <code>{{regex}}</code>",
-		"wantsToViewTopLevelOutsideWorkspace": "AlfaCode assistant vol veure els fitxers de nivell superior en aquest directori (fora de l'espai de treball)",
-		"didViewTopLevelOutsideWorkspace": "AlfaCode assistant ha vist els fitxers de nivell superior en aquest directori (fora de l'espai de treball)",
-		"wantsToViewRecursiveOutsideWorkspace": "AlfaCode assistant vol veure recursivament tots els fitxers en aquest directori (fora de l'espai de treball)",
-		"didViewRecursiveOutsideWorkspace": "AlfaCode assistant ha vist recursivament tots els fitxers en aquest directori (fora de l'espai de treball)",
-		"wantsToViewDefinitionsOutsideWorkspace": "AlfaCode assistant vol veure noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball)",
-		"didViewDefinitionsOutsideWorkspace": "AlfaCode assistant ha vist noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball)"
+		"wantsToViewTopLevel": "AlfaCode vol veure els fitxers de nivell superior en aquest directori",
+		"didViewTopLevel": "AlfaCode ha vist els fitxers de nivell superior en aquest directori",
+		"wantsToViewRecursive": "AlfaCode vol veure recursivament tots els fitxers en aquest directori",
+		"didViewRecursive": "AlfaCode ha vist recursivament tots els fitxers en aquest directori",
+		"wantsToViewDefinitions": "AlfaCode vol veure noms de definicions de codi font utilitzats en aquest directori",
+		"didViewDefinitions": "AlfaCode ha vist noms de definicions de codi font utilitzats en aquest directori",
+		"wantsToSearch": "AlfaCode vol cercar en aquest directori <code>{{regex}}</code>",
+		"didSearch": "AlfaCode ha cercat en aquest directori <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "AlfaCode vol cercar en aquest directori (fora de l'espai de treball) <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "AlfaCode ha cercat en aquest directori (fora de l'espai de treball) <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "AlfaCode vol veure els fitxers de nivell superior en aquest directori (fora de l'espai de treball)",
+		"didViewTopLevelOutsideWorkspace": "AlfaCode ha vist els fitxers de nivell superior en aquest directori (fora de l'espai de treball)",
+		"wantsToViewRecursiveOutsideWorkspace": "AlfaCode vol veure recursivament tots els fitxers en aquest directori (fora de l'espai de treball)",
+		"didViewRecursiveOutsideWorkspace": "AlfaCode ha vist recursivament tots els fitxers en aquest directori (fora de l'espai de treball)",
+		"wantsToViewDefinitionsOutsideWorkspace": "AlfaCode vol veure noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball)",
+		"didViewDefinitionsOutsideWorkspace": "AlfaCode ha vist noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball)"
 	},
 	"commandOutput": "Sortida de la comanda",
 	"commandExecution": {
@@ -251,24 +251,24 @@
 	"response": "Resposta",
 	"arguments": "Arguments",
 	"text": {
-		"rooSaid": "En Kilo ha dit"
+		"rooSaid": "En AlfaCode assistant ha dit"
 	},
 	"feedback": {
 		"youSaid": "Has dit"
 	},
 	"mcp": {
-		"wantsToUseTool": "AlfaCode assistant vol utilitzar una eina al servidor MCP {{serverName}}",
-		"wantsToAccessResource": "AlfaCode assistant vol accedir a un recurs al servidor MCP {{serverName}}"
+		"wantsToUseTool": "AlfaCode vol utilitzar una eina al servidor MCP {{serverName}}",
+		"wantsToAccessResource": "AlfaCode vol accedir a un recurs al servidor MCP {{serverName}}"
 	},
 	"modes": {
-		"wantsToSwitch": "AlfaCode assistant vol canviar a mode <code>{{mode}}</code>",
-		"wantsToSwitchWithReason": "AlfaCode assistant vol canviar a mode <code>{{mode}}</code> perquè: {{reason}}",
-		"didSwitch": "AlfaCode assistant ha canviat a mode <code>{{mode}}</code>",
-		"didSwitchWithReason": "AlfaCode assistant ha canviat a mode <code>{{mode}}</code> perquè: {{reason}}"
+		"wantsToSwitch": "AlfaCode vol canviar a mode <code>{{mode}}</code>",
+		"wantsToSwitchWithReason": "AlfaCode vol canviar a mode <code>{{mode}}</code> perquè: {{reason}}",
+		"didSwitch": "AlfaCode ha canviat a mode <code>{{mode}}</code>",
+		"didSwitchWithReason": "AlfaCode ha canviat a mode <code>{{mode}}</code> perquè: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "AlfaCode assistant vol crear una nova subtasca en mode <code>{{mode}}</code>",
-		"wantsToFinish": "AlfaCode assistant vol finalitzar aquesta subtasca",
+		"wantsToCreate": "AlfaCode vol crear una nova subtasca en mode <code>{{mode}}</code>",
+		"wantsToFinish": "AlfaCode vol finalitzar aquesta subtasca",
 		"newTaskContent": "Instruccions de la subtasca",
 		"completionContent": "Subtasca completada",
 		"resultContent": "Resultats de la subtasca",
@@ -276,7 +276,7 @@
 		"completionInstructions": "Subtasca completada! Pots revisar els resultats i suggerir correccions o següents passos. Si tot sembla correcte, confirma per tornar el resultat a la tasca principal."
 	},
 	"questions": {
-		"hasQuestion": "AlfaCode assistant té una pregunta"
+		"hasQuestion": "AlfaCode té una pregunta"
 	},
 	"taskCompleted": "Tasca completada",
 	"modelResponseIncomplete": "Resposta del model incompleta",
@@ -292,7 +292,7 @@
 		"copyToClipboard": "Copiar al porta-retalls",
 		"copied": "Copiat!",
 		"diagnostics": "Obtenir informació d'error detallada",
-		"proxyProvider": "Sembla que estàs utilitzant un proveïdor basat en proxy. Assegura't de comprovar els seus registres i de garantir que no estàs reescrivint les sol·licituds de Roo."
+		"proxyProvider": "Sembla que estàs utilitzant un proveïdor basat en proxy. Assegura't de comprovar els seus registres i de garantir que no estàs reescrivint les sol·licituds de AlfaCode."
 	},
 	"powershell": {
 		"issues": "Sembla que estàs tenint problemes amb Windows PowerShell, si us plau consulta aquesta documentació per a més informació."
@@ -339,19 +339,19 @@
 		"timerPrefix": "Aprovació automàtica habilitada. Seleccionant en {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} Llançat",
-		"support": "Si us plau, dona suport a Roo Code fent una estrella al nostre <githubLink>GitHub</githubLink>.",
+		"title": "AlfaCode {{version}} Llançat",
+		"support": "Si us plau, dona suport a AlfaCode fent una estrella al nostre <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Model stealth GRATUÏT per temps limitat</bold> - Code Supernova: Ara actualitzat amb una <bold>finestra de context d'1M tokens</bold>! Un model de codificació agèntica versàtil que suporta entrades d'imatges, disponible a través de Roo Code Cloud.",
+			"feature": "<bold>Model stealth GRATUÏT per temps limitat</bold> - Code Supernova: Ara actualitzat amb una <bold>finestra de context d'1M tokens</bold>! Un model de codificació agèntica versàtil que suporta entrades d'imatges, disponible a través de AlfaCode Cloud.",
 			"note": "(Nota: els prompts i completacions són registrats pel creador del model i utilitzats per millorar-lo)",
-			"connectButton": "Connectar a Roo Code Cloud",
-			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveïdor Roo Code Cloud a Configuració per començar.",
+			"connectButton": "Connectar a AlfaCode Cloud",
+			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveïdor AlfaCode Cloud a Configuració per començar.",
 			"goToSettingsButton": "Anar a Configuració"
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
 			"openaiCodexProvider": "S'ha afegit el Proveïdor OpenAI - ChatGPT Plus/Pro que ofereix accés basat en subscripció als models Codex sense costos per token.",
-			"gpt52codexModel": "S'ha afegit el nou model gpt-5.2-codex al Roo Code Router, al proveïdor estàndard OpenAI i més.",
+			"gpt52codexModel": "S'ha afegit el nou model gpt-5.2-codex al AlfaCode Router, al proveïdor estàndard OpenAI i més.",
 			"bugFixes": "S'han corregit fuites de memòria que causaven pantalles grises, problemes de signatura de pensament de Gemini i més millores d'estabilitat."
 		},
 		"cloudAgents": {
@@ -371,7 +371,7 @@
 	"browser": {
 		"session": "Sessió del navegador",
 		"active": "Actiu",
-		"rooWantsToUse": "AlfaCode assistant vol utilitzar el navegador",
+		"rooWantsToUse": "AlfaCode vol utilitzar el navegador",
 		"consoleLogs": "Registres de consola",
 		"noNewLogs": "(Cap registre nou)",
 		"screenshot": "Captura de pantalla del navegador",
@@ -419,24 +419,24 @@
 	"profileViolationWarning": "El perfil actual no és compatible amb la configuració de la teva organització",
 	"shellIntegration": {
 		"title": "Advertència d'execució d'ordres",
-		"description": "La teva ordre s'està executant sense la integració de shell del terminal VSCode. Per suprimir aquest advertiment, pots desactivar la integració de shell a la secció <strong>Terminal</strong> de la <settingsLink>configuració de AlfaCode assistant</settingsLink> o solucionar problemes d'integració del terminal VSCode utilitzant l'enllaç a continuació.",
+		"description": "La teva ordre s'està executant sense la integració de shell del terminal VSCode. Per suprimir aquest advertiment, pots desactivar la integració de shell a la secció <strong>Terminal</strong> de la <settingsLink>configuració de AlfaCode</settingsLink> o solucionar problemes d'integració del terminal VSCode utilitzant l'enllaç a continuació.",
 		"troubleshooting": "Fes clic aquí per a la documentació d'integració de shell."
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "S'ha arribat al límit de sol·licituds aprovades automàticament",
-			"description": "AlfaCode assistant ha arribat al límit aprovat automàticament de {{count}} sol·licitud(s) d'API. Vols reiniciar el comptador i continuar amb la tasca?",
+			"description": "AlfaCode ha arribat al límit aprovat automàticament de {{count}} sol·licitud(s) d'API. Vols reiniciar el comptador i continuar amb la tasca?",
 			"button": "Reiniciar i continuar"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "S'ha arribat al límit de cost d'aprovació automàtica",
 			"button": "Restableix i continua",
-			"description": "AlfaCode assistant ha arribat al límit de cost aprovat automàticament de ${{count}}. Vols restablir el cost i continuar amb la tasca?"
+			"description": "AlfaCode ha arribat al límit de cost aprovat automàticament de ${{count}}. Vols restablir el cost i continuar amb la tasca?"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "AlfaCode assistant vol cercar a la base de codi <code>{{query}}</code>",
-		"wantsToSearchWithPath": "AlfaCode assistant vol cercar a la base de codi <code>{{query}}</code> a <code>{{path}}</code>",
+		"wantsToSearch": "AlfaCode vol cercar a la base de codi <code>{{query}}</code>",
+		"wantsToSearchWithPath": "AlfaCode vol cercar a la base de codi <code>{{query}}</code> a <code>{{path}}</code>",
 		"didSearch_one": "S'ha trobat 1 resultat",
 		"didSearch_other": "S'han trobat {{count}} resultats",
 		"resultTooltip": "Puntuació de similitud: {{score}} (fes clic per obrir el fitxer)"
@@ -460,7 +460,7 @@
 		"ariaLabel": "Versió {{version}} - Feu clic per veure les notes de llançament"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud està evolucionant!",
+		"title": "AlfaCode Cloud està evolucionant!",
 		"description": "Executa agents remots al núvol, accedeix a les teves tasques des de qualsevol lloc, col·labora amb altres i molt més.",
 		"joinWaitlist": "Registra't per rebre les últimes actualitzacions."
 	},
@@ -495,8 +495,8 @@
 		"clickToEdit": "Feu clic per editar el missatge"
 	},
 	"slashCommand": {
-		"wantsToRun": "AlfaCode assistant vol executar una comanda slash",
-		"didRun": "AlfaCode assistant ha executat una comanda slash"
+		"wantsToRun": "AlfaCode vol executar una comanda slash",
+		"didRun": "AlfaCode ha executat una comanda slash"
 	},
 	"contextMenu": {
 		"noResults": "Sense resultats",

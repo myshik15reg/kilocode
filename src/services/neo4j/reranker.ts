@@ -13,11 +13,13 @@ export type RerankConfig = {
 
 type RerankResponseItem = {
 	index: number
-	relevance_score: number
+	relevance_score?: number
+	score?: number
 }
 
 type RerankResponse = {
 	data?: RerankResponseItem[]
+	results?: RerankResponseItem[]
 }
 
 type RerankCandidatePayload = Payload & {
@@ -77,7 +79,8 @@ export class BgeReranker {
 			return candidates
 		}
 
-		const endpoint = new URL("rerank", baseUrl)
+		const normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`
+		const endpoint = new URL(normalizedBaseUrl.endsWith("/v1/") ? "rerank" : "v1/rerank", normalizedBaseUrl)
 		const documents = candidates.map(
 			(candidate) => candidate.payload?.code_snippet ?? candidate.codeChunk ?? candidate.payload?.codeChunk ?? "",
 		)
@@ -88,8 +91,8 @@ export class BgeReranker {
 			body: JSON.stringify({
 				model: modelId,
 				query,
-				documents,
-				top_k: Math.min(topK, documents.length),
+				texts: documents,
+				top_n: Math.min(topK, documents.length),
 			}),
 			signal: AbortSignal.timeout(this.config.timeoutMs ?? DEFAULT_RERANK_TIMEOUT_MS),
 		})
@@ -99,15 +102,20 @@ export class BgeReranker {
 		}
 
 		const data = (await response.json()) as RerankResponse
-		if (!data?.data || !Array.isArray(data.data)) {
-			throw new Error("Unexpected rerank response format: missing data array")
+		const responseItems = Array.isArray(data?.data) ? data.data : Array.isArray(data?.results) ? data.results : null
+		if (!responseItems) {
+			throw new Error("Unexpected rerank response format: missing data/results array")
 		}
 
-		const rankedItems = data.data
+		const rankedItems = responseItems
+			.map((item) => ({
+				index: item?.index,
+				relevance_score: item?.relevance_score ?? item?.score,
+			}))
 			.filter((item) => Number.isFinite(item?.index) && Number.isFinite(item?.relevance_score))
 			.map((item) => ({
 				index: item.index,
-				relevance_score: item.relevance_score,
+				relevance_score: item.relevance_score as number,
 			}))
 			.filter((item) => item.index >= 0 && item.index < candidates.length)
 			.sort((a, b) => b.relevance_score - a.relevance_score)

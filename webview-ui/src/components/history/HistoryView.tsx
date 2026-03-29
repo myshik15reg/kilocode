@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react"
+import React, { memo, useEffect, useMemo, useState } from "react"
 import BottomControls from "../kilocode/BottomControls" // kilocode_change
 import { ArrowLeft } from "lucide-react"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
@@ -20,8 +20,21 @@ import {
 import { useAppTranslation } from "@/i18n/TranslationContext"
 
 import { Tab, TabContent, TabHeader } from "../common/Tab"
+import OrchestrationStatusSummary from "../chat/OrchestrationStatusSummary" // kilocode_change
+import { getHistoryOrchestrationSummary } from "../chat/orchestration" // kilocode_change
 import { useTaskSearch } from "./useTaskSearch"
 import TaskItem from "./TaskItem"
+import HistoryTreeGutter from "./HistoryTreeGutter"
+import {
+	buildTaskTreeRows,
+	formatRootTaskStatusSummaryWithI18n,
+	formatRootTaskSummaryLabelWithI18n,
+	getAutoExpandedTaskIds,
+	getRootTaskDescendantSummaryMap,
+	getRootTaskStatusSummary,
+} from "./taskTree"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { vscode } from "@/utils/vscode"
 
 type HistoryViewProps = {
 	onDone: () => void
@@ -47,18 +60,75 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		// kilocode_change end
 	} = useTaskSearch()
 	// kilocode_change start
-	const tasks = data?.historyItems ?? []
+	const tasks = useMemo(() => data?.historyItems ?? [], [data?.historyItems])
 	const pageIndex = data?.pageIndex ?? 0
 	const pageCount = data?.pageCount ?? 1
 	// kilocode_change end
 	const { t } = useAppTranslation()
+	const {
+		taskHistory: extensionTaskHistory = [],
+		activeRootTaskIds = [],
+		runningRootTaskIds = [],
+		focusedRootTaskId,
+	} = useExtensionState()
+	const activeRootTasks = useMemo(
+		() =>
+			activeRootTaskIds
+				.map(
+					(taskId) =>
+						extensionTaskHistory.find((task) => task.id === taskId) ??
+						tasks.find((task) => task.id === taskId),
+				)
+				.filter((task): task is NonNullable<typeof task> => Boolean(task)),
+		[extensionTaskHistory, tasks, activeRootTaskIds],
+	)
 
 	const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null)
 	const [isSelectionMode, setIsSelectionMode] = useState(false)
 	const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
 	const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState<boolean>(false)
+	const [expandedTaskIds, setExpandedTaskIds] = useState<Set<string>>(() => new Set()) // kilocode_change
 
-	// Toggle selection mode
+	useEffect(() => {
+		const nextExpandedIds = getAutoExpandedTaskIds(tasks, {
+			focusedTaskId: focusedRootTaskId,
+			activeRootTaskIds,
+		})
+
+		if (nextExpandedIds.size > 0) {
+			setExpandedTaskIds((prev) => new Set([...prev, ...nextExpandedIds]))
+		}
+	}, [tasks, activeRootTaskIds, focusedRootTaskId])
+
+	// kilocode_change start
+	const historyRootItems = useMemo(
+		() => (extensionTaskHistory.length > 0 ? extensionTaskHistory : tasks),
+		[extensionTaskHistory, tasks],
+	)
+	const taskRows = useMemo(() => buildTaskTreeRows(tasks, expandedTaskIds), [tasks, expandedTaskIds])
+	const rootTaskSummaryMap = useMemo(() => getRootTaskDescendantSummaryMap(historyRootItems), [historyRootItems]) // kilocode_change
+	const rootTaskStatusSummary = useMemo(
+		() =>
+			formatRootTaskStatusSummaryWithI18n(
+				getRootTaskStatusSummary(historyRootItems, { runningRootTaskIds }),
+				(key) => t(key),
+			),
+		[historyRootItems, runningRootTaskIds, t],
+	)
+	const orchestrationSummary = useMemo(() => getHistoryOrchestrationSummary(historyRootItems), [historyRootItems])
+	const toggleTaskExpansion = (taskId: string) => {
+		setExpandedTaskIds((prev) => {
+			const next = new Set(prev)
+			if (next.has(taskId)) {
+				next.delete(taskId)
+			} else {
+				next.add(taskId)
+			}
+			return next
+		})
+	}
+	// kilocode_change end
+
 	const toggleSelectionMode = () => {
 		setIsSelectionMode(!isSelectionMode)
 		if (isSelectionMode) {
@@ -66,7 +136,6 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		}
 	}
 
-	// Toggle selection for a single task
 	const toggleTaskSelection = (taskId: string, isSelected: boolean) => {
 		if (isSelected) {
 			setSelectedTaskIds((prev) => [...prev, taskId])
@@ -75,7 +144,6 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		}
 	}
 
-	// Toggle select all tasks
 	const toggleSelectAll = (selectAll: boolean) => {
 		if (selectAll) {
 			setSelectedTaskIds(tasks.map((task) => task.id))
@@ -84,7 +152,6 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		}
 	}
 
-	// Handle batch delete button click
 	const handleBatchDelete = () => {
 		if (selectedTaskIds.length > 0) {
 			setShowBatchDeleteDialog(true)
@@ -94,6 +161,48 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	return (
 		<Tab>
 			<TabHeader className="flex flex-col gap-2">
+				{(rootTaskStatusSummary || orchestrationSummary.hasStatusSignals || activeRootTasks.length > 1) && (
+					<div className="flex flex-wrap items-center gap-2 px-1" data-testid="history-active-root-switcher">
+						{rootTaskStatusSummary && (
+							<span className="text-xs text-vscode-descriptionForeground">{rootTaskStatusSummary}</span>
+						)}
+						{/* kilocode_change start */}
+						{orchestrationSummary.hasStatusSignals && (
+							<OrchestrationStatusSummary
+								summary={orchestrationSummary}
+								showTitle={false}
+								className="gap-1.5"
+								badgeClassName="text-[10px]"
+								countsClassName="text-[10px]"
+								dataTestId="history-orchestration-summary"
+							/>
+						)}
+						{/* kilocode_change end */}
+						{activeRootTasks.length > 1 &&
+							activeRootTasks.map((task) => (
+								<Button
+									key={task.id}
+									variant={focusedRootTaskId === task.id ? "primary" : "ghost"}
+									className="h-7 px-2 text-xs"
+									onClick={() => vscode.postMessage({ type: "showTaskWithId", text: task.id })}
+									data-testid={`history-root-switch-${task.id}`}>
+									<span className="flex flex-col items-start leading-tight max-w-[220px]">
+										<span className="truncate max-w-[220px]">{task.task}</span>
+										{formatRootTaskSummaryLabelWithI18n(rootTaskSummaryMap.get(task.id), (key) =>
+											t(key),
+										) && (
+											<span className="text-[10px] opacity-80 truncate max-w-[220px]">
+												{formatRootTaskSummaryLabelWithI18n(
+													rootTaskSummaryMap.get(task.id),
+													(key) => t(key),
+												)}
+											</span>
+										)}
+									</span>
+								</Button>
+							))}
+					</div>
+				)}
 				<div className="flex items-center justify-between gap-2">
 					<div className="flex items-center gap-2">
 						<Button
@@ -124,11 +233,9 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 				</div>
 				<div className="flex flex-col gap-2">
 					<VSCodeTextField
-						className="w-full"
 						placeholder={t("history:searchPlaceholder")}
 						value={searchQuery}
-						data-testid="history-search-input"
-						onInput={(e) => {
+						onInput={(e: any) => {
 							const newValue = (e.target as HTMLInputElement)?.value
 							setSearchQuery(newValue)
 							if (newValue && !searchQuery && sortOption !== "mostRelevant") {
@@ -136,9 +243,8 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								setSortOption("mostRelevant")
 							}
 						}}>
-						<div slot="start" className="codicon codicon-search mt-0.5 opacity-80 text-sm!" />
 						{searchQuery && (
-							<div
+							<button
 								className="input-icon-button codicon codicon-close flex justify-center items-center h-full"
 								aria-label="Clear search"
 								onClick={() => setSearchQuery("")}
@@ -214,8 +320,6 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							</SelectContent>
 						</Select>
 					</div>
-
-					{/* kilocode_change start */}
 					<div className="flex items-center gap-2">
 						<Checkbox
 							id="show-favorites-only"
@@ -227,8 +331,6 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							{t("history:showFavoritesOnly")}
 						</label>
 					</div>
-					{/* kilocode_change end */}
-					{/* Select all control in selection mode */}
 					{isSelectionMode && tasks.length > 0 && (
 						<div className="flex items-center py-1">
 							<div className="flex items-center gap-2">
@@ -245,7 +347,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								<span className="ml-auto text-vscode-descriptionForeground text-xs">
 									{t("history:selectedItems", {
 										selected: selectedTaskIds.length,
-										total: taskHistoryFullLength, // kilocode_change
+										total: taskHistoryFullLength,
 									})}
 								</span>
 							</div>
@@ -257,7 +359,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			<TabContent className="px-2 py-0">
 				<Virtuoso
 					className="flex-1 overflow-y-scroll"
-					data={tasks}
+					data={taskRows}
 					data-testid="virtuoso-container"
 					initialTopMostItemIndex={0}
 					components={{
@@ -265,31 +367,51 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							<div {...props} ref={ref} data-testid="virtuoso-item-list" />
 						)),
 					}}
-					itemContent={(_index, item) => (
-						<TaskItem
-							key={item.id}
-							item={item}
-							variant="full"
-							showWorkspace={showAllWorkspaces}
-							isSelectionMode={isSelectionMode}
-							isSelected={selectedTaskIds.includes(item.id)}
-							onToggleSelection={toggleTaskSelection}
-							onDelete={setDeleteTaskId}
-							className="m-2"
-						/>
+					itemContent={(_index, row) => (
+						<div className="flex items-stretch gap-2">
+							<HistoryTreeGutter
+								depth={row.depth}
+								hasChildren={row.hasChildren}
+								isExpanded={row.isExpanded}
+								ancestorHasNextSiblings={row.ancestorHasNextSiblings}
+								isLastSibling={row.isLastSibling}
+								toggleTestId={`task-group-toggle-${row.item.id}`}
+								toggleLabel={row.isExpanded ? t("chat:collapse") : t("chat:expand")}
+								onToggle={() => toggleTaskExpansion(row.item.id)}
+								className="pt-1"
+							/>
+							<TaskItem
+								key={row.item.id}
+								item={
+									row.depth === 0
+										? (historyRootItems.find((item) => item.id === row.item.id) ?? row.item)
+										: row.item
+								}
+								taskHistory={historyRootItems}
+								variant="full"
+								isActiveRootTask={activeRootTaskIds.includes(row.item.id)}
+								isFocusedRootTask={focusedRootTaskId === row.item.id}
+								runningRootTaskIds={runningRootTaskIds}
+								descendantSummary={row.depth === 0 ? rootTaskSummaryMap.get(row.item.id) : undefined} // kilocode_change
+								showWorkspace={showAllWorkspaces}
+								isSelectionMode={isSelectionMode}
+								isSelected={selectedTaskIds.includes(row.item.id)}
+								onToggleSelection={toggleTaskSelection}
+								onDelete={setDeleteTaskId}
+								className={row.depth > 0 ? "my-2 mr-2 ml-1 flex-1 min-w-0" : "my-2 mr-2 flex-1 min-w-0"}
+							/>
+						</div>
 					)}
 				/>
 			</TabContent>
 
-			{/* kilocode_change: more nesting so we can add more rows, removed fixed class */}
 			<div className="bg-vscode-editor-background">
-				{/* Fixed action bar at bottom - only shown in selection mode with selected items */}
 				{isSelectionMode && selectedTaskIds.length > 0 && (
 					<div className="border-t border-vscode-panel-border p-2 flex justify-between items-center">
 						<div className="text-vscode-foreground">
 							{t("history:selectedItems", {
 								selected: selectedTaskIds.length,
-								total: taskHistoryFullLength, // kilocode_change
+								total: taskHistoryFullLength,
 							})}
 						</div>
 						<div className="flex gap-2">
@@ -302,44 +424,30 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						</div>
 					</div>
 				)}
-				{
-					// kilocode_change start
-					<div className="border-t border-b border-vscode-panel-border p-2 flex justify-between items-center">
-						{t("kilocode:pagination.page", {
-							page: pageIndex + 1,
-							count: pageCount,
-						})}
-						<div className="flex gap-2">
-							<Button
-								disabled={pageIndex <= 0}
-								onClick={() => {
-									if (pageIndex > 0) {
-										setRequestedPageIndex(pageIndex - 1)
-									}
-								}}>
-								{t("kilocode:pagination.previous")}
-							</Button>
-							<Button
-								disabled={pageIndex >= pageCount - 1}
-								onClick={() => {
-									if (pageIndex < pageCount - 1) {
-										setRequestedPageIndex(pageIndex + 1)
-									}
-								}}>
-								{t("kilocode:pagination.next")}
-							</Button>
-						</div>
+				<div className="border-t border-b border-vscode-panel-border p-2 flex justify-between items-center">
+					{t("kilocode:pagination.page", { page: pageIndex + 1, count: pageCount })}
+					<div className="flex gap-2">
+						<Button
+							disabled={pageIndex <= 0}
+							onClick={() => {
+								if (pageIndex > 0) setRequestedPageIndex(pageIndex - 1)
+							}}>
+							{t("kilocode:pagination.previous")}
+						</Button>
+						<Button
+							disabled={pageIndex >= pageCount - 1}
+							onClick={() => {
+								if (pageIndex < pageCount - 1) setRequestedPageIndex(pageIndex + 1)
+							}}>
+							{t("kilocode:pagination.next")}
+						</Button>
 					</div>
-					// kilocode_change end
-				}
+				</div>
 			</div>
 
-			{/* Delete dialog */}
 			{deleteTaskId && (
 				<DeleteTaskDialog taskId={deleteTaskId} onOpenChange={(open) => !open && setDeleteTaskId(null)} open />
 			)}
-
-			{/* Batch delete dialog */}
 			{showBatchDeleteDialog && (
 				<BatchDeleteTaskDialog
 					taskIds={selectedTaskIds}
@@ -353,13 +461,9 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 					}}
 				/>
 			)}
-			{
-				// kilocode_change start
-				<div className="fixed bottom-0 right-0">
-					<BottomControls />
-				</div>
-				// kilocode_change end
-			}
+			<div className="fixed bottom-0 right-0">
+				<BottomControls />
+			</div>
 		</Tab>
 	)
 }

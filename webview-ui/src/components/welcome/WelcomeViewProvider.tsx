@@ -336,7 +336,7 @@ const WelcomeViewProvider = () => {
 								(e.target as HTMLInputElement)) as HTMLInputElement
 							setSelectedProvider(target.value as ProviderOption)
 						}}>
-						{/* Roo Code Router Option */}
+						{/* AlfaCode Router option */}
 						<VSCodeRadio value="roo" className="flex items-start gap-2">
 							<div className="flex-1 space-y-1 cursor-pointer">
 								<p className="text-lg font-semibold block -mt-1">
@@ -388,7 +388,7 @@ const WelcomeViewProvider = () => {
 						{t("welcome:providerSignup.goBack")}
 					</Button>
 					<Button onClick={handleGetStarted} variant="primary">
-						{t("welcome:providerSignup.finish")} →
+						{t("welcome:providerSignup.finish")} {"->"}
 					</Button>
 				</div>
 			</TabContent>

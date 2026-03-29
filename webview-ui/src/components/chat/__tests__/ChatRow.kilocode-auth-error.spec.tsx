@@ -1,5 +1,6 @@
 import React from "react"
 import { render, screen, fireEvent } from "@src/utils/test-utils"
+import { KILOCODE_TOKEN_REQUIRED_ERROR } from "@roo/kilocode/errorUtils"
 import { ChatRowContent } from "../ChatRow"
 import { vscode } from "@src/utils/vscode"
 
@@ -71,17 +72,19 @@ function renderChatRow(message: any, apiConfiguration: any = {}) {
 	)
 }
 
-describe("ChatRow - KiloCode auth error login button", () => {
+const authErrorText = `Cannot complete request, make sure you are connected and logged in with the selected provider.\n\n${KILOCODE_TOKEN_REQUIRED_ERROR}`
+
+describe("ChatRow - AlfaCode assistant auth error login button", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})
 
-	it("shows login button for KiloCode auth error", () => {
+	it("shows login button for AlfaCode assistant auth error", () => {
 		const message: any = {
 			type: "say",
 			say: "error",
 			ts: Date.now(),
-			text: "Cannot complete request, make sure you are connected and logged in with the selected provider.\n\nKiloCode token + baseUrl is required to fetch models",
+			text: authErrorText,
 		}
 
 		renderChatRow(message, { apiProvider: "kilocode" })
@@ -89,12 +92,12 @@ describe("ChatRow - KiloCode auth error login button", () => {
 		expect(screen.getByText("Login")).toBeInTheDocument()
 	})
 
-	it("does not show login button for non-KiloCode provider", () => {
+	it("does not show login button for non-AlfaCode provider", () => {
 		const message: any = {
 			type: "say",
 			say: "error",
 			ts: Date.now(),
-			text: "Cannot complete request, make sure you are connected and logged in with the selected provider.\n\nKiloCode token + baseUrl is required to fetch models",
+			text: authErrorText,
 		}
 
 		renderChatRow(message, { apiProvider: "openai" })
@@ -120,7 +123,7 @@ describe("ChatRow - KiloCode auth error login button", () => {
 			type: "say",
 			say: "error",
 			ts: Date.now(),
-			text: "Cannot complete request, make sure you are connected and logged in with the selected provider.\n\nKiloCode token + baseUrl is required to fetch models",
+			text: authErrorText,
 		}
 
 		renderChatRow(message, { apiProvider: "kilocode" })

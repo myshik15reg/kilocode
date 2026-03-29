@@ -3,39 +3,63 @@ import * as fs from "node:fs"
 import * as path from "node:path"
 import { t } from "i18next"
 import { AgentRegistry } from "./AgentRegistry"
-import { renameMapKey } from "./mapUtils"
-import {
-	buildParallelModeWorktreePath,
-	parseParallelModeBranch,
-	parseParallelModeWorktreePath,
-	isParallelModeCompletionMessage,
-	parseParallelModeCompletionBranch,
-} from "./parallelModeParser"
 import { WorktreeManager, WorktreeError } from "./WorktreeManager"
 import { SetupScriptService } from "./SetupScriptService"
 import { SetupScriptRunner } from "./SetupScriptRunner"
 import { AgentTaskRunner, AgentTasks } from "./AgentTaskRunner"
 import { RuntimeProcessHandler, type RuntimeProcessHandlerCallbacks } from "./RuntimeProcessHandler"
-import type { StreamEvent, KilocodeStreamEvent, KilocodePayload, WelcomeStreamEvent } from "./CliOutputParser"
+import type { StreamEvent, KilocodePayload } from "./CliOutputParser"
 import { extractRawText, tryParsePayloadJson } from "./askErrorParser"
 import { RemoteSessionService } from "./RemoteSessionService"
+import type { SessionData } from "./RemoteSessionService"
 import { KilocodeEventProcessor } from "./KilocodeEventProcessor"
-import type { RemoteSession, AgentSession } from "./types"
+import { AgentManagerResumeOrchestrator } from "./AgentManagerResumeOrchestrator"
+// kilocode_change start
+import { AgentManagerSessionSpawnPlanner, type NormalizedAgentSpawnPlan } from "./AgentManagerSessionSpawnPlanner"
+import { AgentManagerSpawnExecutor, type AgentManagerSpawnExecutionFailureReason } from "./AgentManagerSpawnExecutor"
+import { createAgentManagerRuntimeComposition } from "./AgentManagerRuntimeComposition"
+import { createAgentManagerBackgroundComposition } from "./AgentManagerBackgroundComposition"
+import type { RemoteSession, AgentSession, SessionGroupEvent, SessionGroupMessage } from "./types"
+import {
+	persistBackgroundBindingsToWorkspaceState,
+	planPersistedBackgroundBindingRestoration,
+	readPersistedBackgroundBindingsFromWorkspaceState,
+	type BackgroundSessionBinding,
+} from "./BackgroundSubagentLifecycle"
+import { BackgroundSubagentControl } from "./BackgroundSubagentControl"
+import { BackgroundSubagentBindingCoordinator } from "./BackgroundSubagentBindingCoordinator"
+import { BackgroundSubagentEventBridge } from "./BackgroundSubagentEventBridge"
+import { AgentManagerCompletionFollowUp } from "./AgentManagerCompletionFollowUp"
+import {
+	AgentManagerQueuedLaunchScheduler,
+	getQueuedSessionLaunchQueueKey,
+	type QueuedSessionLaunch,
+} from "./AgentManagerQueuedLaunchScheduler"
+import { AgentManagerRelayOrchestrator } from "./AgentManagerRelayOrchestrator"
+import { AgentManagerRuntimeEventRouter } from "./AgentManagerRuntimeEventRouter"
+// kilocode_change end
 import { getUri } from "../../webview/getUri"
 import { getNonce } from "../../webview/getNonce"
 import { getViteDevServerConfig } from "../../webview/getViteDevServerConfig"
 import { getRemoteUrl } from "../../../services/code-index/managed/git-utils"
 import { normalizeGitUrl } from "./normalizeGitUrl"
 import type { ClineMessage } from "@roo-code/types"
-import { getModelId, type ModeConfig, type ProviderSettings } from "@roo-code/types"
+import {
+	getModelId,
+	normalizeSubagentLaunchRequest,
+	resolveSubagentLaunchTargetTaskId,
+	type HistoryItem,
+	type ProviderSettings,
+	type SubagentLaunchRequest,
+	type SubagentResultEvent,
+	type SubagentStatusEvent,
+} from "@roo-code/types"
 import { Package } from "../../../shared/package"
 import { DEFAULT_MODE_SLUG, DEFAULT_MODES } from "@roo-code/types"
 import {
 	captureAgentManagerOpened,
 	captureAgentManagerSessionStarted,
-	captureAgentManagerSessionCompleted,
 	captureAgentManagerSessionStopped,
-	captureAgentManagerSessionError,
 	captureAgentManagerLoginIssue,
 	getPlatformDiagnostics,
 } from "./telemetry"
@@ -44,7 +68,8 @@ import { extractSessionConfigs, MAX_VERSION_COUNT } from "./multiVersionUtils"
 import { SessionManager } from "../../../shared/kilocode/cli-sessions/core/SessionManager"
 import { WorkspaceGitService } from "./WorkspaceGitService"
 import { SessionTerminalManager } from "./SessionTerminalManager"
-import { startSessionMessageSchema, type StartSessionMessage } from "./types"
+import { AgentManagerBridge } from "../../orchestration/bridge/AgentManagerBridge"
+import { startSessionMessageSchema, type StartSessionMessage, type RootTaskMessage } from "./types"
 import { openImage } from "../../../integrations/misc/image-handler"
 import { getModelsFromCache } from "../../../api/providers/fetchers/modelCache"
 import { isRouterName, type ModelRecord } from "../../../shared/api"
@@ -59,6 +84,11 @@ interface StdinAskResponseMessage {
 	text: string
 	images?: string[]
 }
+
+// kilocode_change start
+const DEFAULT_MAX_CONCURRENT_AGENT_SESSIONS = 4
+const DEFAULT_MAX_CONCURRENT_PER_QUEUE_KEY = 1
+// kilocode_change end
 
 /**
  * AgentManagerProvider
@@ -94,6 +124,45 @@ export class AgentManagerProvider implements vscode.Disposable {
 	private availableModels: { provider: string; currentModel: string; models: ModelRecord } | null = null
 	// Flag to track if models are being fetched
 	private fetchingModels: boolean = false
+	// kilocode_change start
+	private latestGroupEvents: Map<string, SessionGroupEvent> = new Map()
+	private maxConcurrentSessionStarts = DEFAULT_MAX_CONCURRENT_AGENT_SESSIONS
+	private maxConcurrentPerQueueKey = DEFAULT_MAX_CONCURRENT_PER_QUEUE_KEY
+	private readonly queuedLaunchScheduler: AgentManagerQueuedLaunchScheduler
+	private queueKeyPressure: Map<string, number> = new Map()
+	private resumeSessionDataCache: Map<
+		string,
+		{
+			uiMessages: ClineMessage[]
+			apiConversationHistory: unknown[]
+			metadata: { sessionId: string; title: string; createdAt: string; mode: string | null }
+		}
+	> = new Map() // kilocode_change
+	private relayContentCache: Map<string, string> = new Map() // kilocode_change
+	private lastPostedChatMessages: Map<string, string> = new Map() // kilocode_change
+	private lastPostedStateSignature: string | undefined // kilocode_change
+	private lastPostedRemoteSessionsSignature: string | undefined // kilocode_change
+	private lastPostedAvailableModesSignature: string | undefined // kilocode_change
+	private lastPostedAvailableModelsSignature: string | undefined // kilocode_change
+	private lastPostedBranchesSignature: string | undefined // kilocode_change
+	private autoRestartProblematicProcesses = false
+	private problematicProcessRestartLimit = 1
+	private parallelAgentsEnabled = false // kilocode_change
+	private parallelAgentCount = 2 // kilocode_change
+	private sessionAutoRestartOverrides: Map<string, boolean> = new Map()
+	// kilocode_change start
+	private readonly backgroundSubagentControl: BackgroundSubagentControl
+	private readonly backgroundSubagentBindingCoordinator: BackgroundSubagentBindingCoordinator
+	private readonly backgroundSubagentEventBridge: BackgroundSubagentEventBridge
+	private readonly backgroundSessionBindings: Map<string, BackgroundSessionBinding>
+	private readonly completionFollowUp: AgentManagerCompletionFollowUp
+	private readonly relayOrchestrator: AgentManagerRelayOrchestrator
+	private readonly resumeOrchestrator: AgentManagerResumeOrchestrator
+	private readonly sessionSpawnPlanner: AgentManagerSessionSpawnPlanner
+	private readonly spawnExecutor: AgentManagerSpawnExecutor
+	private readonly runtimeEventRouter: AgentManagerRuntimeEventRouter
+	private readonly processHandlerCallbacks: RuntimeProcessHandlerCallbacks // kilocode_change
+	// kilocode_change end
 
 	constructor(
 		private readonly context: vscode.ExtensionContext,
@@ -103,139 +172,181 @@ export class AgentManagerProvider implements vscode.Disposable {
 		this.registry = new AgentRegistry()
 		this.remoteSessionService = new RemoteSessionService({ outputChannel })
 		this.terminalManager = new SessionTerminalManager(this.registry, this.outputChannel)
+		// kilocode_change start
+		this.queuedLaunchScheduler = new AgentManagerQueuedLaunchScheduler({
+			hasSessionLaunchCapacity: () => this.hasSessionLaunchCapacity(),
+			hasQueueKeyCapacity: (queueKey) => this.hasQueueKeyCapacity(queueKey),
+			getActiveSessionLoad: () => this.getActiveSessionLoad(),
+			getMaxConcurrentSessionStarts: () => this.maxConcurrentSessionStarts,
+			startLaunch: (prompt, options) => this.performStartAgentSession(prompt, options),
+			log: (message) => this.outputChannel.appendLine(message),
+		})
+		const backgroundComposition = createAgentManagerBackgroundComposition({
+			getSession: (sessionId) => this.registry.getSession(sessionId),
+			updateSession: (sessionId, patch) => this.registry.updateSession(sessionId, patch),
+			updateSessionStatus: (sessionId, status, exitCode, error) =>
+				this.registry.updateSessionStatus(sessionId, status, exitCode, error),
+			persistBindings: () => this.persistBackgroundBindings(),
+			hasStdin: (sessionId) => this.processHandler.hasStdin(sessionId),
+			writeToStdin: async (sessionId, payload, label) => {
+				await this.safeWriteToStdin(sessionId, payload, label)
+				if (label === "cancel") {
+					this.log(sessionId, "Cancel request sent via stdin")
+				}
+			},
+			stopSession: (sessionId) => this.stopAgentSession(sessionId),
+			resumeSession: (sessionId, prompt, sessionLabel) => this.resumeSession(sessionId, prompt, sessionLabel),
+			getSessionHistoryItem: (sessionId) => this.getSessionHistoryItem(sessionId),
+			updateTaskHistory: this.provider.updateTaskHistory?.bind(this.provider),
+			summarizeCompletion: (sessionId) =>
+				AgentManagerBridge.summarizeCompletion(this.sessionMessages.get(sessionId)),
+			postStateToWebview: () => this.postStateToWebview(),
+			log: (message) => this.outputChannel.appendLine(message),
+			hasQueuedLaunches: () => this.queuedLaunchScheduler.hasQueuedLaunches(),
+			hasBackgroundSubagentCapacity: (request) => this.hasBackgroundSubagentCapacity(request),
+			createSession: (sessionId, prompt, startTime, options) =>
+				this.registry.createSession(sessionId, prompt, startTime, options),
+			postWebviewMessage: (message) => this.postMessage(message),
+		})
+		this.backgroundSubagentControl = backgroundComposition.backgroundSubagentControl
+		this.backgroundSessionBindings = backgroundComposition.backgroundSessionBindings
+		this.backgroundSubagentEventBridge = backgroundComposition.backgroundSubagentEventBridge
+		this.backgroundSubagentBindingCoordinator = backgroundComposition.backgroundSubagentBindingCoordinator
+		this.completionFollowUp = new AgentManagerCompletionFollowUp({
+			queueKeyPressure: this.queueKeyPressure,
+			maxConcurrentPerQueueKey: () => this.maxConcurrentPerQueueKey,
+			getQueueKey: (options) => getQueuedSessionLaunchQueueKey(options),
+			updateSessionStatus: (sessionId, status, exitCode, error) => {
+				this.registry.updateSessionStatus(sessionId, status, exitCode, error)
+			},
+			updateSession: (sessionId, patch) => {
+				this.registry.updateSession(sessionId, patch)
+			},
+			log: (sessionId, line) => this.log(sessionId, line),
+			publishSessionGroupEvent: (session, sessionId, eventType, summary) =>
+				this.publishSessionGroupEvent(session, sessionId, eventType, summary),
+			postStateEvent: (sessionId, payload) =>
+				this.postMessage({ type: "agentManager.stateEvent", sessionId, ...payload }),
+			fetchAndPostRemoteSessions: () => this.fetchAndPostRemoteSessions(),
+			postStateToWebview: () => this.postStateToWebview(),
+			drainQueuedSessionLaunches: () => this.drainQueuedSessionLaunches(),
+			postStartSessionFailed: () => this.postMessage({ type: "agentManager.startSessionFailed" }),
+			showPaymentRequiredPrompt: (payload) => this.showPaymentRequiredPrompt(payload),
+			handleStartSessionApiFailure: (error) => this.handleStartSessionApiFailure(error),
+			showAgentError: (error) => this.showAgentError(error),
+		})
+		this.relayOrchestrator = new AgentManagerRelayOrchestrator({
+			getQueueKey: (options) => this.getQueueKey(options),
+			getQueuePressure: (queueKey) => this.queueKeyPressure.get(queueKey) ?? 0,
+			getSchedulerState: () => this.getSchedulerState(),
+			getSessionHistoryItem: (sessionId) => this.getSessionHistoryItem(sessionId),
+			getResumeSessionApiConversationHistory: (sessionId) =>
+				this.resumeSessionDataCache.get(sessionId)?.apiConversationHistory,
+			buildProviderRecoveryPacket: async ({ historyItem, apiConversationHistory }) => {
+				const buildRecoveryPacket = (this.provider as any).buildRecoveryPacket
+				if (typeof buildRecoveryPacket !== "function") {
+					return undefined
+				}
+				return buildRecoveryPacket.call(this.provider, { historyItem, apiConversationHistory })
+			},
+			getNow: () => Date.now(),
+		})
+		this.resumeOrchestrator = new AgentManagerResumeOrchestrator({
+			hasRunningRuntime: (sessionId) => this.processHandler.hasStdin(sessionId),
+			getCachedSessionData: (sessionId) => this.resumeSessionDataCache.get(sessionId) as SessionData | undefined,
+			cacheSessionData: (sessionId, sessionData) => {
+				this.resumeSessionDataCache.set(sessionId, sessionData)
+			},
+			fetchSessionDataForResume: (sessionId) => this.remoteSessionService.fetchSessionDataForResume(sessionId),
+			createWorktree: (params) => this.getWorktreeManager().createWorktree(params),
+			updateSessionParallelMode: (sessionId, info) => {
+				this.registry.updateParallelModeInfo(sessionId, info)
+			},
+			isReusableWorktree: (worktreePath) =>
+				fs.existsSync(worktreePath) && fs.existsSync(path.join(worktreePath, ".git")),
+			log: (message) => this.outputChannel.appendLine(message),
+		})
+		this.sessionSpawnPlanner = new AgentManagerSessionSpawnPlanner({
+			getWorkspaceFolder: () => vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
+			resolveGitUrl: async (workspaceFolder) => normalizeGitUrl(await getRemoteUrl(workspaceFolder)),
+			rememberCurrentGitUrl: (gitUrl) => {
+				if (!this.currentGitUrl) {
+					this.currentGitUrl = gitUrl
+					this.outputChannel.appendLine(`[AgentManager] Updated current git URL: ${gitUrl}`)
+				}
+			},
+			prepareWorktreeForSession: (prompt, existingBranch) =>
+				this.prepareWorktreeForSession(prompt, existingBranch),
+			runSetupScriptForWorktree: (worktreePath) => this.runSetupScriptForWorktree(worktreePath),
+			getApiConfigurationForCli: (helperProfile) => this.getApiConfigurationForCli(helperProfile),
+			getCustomModes: () => this.provider.customModesManager.getCustomModes(),
+			log: (message) => this.outputChannel.appendLine(message),
+		})
+		// kilocode_change end
 
 		// Initialize currentGitUrl from workspace
 		void this.initializeCurrentGitUrl()
+		void this.refreshRestartPolicyState()
+		void this.restorePersistedBackgroundBindings()
 
-		const callbacks: RuntimeProcessHandlerCallbacks = {
-			onLog: (message) => this.outputChannel.appendLine(`[AgentManager] ${message}`),
-			onSessionLog: (sessionId, line) => this.log(sessionId, line),
-			onStateChanged: () => this.postStateToWebview(),
-			onPendingSessionChanged: (pendingSession) => {
-				this.postMessage({ type: "agentManager.pendingSession", pendingSession })
-			},
-			onStartSessionFailed: (error) => {
-				this.postMessage({ type: "agentManager.startSessionFailed" })
-				if (error?.type === "payment_required") {
-					this.showPaymentRequiredPrompt(error.payload ?? { text: error.message })
-					return
-				}
-				if (error?.type === "api_req_failed") {
-					this.handleStartSessionApiFailure(error)
-					return
-				}
-				this.showAgentError(error)
-			},
-			onChatMessages: (sessionId, messages) => {
-				// Merge incoming messages with existing history (for resumed sessions)
-				// Use timestamp as key to deduplicate and preserve order
-				const existingMessages = this.sessionMessages.get(sessionId) || []
-				const existingByTs = new Map(existingMessages.map((m) => [m.ts, m]))
-
-				// Add incoming messages, updating existing ones by timestamp
-				for (const msg of messages) {
-					existingByTs.set(msg.ts, msg)
-				}
-
-				// Sort by timestamp and cache
-				const mergedMessages = Array.from(existingByTs.values()).sort((a, b) => a.ts - b.ts)
-				this.sessionMessages.set(sessionId, mergedMessages)
-				this.postMessage({ type: "agentManager.chatMessages", sessionId, messages: mergedMessages })
-			},
-			onSessionCreated: (sawApiReqStarted: boolean, resumeInfo?: { prompt: string; images?: string[] }) => {
-				// Initialize messages for the new session with the initial prompt
-				const sessions = this.registry.getSessions()
-				if (sessions.length > 0) {
-					const latestSession = sessions[0]
-					const existingMessages = this.sessionMessages.get(latestSession.sessionId) || []
-					const isResumedSession = existingMessages.length > 0
-
-					this.outputChannel.appendLine(
-						`[AgentManager] onSessionCreated: sessionId=${latestSession.sessionId}, existingMessages=${existingMessages.length}, isResumed=${isResumedSession}, hasResumeInfo=${!!resumeInfo}`,
-					)
-
-					// For resumed sessions, preserve existing history
-					// For new sessions, start with empty array - the agent will send user_feedback
-					// Note: We no longer add the initial message here because the agent-runtime
-					// extension now properly emits user_feedback for the initial prompt
-					// (including for resumed sessions - resumeTaskFromHistory calls say("user_feedback"))
-					const updatedMessages = isResumedSession ? [...existingMessages] : []
-
-					this.sessionMessages.set(latestSession.sessionId, updatedMessages)
-
-					// Post messages to webview (important for resumed sessions with history)
-					this.postMessage({
-						type: "agentManager.chatMessages",
-						sessionId: latestSession.sessionId,
-						messages: updatedMessages,
-					})
-
-					// Transfer api_req_started flag captured during pending phase
-					// This ensures KilocodeEventProcessor knows the user echo already happened
-					// For resumed sessions, always set this flag to prevent the agent's first
-					// response from being skipped as "user echo"
-					if (sawApiReqStarted || isResumedSession) {
-						this.firstApiReqStarted.set(latestSession.sessionId, true)
-					}
-
-					// Track session started telemetry
-					captureAgentManagerSessionStarted(
-						latestSession.sessionId,
-						latestSession.parallelMode?.enabled ?? false,
-					)
-				}
-			},
-			onSessionCompleted: (sessionId) => {
-				// Notify webview state machine of completion when process exits successfully
-				// This ensures the state machine transitions to completed state
-				// (needed because completion_result events from CLI stdout can be truncated)
-				this.postMessage({
-					type: "agentManager.stateEvent",
-					sessionId,
-					eventType: "ask_completion_result",
-				})
-			},
-			onPaymentRequiredPrompt: (payload) => this.showPaymentRequiredPrompt(payload),
-			onSessionRenamed: (oldId, newId) => this.handleSessionRenamed(oldId, newId),
-			onModeChanged: (sessionId, mode, previousMode) => {
-				this.outputChannel.appendLine(
-					`[AgentManager] Mode changed for session ${sessionId}: ${previousMode} -> ${mode}`,
-				)
-				// Update session mode in registry
-				this.registry.updateSessionMode(sessionId, mode)
-				// Notify webview of mode change
-				this.postMessage({
-					type: "agentManager.modeChanged",
-					sessionId,
-					mode,
-					previousMode,
-				})
-				// Also post updated state to ensure UI is in sync
-				this.postStateToWebview()
-			},
-			onWorktreeSessionCreated: (sessionId, worktreePath) => {
-				void this.handleWorktreeSessionCreated(sessionId, worktreePath)
-			},
-		}
-
-		// Pass extension path for agent-runtime resolution in development
-		const extensionPath = this.context.extensionUri.fsPath
-		// Pass VS Code app root for finding bundled binaries (ripgrep, etc.)
-		const vscodeAppRoot = vscode.env.appRoot
-		this.processHandler = new RuntimeProcessHandler(this.registry, callbacks, extensionPath, vscodeAppRoot)
-		this.eventProcessor = new KilocodeEventProcessor({
-			processHandler: this.processHandler,
+		// kilocode_change start
+		const runtimeComposition = createAgentManagerRuntimeComposition({
 			registry: this.registry,
+			log: (message) => this.outputChannel.appendLine(message),
+			logSession: (sessionId, line) => this.log(sessionId, line),
 			sessionMessages: this.sessionMessages,
 			firstApiReqStarted: this.firstApiReqStarted,
-			log: (sessionId, line) => this.log(sessionId, line),
-			postChatMessages: (sessionId, messages) =>
-				this.postMessage({ type: "agentManager.chatMessages", sessionId, messages }),
-			postState: () => this.postStateToWebview(),
-			postStateEvent: (sessionId, payload) =>
-				this.postMessage({ type: "agentManager.stateEvent", sessionId, ...payload }),
-			onPaymentRequiredPrompt: (payload) => this.showPaymentRequiredPrompt(payload),
+			processStartTimes: this.processStartTimes,
+			sendingMessageMap: this.sendingMessageMap,
+			lastPostedChatMessages: this.lastPostedChatMessages,
+			postMessage: (message) => this.postMessage(message),
+			postChatMessages: (sessionId, messages, options) => this.postChatMessages(sessionId, messages, options),
+			postStateToWebview: () => this.postStateToWebview(),
+			publishGroupEvent: (groupId, sessionId, eventType, summary) =>
+				this.publishGroupEvent(groupId, sessionId, eventType, summary),
+			trackSessionStarted: (sessionId, parallelModeEnabled) =>
+				captureAgentManagerSessionStarted(sessionId, parallelModeEnabled),
+			renameBackgroundSessionBinding: (oldId, newId) =>
+				this.backgroundSubagentBindingCoordinator.handleSessionRenamed(oldId, newId),
+			handleWorktreeSessionCreated: (sessionId, worktreePath) =>
+				this.handleWorktreeSessionCreated(sessionId, worktreePath),
+			onRuntimeStateChanged: () => this.completionFollowUp.handleRuntimeStateChanged(),
+			onStartSessionFailed: (error) => this.completionFollowUp.handleStartSessionFailed(error),
+			onSessionCompleted: (sessionId, exitCode) => {
+				this.backgroundSubagentEventBridge.handleSessionCompleted(sessionId, exitCode)
+				this.completionFollowUp.requestQueueDrain()
+			},
+			showPaymentRequiredPrompt: (payload) => this.showPaymentRequiredPrompt(payload),
+			handleSessionError: ({ sessionId, session, event }) => {
+				this.completionFollowUp.handleSessionError({
+					sessionId,
+					session,
+					error: event.error,
+					details: event.details,
+				})
+			},
+			handleSessionComplete: ({ sessionId, session, event }) => {
+				this.completionFollowUp.handleSessionComplete({
+					sessionId,
+					session,
+					exitCode: event.exitCode,
+				})
+			},
+			handleSessionInterrupted: ({ sessionId, session, event }) => {
+				this.completionFollowUp.handleSessionInterrupted({
+					sessionId,
+					session,
+					reason: event.reason,
+				})
+			},
+			extensionPath: this.context.extensionUri.fsPath,
+			vscodeAppRoot: vscode.env.appRoot,
 		})
+		this.processHandlerCallbacks = runtimeComposition.processHandlerCallbacks // kilocode_change
+		this.processHandler = runtimeComposition.processHandler
+		this.eventProcessor = runtimeComposition.eventProcessor
+		this.runtimeEventRouter = runtimeComposition.runtimeEventRouter
+		this.spawnExecutor = runtimeComposition.spawnExecutor
 	}
 
 	/**
@@ -294,8 +405,7 @@ export class AgentManagerProvider implements vscode.Disposable {
 
 		this.panel.onDidDispose(
 			() => {
-				this.panel = undefined
-				this.stopAllAgents()
+				this.handlePanelDisposed()
 			},
 			null,
 			this.disposables,
@@ -305,21 +415,6 @@ export class AgentManagerProvider implements vscode.Disposable {
 
 		// Track Agent Manager panel opened
 		captureAgentManagerOpened()
-	}
-
-	/** Rename session key in all session-keyed maps when provisional session is upgraded. */
-	private handleSessionRenamed(oldId: string, newId: string): void {
-		this.outputChannel.appendLine(`[AgentManager] Renaming session: ${oldId} -> ${newId}`)
-
-		renameMapKey(this.sessionMessages, oldId, newId)
-		renameMapKey(this.firstApiReqStarted, oldId, newId)
-		renameMapKey(this.processStartTimes, oldId, newId)
-		renameMapKey(this.sendingMessageMap, oldId, newId)
-
-		const messages = this.sessionMessages.get(newId)
-		if (messages) {
-			this.postMessage({ type: "agentManager.chatMessages", sessionId: newId, messages })
-		}
 	}
 
 	/**
@@ -338,13 +433,23 @@ export class AgentManagerProvider implements vscode.Disposable {
 		}
 	}
 
+	private handlePanelDisposed(): void {
+		this.panel = undefined
+		this.lastPostedStateSignature = undefined // kilocode_change
+		this.lastPostedRemoteSessionsSignature = undefined // kilocode_change
+		this.lastPostedAvailableModesSignature = undefined // kilocode_change
+		this.lastPostedAvailableModelsSignature = undefined // kilocode_change
+		this.lastPostedBranchesSignature = undefined // kilocode_change
+	}
+
 	private handleMessage(message: { type: string; [key: string]: unknown }): void {
 		this.outputChannel.appendLine(`Agent Manager received message: ${JSON.stringify(message)}`)
 
 		try {
 			switch (message.type) {
 				case "agentManager.webviewReady":
-					this.postStateToWebview()
+					this.postStateToWebview({ force: true }) // kilocode_change
+					void this.refreshRestartPolicyState().then(() => this.postStateToWebview())
 					void this.fetchAndPostRemoteSessions()
 					void this.fetchAndPostAvailableModels()
 					void this.fetchAndPostAvailableModes()
@@ -358,6 +463,21 @@ export class AgentManagerProvider implements vscode.Disposable {
 				case "agentManager.stopSession":
 					this.stopAgentSession(message.sessionId as string)
 					break
+				case "agentManager.restartSession":
+					void this.restartSession(message.sessionId as string)
+					break
+				case "agentManager.restartSessionCompact":
+					void this.restartSession(message.sessionId as string, { compact: true })
+					break
+				case "agentManager.setSessionAutoRestart":
+					this.setSessionAutoRestart(message.sessionId as string, Boolean(message.enabled))
+					break
+				case "agentManager.restartSessionGroupCompact":
+					void this.restartSessionGroupCompact(message.groupId as string)
+					break
+				case "agentManager.stopSessionGroup":
+					this.stopSessionGroup(message.groupId as string)
+					break
 				case "agentManager.finishWorktreeSession":
 					void this.finishWorktreeSession(message.sessionId as string)
 					break
@@ -367,6 +487,21 @@ export class AgentManagerProvider implements vscode.Disposable {
 						message.content as string,
 						message.sessionLabel as string | undefined,
 						message.images as string[] | undefined,
+					)
+					break
+				case "agentManager.broadcastToGroup":
+					void this.broadcastToSessionGroup(
+						message.sessionId as string,
+						message.content as string,
+						Boolean(message.includeSender),
+					)
+					break
+				case "agentManager.broadcastToRootTask":
+					void this.broadcastToRootTask(
+						message.sessionId as string,
+						message.content as string | undefined,
+						Boolean(message.includeSender),
+						message.compact !== false,
 					)
 					break
 				case "agentManager.messageQueued":
@@ -475,93 +610,147 @@ export class AgentManagerProvider implements vscode.Disposable {
 			this.outputChannel.appendLine(`[AgentManager] Passing ${images.length} images (base64) to new session`)
 		}
 
-		// Clamp versions to valid range to prevent runaway process spawning
-		const rawVersions = validatedMessage.versions ?? 1
-		const versions = Math.min(Math.max(rawVersions, 1), MAX_VERSION_COUNT)
-		// Only use labels if they match the version count, otherwise ignore
-		const rawLabels = validatedMessage.labels
-		const labels = rawLabels?.length === versions ? rawLabels : undefined
+		// kilocode_change start
+		const requestedVersions = validatedMessage.versions ?? this.parallelAgentCount ?? 1
+		const desiredVersions = Math.min(Math.max(requestedVersions, 1), MAX_VERSION_COUNT)
+		const configuredParallelLimit = Math.min(Math.max(this.parallelAgentCount ?? 1, 1), MAX_VERSION_COUNT)
+		const availableParallelCapacity = Math.max(this.maxConcurrentSessionStarts - this.getActiveSessionLoad(), 0)
+		let effectiveVersions = 1
 
-		// Extract session configurations
-		const configs = extractSessionConfigs({ prompt, versions, labels, parallelMode, existingBranch })
+		if (!this.parallelAgentsEnabled && desiredVersions > 1) {
+			this.outputChannel.appendLine(
+				"[AgentManager] Parallel agents disabled in settings, falling back to sequential execution",
+			)
+		} else if (this.parallelAgentsEnabled && desiredVersions > 1 && availableParallelCapacity < 2) {
+			this.outputChannel.appendLine(
+				"[AgentManager] No parallel agent capacity available, falling back to sequential execution",
+			)
+		} else if (this.parallelAgentsEnabled) {
+			effectiveVersions = Math.min(
+				desiredVersions,
+				configuredParallelLimit,
+				Math.max(availableParallelCapacity, 1),
+			)
+		}
+
+		const rawLabels = validatedMessage.labels
+		const labels = rawLabels?.length === effectiveVersions ? rawLabels : undefined
+
+		const configs = extractSessionConfigs({
+			prompt,
+			versions: effectiveVersions,
+			labels,
+			parallelMode,
+			existingBranch,
+		})
+		// kilocode_change end
 
 		if (configs.length === 1) {
-			// Single session - spawn directly
 			const config = configs[0]
 			await this.startAgentSession(config.prompt, {
 				parallelMode: config.parallelMode,
 				labelOverride: config.label,
+				sessionId: config.sessionId,
 				existingBranch: config.existingBranch,
 				model,
 				mode,
 				images,
+				sessionGroup: config.groupId
+					? {
+							groupId: config.groupId,
+							rootSessionId: config.rootSessionId || config.groupId,
+							label: config.groupLabel,
+							sessionIndex: config.sessionIndex,
+							sessionCount: config.sessionCount,
+						}
+					: undefined,
 			})
 			return
 		}
 
-		// Multi-version mode: spawn sessions sequentially
-		// We need to wait for each pending session to clear before starting the next
 		this.outputChannel.appendLine(`[AgentManager] Starting ${configs.length} versions in multi-version mode`)
 
-		for (let i = 0; i < configs.length; i++) {
-			const config = configs[i]
-			this.outputChannel.appendLine(`[AgentManager] Starting version ${i + 1}/${configs.length}: ${config.label}`)
+		await Promise.all(
+			configs.map(async (config, index) => {
+				this.outputChannel.appendLine(
+					`[AgentManager] Starting version ${index + 1}/${configs.length}: ${config.label}`,
+				)
+				await this.startAgentSession(config.prompt, {
+					parallelMode: config.parallelMode,
+					labelOverride: config.label,
+					sessionId: config.sessionId,
+					existingBranch: config.existingBranch,
+					model,
+					mode,
+					images,
+					sessionGroup: config.groupId
+						? {
+								groupId: config.groupId,
+								rootSessionId: config.rootSessionId || config.groupId,
+								label: config.groupLabel,
+								sessionIndex: config.sessionIndex,
+								sessionCount: config.sessionCount,
+							}
+						: undefined,
+				})
+			}),
+		)
 
-			await this.startAgentSession(config.prompt, {
-				parallelMode: config.parallelMode,
-				labelOverride: config.label,
-				existingBranch: config.existingBranch,
-				model,
-				mode,
-				images, // Send images to all versions
-			})
-
-			// Wait for the pending session to transition to active before spawning the next
-			// This is necessary because RuntimeProcessHandler only supports one pendingProcess at a time
-			if (i < configs.length - 1) {
-				await this.waitForPendingSessionToClear()
-			}
-		}
-
-		this.outputChannel.appendLine(`[AgentManager] All ${configs.length} versions started`)
+		this.outputChannel.appendLine(`[AgentManager] All ${configs.length} versions launched in parallel`)
 	}
 
-	/**
-	 * Wait for any pending session to transition to active/error state.
-	 * Returns immediately if no session is pending.
-	 */
-	private waitForPendingSessionToClear(): Promise<void> {
-		return new Promise((resolve) => {
-			const hasPending = () => !!this.registry.pendingSession || this.processHandler?.hasPendingProcess()
+	// kilocode_change start
+	private getActiveSessionLoad(): number {
+		return this.registry
+			.getSessions()
+			.filter((session) => session.status === "creating" || session.status === "running").length
+	}
 
-			// Check immediately - if no pending session/process, resolve right away
-			if (!hasPending()) {
-				resolve()
-				return
+	private hasSessionLaunchCapacity(): boolean {
+		return this.getActiveSessionLoad() < this.maxConcurrentSessionStarts
+	}
+
+	// kilocode_change start
+	private getQueueKey(options?: QueuedSessionLaunch["options"]): string {
+		return getQueuedSessionLaunchQueueKey(options)
+	}
+
+	private getActiveSessionLoadForQueueKey(queueKey: string): number {
+		return this.registry.getSessions().filter((session) => {
+			if (session.status !== "creating" && session.status !== "running") {
+				return false
 			}
 
-			// Track timeout so we can clear it when session clears
-			let timeoutId: ReturnType<typeof setTimeout> | undefined
+			const sessionQueueKey = session.sessionGroup?.groupId || session.sessionId || "root:default"
+			return sessionQueueKey === queueKey
+		}).length
+	}
 
-			// Poll until pending session clears
-			const checkInterval = setInterval(() => {
-				if (!hasPending()) {
-					clearInterval(checkInterval)
-					if (timeoutId) {
-						clearTimeout(timeoutId)
-					}
-					resolve()
-				}
-			}, 100)
+	private getEffectiveQueueKeyCap(queueKey: string): number {
+		return this.completionFollowUp.getEffectiveQueueKeyCap(queueKey)
+	}
 
-			// Timeout after 30 seconds to avoid hanging forever
-			timeoutId = setTimeout(() => {
-				clearInterval(checkInterval)
-				this.outputChannel.appendLine(`[AgentManager] Timeout waiting for pending session to clear`)
-				resolve()
-			}, 30000)
+	private updateQueueKeyPressure(queueKey: string, outcome: "success" | "problematic"): void {
+		this.completionFollowUp.updateQueueKeyPressure(queueKey, outcome)
+	}
+
+	private hasQueueKeyCapacity(queueKey: string): boolean {
+		return this.getActiveSessionLoadForQueueKey(queueKey) < this.getEffectiveQueueKeyCap(queueKey)
+	}
+
+	private getSchedulerState() {
+		return this.completionFollowUp.getSchedulerState({
+			sessions: this.registry.getSessions(),
+			queuedSessionLaunches: [...this.queuedLaunchScheduler.queuedLaunches],
+			maxConcurrentSessionStarts: this.maxConcurrentSessionStarts,
 		})
 	}
+	// kilocode_change end
+
+	private async drainQueuedSessionLaunches(): Promise<void> {
+		await this.queuedLaunchScheduler.drainQueuedLaunches()
+	}
+	// kilocode_change end
 
 	private async initializeCurrentGitUrl(): Promise<void> {
 		const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
@@ -657,10 +846,19 @@ export class AgentManagerProvider implements vscode.Disposable {
 		options?: {
 			parallelMode?: boolean
 			labelOverride?: string
+			sessionId?: string
 			existingBranch?: string
 			model?: string
 			mode?: string // Mode slug (e.g., "code", "architect")
+			helperProfile?: string
 			images?: string[] // Image file paths to include with the initial prompt
+			sessionGroup?: {
+				groupId: string
+				rootSessionId: string
+				label?: string
+				sessionIndex?: number
+				sessionCount?: number
+			}
 		},
 	): Promise<void> {
 		if (!prompt) {
@@ -668,72 +866,81 @@ export class AgentManagerProvider implements vscode.Disposable {
 			return
 		}
 
-		// Get workspace folder early to fetch git URL before spawning
-		// Note: we intentionally allow starting parallel mode from within an existing git worktree.
-		// Git worktrees share a common .git dir, so `git worktree add/remove` still works from a worktree root.
-		const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+		await this.queuedLaunchScheduler.startOrEnqueue(prompt, options)
+	}
 
-		// Get git URL for the workspace (used for filtering sessions)
-		let gitUrl: string | undefined
-		if (workspaceFolder) {
+	// kilocode_change start
+	private async performStartAgentSession(
+		prompt: string,
+		options?: {
+			parallelMode?: boolean
+			labelOverride?: string
+			sessionId?: string
+			existingBranch?: string
+			model?: string
+			mode?: string // Mode slug (e.g., "code", "architect")
+			helperProfile?: string
+			images?: string[] // Image file paths to include with the initial prompt
+			sessionGroup?: {
+				groupId: string
+				rootSessionId: string
+				label?: string
+				sessionIndex?: number
+				sessionCount?: number
+			}
+		},
+	): Promise<void> {
+		if (!prompt) {
+			this.outputChannel.appendLine("ERROR: prompt is empty")
+			return
+		}
+
+		const onSetupFailed = (reason?: "missing-workspace" | "setup-failed") => {
+			this.handleStartSessionSpawnFailure(reason)
+		}
+
+		const plan = await this.sessionSpawnPlanner.planStartSession({
+			prompt,
+			options,
+		})
+
+		if (plan.kind === "failed") {
+			onSetupFailed(plan.reason)
+			return
+		}
+
+		if (plan.groupEvent) {
+			this.publishGroupEvent(
+				plan.groupEvent.groupId,
+				plan.groupEvent.sessionId,
+				"creating",
+				plan.groupEvent.label,
+			)
+		}
+
+		await this.spawnAgentWithCommonSetup(plan.spawnPlan, onSetupFailed)
+	}
+	// kilocode_change end
+
+	private async getApiConfigurationForCli(helperProfile?: string): Promise<ProviderSettings | undefined> {
+		if (helperProfile) {
 			try {
-				gitUrl = normalizeGitUrl(await getRemoteUrl(workspaceFolder))
-				// Update currentGitUrl to ensure consistency between session gitUrl and filter
-				// This fixes a race condition where initializeCurrentGitUrl() hasn't completed yet
-				if (gitUrl && !this.currentGitUrl) {
-					this.currentGitUrl = gitUrl
-					this.outputChannel.appendLine(`[AgentManager] Updated current git URL: ${gitUrl}`)
-				}
+				const { name: _, ...helperProfileSettings } = await this.provider.providerSettingsManager.getProfile({
+					name: helperProfile,
+				})
+				const hasKilocodeToken = !!helperProfileSettings?.kilocodeToken
+				const apiProvider = helperProfileSettings?.apiProvider || "none"
+				this.outputChannel.appendLine(
+					`[AgentManager] getApiConfigurationForCli: helperProfile=${helperProfile}, provider=${apiProvider}, hasKilocodeToken=${hasKilocodeToken}`,
+				)
+				return helperProfileSettings
 			} catch (error) {
 				this.outputChannel.appendLine(
-					`[AgentManager] Could not get git URL: ${error instanceof Error ? error.message : String(error)}`,
+					`[AgentManager] Helper profile '${helperProfile}' unavailable, falling back to active configuration: ${error instanceof Error ? error.message : String(error)}`,
 				)
 			}
 		}
 
-		const onSetupFailed = () => {
-			if (!workspaceFolder) {
-				void vscode.window.showErrorMessage("Please open a folder before starting an agent.")
-			}
-			this.postMessage({ type: "agentManager.startSessionFailed" })
-		}
-
-		let effectiveWorkspace = workspaceFolder
-		let worktreeInfo: { branch: string; path: string; parentBranch: string } | undefined
-
-		if (options?.parallelMode && workspaceFolder) {
-			worktreeInfo = await this.prepareWorktreeForSession(prompt, options.existingBranch)
-			if (!worktreeInfo) {
-				onSetupFailed()
-				return
-			}
-			effectiveWorkspace = worktreeInfo.path
-
-			// Run setup script for new worktree sessions (non-blocking)
-			// Only run for new sessions, not when resuming (existingBranch indicates resume)
-			if (!options.existingBranch) {
-				await this.runSetupScriptForWorktree(worktreeInfo.path)
-			}
-		}
-
-		await this.spawnAgentWithCommonSetup(
-			prompt,
-			{
-				parallelMode: options?.parallelMode,
-				label: options?.labelOverride,
-				gitUrl,
-				existingBranch: options?.existingBranch,
-				worktreeInfo,
-				effectiveWorkspace,
-				model: options?.model,
-				mode: options?.mode,
-				images: options?.images, // Images are sent with prompt via stdin newTask message
-			},
-			onSetupFailed,
-		)
-	}
-
-	private async getApiConfigurationForCli(): Promise<ProviderSettings | undefined> {
 		const { apiConfiguration } = await this.provider.getState()
 		// Log API configuration details for debugging
 		const hasKilocodeToken = !!apiConfiguration?.kilocodeToken
@@ -771,272 +978,49 @@ export class AgentManagerProvider implements vscode.Disposable {
 		}
 	}
 
+	// kilocode_change start
+	private handleStartSessionSpawnFailure(reason?: AgentManagerSpawnExecutionFailureReason | "setup-failed"): void {
+		if (reason === "missing-workspace") {
+			void vscode.window.showErrorMessage("Please open a folder before starting an agent.")
+		}
+		this.postMessage({ type: "agentManager.startSessionFailed" })
+	}
+
+	private handleResumeSessionSpawnFailure(): void {
+		this.postMessage({ type: "agentManager.startSessionFailed" })
+	}
+
 	/**
 	 * Common helper to spawn an agent process with standard setup.
-	 * Handles workspace folder validation, API config, and event callback wiring.
-	 * Uses RuntimeProcessHandler which forks agent-runtime processes (no CLI needed).
+	 * Delegates normalized plan execution to the extracted runtime spawn seam.
 	 * @returns true if process was spawned, false if setup failed
 	 */
 	private async spawnAgentWithCommonSetup(
-		prompt: string,
-		options: {
-			parallelMode?: boolean
-			label?: string
-			gitUrl?: string
-			existingBranch?: string
-			sessionId?: string
-			worktreeInfo?: { branch: string; path: string; parentBranch: string }
-			effectiveWorkspace?: string
-			model?: string
-			mode?: string // Mode slug (e.g., "code", "architect")
-			images?: string[] // Image file paths to include with the initial prompt
-			sessionData?: {
-				uiMessages: ClineMessage[]
-				apiConversationHistory: unknown[]
-				metadata: { sessionId: string; title: string; createdAt: string; mode: string | null }
-			} // For resuming with history
-		},
-		onSetupFailed?: () => void,
+		spawnPlan: NormalizedAgentSpawnPlan,
+		onSetupFailed?: (reason?: AgentManagerSpawnExecutionFailureReason) => void,
 	): Promise<boolean> {
-		const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
-		if (!workspaceFolder) {
-			this.outputChannel.appendLine("ERROR: No workspace folder open")
-			onSetupFailed?.()
+		const result = await this.spawnExecutor.executeSpawnPlan(spawnPlan)
+		if (result.kind === "failed") {
+			onSetupFailed?.(result.reason)
 			return false
 		}
 
-		// Use effective workspace (worktree path) if provided, otherwise use workspace folder
-		const workspace = options.effectiveWorkspace || workspaceFolder
-
-		const processStartTime = Date.now()
-		let apiConfiguration: ProviderSettings | undefined
-		try {
-			apiConfiguration = await this.getApiConfigurationForCli()
-		} catch (error) {
-			this.outputChannel.appendLine(
-				`[AgentManager] Failed to read provider settings: ${
-					error instanceof Error ? error.message : String(error)
-				}`,
-			)
-		}
-
-		// Fetch custom modes (including organization modes) to pass to the agent process
-		// This ensures the agent has access to all mode configurations without needing to fetch them
-		let customModes: ModeConfig[] | undefined
-		try {
-			customModes = await this.provider.customModesManager.getCustomModes()
-			const modeSlugs = customModes.map((m) => `${m.slug}(${m.source || "local"})`).join(", ")
-			this.outputChannel.appendLine(
-				`[AgentManager] Fetched ${customModes.length} custom modes for agent process: [${modeSlugs}]`,
-			)
-			this.outputChannel.appendLine(
-				`[AgentManager] Requested mode for session: ${options.mode || "code"} (default)`,
-			)
-		} catch (error) {
-			this.outputChannel.appendLine(
-				`[AgentManager] Failed to fetch custom modes: ${
-					error instanceof Error ? error.message : String(error)
-				}`,
-			)
-		}
-
-		// RuntimeProcessHandler uses fork() with agent-runtime, cliPath is ignored
-		this.processHandler.spawnProcess(
-			"", // cliPath not used - RuntimeProcessHandler forks agent-runtime
-			workspace,
-			prompt,
-			{
-				...options,
-				apiConfiguration,
-				customModes,
-				// Pass worktree info for session state tracking
-				worktreeInfo: options.worktreeInfo,
-			},
-			(sid, event) => {
-				if (!this.processStartTimes.has(sid)) {
-					this.processStartTimes.set(sid, processStartTime)
-				}
-				this.handleCliEvent(sid, event)
-			},
-		)
-
 		return true
 	}
+	// kilocode_change end
 
 	/**
 	 * Handle a JSON event from the CLI stdout
 	 */
 	private handleCliEvent(sessionId: string, event: StreamEvent): void {
-		switch (event.streamEventType) {
-			case "kilocode": {
-				// Filter out replayed events from history (older than process start time)
-				// We allow timestamp <= 1000 because 'welcome' events often have timestamp: 1
-				const processStartTime = this.processStartTimes.get(sessionId) ?? 0
-				const eventTimestamp = event.payload?.timestamp
-				if (eventTimestamp && eventTimestamp > 1000 && eventTimestamp < processStartTime) {
-					this.outputChannel.appendLine(
-						`[AgentManager] Filtering replayed event: ${event.payload?.say || event.payload?.ask || "unknown"} (ts=${eventTimestamp} < start=${processStartTime})`,
-					)
-					return
-				}
-				this.handleKilocodeEvent(sessionId, event)
-				break
-			}
-			case "status":
-				this.parseParallelModeStatus(sessionId, event.message)
-				this.log(sessionId, event.message)
-				break
-			case "output":
-				this.parseParallelModeOutput(sessionId, event.content)
-				this.log(sessionId, `[${event.source}] ${event.content}`)
-				break
-			case "error": {
-				const session = this.registry.getSession(sessionId)
-				this.registry.updateSessionStatus(sessionId, "error", undefined, event.error)
-				this.log(sessionId, `Error: ${event.error}`)
-				if (event.details) {
-					this.log(sessionId, `Details: ${JSON.stringify(event.details)}`)
-				}
-				// Track session error telemetry
-				captureAgentManagerSessionError(sessionId, session?.parallelMode?.enabled ?? false, event.error)
-				break
-			}
-			case "complete": {
-				const session = this.registry.getSession(sessionId)
-				const isSuccess = event.exitCode === 0 || event.exitCode === undefined
-				this.registry.updateSessionStatus(sessionId, isSuccess ? "done" : "error", event.exitCode)
-				this.log(sessionId, isSuccess ? "Agent completed" : `Agent failed with exit code ${event.exitCode}`)
-				void this.fetchAndPostRemoteSessions()
-				// Notify webview state machine of completion (only on success)
-				// This is needed because completion_result events can be truncated in stdout chunking
-				if (isSuccess) {
-					this.postMessage({
-						type: "agentManager.stateEvent",
-						sessionId,
-						eventType: "ask_completion_result",
-					})
-					// Track session completed telemetry
-					captureAgentManagerSessionCompleted(sessionId, session?.parallelMode?.enabled ?? false)
-				} else {
-					// Track session error telemetry
-					captureAgentManagerSessionError(
-						sessionId,
-						session?.parallelMode?.enabled ?? false,
-						`Exit code ${event.exitCode}`,
-					)
-				}
-				break
-			}
-			case "interrupted": {
-				const session = this.registry.getSession(sessionId)
-				this.registry.updateSessionStatus(sessionId, "stopped", undefined, event.reason)
-				this.log(sessionId, event.reason || "Execution interrupted")
-				// Track session stopped telemetry
-				captureAgentManagerSessionStopped(sessionId, session?.parallelMode?.enabled ?? false)
-				break
-			}
-			case "session_created":
-				// Handled by CliProcessManager
-				break
-			case "welcome":
-				this.handleWelcomeEvent(sessionId, event as WelcomeStreamEvent)
-				break
-		}
+		this.runtimeEventRouter.handleEvent(sessionId, event)
 	}
 
-	/**
-	 * Parse parallel mode info from CLI status messages
-	 */
-	private parseParallelModeStatus(sessionId: string, message: string): void {
-		let updated = false
-
-		const branch = parseParallelModeBranch(message)
-		if (branch) {
-			if (this.registry.updateParallelModeInfo(sessionId, { branch })) {
-				updated = true
-			}
-		}
-
-		const worktreePath = parseParallelModeWorktreePath(message)
-		if (worktreePath) {
-			if (this.registry.updateParallelModeInfo(sessionId, { worktreePath })) {
-				updated = true
-			}
-		}
-
-		if (updated) {
-			this.postStateToWebview()
-		}
-	}
-
-	/**
-	 * Parse parallel mode completion message from CLI output
-	 */
-	private parseParallelModeOutput(sessionId: string, content: string): void {
-		if (isParallelModeCompletionMessage(content)) {
-			let updated = false
-
-			// Extract branch name from completion message
-			const branch = parseParallelModeCompletionBranch(content)
-			if (branch) {
-				if (this.registry.updateParallelModeInfo(sessionId, { branch })) {
-					updated = true
-				}
-			}
-
-			// Store the completion message
-			if (this.registry.updateParallelModeInfo(sessionId, { completionMessage: content })) {
-				updated = true
-			}
-
-			if (updated) {
-				this.postStateToWebview()
-			}
-		}
-	}
-
-	/**
-	 * Handle welcome event from CLI - extracts worktree branch and path for parallel mode sessions
-	 */
-	private handleWelcomeEvent(sessionId: string, event: WelcomeStreamEvent): void {
-		let updated = false
-		const session = this.registry.getSession(sessionId)
-		const existingWorktreePath = session?.parallelMode?.worktreePath
-
-		if (event.worktreeBranch) {
-			this.outputChannel.appendLine(
-				`[AgentManager] Session ${sessionId} worktree branch: ${event.worktreeBranch}`,
-			)
-			if (this.registry.updateParallelModeInfo(sessionId, { branch: event.worktreeBranch })) {
-				updated = true
-			}
-		}
-
-		if (event.worktreePath) {
-			this.outputChannel.appendLine(`[AgentManager] Session ${sessionId} worktree path: ${event.worktreePath}`)
-			if (this.registry.updateParallelModeInfo(sessionId, { worktreePath: event.worktreePath })) {
-				updated = true
-			}
-		}
-
-		if (!event.worktreePath && event.worktreeBranch && !existingWorktreePath) {
-			const derivedWorktreePath = buildParallelModeWorktreePath(event.worktreeBranch)
-			this.outputChannel.appendLine(
-				`[AgentManager] Session ${sessionId} derived worktree path: ${derivedWorktreePath}`,
-			)
-			if (this.registry.updateParallelModeInfo(sessionId, { worktreePath: derivedWorktreePath })) {
-				updated = true
-			}
-		}
-
-		if (updated) {
-			this.postStateToWebview()
-		}
-	}
-
-	private handleKilocodeEvent(sessionId: string, event: KilocodeStreamEvent): void {
+	// kilocode_change start
+	private handleKilocodeEvent(sessionId: string, event: Extract<StreamEvent, { streamEventType: "kilocode" }>): void {
 		this.eventProcessor.handle(sessionId, event)
 	}
+	// kilocode_change end
 
 	/**
 	 * Append a log line to a session
@@ -1057,11 +1041,7 @@ export class AgentManagerProvider implements vscode.Disposable {
 		const cachedMessages = this.sessionMessages.get(sessionId)
 		if (cachedMessages) {
 			// Re-post cached messages to ensure webview has them
-			this.postMessage({
-				type: "agentManager.chatMessages",
-				sessionId,
-				messages: cachedMessages,
-			})
+			this.postChatMessages(sessionId, cachedMessages, { force: true }) // kilocode_change
 			return
 		}
 
@@ -1086,15 +1066,12 @@ export class AgentManagerProvider implements vscode.Disposable {
 		this.outputChannel.appendLine(`[AgentManager] Fetched ${messages.length} messages for session: ${sessionId}`)
 
 		this.sessionMessages.set(sessionId, messages)
-		this.postMessage({
-			type: "agentManager.chatMessages",
-			sessionId,
-			messages,
-		})
+		this.postChatMessages(sessionId, messages) // kilocode_change
 	}
 
 	private async refreshSessionMessages(sessionId: string): Promise<void> {
 		this.sessionMessages.delete(sessionId)
+		this.lastPostedChatMessages.delete(sessionId) // kilocode_change
 		await this.fetchRemoteSessionMessages(sessionId)
 	}
 
@@ -1107,6 +1084,9 @@ export class AgentManagerProvider implements vscode.Disposable {
 		this.processHandler.stopProcess(sessionId)
 
 		this.registry.updateSessionStatus(sessionId, "stopped", undefined, "Stopped by user")
+		if (session?.sessionGroup?.groupId) {
+			this.publishGroupEvent(session.sessionGroup.groupId, sessionId, "stopped", "Stopped by user")
+		}
 		this.log(sessionId, "Stopped by user")
 		this.postStateToWebview()
 
@@ -1373,141 +1353,261 @@ export class AgentManagerProvider implements vscode.Disposable {
 	 * The agent-runtime will load conversation history from server using sessionId.
 	 * Supports both local sessions (in registry) and remote sessions (from server).
 	 */
+	private buildBroadcastSummary(
+		prefix: string,
+		successCount: number,
+		totalCount: number,
+		preferCompact: boolean,
+	): string {
+		const delivery = successCount < totalCount ? `${successCount}/${totalCount}` : `${successCount}`
+		return `${prefix} ${delivery} agent(s)${preferCompact ? " ? compact" : ""}`
+	}
+
+	private async deliverBroadcast(params: { formattedMessage: string; targets: AgentSession[] }) {
+		const results = await Promise.allSettled(
+			params.targets.map((target) => this.sendMessageToStdin(target.sessionId, params.formattedMessage)),
+		)
+		const successCount = results.filter((result) => result.status === "fulfilled").length
+		return {
+			successCount,
+			totalCount: params.targets.length,
+		}
+	}
+
+	private getActiveBroadcastTargets(
+		sessions: AgentSession[],
+		senderSessionId: string,
+		includeSender: boolean,
+	): AgentSession[] {
+		return sessions.filter((candidate) => {
+			if (!includeSender && candidate.sessionId === senderSessionId) {
+				return false
+			}
+			return candidate.status === "running" || candidate.status === "creating"
+		})
+	}
+
+	private getSessionsForRootTask(rootTaskId: string): AgentSession[] {
+		return this.registry
+			.getSessions()
+			.filter((candidate) => (candidate.rootTaskId ?? candidate.taskId) === rootTaskId)
+	}
+
+	private publishBroadcastSummary(params: {
+		groupId: string
+		sessionId: string
+		prefix: string
+		successCount: number
+		totalCount: number
+		preferCompact: boolean
+	}): void {
+		const summary = this.buildBroadcastSummary(
+			params.prefix,
+			params.successCount,
+			params.totalCount,
+			params.preferCompact,
+		)
+		this.publishGroupEvent(params.groupId, params.sessionId, "running", summary)
+	}
+
+	private postGroupMessage(message: SessionGroupMessage): void {
+		const relay = this.relayOrchestrator.trimRelayContent(message.content)
+		this.postMessage({
+			type: "agentManager.groupMessage",
+			messageId: message.messageId,
+			groupId: message.groupId,
+			sourceSessionId: message.sourceSessionId,
+			sourceLabel: message.sourceLabel,
+			content: relay.content,
+			includeSender: message.includeSender,
+			timestamp: message.timestamp,
+		})
+	}
+
+	private postRootTaskMessage(message: RootTaskMessage): void {
+		const relay = this.relayOrchestrator.trimRelayContent(message.content)
+		this.postMessage({
+			type: "agentManager.rootTaskMessage",
+			messageId: message.messageId,
+			rootTaskId: message.rootTaskId,
+			sourceSessionId: message.sourceSessionId,
+			sourceLabel: message.sourceLabel,
+			content: relay.content,
+			includeSender: message.includeSender,
+			timestamp: message.timestamp,
+		})
+	}
+
+	public async restartSession(sessionId: string, options?: { compact?: boolean }): Promise<void> {
+		const session = this.registry.getSession(sessionId)
+		if (!session) {
+			return
+		}
+
+		const restartInstruction = await this.relayOrchestrator.buildRestartInstruction(session, options)
+
+		if (session.status === "running" || session.status === "creating") {
+			this.stopAgentSession(sessionId)
+		}
+
+		this.updateQueueKeyPressure(restartInstruction.queueKey, "success")
+		this.updateQueueKeyPressure(restartInstruction.queueKey, "success")
+		await this.resumeSession(sessionId, restartInstruction.prompt, session.label)
+	}
+
+	private getTaskHistoryItems(): HistoryItem[] {
+		return typeof this.provider.getTaskHistory === "function" ? this.provider.getTaskHistory() : []
+	}
+
+	private getWorkspaceStateStore(): Pick<vscode.Memento, "get" | "update"> | undefined {
+		const workspaceState = (this.context as vscode.ExtensionContext & { workspaceState?: vscode.Memento })
+			.workspaceState
+		if (
+			!workspaceState ||
+			typeof workspaceState.get !== "function" ||
+			typeof workspaceState.update !== "function"
+		) {
+			return undefined
+		}
+		return workspaceState
+	}
+
+	private async persistBackgroundBindings(): Promise<void> {
+		const workspaceState = this.getWorkspaceStateStore()
+		if (!workspaceState) {
+			return
+		}
+		await persistBackgroundBindingsToWorkspaceState(workspaceState, this.backgroundSessionBindings, (sessionId) =>
+			this.registry.getSession(sessionId),
+		)
+	}
+
+	private async restorePersistedBackgroundBindings(): Promise<void> {
+		const workspaceState = this.getWorkspaceStateStore()
+		if (!workspaceState) {
+			return
+		}
+		const restoration = planPersistedBackgroundBindingRestoration(
+			readPersistedBackgroundBindingsFromWorkspaceState(workspaceState),
+			{
+				getHistoryItem: (sessionId) => this.getSessionHistoryItem(sessionId),
+				getExistingSession: (sessionId) => this.registry.getSession(sessionId),
+			},
+		)
+		await this.backgroundSubagentBindingCoordinator.applyPlannedRestoration(restoration)
+	}
+
+	private getSessionHistoryItem(sessionId: string): HistoryItem | undefined {
+		return this.getTaskHistoryItems().find((item) => item.id === sessionId)
+	}
+
+	private buildHistoryDerivedSessionFields(
+		sessionId: string,
+		historyItem:
+			| {
+					id?: string
+					rootTaskId?: string
+					parentTaskId?: string
+					childIds?: string[]
+					restartCount?: number
+					sessionAutoRestartEnabled?: boolean
+					lastStopReason?: string
+					lastStopSummary?: string
+					lifecycleState?: "running" | "paused" | "completed" | "cancelled"
+					pauseReason?: string
+					pausedAt?: number
+					resumeContextSummary?: string
+			  }
+			| undefined,
+	) {
+		return {
+			taskId: historyItem?.id ?? sessionId,
+			rootTaskId: historyItem?.rootTaskId,
+			parentTaskId: historyItem?.parentTaskId,
+			childTaskIds: historyItem?.childIds,
+			restartCount: historyItem?.restartCount,
+			restartLimit: this.problematicProcessRestartLimit,
+			autoRestartEnabled:
+				this.sessionAutoRestartOverrides.get(sessionId) ??
+				historyItem?.sessionAutoRestartEnabled ??
+				this.autoRestartProblematicProcesses,
+			lastStopReason: historyItem?.lastStopReason,
+			lastStopSummary: historyItem?.lastStopSummary,
+			restartHandoff:
+				historyItem?.resumeContextSummary ??
+				(historyItem?.lastStopSummary && historyItem?.lastStopReason
+					? `Stop reason: ${historyItem.lastStopReason}. Previous summary: ${historyItem.lastStopSummary}`
+					: historyItem?.lastStopSummary),
+			lifecycleStatus:
+				historyItem?.lifecycleState === "paused"
+					? "paused"
+					: historyItem?.lifecycleState === "completed"
+						? "completed"
+						: historyItem?.lifecycleState === "cancelled"
+							? "cancelled"
+							: undefined,
+			activityState:
+				historyItem?.lifecycleState === "paused"
+					? "paused"
+					: historyItem?.lifecycleState === "running"
+						? "active"
+						: undefined,
+			needsAttention: historyItem?.lifecycleState === "paused" ? true : undefined,
+			recoveryState: historyItem?.lifecycleState === "paused" ? "recoverable" : undefined,
+			pendingReaction: historyItem?.lifecycleState === "paused" ? "resume" : undefined,
+			lastEventAt: historyItem?.pausedAt,
+		}
+	}
+
+	private setSessionAutoRestart(sessionId: string, enabled: boolean): void {
+		this.sessionAutoRestartOverrides.set(sessionId, enabled)
+		const historyItem = this.getSessionHistoryItem(sessionId)
+		if (historyItem && typeof this.provider.updateTaskHistory === "function") {
+			void this.provider.updateTaskHistory({
+				...historyItem,
+				id: sessionId,
+				sessionAutoRestartEnabled: enabled,
+			})
+		}
+		this.postStateToWebview()
+	}
+
+	// kilocode_change start
 	public async resumeSession(
 		sessionId: string,
 		content: string,
 		sessionLabel?: string,
 		images?: string[],
 	): Promise<void> {
-		const session = this.registry.getSession(sessionId)
+		const plan = await this.resumeOrchestrator.planResumeSession({
+			sessionId,
+			content,
+			sessionLabel,
+			images,
+			session: this.registry.getSession(sessionId),
+		})
 
-		// If session is still running, send as regular message instead
-		if (this.processHandler.hasStdin(sessionId)) {
+		if (plan.kind === "send-message") {
 			await this.sendMessage(sessionId, content, undefined, images)
 			return
 		}
 
-		// If session is already being created (another resume in progress), queue the message
-		if (session?.status === "creating") {
-			this.outputChannel.appendLine(
-				`[AgentManager] Session ${sessionId} is already starting, queueing message for later`,
-			)
-			// Store the message to send after session is ready
-			// The message will be handled when the session becomes active
+		if (plan.kind === "queued") {
 			return
 		}
 
-		// For agent-runtime, pass base64 images directly (not file paths)
-		if (images && images.length > 0) {
-			this.outputChannel.appendLine(`[AgentManager] Passing ${images.length} images (base64) to resumed session`)
-		}
-
-		this.outputChannel.appendLine(`[AgentManager] Resuming session ${sessionId} with new prompt`)
-
-		// Fetch full session data for resume (UI messages + API history + metadata)
-		let sessionData:
-			| {
-					uiMessages: ClineMessage[]
-					apiConversationHistory: unknown[]
-					metadata: { sessionId: string; title: string; createdAt: string; mode: string | null }
-			  }
-			| undefined
-		try {
-			const fetchedData = await this.remoteSessionService.fetchSessionDataForResume(sessionId)
-			if (fetchedData) {
-				sessionData = fetchedData
-				this.outputChannel.appendLine(
-					`[AgentManager] Fetched session data: ${fetchedData.uiMessages.length} UI messages, ${fetchedData.apiConversationHistory.length} API history entries`,
-				)
-			} else {
-				this.outputChannel.appendLine(`[AgentManager] No session data available for resume`)
-			}
-		} catch (error) {
-			this.outputChannel.appendLine(
-				`[AgentManager] Failed to fetch session data for resume: ${error instanceof Error ? error.message : String(error)}`,
-			)
-		}
-
-		// Determine the mode to use for resume: prefer session metadata, fall back to local session mode
-		const resumeMode = sessionData?.metadata?.mode || session?.mode
-		if (resumeMode) {
-			this.outputChannel.appendLine(`[AgentManager] Resuming with mode: ${resumeMode}`)
-		}
-
-		// Handle local session with parallel mode
-		if (session?.parallelMode?.enabled && session.parallelMode.branch) {
-			const worktreeInfo = await this.prepareWorktreeForResume(session)
-			if (worktreeInfo) {
-				await this.spawnAgentWithCommonSetup(content, {
-					sessionId,
-					parallelMode: true,
-					gitUrl: session.gitUrl,
-					worktreeInfo,
-					effectiveWorkspace: worktreeInfo.path,
-					images,
-					sessionData,
-					model: session.model,
-					mode: resumeMode ?? undefined,
-				})
-				return
-			}
-			// If worktree preparation failed, fall through to non-parallel mode
-			this.outputChannel.appendLine(`[AgentManager] Failed to prepare worktree, resuming without parallel mode`)
-		}
-
-		// Resume session - pass session data for agent-runtime to load
-		await this.spawnAgentWithCommonSetup(content, {
-			sessionId,
-			label: sessionLabel || session?.label,
-			parallelMode: session?.parallelMode?.enabled,
-			gitUrl: session?.gitUrl,
-			images,
-			sessionData,
-			model: session?.model,
-			mode: resumeMode ?? undefined,
+		const spawnPlan = await this.sessionSpawnPlanner.buildNormalizedSpawnPlan({
+			prompt: plan.prompt,
+			options: plan.spawnOptions,
 		})
+		if (!spawnPlan) {
+			this.handleResumeSessionSpawnFailure()
+			return
+		}
+
+		await this.spawnAgentWithCommonSetup(spawnPlan, () => this.handleResumeSessionSpawnFailure())
 	}
-
-	/**
-	 * Prepare worktree for resuming a parallel mode session.
-	 * Uses existing worktree if available, otherwise recreates it from the session's branch.
-	 */
-	private async prepareWorktreeForResume(
-		session: AgentSession,
-	): Promise<{ branch: string; path: string; parentBranch: string } | undefined> {
-		if (!session.parallelMode?.branch) {
-			return undefined
-		}
-
-		const existingPath = session.parallelMode.worktreePath
-		const branch = session.parallelMode.branch
-		const parentBranch = session.parallelMode.parentBranch || "main"
-
-		// Check if existing worktree is still valid
-		if (existingPath && fs.existsSync(existingPath)) {
-			const gitFile = path.join(existingPath, ".git")
-			if (fs.existsSync(gitFile)) {
-				this.outputChannel.appendLine(`[AgentManager] Reusing existing worktree at: ${existingPath}`)
-				return { branch, path: existingPath, parentBranch }
-			}
-		}
-
-		// Worktree doesn't exist - recreate it from the existing branch
-		this.outputChannel.appendLine(`[AgentManager] Recreating worktree for branch: ${branch}`)
-		try {
-			const manager = this.getWorktreeManager()
-			const worktreeInfo = await manager.createWorktree({ existingBranch: branch })
-
-			// Update session with new worktree path
-			this.registry.updateParallelModeInfo(session.sessionId, { worktreePath: worktreeInfo.path })
-
-			return worktreeInfo
-		} catch (error) {
-			const errorMsg = error instanceof Error ? error.message : String(error)
-			this.outputChannel.appendLine(`[AgentManager] Failed to recreate worktree: ${errorMsg}`)
-			return undefined
-		}
-	}
+	// kilocode_change end
 
 	/**
 	 * Cancel/abort a running agent session via stdin.
@@ -1515,23 +1615,15 @@ export class AgentManagerProvider implements vscode.Disposable {
 	 * Does nothing if the session is not running.
 	 */
 	public async cancelSession(sessionId: string): Promise<void> {
-		if (!this.processHandler.hasStdin(sessionId)) {
-			// Session is not running or stdin unavailable - force stop
-			this.outputChannel.appendLine(`[AgentManager] Session ${sessionId} not running, stopping process`)
-			this.stopAgentSession(sessionId)
-			return
-		}
+		await this.backgroundSubagentControl.cancelSession(sessionId)
+	}
 
-		const message = { type: "cancelTask" }
+	public async pauseSession(sessionId: string): Promise<void> {
+		await this.backgroundSubagentControl.pauseSession(sessionId)
+	}
 
-		try {
-			await this.safeWriteToStdin(sessionId, message, "cancel")
-			this.log(sessionId, "Cancel request sent via stdin")
-		} catch (error) {
-			// Fallback to SIGTERM if stdin write fails
-			this.outputChannel.appendLine(`Failed to send cancel via stdin, falling back to SIGTERM: ${error}`)
-			this.stopAgentSession(sessionId)
-		}
+	public async resumeBackgroundSubagent(sessionId: string): Promise<void> {
+		await this.backgroundSubagentControl.resumeBackgroundSubagent(sessionId)
 	}
 
 	/**
@@ -1555,6 +1647,85 @@ export class AgentManagerProvider implements vscode.Disposable {
 		await this.safeWriteToStdin(sessionId, message, approved ? "approval-yes" : "approval-no")
 		this.log(sessionId, `Approval response sent: ${approved ? "approved" : "rejected"}`)
 	}
+
+	// kilocode_change start
+
+	private async broadcastToRootTask(
+		sessionId: string,
+		content: string | undefined,
+		includeSender: boolean,
+		compact: boolean = true,
+	): Promise<void> {
+		const session = this.registry.getSession(sessionId)
+		const rootTaskId = session?.rootTaskId ?? session?.taskId
+		if (!session || !rootTaskId) {
+			return
+		}
+
+		const relay = await this.relayOrchestrator.composeRootRelayMessage(session, {
+			content,
+			includeSender,
+			compact,
+		})
+		if (!relay.message || !relay.formattedMessage) {
+			return
+		}
+
+		const targets = this.getActiveBroadcastTargets(
+			this.getSessionsForRootTask(rootTaskId),
+			sessionId,
+			includeSender,
+		)
+		const { successCount, totalCount } = await this.deliverBroadcast({
+			formattedMessage: relay.formattedMessage,
+			targets,
+		})
+		this.postRootTaskMessage(relay.message)
+		this.publishBroadcastSummary({
+			groupId: session.sessionGroup?.groupId ?? session.sessionId,
+			sessionId,
+			prefix: "Root broadcast delivered to",
+			successCount,
+			totalCount,
+			preferCompact: relay.preferCompact,
+		})
+	}
+
+	private async broadcastToSessionGroup(
+		sessionId: string,
+		content: string | undefined,
+		includeSender: boolean,
+	): Promise<void> {
+		const session = this.registry.getSession(sessionId)
+		const groupId = session?.sessionGroup?.groupId
+		if (!session || !groupId) {
+			return
+		}
+
+		const relay = await this.relayOrchestrator.composeGroupRelayMessage(session, {
+			content,
+			includeSender,
+		})
+		if (!relay.message || !relay.formattedMessage) {
+			return
+		}
+
+		const targets = this.getActiveBroadcastTargets(this.getSessionsForGroup(groupId), sessionId, includeSender)
+		const { successCount, totalCount } = await this.deliverBroadcast({
+			formattedMessage: relay.formattedMessage,
+			targets,
+		})
+		this.postGroupMessage(relay.message)
+		this.publishBroadcastSummary({
+			groupId,
+			sessionId,
+			prefix: "Broadcast delivered to",
+			successCount,
+			totalCount,
+			preferCompact: relay.preferCompact,
+		})
+	}
+	// kilocode_change end
 
 	private async safeWriteToStdin(sessionId: string, payload: object, label: string): Promise<void> {
 		try {
@@ -1583,6 +1754,7 @@ export class AgentManagerProvider implements vscode.Disposable {
 
 		// Clean up messages
 		this.sessionMessages.delete(sessionId)
+		this.lastPostedChatMessages.delete(sessionId) // kilocode_change
 
 		this.registry.removeSession(sessionId)
 		this.postStateToWebview()
@@ -1592,16 +1764,198 @@ export class AgentManagerProvider implements vscode.Disposable {
 		this.sendingMessageMap.delete(sessionId)
 	}
 
-	private getFilteredState() {
-		return this.registry.getStateForGitUrl(this.currentGitUrl)
+	// kilocode_change start
+	private getSessionsForGroup(groupId: string): AgentSession[] {
+		return this.registry.getSessions().filter((session) => session.sessionGroup?.groupId === groupId)
 	}
+	private getDescendantGroupIds(groupId: string): string[] {
+		const sessions = this.registry.getSessions()
+		const childrenByParent = new Map<string, string[]>()
+		for (const session of sessions) {
+			const childGroupId = session.sessionGroup?.groupId
+			const parentGroupId = session.sessionGroup?.parentGroupId
+			if (!childGroupId || !parentGroupId) {
+				continue
+			}
+			const existingChildren = childrenByParent.get(parentGroupId) ?? []
+			if (!existingChildren.includes(childGroupId)) {
+				existingChildren.push(childGroupId)
+			}
+			childrenByParent.set(parentGroupId, existingChildren)
+		}
 
-	private postStateToWebview(): void {
+		const descendantIds: string[] = []
+		const queue = [...(childrenByParent.get(groupId) ?? [])]
+		while (queue.length > 0) {
+			const currentGroupId = queue.shift()
+			if (!currentGroupId) {
+				continue
+			}
+			descendantIds.push(currentGroupId)
+			queue.push(...(childrenByParent.get(currentGroupId) ?? []))
+		}
+
+		return descendantIds
+	}
+	private getSubtreeGroupIds(groupId: string): string[] {
+		return [groupId, ...this.getDescendantGroupIds(groupId)]
+	}
+	private publishSessionGroupEvent(
+		session: AgentSession | undefined,
+		sessionId: string,
+		eventType: SessionGroupEvent["eventType"],
+		summary?: string,
+	): void {
+		const groupId = session?.sessionGroup?.groupId
+		if (!groupId) {
+			return
+		}
+		this.publishGroupEvent(groupId, sessionId, eventType, summary)
+	}
+	private publishGroupEvent(
+		groupId: string,
+		sessionId: string,
+		eventType: SessionGroupEvent["eventType"],
+		summary?: string,
+	): void {
+		const event: SessionGroupEvent = {
+			groupId,
+			sessionId,
+			eventType,
+			summary,
+			timestamp: Date.now(),
+		}
+		this.latestGroupEvents.set(groupId, event)
 		this.postMessage({
-			type: "agentManager.state",
-			state: this.getFilteredState(),
+			type: "agentManager.groupEvent",
+			groupId: event.groupId,
+			sessionId: event.sessionId,
+			eventType: event.eventType,
+			summary: event.summary,
+			timestamp: event.timestamp,
 		})
 	}
+	private stopSessionGroup(groupId: string): void {
+		const targetGroupIds = this.getSubtreeGroupIds(groupId)
+		for (const targetGroupId of targetGroupIds) {
+			for (const session of this.getSessionsForGroup(targetGroupId)) {
+				if (session.status === "running" || session.status === "creating") {
+					this.stopAgentSession(session.sessionId)
+				}
+			}
+		}
+
+		this.queuedLaunchScheduler.removeQueuedLaunches((launch) => {
+			const launchGroupId = launch.options?.sessionGroup?.groupId
+			if (!launchGroupId || !targetGroupIds.includes(launchGroupId)) {
+				return false
+			}
+
+			this.publishGroupEvent(
+				launchGroupId,
+				launch.options?.sessionId || launch.options?.sessionGroup?.rootSessionId || launchGroupId,
+				"stopped",
+				"Stopped before launch",
+			)
+			return true
+		})
+	}
+
+	private async restartSessionGroupCompact(groupId: string): Promise<void> {
+		for (const targetGroupId of this.getSubtreeGroupIds(groupId)) {
+			for (const session of this.getSessionsForGroup(targetGroupId)) {
+				if (session.status === "error" || session.status === "stopped") {
+					await this.restartSession(session.sessionId, { compact: true })
+				}
+			}
+		}
+	}
+	// kilocode_change end
+	private async refreshRestartPolicyState(): Promise<void> {
+		try {
+			const state = await this.provider.getState()
+			this.autoRestartProblematicProcesses = state.autoRestartProblematicProcesses ?? false
+			this.problematicProcessRestartLimit = state.problematicProcessRestartLimit ?? 1
+			this.parallelAgentsEnabled = state.parallelAgentsEnabled ?? false // kilocode_change
+			this.parallelAgentCount = Math.min(Math.max(state.parallelAgentCount ?? 2, 1), MAX_VERSION_COUNT) // kilocode_change
+		} catch (error) {
+			this.outputChannel.appendLine(
+				`[AgentManager] Failed to refresh restart policy state: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
+
+	private getFilteredState() {
+		const baseState = this.registry.getStateForGitUrl(this.currentGitUrl)
+		const historyByTaskId = new Map(this.getTaskHistoryItems().map((item) => [item.id, item]))
+
+		return {
+			...baseState,
+			sessions: baseState.sessions.map((session) => {
+				const historyItem = historyByTaskId.get(session.taskId ?? session.sessionId)
+				return {
+					...session,
+					...this.buildHistoryDerivedSessionFields(session.sessionId, historyItem),
+				}
+			}),
+			scheduler: this.getSchedulerState(),
+		}
+	}
+
+	// kilocode_change start
+	private postStateToWebview(options?: { force?: boolean }): void {
+		const state = this.getFilteredState()
+		const signature = JSON.stringify(state)
+		if (!options?.force && this.lastPostedStateSignature === signature) {
+			return
+		}
+
+		this.lastPostedStateSignature = signature
+		this.postMessage({
+			type: "agentManager.state",
+			state,
+		})
+	}
+	// kilocode_change end
+
+	// kilocode_change start
+	private postRemoteSessionsToWebview(sessions: RemoteSession[], options?: { force?: boolean }): void {
+		const signature = JSON.stringify(sessions)
+		if (!options?.force && this.lastPostedRemoteSessionsSignature === signature) {
+			return
+		}
+
+		this.lastPostedRemoteSessionsSignature = signature
+		this.postMessage({
+			type: "agentManager.remoteSessions",
+			sessions,
+		})
+	}
+
+	private postAvailableModesToWebview(
+		modes: Array<{
+			slug: string
+			name: string
+			description?: string
+			iconName?: string
+			source?: "global" | "project" | "organization" | undefined
+		}>,
+		currentMode: string,
+		options?: { force?: boolean },
+	): void {
+		const payload = { modes, currentMode }
+		const signature = JSON.stringify(payload)
+		if (!options?.force && this.lastPostedAvailableModesSignature === signature) {
+			return
+		}
+
+		this.lastPostedAvailableModesSignature = signature
+		this.postMessage({
+			type: "agentManager.availableModes",
+			...payload,
+		})
+	}
+	// kilocode_change end
 
 	private async fetchAndPostRemoteSessions(): Promise<void> {
 		try {
@@ -1610,10 +1964,7 @@ export class AgentManagerProvider implements vscode.Disposable {
 			// Filter remote sessions by git_url (only if git_url is available from API)
 			const filteredSessions = this.filterRemoteSessionsByGitUrl(remoteSessions)
 
-			this.postMessage({
-				type: "agentManager.remoteSessions",
-				sessions: filteredSessions,
-			})
+			this.postRemoteSessionsToWebview(filteredSessions) // kilocode_change
 		} catch (error) {
 			this.outputChannel.appendLine(`[AgentManager] Failed to fetch remote sessions: ${error}`)
 		}
@@ -1715,9 +2066,8 @@ export class AgentManagerProvider implements vscode.Disposable {
 				`[AgentManager] Fetched ${allModes.length} available modes, current: ${currentMode}`,
 			)
 
-			this.postMessage({
-				type: "agentManager.availableModes",
-				modes: allModes.map((mode) => ({
+			this.postAvailableModesToWebview(
+				allModes.map((mode) => ({
 					slug: mode.slug,
 					name: mode.name,
 					description: mode.description,
@@ -1725,17 +2075,13 @@ export class AgentManagerProvider implements vscode.Disposable {
 					source: mode.source as "global" | "project" | "organization" | undefined,
 				})),
 				currentMode,
-			})
+			) // kilocode_change
 		} catch (error) {
 			this.outputChannel.appendLine(
 				`[AgentManager] Error fetching modes: ${error instanceof Error ? error.message : String(error)}`,
 			)
 			// Send empty modes array on error
-			this.postMessage({
-				type: "agentManager.availableModes",
-				modes: [],
-				currentMode: DEFAULT_MODE_SLUG,
-			})
+			this.postAvailableModesToWebview([], DEFAULT_MODE_SLUG) // kilocode_change
 		}
 	}
 
@@ -1753,24 +2099,68 @@ export class AgentManagerProvider implements vscode.Disposable {
 			outputPrice: info.outputPrice,
 		}))
 
-		this.postMessage({
-			type: "agentManager.availableModels",
+		this.postAvailableModelsToWebview({
 			provider: cached.provider,
 			currentModel: cached.currentModel,
 			models: modelsArray,
+		}) // kilocode_change
+	}
+
+	// kilocode_change start
+	private postAvailableModelsToWebview(
+		payload: {
+			provider: string
+			currentModel: string
+			models: Array<{
+				id: string
+				displayName: string | null
+				contextWindow: number
+				supportsImages: boolean | undefined
+				inputPrice: number | undefined
+				outputPrice: number | undefined
+			}>
+		},
+		options?: { force?: boolean },
+	): void {
+		const signature = JSON.stringify(payload)
+		if (!options?.force && this.lastPostedAvailableModelsSignature === signature) {
+			return
+		}
+
+		this.lastPostedAvailableModelsSignature = signature
+		this.postMessage({
+			type: "agentManager.availableModels",
+			...payload,
 		})
 	}
+
+	private postBranchesToWebview(
+		payload: { branches: string[]; currentBranch: string | undefined },
+		options?: { force?: boolean },
+	): void {
+		const signature = JSON.stringify(payload)
+		if (!options?.force && this.lastPostedBranchesSignature === signature) {
+			return
+		}
+
+		this.lastPostedBranchesSignature = signature
+		this.postMessage({
+			type: "agentManager.branches",
+			...payload,
+		})
+	}
+	// kilocode_change end
 
 	private async handleListBranches(): Promise<void> {
 		try {
 			const gitService = new WorkspaceGitService()
 			const { branches, currentBranch } = await gitService.getBranchInfo()
-			this.postMessage({ type: "agentManager.branches", branches, currentBranch })
+			this.postBranchesToWebview({ branches, currentBranch }) // kilocode_change
 		} catch (error) {
 			this.outputChannel.appendLine(
 				`[AgentManager] Failed to list branches: ${error instanceof Error ? error.message : String(error)}`,
 			)
-			this.postMessage({ type: "agentManager.branches", branches: [], currentBranch: undefined })
+			this.postBranchesToWebview({ branches: [], currentBranch: undefined }) // kilocode_change
 		}
 	}
 
@@ -1780,6 +2170,18 @@ export class AgentManagerProvider implements vscode.Disposable {
 		}
 		return sessions.filter((s) => s.git_url === this.currentGitUrl)
 	}
+
+	// kilocode_change start
+	private postChatMessages(sessionId: string, messages: ClineMessage[], options?: { force?: boolean }): void {
+		const signature = JSON.stringify(messages)
+		if (!options?.force && this.lastPostedChatMessages.get(sessionId) === signature) {
+			return
+		}
+
+		this.lastPostedChatMessages.set(sessionId, signature)
+		this.postMessage({ type: "agentManager.chatMessages", sessionId, messages })
+	}
+	// kilocode_change end
 
 	private postMessage(message: unknown): void {
 		// Log outgoing message to webview
@@ -1791,14 +2193,14 @@ export class AgentManagerProvider implements vscode.Disposable {
 				return `${msgType} "${text}"`
 			})
 			this.outputChannel.appendLine(
-				`[Webview←] ${msg.type} sessionId=${msg.sessionId} (${msg.messages?.length || 0} messages)` +
+				`[Webview<] ${msg.type} sessionId=${msg.sessionId} (${msg.messages?.length || 0} messages)` +
 					(lastMsgs?.length ? `\n  last: ${lastMsgs.join(", ")}` : ""),
 			)
 		} else if (msg.type === "agentManager.stateEvent") {
 			const eventType = (msg as { eventType?: string }).eventType || "?"
-			this.outputChannel.appendLine(`[Webview←] ${msg.type} sessionId=${msg.sessionId} eventType=${eventType}`)
+			this.outputChannel.appendLine(`[Webview<] ${msg.type} sessionId=${msg.sessionId} eventType=${eventType}`)
 		} else {
-			this.outputChannel.appendLine(`[Webview←] ${msg.type || "unknown"}`)
+			this.outputChannel.appendLine(`[Webview<] ${msg.type || "unknown"}`)
 		}
 		this.panel?.webview.postMessage(message)
 	}
@@ -1887,12 +2289,73 @@ export class AgentManagerProvider implements vscode.Disposable {
 		return this.registry.hasRunningSessions()
 	}
 
+	public hasBackgroundSubagentCapacity(request: SubagentLaunchRequest): boolean {
+		const normalizedRequest = normalizeSubagentLaunchRequest(request)
+		const queueKey =
+			normalizedRequest.rootTaskId ||
+			normalizedRequest.parentTaskId ||
+			resolveSubagentLaunchTargetTaskId(normalizedRequest) ||
+			"root:default"
+		return this.hasSessionLaunchCapacity() && this.hasQueueKeyCapacity(queueKey)
+	}
+
+	// kilocode_change start
+	private get queuedSessionLaunches(): QueuedSessionLaunch[] {
+		return [...this.queuedLaunchScheduler.queuedLaunches]
+	}
+
+	private set queuedSessionLaunches(launches: QueuedSessionLaunch[]) {
+		this.queuedLaunchScheduler.replaceQueuedLaunches(launches)
+	}
+
+	private dequeueNextSessionLaunch(): QueuedSessionLaunch | undefined {
+		return this.queuedLaunchScheduler.dequeueNextLaunch()
+	}
+	// kilocode_change end
+
+	public onBackgroundSubagentStatus(listener: (event: SubagentStatusEvent) => void): () => void {
+		return this.backgroundSubagentEventBridge.onStatus(listener)
+	}
+
+	public onBackgroundSubagentResult(listener: (event: SubagentResultEvent) => void): () => void {
+		return this.backgroundSubagentEventBridge.onResult(listener)
+	}
+
+	public async startBackgroundSubagent(
+		request: SubagentLaunchRequest,
+	): Promise<{ taskId: string; sessionId: string; status: "queued" | "running" }> {
+		// kilocode_change start
+		const launch = await this.backgroundSubagentBindingCoordinator.prepareLaunch(request)
+
+		await this.startAgentSession(launch.prompt, launch.startOptions)
+
+		this.backgroundSubagentEventBridge.announceLaunch(launch.sessionId, launch.queued)
+
+		return {
+			taskId: launch.taskId,
+			sessionId: launch.sessionId,
+			status: launch.queued ? "queued" : "running",
+		}
+		// kilocode_change end
+	}
+
+	public listBackgroundSubagentBindings(): Array<{
+		request: SubagentLaunchRequest
+		taskId: string
+		sessionId: string
+		status: SubagentStatusEvent["state"]
+		updatedAt: number
+	}> {
+		return this.backgroundSubagentControl.listBindings()
+	}
+
 	public getRunningSessionCount(): number {
 		return this.registry.getRunningSessionCount()
 	}
 
 	private stopAllAgents(): void {
 		this.processHandler.stopAllProcesses()
+		this.queuedLaunchScheduler.clearQueuedLaunches()
 
 		// Update all running sessions to stopped
 		for (const session of this.registry.getSessions()) {
@@ -1905,9 +2368,16 @@ export class AgentManagerProvider implements vscode.Disposable {
 	}
 
 	public dispose(): void {
+		this.stopAllAgents()
 		this.processHandler.dispose()
 		this.terminalManager.dispose()
 		this.sessionMessages.clear()
+		this.lastPostedChatMessages.clear() // kilocode_change
+		this.lastPostedStateSignature = undefined // kilocode_change
+		this.lastPostedRemoteSessionsSignature = undefined // kilocode_change
+		this.lastPostedAvailableModesSignature = undefined // kilocode_change
+		this.lastPostedAvailableModelsSignature = undefined // kilocode_change
+		this.lastPostedBranchesSignature = undefined // kilocode_change
 		this.firstApiReqStarted.clear()
 
 		this.panel?.dispose()

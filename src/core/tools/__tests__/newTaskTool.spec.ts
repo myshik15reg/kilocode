@@ -316,6 +316,46 @@ describe("newTaskTool", () => {
 		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
 	})
 
+	// kilocode_change start
+	it("forwards background execution settings to provider delegation", async () => {
+		const block: ToolUse = {
+			type: "tool_use",
+			name: "new_task",
+			params: {
+				mode: "code",
+				message: "Research this in background",
+				todos: "[ ] Gather context\n[ ] Report findings",
+				execution: "background",
+				isolation: "shared",
+			},
+			partial: false,
+		}
+
+		await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
+
+		expect(mockDelegateParentAndOpenChild).toHaveBeenCalledWith({
+			parentTaskId: "mock-parent-task-id",
+			message: "Research this in background",
+			initialTodos: expect.arrayContaining([
+				expect.objectContaining({ content: "Gather context" }),
+				expect.objectContaining({ content: "Report findings" }),
+			]),
+			mode: "code",
+			execution: "background",
+			isolation: "shared",
+			branchFromTaskId: undefined,
+			branchStrategy: undefined,
+		})
+		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
+	})
+	// kilocode_change end
+
 	it("should error when mode parameter is missing", async () => {
 		const block: ToolUse = {
 			type: "tool_use",
@@ -625,6 +665,17 @@ describe("newTaskTool", () => {
 })
 
 describe("newTaskTool delegation flow", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		mockAskApproval.mockResolvedValue(true)
+		vi.mocked(getModeBySlug).mockReturnValue({
+			slug: "code",
+			name: "Code Mode",
+			roleDefinition: "Test role definition",
+			groups: ["command", "read", "edit"],
+		})
+	})
+
 	it("delegates to provider and does not call legacy startSubtask", async () => {
 		// Arrange: stub provider delegation
 		const providerSpy = {
@@ -696,4 +747,97 @@ describe("newTaskTool delegation flow", () => {
 		// Assert: tool result reflects delegation
 		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task child-1"))
 	})
+
+	it("passes execution background through to provider delegation", async () => {
+		const providerSpy = {
+			getState: vi.fn().mockResolvedValue({ mode: "ask", experiments: {} }),
+			delegateParentAndOpenChild: vi.fn().mockResolvedValue({ taskId: "child-bg" }),
+			handleModeSwitch: vi.fn(),
+		} as any
+
+		const localCline = {
+			...mockCline,
+			taskId: "mock-parent-task-id",
+			providerRef: { deref: vi.fn(() => providerSpy) },
+		} as any
+
+		const block: ToolUse = {
+			type: "tool_use",
+			name: "new_task",
+			params: {
+				mode: "code",
+				message: "Run in background",
+				execution: "background",
+			},
+			partial: false,
+		}
+
+		await newTaskTool.handle(
+			localCline,
+			block as ToolUse<"new_task">,
+			{
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			} as any,
+		)
+
+		expect(providerSpy.delegateParentAndOpenChild).toHaveBeenCalledWith(
+			expect.objectContaining({ execution: "background", parentTaskId: "mock-parent-task-id" }),
+		)
+	})
+
+	// kilocode_change start
+	it("keeps legacy new_task behavior when new orchestration params are omitted", async () => {
+		const providerSpy = {
+			getState: vi.fn().mockResolvedValue({ mode: "ask", experiments: {} }),
+			delegateParentAndOpenChild: vi.fn().mockResolvedValue({ taskId: "child-legacy" }),
+			handleModeSwitch: vi.fn(),
+		} as any
+
+		const localCline = {
+			...mockCline,
+			taskId: "mock-parent-task-id",
+			providerRef: { deref: vi.fn(() => providerSpy) },
+		} as any
+
+		const block: ToolUse = {
+			type: "tool_use",
+			name: "new_task",
+			params: {
+				mode: "code",
+				message: "Legacy follow-up task",
+				todos: "[ ] Preserve compatibility",
+			},
+			partial: false,
+		}
+
+		await newTaskTool.handle(
+			localCline,
+			block as ToolUse<"new_task">,
+			{
+				askApproval: mockAskApproval,
+				taskApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			} as any,
+		)
+
+		expect(mockHandleError).not.toHaveBeenCalled()
+		expect(providerSpy.delegateParentAndOpenChild).toHaveBeenCalledWith({
+			parentTaskId: "mock-parent-task-id",
+			message: "Legacy follow-up task",
+			initialTodos: [{ id: "todo-0", content: "Preserve compatibility", status: "pending" }],
+			mode: "code",
+			execution: undefined,
+			isolation: undefined,
+			branchFromTaskId: undefined,
+			branchStrategy: undefined,
+		})
+	})
+	// kilocode_change end
 })

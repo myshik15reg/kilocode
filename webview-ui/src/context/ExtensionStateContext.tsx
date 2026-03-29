@@ -216,6 +216,14 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setMaxDiagnosticMessages: (value: number) => void
 	includeTaskHistoryInEnhance?: boolean
 	setIncludeTaskHistoryInEnhance: (value: boolean) => void
+	autoRestartProblematicProcesses?: boolean // kilocode_change
+	setAutoRestartProblematicProcesses: (value: boolean) => void // kilocode_change
+	problematicProcessRestartLimit?: number // kilocode_change
+	setProblematicProcessRestartLimit: (value: number) => void // kilocode_change
+	parallelAgentsEnabled?: boolean // kilocode_change
+	setParallelAgentsEnabled: (value: boolean) => void // kilocode_change
+	parallelAgentCount?: number // kilocode_change
+	setParallelAgentCount: (value: number) => void // kilocode_change
 	includeCurrentTime?: boolean
 	setIncludeCurrentTime: (value: boolean) => void
 	includeCurrentCost?: boolean
@@ -281,6 +289,9 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		currentApiConfigName: "default",
 		listApiConfigMeta: [],
 		mode: defaultModeSlug,
+		activeRootTaskIds: [],
+		runningRootTaskIds: [],
+		focusedRootTaskId: undefined,
 		customModePrompts: defaultPrompts,
 		customSupportPrompts: {},
 		experiments: experimentDefault,
@@ -318,6 +329,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		sendMessageOnEnter: true, // kilocode_change
 		showTimestamps: true, // kilocode_change
 		showDiffStats: true, // kilocode_change
+		autoRestartProblematicProcesses: false, // kilocode_change
+		problematicProcessRestartLimit: 1, // kilocode_change
+		parallelAgentsEnabled: false, // kilocode_change
+		parallelAgentCount: 2, // kilocode_change
 		kilocodeDefaultModel: openRouterDefaultModelId,
 		reasoningBlockCollapsed: true, // Default to collapsed
 		enterBehavior: "send", // Default: Enter sends, Shift+Enter creates newline
@@ -720,6 +735,12 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setAutoCondenseContext: (value) => setState((prevState) => ({ ...prevState, autoCondenseContext: value })),
 		setAutoCondenseContextPercent: (value) =>
 			setState((prevState) => ({ ...prevState, autoCondenseContextPercent: value })),
+		setAutoRestartProblematicProcesses: (value) =>
+			setState((prevState) => ({ ...prevState, autoRestartProblematicProcesses: value })), // kilocode_change
+		setProblematicProcessRestartLimit: (value) =>
+			setState((prevState) => ({ ...prevState, problematicProcessRestartLimit: value })), // kilocode_change
+		setParallelAgentsEnabled: (value) => setState((prevState) => ({ ...prevState, parallelAgentsEnabled: value })), // kilocode_change
+		setParallelAgentCount: (value) => setState((prevState) => ({ ...prevState, parallelAgentCount: value })), // kilocode_change
 		setCondensingApiConfigId: (value) => setState((prevState) => ({ ...prevState, condensingApiConfigId: value })),
 		setCustomCondensingPrompt: (value) =>
 			setState((prevState) => ({ ...prevState, customCondensingPrompt: value })),

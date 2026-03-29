@@ -92,6 +92,15 @@ export class RelationshipExtractor {
 			this.extractors.set(languageId, extractor)
 			return extractor
 		} catch (error) {
+			// FIX: 2026-02-19-neo4j-integration (TestAnalyzer)
+			// Root cause: Tree-sitter init failures previously fell back silently, making integration tests look like "0 functions/imports/classes".
+			// Deterministic warning makes wasm-path issues diagnosable in CI/local runs.
+			console.warn(
+				`[RelationshipExtractor] Falling back to plainText extractor for language "${languageId}". Reason: ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			)
+
 			// Graceful fallback (critical for 1C: tree-sitter-onec.wasm may be missing in runtime).
 			const fallback = new PlainTextGraphExtractor(languageId)
 			this.extractors.set(languageId, fallback)

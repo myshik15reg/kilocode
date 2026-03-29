@@ -95,6 +95,21 @@ describe("CacheManager", () => {
 			expect(cacheManager.getAllHashes()).toEqual(mockCache)
 		})
 
+		// kilocode_change start
+		it("should decode VS Code FS Uint8Array cache data as UTF-8", async () => {
+			const mockCache = { "café.ts": "hash-é" }
+			const mockNeo4jCache = { "привет.ts": "neo-хэш" }
+			;(vscode.workspace.fs.readFile as Mock)
+				.mockResolvedValueOnce(new TextEncoder().encode(JSON.stringify(mockCache)))
+				.mockResolvedValueOnce(new TextEncoder().encode(JSON.stringify(mockNeo4jCache)))
+
+			await cacheManager.initialize()
+
+			expect(cacheManager.getAllHashes()).toEqual(mockCache)
+			expect(cacheManager.getAllNeo4jHashes()).toEqual(mockNeo4jCache)
+		})
+		// kilocode_change end
+
 		it("should handle missing cache file by creating empty cache", async () => {
 			;(vscode.workspace.fs.readFile as Mock)
 				.mockRejectedValueOnce(new Error("File not found"))
