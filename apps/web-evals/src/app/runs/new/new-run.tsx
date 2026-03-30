@@ -25,6 +25,7 @@ import {
 	type GlobalSettings,
 	globalSettingsSchema,
 	providerSettingsSchema,
+	rooCodeSettingsSchema,
 	getModelId,
 	EVALS_SETTINGS,
 } from "@roo-code/types"
@@ -92,6 +93,8 @@ type ImportedSettings = {
 	currentApiConfigName: string
 }
 
+type CreateRunFormValues = z.input<typeof createRunSchema>
+
 type ModelSelection = {
 	id: string
 	model: string
@@ -135,7 +138,7 @@ export function NewRun() {
 
 	const [selectedExercises, setSelectedExercises] = useState<string[]>([])
 
-	const form = useForm<CreateRun>({
+	const form = useForm<CreateRunFormValues, unknown, CreateRun>({
 		resolver: zodResolver(createRunSchema),
 		defaultValues: {
 			model: "",
@@ -161,6 +164,14 @@ export function NewRun() {
 	} = form
 
 	const [suite, settings] = watch(["suite", "settings", "concurrency"])
+	const normalizedSettings = useMemo(() => {
+		if (!settings) {
+			return undefined
+		}
+
+		const result = rooCodeSettingsSchema.safeParse(settings)
+		return result.success ? result.data : undefined
+	}, [settings])
 
 	const selectedModelIds = useMemo(
 		() => modelSelections.map((s) => s.model).filter((m) => m.length > 0),
@@ -708,8 +719,11 @@ export function NewRun() {
 											</div>
 										</div>
 
-										{settings && (
-											<SettingsDiff defaultSettings={EVALS_SETTINGS} customSettings={settings} />
+										{normalizedSettings && (
+											<SettingsDiff
+												defaultSettings={EVALS_SETTINGS}
+												customSettings={normalizedSettings}
+											/>
 										)}
 									</div>
 								) : (
