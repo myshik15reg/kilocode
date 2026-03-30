@@ -10,6 +10,9 @@ export const subagentExecutionSchema = z.enum(["foreground", "background"])
 export const subagentRelayPolicySchema = z.enum(["none", "parent_only", "group"])
 export const branchStrategySchema = z.enum(["full", "summary"])
 export const taskLifecycleStateSchema = z.enum(["running", "paused", "completed", "cancelled"])
+export const routingProfileClassSchema = z.enum(["strong", "balanced", "cheap", "none"])
+export const orchestrationExplainabilityStageSchema = z.enum(["delegation", "status", "outcome"])
+export const orchestrationExplainabilitySourceSchema = z.enum(["explicit", "recommended", "default", "status"])
 
 export const toolCallCandidateSchema = z.object({
 	callId: z.string().optional(),
@@ -87,6 +90,10 @@ export const subagentLaunchRequestSchema = z.object({
 	isolation: taskIsolationModeSchema.default("auto"),
 	relayPolicy: subagentRelayPolicySchema.default("parent_only"),
 	helperProfile: z.string().min(1).optional(),
+	profileClass: routingProfileClassSchema.optional(),
+	routingSource: orchestrationExplainabilitySourceSchema.optional(),
+	routingReasonCode: z.string().min(1).optional(),
+	recommendationReasonCode: z.string().min(1).optional(),
 })
 
 export function normalizeSubagentLaunchRequest(
@@ -192,6 +199,18 @@ export const techDebtItemSchema = z.object({
 	createdAt: z.number(),
 })
 
+export const orchestrationExplainabilitySchema = z.object({
+	stage: orchestrationExplainabilityStageSchema,
+	reasonCode: z.string().min(1),
+	source: orchestrationExplainabilitySourceSchema.optional(),
+	mode: z.string().min(1).optional(),
+	execution: subagentExecutionSchema.optional(),
+	profileClass: routingProfileClassSchema.optional(),
+	helperProfile: z.string().min(1).optional(),
+	recommendationReasonCode: z.string().min(1).optional(),
+	outcomeSummary: z.string().min(1).optional(),
+})
+
 export const activityItemSchema = z.discriminatedUnion("kind", [
 	z.object({
 		kind: z.literal("toolBatch"),
@@ -209,6 +228,7 @@ export const activityItemSchema = z.discriminatedUnion("kind", [
 		sessionId: z.string().optional(),
 		status: z.enum(["queued", "running", "paused", "completed", "failed", "cancelled"]),
 		summary: z.string(),
+		explainability: orchestrationExplainabilitySchema.optional(),
 		timestamp: z.number(),
 	}),
 	z.object({
@@ -251,6 +271,9 @@ export type SubagentExecution = z.infer<typeof subagentExecutionSchema>
 export type SubagentRelayPolicy = z.infer<typeof subagentRelayPolicySchema>
 export type BranchStrategy = z.infer<typeof branchStrategySchema>
 export type TaskLifecycleState = z.infer<typeof taskLifecycleStateSchema>
+export type RoutingProfileClass = z.infer<typeof routingProfileClassSchema>
+export type OrchestrationExplainabilityStage = z.infer<typeof orchestrationExplainabilityStageSchema>
+export type OrchestrationExplainabilitySource = z.infer<typeof orchestrationExplainabilitySourceSchema>
 export type ToolCallCandidate = z.infer<typeof toolCallCandidateSchema>
 export type PlannedToolCall = z.infer<typeof plannedToolCallSchema>
 export type RejectedToolCall = z.infer<typeof rejectedToolCallSchema>
@@ -270,4 +293,5 @@ export type SubagentRelayEnvelope = z.infer<typeof subagentRelayEnvelopeSchema>
 // kilocode_change end
 export type TechDebtStatus = z.infer<typeof techDebtStatusSchema>
 export type TechDebtItem = z.infer<typeof techDebtItemSchema>
+export type OrchestrationExplainability = z.infer<typeof orchestrationExplainabilitySchema>
 export type ActivityItem = z.infer<typeof activityItemSchema>

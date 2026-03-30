@@ -3,6 +3,7 @@ import {
 	getActivityStatusSummary,
 	getBackgroundChildTasks,
 	getChildTasksWithoutDetailedActivity,
+	getExplainabilityEntries,
 	getHistoryOrchestrationSummary,
 	getTaskOrchestrationSummary,
 } from "../orchestration"
@@ -679,6 +680,47 @@ describe("orchestration selectors", () => {
 
 		expect(summary.counts.running).toBe(1)
 		expect(summary.counts.completed).toBe(1)
+	})
+
+	it("maps structured delegation explainability into compact UI entries", () => {
+		expect(
+			getExplainabilityEntries({
+				kind: "subagent",
+				id: "sa-explain",
+				taskId: "child-1",
+				sessionId: "session-1",
+				status: "queued",
+				summary: "Background subagent queued",
+				explainability: {
+					stage: "delegation",
+					reasonCode: "historical_background_win",
+					source: "recommended",
+					mode: "code",
+					execution: "background",
+					profileClass: "cheap",
+					helperProfile: "Fast helper",
+					recommendationReasonCode: "historical_background_win",
+				},
+				timestamp: 7,
+			} as any),
+		).toEqual([
+			{ title: "Route", detail: "background · code" },
+			{ title: "Helper", detail: "cheap · Fast helper" },
+			{ title: "Why", detail: "historical_background_win" },
+		])
+	})
+
+	it("keeps explainability empty when structured data is absent", () => {
+		expect(
+			getExplainabilityEntries({
+				kind: "subagent",
+				id: "sa-no-explain",
+				taskId: "child-1",
+				status: "running",
+				summary: "Running helper",
+				timestamp: 8,
+			} as any),
+		).toEqual([])
 	})
 
 	it("includes history-only queued background tasks in history summary", () => {

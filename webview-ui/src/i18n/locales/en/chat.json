@@ -14,6 +14,8 @@
 		"condenseContext": "Intelligently condense context",
 		"contextWindow": "Context Length",
 		"closeAndStart": "Close task and start a new one",
+		"pause": "Pause task",
+		"branch": "Branch task",
 		"export": "Export task history",
 		"share": "Share task",
 		"delete": "Delete Task (Shift + Click to skip confirmation)",
@@ -455,6 +457,32 @@
 		"indexed": "Indexed",
 		"error": "Index error",
 		"status": "Index status"
+	},
+	"orchestration": {
+		"title": "Orchestration",
+		"status": {
+			"queued": "Queued",
+			"running": "Running",
+			"paused": "Paused",
+			"recoverable": "Recoverable",
+			"completed": "Completed",
+			"cancelled": "Cancelled",
+			"failed": "Failed"
+		},
+		"queuedCount_one": "{{count}} queued",
+		"queuedCount_other": "{{count}} queued",
+		"runningCount_one": "{{count}} running",
+		"runningCount_other": "{{count}} running",
+		"pausedCount_one": "{{count}} paused",
+		"pausedCount_other": "{{count}} paused",
+		"recoverableCount_one": "{{count}} recoverable",
+		"recoverableCount_other": "{{count}} recoverable",
+		"completedCount_one": "{{count}} completed",
+		"completedCount_other": "{{count}} completed",
+		"cancelledCount_one": "{{count}} cancelled",
+		"cancelledCount_other": "{{count}} cancelled",
+		"failedCount_one": "{{count}} failed",
+		"failedCount_other": "{{count}} failed"
 	},
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Click to view release notes"

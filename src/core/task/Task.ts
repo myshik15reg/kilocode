@@ -151,7 +151,7 @@ import { MessageQueueService } from "../message-queue/MessageQueueService"
 import { HelperModelRouter } from "../helper-routing/HelperModelRouter"
 
 import { isAnyRecognizedKiloCodeError, isPaymentRequiredError } from "../../shared/kilocode/errorUtils"
-import { getAppUrl } from "@roo-code/types"
+import { getAppUrl, type TaskPatternContext } from "@roo-code/types"
 import { getKilocodeDefaultModel } from "../../api/providers/kilocode/getKilocodeDefaultModel" // kilocode_change
 import { addOrMergeUserContent } from "./kilocode"
 import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
@@ -469,6 +469,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Cloud Sync Tracking
 	private cloudSyncedMessageTimestamps: Set<number> = new Set()
 
+	private readonly patternContext?: TaskPatternContext
 	// Initial status for the task's history item (set at creation time to avoid race conditions)
 	private readonly initialStatus?: "active" | "delegated" | "completed" | "aborted" // kilocode_change
 
@@ -501,6 +502,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		initialTodos,
 		workspacePath,
 		delegationDepth,
+		patternContext,
 		initialStatus,
 	}: TaskOptions) {
 		super()
@@ -600,6 +602,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.parentTask = parentTask
 		this.taskNumber = taskNumber
+		this.patternContext = patternContext
 		this.initialStatus = initialStatus
 
 		// Store the task's mode and API config name when it's created.
@@ -1332,6 +1335,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				workspace: this.cwd,
 				mode: this._taskMode || defaultModeSlug, // Use the task's own mode, not the current provider mode.
 				apiConfigName: this._taskApiConfigName, // Use the task's own provider profile, not the current provider profile.
+				patternContext: this.patternContext,
 				initialStatus: this.initialStatus,
 				toolProtocol: this._taskToolProtocol, // Persist the locked tool protocol.
 			})

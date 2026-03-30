@@ -47,6 +47,8 @@
 	},
 	"viewAllHistory": "View all",
 	"shareSession": "Share Session",
+	"favoriteTask": "Favorite task",
+	"unfavoriteTask": "Remove from favorites",
 	"focusedRoot": "Running",
 	"backgroundRoot": "Running",
 	"parent": "Parent",

@@ -34,6 +34,14 @@ vi.mock("../core/task-persistence", () => ({
 	saveApiMessages: vi.fn().mockResolvedValue(undefined),
 	saveTaskMessages: vi.fn().mockResolvedValue(undefined),
 }))
+vi.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: {
+			captureDelegationCompleted: vi.fn(),
+			captureDelegationResumed: vi.fn(),
+		},
+	},
+}))
 
 import { ClineProvider } from "../core/webview/ClineProvider"
 import { SubagentResumeService } from "../core/orchestration/subagents/SubagentResumeService"

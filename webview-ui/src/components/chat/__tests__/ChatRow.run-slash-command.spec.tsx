@@ -60,6 +60,7 @@ const mockOnFollowUpUnmount = vi.fn()
 describe("ChatRow - runSlashCommand tool", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
+		queryClient.clear()
 	})
 
 	it("should display runSlashCommand ask message with command only", () => {
@@ -123,5 +124,44 @@ describe("ChatRow - runSlashCommand tool", () => {
 		expect(getByText("Roo ran slash command:")).toBeInTheDocument()
 		expect(getByText("/deploy")).toBeInTheDocument()
 		expect(getByText("global")).toBeInTheDocument()
+	})
+
+	it("renders new_task explainability summary when structured data is present", () => {
+		const message: any = {
+			type: "ask",
+			ask: "tool",
+			ts: Date.now(),
+			text: JSON.stringify({
+				tool: "newTask",
+				mode: "code",
+				content: "Implement explainability UI",
+				explainability: {
+					mode: { value: "code", source: "recommended", reasonCode: "mode_continue_current" },
+					execution: {
+						value: "background",
+						source: "recommended",
+						reasonCode: "historical_background_win",
+					},
+					profile: {
+						value: "cheap",
+						helperProfile: "Fast helper",
+						reasonCode: "helper_profile_selected",
+					},
+				},
+			}),
+			partial: false,
+		}
+
+		const { getByTestId } = renderChatRowWithProviders(message)
+
+		expect(getByTestId("new-task-explainability-mode")).toHaveTextContent(
+			"Mode: code · recommended · mode_continue_current",
+		)
+		expect(getByTestId("new-task-explainability-execution")).toHaveTextContent(
+			"Execution: background · recommended · historical_background_win",
+		)
+		expect(getByTestId("new-task-explainability-profile")).toHaveTextContent(
+			"Helper: cheap · Fast helper · helper_profile_selected",
+		)
 	})
 })

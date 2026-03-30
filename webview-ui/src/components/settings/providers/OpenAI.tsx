@@ -85,8 +85,10 @@ export const OpenAI = ({ apiConfiguration, setApiConfigurationField, selectedMod
 				return (
 					<div className="flex flex-col gap-1 mt-2" data-testid="openai-service-tier">
 						<div className="flex items-center gap-1">
-							<label className="block font-medium mb-1">Service tier</label>
-							<StandardTooltip content="For faster processing of API requests, try the priority processing service tier. For lower prices with higher latency, try the flex processing tier.">
+							<label className="block font-medium mb-1">
+								{t("settings:providers.openAiServiceTier.label")}
+							</label>
+							<StandardTooltip content={t("settings:providers.openAiServiceTier.description")}>
 								<i className="codicon codicon-info text-vscode-descriptionForeground text-xs" />
 							</StandardTooltip>
 						</div>
@@ -103,10 +105,18 @@ export const OpenAI = ({ apiConfiguration, setApiConfigurationField, selectedMod
 								<SelectValue placeholder={t("settings:common.select")} />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="default">Standard</SelectItem>
-								{allowedTiers.includes("flex") && <SelectItem value="flex">Flex</SelectItem>}
+								<SelectItem value="default">
+									{t("settings:providers.openAiServiceTier.options.default")}
+								</SelectItem>
+								{allowedTiers.includes("flex") && (
+									<SelectItem value="flex">
+										{t("settings:providers.openAiServiceTier.options.flex")}
+									</SelectItem>
+								)}
 								{allowedTiers.includes("priority") && (
-									<SelectItem value="priority">Priority</SelectItem>
+									<SelectItem value="priority">
+										{t("settings:providers.openAiServiceTier.options.priority")}
+									</SelectItem>
 								)}
 							</SelectContent>
 						</Select>

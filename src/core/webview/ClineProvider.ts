@@ -4230,6 +4230,8 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 			},
 			getGlobalStoragePath: () => this.contextProxy.globalStorageUri.fsPath,
 			getState: () => this.getState(),
+			getValue: (key) => this.getValue(key as never),
+			setValue: (key, value) => this.setValue(key as never, value as never),
 			getCustomModes: () => this.customModesManager.getCustomModes(),
 			updateGlobalState: (key, value) => this.updateGlobalState(key as never, value as never),
 			getModeConfigId: (mode) => this.providerSettingsManager.getModeConfigId(mode as Mode),

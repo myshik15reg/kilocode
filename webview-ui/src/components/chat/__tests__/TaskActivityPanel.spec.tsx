@@ -470,6 +470,66 @@ describe("TaskActivityPanel", () => {
 		expect(screen.queryByTestId("orchestration-status-badge-completed")).not.toBeInTheDocument()
 	})
 
+	it("renders structured delegation and outcome explanations without duplicating rows", () => {
+		render(
+			<TaskActivityPanel
+				activity={
+					[
+						{
+							kind: "subagent",
+							id: "sa-delegation",
+							taskId: "child-1",
+							sessionId: "session-1",
+							status: "queued",
+							summary: "Background subagent queued",
+							explainability: {
+								stage: "delegation",
+								reasonCode: "historical_background_win",
+								source: "recommended",
+								mode: "code",
+								execution: "background",
+								profileClass: "cheap",
+								helperProfile: "Fast helper",
+								recommendationReasonCode: "historical_background_win",
+							},
+							timestamp: 10,
+						},
+						{
+							kind: "subagent",
+							id: "sa-outcome",
+							taskId: "child-2",
+							sessionId: "session-2",
+							status: "completed",
+							summary: "Child completed successfully",
+							explainability: {
+								stage: "outcome",
+								reasonCode: "subagent_completed",
+								source: "status",
+								mode: "code",
+								execution: "background",
+								outcomeSummary: "Produced concise implementation summary",
+							},
+							timestamp: 20,
+						},
+					] as any
+				}
+			/>,
+		)
+
+		expect(screen.getAllByTestId("activity-item-explanation-sa-delegation")[0]).toHaveTextContent(
+			"Route: background · code",
+		)
+		expect(screen.getAllByTestId("activity-item-explanation-sa-delegation")[1]).toHaveTextContent(
+			"Helper: cheap · Fast helper",
+		)
+		expect(screen.getAllByTestId("activity-item-explanation-sa-delegation")[2]).toHaveTextContent(
+			"Why: historical_background_win",
+		)
+		expect(screen.getByTestId("activity-item-explanation-sa-outcome")).toHaveTextContent(
+			"Outcome: Produced concise implementation summary",
+		)
+	})
+
 	it("renders blocked relay events with a failed orchestration badge", () => {
 		render(
 			<TaskActivityPanel

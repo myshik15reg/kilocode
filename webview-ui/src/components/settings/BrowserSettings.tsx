@@ -84,7 +84,9 @@ export const BrowserSettings = ({
 		} catch (error) {
 			setTestResult({
 				success: false,
-				text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+				text: t("settings:browser.remote.error", {
+					message: error instanceof Error ? error.message : String(error),
+				}),
 			})
 			setTestingConnection(false)
 		}

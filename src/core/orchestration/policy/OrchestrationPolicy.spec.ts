@@ -67,6 +67,32 @@ describe("OrchestrationPolicy", () => {
 		})
 	})
 
+	it("preserves helper profile metadata in subagent payloads", () => {
+		const decision = policy.decide({
+			taskId: "task-1",
+			rootTaskId: "root-1",
+			userIntent: "Independently research this issue in the background",
+			candidateToolCalls: [
+				{
+					tool: "new_task",
+					arguments: {
+						mode: "code",
+						message: "Research the issue",
+						execution: "background",
+						helperProfile: "Cheap helper",
+					},
+				},
+			],
+			hasBackgroundCapacity: true,
+			hasHelperRouting: true,
+		})
+
+		expect(decision.kind).toBe("subagent")
+		expect(decision.payload).toMatchObject({
+			helperProfile: "Cheap helper",
+		})
+	})
+
 	it("downgrades explicit subagent intent to direct when background capacity is unavailable", () => {
 		const decision = policy.decide({
 			taskId: "task-1",

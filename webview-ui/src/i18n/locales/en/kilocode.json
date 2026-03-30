@@ -338,6 +338,12 @@
 			"idea7": "Create a calming interactive starfield that moves with mouse gestures"
 		}
 	},
+	"notifications": {
+		"tryModel": "Try model",
+		"dismiss": "Dismiss notification",
+		"previous": "Previous notification",
+		"next": "Next notification"
+	},
 	"toolCallStyle": {
 		"title": "Tool Call Style",
 		"description": "Choose how tool calls are formatted in the system prompt. JSON is currently experimental and mostly intended for users interested in contributing to its development.",

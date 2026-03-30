@@ -6,6 +6,7 @@
 		"cancel": "Cancel",
 		"reset": "Reset",
 		"select": "Select",
+		"preview": "Preview",
 		"add": "Add Header",
 		"remove": "Remove"
 	},
@@ -70,6 +71,9 @@
 		"debugMode": {
 			"label": "Enable debug mode",
 			"description": "Enable debug mode to show additional buttons in the task header for viewing API conversation history and UI messages as prettified JSON in temporary files."
+		},
+		"development": {
+			"allocateMemory": "Development: Allocate memory"
 		}
 	},
 	"slashCommands": {
@@ -356,6 +360,7 @@
 		"profileTypeAutocomplete": "Autocomplete",
 		"profileTypeDescription": "Chat profiles are used for conversations. Only one autocomplete profile is allowed.",
 		"autocompleteLabel": "(Autocomplete)",
+		"activeProfileSuffix": "(Active)",
 		"autocomplete": {
 			"onlyOneAllowed": "Only one autocomplete profile is allowed. Profile \"{{existingName}}\" is already configured for autocomplete. Please change its type first or delete it."
 		},
@@ -437,7 +442,8 @@
 			"hint": "Please reopen the settings to see the latest models.",
 			"loading": "Refreshing models list...",
 			"success": "Models list refreshed successfully!",
-			"error": "Failed to refresh models list. Please try again."
+			"error": "Failed to refresh models list. Please try again.",
+			"missingConfig": "Provide the required configuration before refreshing the model list."
 		},
 		"getRequestyApiKey": "Create new Requesty API Key",
 		"getRequestyBaseUrl": "Base URL",
@@ -542,6 +548,15 @@
 		"openAiApiKey": "OpenAI API Key",
 		"apiKey": "API Key",
 		"openAiBaseUrl": "Base URL",
+		"openAiServiceTier": {
+			"label": "Service tier",
+			"description": "For faster processing of API requests, try the priority processing service tier. For lower prices with higher latency, try the flex processing tier.",
+			"options": {
+				"default": "Standard",
+				"flex": "Flex",
+				"priority": "Priority"
+			}
+		},
 		"getOpenAiApiKey": "Get OpenAI API Key",
 		"mistralApiKey": "Mistral API Key",
 		"getMistralApiKey": "Get Mistral / Codestral API Key",
@@ -712,6 +727,11 @@
 			"description": "Controls how detailed the model's responses are. Low verbosity produces concise answers, while high verbosity provides thorough explanations."
 		},
 		"setReasoningLevel": "Enable Reasoning Effort",
+		"activeProfileSuffix": "(Active)",
+		"openAiCodex": {
+			"signInButton": "Sign in to OpenAI Codex",
+			"signOutButton": "Sign Out"
+		},
 		"claudeCode": {
 			"pathLabel": "Claude Code Path",
 			"description": "Optional path to your Claude Code CLI. Defaults to 'claude' if not set.",
@@ -754,6 +774,7 @@
 			"urlPlaceholder": "Custom URL (e.g., http://localhost:9222)",
 			"testButton": "Test Connection",
 			"testingButton": "Testing...",
+			"error": "Error: {{message}}",
 			"instructions": "Enter the DevTools Protocol host address or leave empty to auto-discover Chrome local instances. The Test Connection button will try the custom URL if provided, or auto-discover if the field is empty."
 		}
 	},

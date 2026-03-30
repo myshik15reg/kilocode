@@ -34,9 +34,7 @@ export const OpenAICodex: React.FC<OpenAICodexProps> = ({
 							variant="secondary"
 							size="sm"
 							onClick={() => vscode.postMessage({ type: "openAiCodexSignOut" })}>
-							{t("settings:providers.openAiCodex.signOutButton", {
-								defaultValue: "Sign Out",
-							})}
+							{t("settings:providers.openAiCodex.signOutButton")}
 						</Button>
 					</div>
 				) : (
@@ -44,9 +42,7 @@ export const OpenAICodex: React.FC<OpenAICodexProps> = ({
 						variant="primary"
 						onClick={() => vscode.postMessage({ type: "openAiCodexSignIn" })}
 						className="w-fit">
-						{t("settings:providers.openAiCodex.signInButton", {
-							defaultValue: "Sign in to OpenAI Codex",
-						})}
+						{t("settings:providers.openAiCodex.signInButton")}
 					</Button>
 				)}
 			</div>

@@ -1,4 +1,5 @@
 import type { ClineMessage, HistoryItem } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -30,6 +31,15 @@ vi.mock("../../task-persistence", () => ({
 	readApiMessages: vi.fn().mockResolvedValue([]),
 	saveApiMessages: vi.fn().mockResolvedValue(undefined),
 	saveTaskMessages: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: {
+			captureDelegationCompleted: vi.fn(),
+			captureDelegationResumed: vi.fn(),
+		},
+	},
 }))
 
 import { readApiMessages, saveApiMessages, saveTaskMessages } from "../../task-persistence"
@@ -189,7 +199,9 @@ describe("SubagentResumeService", () => {
 		)
 		expect(parentInstance.overwriteApiConversationHistory).toHaveBeenCalled()
 		expect(parentInstance.resumeAfterDelegation).toHaveBeenCalledTimes(1)
+		expect(TelemetryService.instance.captureDelegationCompleted).toHaveBeenCalledWith("parent-1", "child-1")
 		expect(runtime.emitTaskDelegationCompleted).toHaveBeenCalledWith("parent-1", "child-1", "Done")
+		expect(TelemetryService.instance.captureDelegationResumed).toHaveBeenCalledWith("parent-1", "child-1")
 		expect(runtime.emitTaskDelegationResumed).toHaveBeenCalledWith("parent-1", "child-1")
 	})
 
@@ -236,6 +248,8 @@ describe("SubagentResumeService", () => {
 		expect(runtime.restoreBackgroundStack).toHaveBeenCalledWith("parent-1")
 		expect(runtime.postStateToWebview).toHaveBeenCalledTimes(1)
 		expect(runtime.createTaskWithHistoryItem).not.toHaveBeenCalled()
+		expect(TelemetryService.instance.captureDelegationCompleted).toHaveBeenCalledWith("parent-1", "child-1")
+		expect(TelemetryService.instance.captureDelegationResumed).toHaveBeenCalledWith("parent-1", "child-1")
 		expect(runtime.emitTaskDelegationResumed).toHaveBeenCalledWith("parent-1", "child-1")
 	})
 

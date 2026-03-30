@@ -10,6 +10,15 @@ import { parseMarkdownChecklist } from "./UpdateTodoListTool"
 import { Package } from "../../shared/package"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import {
+	adaptiveRoutingAdvisor,
+	buildAdaptiveRoutingProfilePalette,
+} from "../orchestration/routing/AdaptiveRoutingAdvisor"
+import {
+	OrchestrationPatternMemoryService,
+	sanitizeTaskArchetype,
+} from "../orchestration/pattern-memory/OrchestrationPatternMemoryService"
+import { ProviderPatternMemoryRuntime } from "../orchestration/pattern-memory/ProviderPatternMemoryRuntime"
 
 interface NewTaskParams {
 	mode: string
@@ -67,6 +76,8 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			}
 
 			const state = await provider.getState()
+			const normalizedExplicitExecution =
+				execution === "foreground" || execution === "background" ? execution : undefined
 
 			// Use Package.name (dynamic at build time) as the VSCode configuration namespace.
 			// Supports multiple extension variants (e.g., stable/nightly) without hardcoded strings.
@@ -112,13 +123,104 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				return
 			}
 
+			const patternMemoryService = new OrchestrationPatternMemoryService(
+				new ProviderPatternMemoryRuntime(provider as any),
+			)
+			const patternTaskArchetype = sanitizeTaskArchetype({
+				mode,
+				message: unescapedMessage,
+				branchFromTaskId,
+				branchStrategy,
+				todos,
+			})
+			const patternRecommendation = patternMemoryService.getRecommendation({
+				taskArchetype: patternTaskArchetype,
+				mode,
+			})
+			const recommendedExecution =
+				!normalizedExplicitExecution && patternRecommendation?.suggestion.executionType === "background"
+					? "background"
+					: undefined
+			const routingRecommendation = adaptiveRoutingAdvisor.recommend({
+				explicitMode: mode,
+				explicitExecution: normalizedExplicitExecution ?? recommendedExecution,
+				message: unescapedMessage,
+				todos,
+				branchFromTaskId,
+				currentMode: state?.mode,
+				currentProfileName: state?.currentApiConfigName,
+				availableBackgroundCapacity: Boolean(
+					state?.parallelAgentsEnabled && (state?.parallelAgentCount ?? 1) > 0,
+				),
+				profilePalette: buildAdaptiveRoutingProfilePalette({
+					currentProfileName: state?.currentApiConfigName,
+					listApiConfigMeta: state?.listApiConfigMeta,
+					cheapProfileId: state?.condensingApiConfigId,
+					balancedProfileId: state?.enhancementApiConfigId ?? state?.terminalCommandApiConfigId,
+				}),
+			})
+			const effectiveExecution =
+				normalizedExplicitExecution ??
+				(routingRecommendation.execution.source === "recommended" &&
+				routingRecommendation.execution.value === "background"
+					? "background"
+					: undefined)
+			const recommendedProfileClass =
+				patternRecommendation?.suggestion.executionType === "background"
+					? patternRecommendation.suggestion.profileClass
+					: undefined
+			const effectiveHelperProfile =
+				effectiveExecution === "background" &&
+				routingRecommendation.profile.helperProfile &&
+				routingRecommendation.profile.helperProfile !== state?.currentApiConfigName
+					? routingRecommendation.profile.helperProfile
+					: undefined
+
 			const toolMessage = JSON.stringify({
 				tool: "newTask",
 				mode: targetMode.name,
 				content: message,
 				todos: todoItems,
-				execution,
+				execution: effectiveExecution,
 				isolation,
+				helperProfile: effectiveHelperProfile,
+				routingRecommendation,
+				patternRecommendation,
+				explainability: {
+					mode: {
+						value: routingRecommendation.mode.value,
+						source: routingRecommendation.mode.source,
+						reasonCode:
+							routingRecommendation.mode.source === "explicit"
+								? "mode_explicit"
+								: routingRecommendation.mode.source === "recommended"
+									? "mode_continue_current"
+									: "mode_default_code",
+					},
+					execution: {
+						value: effectiveExecution ?? "foreground",
+						source: normalizedExplicitExecution ? "explicit" : routingRecommendation.execution.source,
+						reasonCode:
+							normalizedExplicitExecution === "background"
+								? "execution_explicit_background"
+								: normalizedExplicitExecution === "foreground"
+									? "execution_explicit_foreground"
+									: effectiveExecution === "background"
+										? (patternRecommendation?.reasonCode ?? "execution_background_recommended")
+										: "execution_foreground_default",
+					},
+					profile: {
+						value: recommendedProfileClass ?? routingRecommendation.profile.value,
+						source: effectiveHelperProfile ? routingRecommendation.profile.source : "default",
+						helperProfile: effectiveHelperProfile,
+						reasonCode:
+							effectiveHelperProfile && patternRecommendation?.reasonCode
+								? patternRecommendation.reasonCode
+								: effectiveHelperProfile
+									? "helper_profile_selected"
+									: "helper_profile_runtime_default",
+					},
+				},
 				branchFromTaskId,
 				branchStrategy,
 			})
@@ -141,8 +243,12 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				message: unescapedMessage,
 				initialTodos: todoItems,
 				mode,
-				execution,
+				execution: effectiveExecution,
 				isolation,
+				helperProfile: effectiveHelperProfile,
+				profileClass: recommendedProfileClass ?? routingRecommendation.profile.value,
+				routingSource: normalizedExplicitExecution ? "explicit" : routingRecommendation.execution.source,
+				recommendationReasonCode: patternRecommendation?.reasonCode,
 				branchFromTaskId,
 				branchStrategy,
 			})

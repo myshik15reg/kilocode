@@ -1,7 +1,7 @@
 ﻿import NodeCache from "node-cache"
 import getFolderSize from "get-folder-size"
 
-import type { ClineMessage, HistoryItem, ToolProtocol } from "@roo-code/types"
+import type { ClineMessage, HistoryItem, TaskPatternContext, ToolProtocol } from "@roo-code/types"
 
 import { combineApiRequests } from "../../shared/combineApiRequests"
 import { combineCommandSequences } from "../../shared/combineCommandSequences"
@@ -24,6 +24,7 @@ export type TaskMetadataOptions = {
 	mode?: string
 	/** Provider profile name for the task (sticky profile feature) */
 	apiConfigName?: string
+	patternContext?: TaskPatternContext
 	/** Initial status for the task (e.g., "active" for child tasks) */
 	initialStatus?: "active" | "delegated" | "completed" | "aborted"
 	/**
@@ -44,6 +45,7 @@ export async function taskMetadata({
 	workspace,
 	mode,
 	apiConfigName,
+	patternContext,
 	initialStatus,
 	toolProtocol,
 }: TaskMetadataOptions) {
@@ -123,6 +125,7 @@ export async function taskMetadata({
 		mode,
 		...(toolProtocol && { toolProtocol }),
 		...(typeof apiConfigName === "string" && apiConfigName.length > 0 ? { apiConfigName } : {}),
+		...(patternContext ? { patternContext } : {}),
 		...(initialStatus && { status: initialStatus, statusUpdatedAt: Date.now() }),
 	}
 

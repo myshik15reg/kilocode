@@ -460,6 +460,18 @@ describe("SubagentCoordinator", () => {
 		expect(recordTaskActivity).toHaveBeenCalledTimes(2)
 		expect(recordTaskActivity.mock.calls.map(([taskId]) => taskId)).toEqual(["parent-1", "parent-1"])
 		expect(persistedActivity.map((item) => item.kind)).toEqual(["subagent", "subagent"])
+		expect((persistedActivity[0] as Extract<ActivityItem, { kind: "subagent" }>).explainability).toMatchObject({
+			stage: "delegation",
+			reasonCode: "background_subagent_selected",
+		})
+		expect((persistedActivity[1] as Extract<ActivityItem, { kind: "subagent" }>).explainability).toMatchObject({
+			stage: "status",
+			reasonCode: "subagent_running",
+			source: "status",
+			mode: "code",
+			execution: "background",
+			outcomeSummary: "Background subagent running",
+		})
 
 		orchestrationEventStore.clear("parent-1")
 		const projection = getActivityProjection(persistedActivity, orchestrationEventStore.get("parent-1"))
@@ -622,9 +634,27 @@ describe("SubagentCoordinator", () => {
 			timestamp: 201,
 		})
 
-		expect(
-			recorded.filter((activity) => activity.kind === "subagent" && activity.status === "completed"),
-		).toHaveLength(1)
+		const completedActivities = recorded.filter(
+			(activity) => activity.kind === "subagent" && activity.status === "completed",
+		) as Array<Extract<ActivityItem, { kind: "subagent" }>>
+		expect(completedActivities).toHaveLength(1)
+		expect(completedActivities[0]).toMatchObject({
+			summary: "Background subagent completed",
+			explainability: {
+				stage: "outcome",
+				reasonCode: "subagent_completed",
+				source: "status",
+				mode: "code",
+				execution: "background",
+				outcomeSummary: "Background subagent completed",
+			},
+		})
 		expect(reopenParentFromDelegation).toHaveBeenCalledTimes(1)
+		expect(reopenParentFromDelegation).toHaveBeenCalledWith({
+			parentTaskId: "parent-1",
+			childTaskId: "child-1",
+			completionResultSummary: "Done",
+			preserveParentFocus: true,
+		})
 	})
 })

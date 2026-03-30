@@ -899,6 +899,7 @@ describe("webviewMessageHandler - requestClaudeCodeRateLimits", () => {
 		mockClaudeCodeGetAccessToken.mockResolvedValue("token")
 		mockFetchClaudeCodeRateLimitInfo.mockResolvedValue({
 			fiveHour: { status: "unknown", utilization: 0.1, resetTime: 1700000000 },
+			fetchedAt: 1700000000,
 		})
 
 		await webviewMessageHandler(mockClineProvider, { type: "requestClaudeCodeRateLimits" } as any)
@@ -908,6 +909,7 @@ describe("webviewMessageHandler - requestClaudeCodeRateLimits", () => {
 			type: "claudeCodeRateLimits",
 			values: {
 				fiveHour: { status: "unknown", utilization: 0.1, resetTime: 1700000000 },
+				fetchedAt: 1700000000,
 			},
 		})
 	})

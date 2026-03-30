@@ -89,6 +89,51 @@ export class TelemetryService {
 		this.captureEvent(TelemetryEventName.TASK_COMPLETED, { taskId })
 	}
 
+	public captureTaskOutcomeCompleted(
+		taskId: string,
+		properties: {
+			toolCount: number
+			toolFailureCount: number
+			inputTokens: number
+			outputTokens: number
+			cacheWriteTokens?: number
+			cacheReadTokens?: number
+			totalCost?: number
+		},
+	): void {
+		this.captureEvent(TelemetryEventName.TASK_OUTCOME_COMPLETED, { taskId, ...properties })
+	}
+
+	public captureTaskOutcomeDelegated(
+		taskId: string,
+		properties: {
+			childTaskId: string
+			execution: "foreground" | "background"
+			delegationDepth?: number
+			isBackground: boolean
+		},
+	): void {
+		this.captureEvent(TelemetryEventName.TASK_OUTCOME_DELEGATED, { taskId, ...properties })
+	}
+
+	public captureDelegationCompleted(taskId: string, childTaskId: string): void {
+		this.captureEvent(TelemetryEventName.DELEGATION_COMPLETED, { taskId, childTaskId })
+	}
+
+	public captureDelegationResumed(taskId: string, childTaskId: string): void {
+		this.captureEvent(TelemetryEventName.DELEGATION_RESUMED, { taskId, childTaskId })
+	}
+
+	public captureTaskOutcomeError(
+		taskId: string,
+		properties: {
+			reason: string
+			source: string
+		},
+	): void {
+		this.captureEvent(TelemetryEventName.TASK_OUTCOME_ERROR, { taskId, ...properties })
+	}
+
 	public captureConversationMessage(taskId: string, source: "user" | "assistant"): void {
 		this.captureEvent(TelemetryEventName.TASK_CONVERSATION_MESSAGE, { taskId, source })
 	}

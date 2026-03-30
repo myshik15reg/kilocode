@@ -3,12 +3,18 @@ import type { ActivityItem, HistoryItem } from "@roo-code/types"
 
 export type OrchestrationStatus = "queued" | "running" | "paused" | "recoverable" | "completed" | "cancelled" | "failed"
 
+export interface OrchestrationExplainabilityEntry {
+	title: string
+	detail: string
+}
+
 export interface OrchestrationChildTask {
 	id: string
 	label: string
 	status: OrchestrationStatus
 	isBackground: boolean
 	sessionId?: string
+	explanation?: OrchestrationExplainabilityEntry[]
 }
 
 export interface OrchestrationStatusSummary {
@@ -194,6 +200,59 @@ function isStatusBearingActivityItem(item: ActivityItem): boolean {
 
 function getLatestStatusActivityItems(activity: ActivityItem[] | undefined): ActivityItem[] {
 	return getLatestActivityItems(activity, isStatusBearingActivityItem)
+}
+
+export function getExplainabilityEntries(item: ActivityItem | undefined): OrchestrationExplainabilityEntry[] {
+	const explainability = item?.kind === "subagent" ? item.explainability : undefined
+	if (!explainability) {
+		return []
+	}
+
+	const entries: OrchestrationExplainabilityEntry[] = []
+
+	if (explainability.stage === "delegation") {
+		const routeParts = [
+			explainability.execution === "background" ? "background" : "foreground",
+			explainability.mode,
+		]
+			.filter(Boolean)
+			.join(" · ")
+		entries.push({
+			title: "Route",
+			detail: routeParts || explainability.reasonCode,
+		})
+		if (explainability.profileClass || explainability.helperProfile) {
+			entries.push({
+				title: "Helper",
+				detail: [explainability.profileClass, explainability.helperProfile].filter(Boolean).join(" · "),
+			})
+		}
+		entries.push({
+			title: "Why",
+			detail: explainability.recommendationReasonCode ?? explainability.reasonCode,
+		})
+		return entries
+	}
+
+	if (explainability.stage === "status") {
+		entries.push({
+			title: "Status",
+			detail: explainability.outcomeSummary ?? explainability.reasonCode,
+		})
+		return entries
+	}
+
+	entries.push({
+		title: "Outcome",
+		detail: explainability.outcomeSummary ?? explainability.reasonCode,
+	})
+	if (explainability.recommendationReasonCode) {
+		entries.push({
+			title: "Reason",
+			detail: explainability.recommendationReasonCode,
+		})
+	}
+	return entries
 }
 
 export function normalizeActivityStatus(item: ActivityItem): OrchestrationStatus {
@@ -399,6 +458,7 @@ export function getBackgroundChildTasks(params: {
 				status: getHistoryItemOrchestrationStatus(child, activityByTaskId),
 				isBackground: isBackgroundOrchestrationChild(child, activityByTaskId) || Boolean(subagentActivity),
 				sessionId: subagentActivity?.kind === "subagent" ? subagentActivity.sessionId : undefined,
+				explanation: getExplainabilityEntries(subagentActivity),
 			}
 		})
 		.filter((child) => child.isBackground)

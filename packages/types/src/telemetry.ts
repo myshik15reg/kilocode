@@ -2,6 +2,7 @@ import { z } from "zod"
 
 import { providerNames } from "./provider-settings.js"
 import { clineMessageSchema } from "./message.js"
+import { orchestrationPatternReasonCodeSchema, sanitizedPatternLabelSchema } from "./orchestration-pattern-memory.js"
 import { toolProtocolSchema } from "./tool.js" // kilocode_change
 
 /**
@@ -58,6 +59,11 @@ export enum TelemetryEventName {
 	AGENT_MANAGER_SESSION_STOPPED = "Agent Manager Session Stopped",
 	AGENT_MANAGER_SESSION_ERROR = "Agent Manager Session Error",
 	AGENT_MANAGER_LOGIN_ISSUE = "Agent Manager Login Issue",
+	TASK_OUTCOME_COMPLETED = "Task Outcome Completed",
+	TASK_OUTCOME_DELEGATED = "Task Outcome Delegated",
+	TASK_OUTCOME_ERROR = "Task Outcome Error",
+	DELEGATION_COMPLETED = "Delegation Completed",
+	DELEGATION_RESUMED = "Delegation Resumed",
 	// kilocode_change end
 
 	TASK_CREATED = "Task Created",
@@ -181,6 +187,24 @@ export const taskPropertiesSchema = z.object({
 	currentTaskSize: z.number().optional(),
 	taskHistorySize: z.number().optional(),
 	toolStyle: toolProtocolSchema.optional(),
+	childTaskId: z.string().optional(),
+	execution: z.enum(["foreground", "background"]).optional(),
+	delegationDepth: z.number().optional(),
+	isBackground: z.boolean().optional(),
+	toolCount: z.number().optional(),
+	toolFailureCount: z.number().optional(),
+	inputTokens: z.number().optional(),
+	outputTokens: z.number().optional(),
+	cacheWriteTokens: z.number().optional(),
+	cacheReadTokens: z.number().optional(),
+	totalCost: z.number().optional(),
+	reason: z.string().optional(),
+	source: z.string().optional(),
+	patternTaskArchetype: sanitizedPatternLabelSchema.optional(),
+	patternMode: sanitizedPatternLabelSchema.optional(),
+	patternExecutionType: z.enum(["foreground", "background"]).optional(),
+	patternProfileClass: z.enum(["strong", "balanced", "cheap", "none"]).optional(),
+	patternReasonCode: orchestrationPatternReasonCodeSchema.optional(),
 	// kilocode_change end
 })
 
@@ -242,6 +266,11 @@ export const rooCodeTelemetryEventSchema = z.discriminatedUnion("type", [
 			TelemetryEventName.AGENT_MANAGER_SESSION_STOPPED, // kilocode_change
 			TelemetryEventName.AGENT_MANAGER_SESSION_ERROR, // kilocode_change
 			TelemetryEventName.AGENT_MANAGER_LOGIN_ISSUE, // kilocode_change
+			TelemetryEventName.TASK_OUTCOME_COMPLETED, // kilocode_change
+			TelemetryEventName.TASK_OUTCOME_DELEGATED, // kilocode_change
+			TelemetryEventName.TASK_OUTCOME_ERROR, // kilocode_change
+			TelemetryEventName.DELEGATION_COMPLETED, // kilocode_change
+			TelemetryEventName.DELEGATION_RESUMED, // kilocode_change
 			// kilocode_change end
 
 			TelemetryEventName.TASK_CREATED,

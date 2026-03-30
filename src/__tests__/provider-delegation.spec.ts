@@ -85,19 +85,17 @@ describe("ClineProvider delegation seams", () => {
 			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
 			handleModeSwitch: vi.fn().mockResolvedValue(undefined),
 			createTask: vi.fn().mockResolvedValue({ taskId: "child-task" }),
-			getTaskWithId: vi
-				.fn()
-				.mockResolvedValue({
-					historyItem: {
-						id: "task-1",
-						number: 1,
-						task: "Task",
-						ts: 1,
-						tokensIn: 0,
-						tokensOut: 0,
-						totalCost: 0,
-					},
-				}),
+			getTaskWithId: vi.fn().mockResolvedValue({
+				historyItem: {
+					id: "task-1",
+					number: 1,
+					task: "Task",
+					ts: 1,
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+				},
+			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 			publishActivity: vi.fn().mockResolvedValue(undefined),
 			postStateToWebview: vi.fn().mockResolvedValue(undefined),
@@ -190,6 +188,7 @@ describe("ClineProvider delegation seams", () => {
 			mode: "code",
 			execution: "background",
 			isolation: "shared",
+			helperProfile: "Cheap helper",
 		}
 
 		const launched = await (ClineProvider.prototype as any).delegateParentAndOpenChild.call(provider, params)

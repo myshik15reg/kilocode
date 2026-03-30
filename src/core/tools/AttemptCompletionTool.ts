@@ -121,8 +121,19 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			// and properly updates the snapshot to prevent redundant emissions
 			task.emitFinalTokenUsageUpdate()
 
+			const tokenUsage = task.getTokenUsage()
+			const toolEntries = Object.values(task.toolUsage ?? {})
 			TelemetryService.instance.captureTaskCompleted(task.taskId)
-			task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
+			TelemetryService.instance.captureTaskOutcomeCompleted(task.taskId, {
+				toolCount: toolEntries.reduce((sum, usage) => sum + (usage.attempts ?? 0), 0),
+				toolFailureCount: toolEntries.reduce((sum, usage) => sum + (usage.failures ?? 0), 0),
+				inputTokens: tokenUsage.totalTokensIn,
+				outputTokens: tokenUsage.totalTokensOut,
+				cacheWriteTokens: tokenUsage.totalCacheWrites,
+				cacheReadTokens: tokenUsage.totalCacheReads,
+				totalCost: tokenUsage.totalCost,
+			})
+			task.emit(RooCodeEventName.TaskCompleted, task.taskId, tokenUsage, task.toolUsage)
 			const provider = task.providerRef.deref() as any
 			if (provider?.extractTechDebtForTask) {
 				void provider
@@ -178,6 +189,10 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 							`[AttemptCompletionTool] Failed to get history for task ${task.taskId}: ${(err as Error)?.message ?? String(err)}. ` +
 								`Skipping delegation.`,
 						)
+						TelemetryService.instance.captureTaskOutcomeError(task.taskId, {
+							reason: "delegation_history_lookup_failed",
+							source: "attempt_completion",
+						})
 						// Fall through to normal completion ask flow
 					}
 				}
@@ -255,8 +270,19 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				// Force final token usage update before emitting TaskCompleted for consistency
 				task.emitFinalTokenUsageUpdate()
 
+				const tokenUsage = task.getTokenUsage()
+				const toolEntries = Object.values(task.toolUsage ?? {})
 				TelemetryService.instance.captureTaskCompleted(task.taskId)
-				task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
+				TelemetryService.instance.captureTaskOutcomeCompleted(task.taskId, {
+					toolCount: toolEntries.reduce((sum, usage) => sum + (usage.attempts ?? 0), 0),
+					toolFailureCount: toolEntries.reduce((sum, usage) => sum + (usage.failures ?? 0), 0),
+					inputTokens: tokenUsage.totalTokensIn,
+					outputTokens: tokenUsage.totalTokensOut,
+					cacheWriteTokens: tokenUsage.totalCacheWrites,
+					cacheReadTokens: tokenUsage.totalCacheReads,
+					totalCost: tokenUsage.totalCost,
+				})
+				task.emit(RooCodeEventName.TaskCompleted, task.taskId, tokenUsage, task.toolUsage)
 
 				await task
 					.ask("command", this.removeClosingTag("command", command, block.partial), block.partial)

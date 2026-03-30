@@ -1,4 +1,5 @@
 import type { ClineMessage, HistoryItem } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
 import type { Task } from "../../task/Task"
 import { readApiMessages, saveApiMessages, saveTaskMessages } from "../../task-persistence"
@@ -69,6 +70,7 @@ export class SubagentResumeService {
 			completionResultSummary,
 		})
 
+		TelemetryService.instance.captureDelegationCompleted(parentTaskId, childTaskId)
 		try {
 			this.runtime.emitTaskDelegationCompleted(parentTaskId, childTaskId, completionResultSummary)
 		} catch {
@@ -100,6 +102,7 @@ export class SubagentResumeService {
 			await parentInstance.resumeAfterDelegation()
 		}
 
+		TelemetryService.instance.captureDelegationResumed(parentTaskId, childTaskId)
 		try {
 			this.runtime.emitTaskDelegationResumed(parentTaskId, childTaskId)
 		} catch {
@@ -275,6 +278,7 @@ export class SubagentResumeService {
 		}
 
 		await this.runtime.postStateToWebview()
+		TelemetryService.instance.captureDelegationResumed(params.parentTaskId, params.childTaskId)
 		try {
 			this.runtime.emitTaskDelegationResumed(params.parentTaskId, params.childTaskId)
 		} catch {

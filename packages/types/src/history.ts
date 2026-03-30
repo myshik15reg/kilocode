@@ -7,6 +7,7 @@ import {
 	taskLifecycleStateSchema,
 	techDebtItemSchema,
 } from "./orchestration.js"
+import { taskPatternContextSchema } from "./orchestration-pattern-memory.js"
 import { taskHistoryStatusSchema, taskStopReasonSchema } from "./task-control.js"
 
 /**
@@ -63,6 +64,7 @@ export const historyItemSchema = z.object({
 	branchFromMessageTs: z.number().int().nonnegative().optional(),
 	branchSummary: z.string().optional(),
 	branchStrategy: branchStrategySchema.optional(),
+	patternContext: taskPatternContextSchema.optional(),
 	activity: z.array(activityItemSchema).optional(),
 	techDebtItems: z.array(techDebtItemSchema).optional(),
 	// kilocode_change start

@@ -11,6 +11,7 @@ import {
 	getActivityGroups,
 	getBackgroundChildTasks,
 	getChildTasksWithoutDetailedActivity,
+	getExplainabilityEntries,
 	getTaskOrchestrationSummary,
 	normalizeActivityStatus,
 	orchestrationGroupDefaultLabels,
@@ -74,7 +75,22 @@ const TaskActivityPanel = ({
 								onClick={() => vscode.postMessage({ type: "showTaskWithId", text: child.id })}
 								className="flex items-center justify-between gap-2 rounded bg-vscode-editor-background px-2 py-1 text-left hover:bg-vscode-list-hoverBackground"
 								data-testid={`child-task-link-${child.id}`}>
-								<span className="min-w-0 truncate text-xs text-vscode-foreground">{child.label}</span>
+								<div className="min-w-0">
+									<span className="min-w-0 truncate text-xs text-vscode-foreground">
+										{child.label}
+									</span>
+									{(child.explanation?.length ?? 0) > 0 && (
+										<div className="mt-1 flex flex-wrap gap-2 text-[10px] text-vscode-descriptionForeground">
+											{child.explanation?.map((entry) => (
+												<span
+													key={`${child.id}-${entry.title}`}
+													data-testid={`child-task-explanation-${child.id}`}>
+													{entry.title}: {entry.detail}
+												</span>
+											))}
+										</div>
+									)}
+								</div>
 								<OrchestrationStatusBadge
 									status={child.status}
 									label={t(orchestrationStatusLabelKeys[child.status], {
@@ -104,6 +120,7 @@ const TaskActivityPanel = ({
 								item.summary?.trim() ||
 								t("chat:orchestration.itemFallback", { defaultValue: "Activity update" })
 							const showStatusBadge = item.kind !== "relay" || item.status === "blocked"
+							const explainabilityEntries = getExplainabilityEntries(item)
 							return (
 								<div
 									key={item.id}
@@ -111,6 +128,17 @@ const TaskActivityPanel = ({
 									data-testid={`activity-item-${item.id}`}>
 									<div className="min-w-0">
 										<div className="truncate text-xs text-vscode-foreground">{itemSummary}</div>
+										{explainabilityEntries.length > 0 && (
+											<div className="mt-1 flex flex-wrap gap-2 text-[10px] text-vscode-descriptionForeground">
+												{explainabilityEntries.map((entry) => (
+													<span
+														key={`${item.id}-${entry.title}`}
+														data-testid={`activity-item-explanation-${item.id}`}>
+														{entry.title}: {entry.detail}
+													</span>
+												))}
+											</div>
+										)}
 										<div className="text-[10px] text-vscode-descriptionForeground">
 											{item.timestamp}
 										</div>

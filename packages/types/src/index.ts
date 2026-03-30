@@ -23,6 +23,7 @@ export * from "./message.js"
 export * from "./mode.js"
 export * from "./model.js"
 export * from "./orchestration.js"
+export * from "./orchestration-pattern-memory.js"
 export * from "./profile-type.js" // kilocode_change
 export * from "./provider-settings.js"
 export * from "./task.js"

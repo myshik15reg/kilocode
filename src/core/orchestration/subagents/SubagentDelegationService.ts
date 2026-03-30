@@ -5,7 +5,11 @@ import {
 	type SubagentLaunchRequest,
 	type TodoItem,
 } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
+import type { PatternMemoryProviderLike } from "../pattern-memory/PatternMemoryTypes"
+import { recordDelegationPatternOutcome } from "../pattern-memory/PatternMemoryRecorder"
+import { sanitizeTaskArchetype } from "../pattern-memory/OrchestrationPatternMemoryService"
 import type { Task } from "../../task/Task"
 
 // kilocode_change - new file
@@ -18,6 +22,10 @@ export interface DelegateParentAndOpenChildParams {
 	mode: string
 	execution?: "auto" | "foreground" | "background"
 	isolation?: "auto" | "shared" | "worktree"
+	helperProfile?: string
+	profileClass?: "strong" | "balanced" | "cheap" | "none"
+	routingSource?: "explicit" | "recommended" | "default"
+	recommendationReasonCode?: string
 	branchFromTaskId?: string
 	branchStrategy?: "full" | "summary"
 }
@@ -28,6 +36,10 @@ export interface LaunchBackgroundSubagentParams {
 	initialTodos: TodoItem[]
 	mode: string
 	isolation?: "auto" | "shared" | "worktree"
+	helperProfile?: string
+	profileClass?: "strong" | "balanced" | "cheap" | "none"
+	routingSource?: "explicit" | "recommended" | "default"
+	recommendationReasonCode?: string
 }
 
 type TaskActivity = NonNullable<HistoryItem["activity"]>[number]
@@ -41,7 +53,7 @@ export type SubagentCoordinatorRuntime = {
 	launch(request: SubagentLaunchRequest): Promise<{ mode: "background" | "foreground"; childTaskId: string }>
 }
 
-export interface SubagentDelegationRuntime {
+export interface SubagentDelegationRuntime extends PatternMemoryProviderLike {
 	getCurrentTask(): Task | undefined
 	getCurrentStack(): Task[]
 	setCurrentStack(stack: Task[]): void
@@ -73,6 +85,10 @@ export class SubagentDelegationService {
 				initialTodos,
 				mode,
 				isolation,
+				helperProfile: params.helperProfile,
+				profileClass: params.profileClass ?? (params.helperProfile ? "cheap" : "none"),
+				routingSource: params.routingSource,
+				recommendationReasonCode: params.recommendationReasonCode,
 			})
 			if (launched) {
 				return launched
@@ -119,6 +135,23 @@ export class SubagentDelegationService {
 			detachFromParentRoot: true,
 			execution,
 			isolation,
+			patternContext: {
+				taskArchetype: sanitizeTaskArchetype({
+					mode,
+					message,
+					branchFromTaskId: params.branchFromTaskId,
+					branchStrategy: params.branchStrategy,
+					todos: initialTodos.map((todo) => todo.content).join("\n"),
+				}),
+				mode,
+				executionType: execution === "background" ? "background" : "foreground",
+				profileClass:
+					params.profileClass ?? (execution === "background" && params.helperProfile ? "cheap" : "none"),
+				...(params.branchStrategy ? { branchStrategy: params.branchStrategy } : {}),
+				...(params.recommendationReasonCode
+					? { recommendationReasonCode: params.recommendationReasonCode }
+					: {}),
+			},
 			initialStatus: "active",
 		})
 
@@ -143,6 +176,32 @@ export class SubagentDelegationService {
 			parentDelegationDepth: parent.delegationDepth,
 			child,
 			execution,
+			mode,
+			helperProfile: params.helperProfile,
+			profileClass: params.profileClass,
+			routingSource: params.routingSource,
+			recommendationReasonCode: params.recommendationReasonCode,
+		})
+
+		TelemetryService.instance.captureTaskOutcomeDelegated(parentTaskId, {
+			childTaskId: child.taskId,
+			execution: execution === "background" ? "background" : "foreground",
+			delegationDepth: nextDelegationDepth,
+			isBackground: execution === "background",
+		})
+		await recordDelegationPatternOutcome({
+			provider: this.runtime,
+			taskId: parentTaskId,
+			message,
+			mode,
+			executionType: execution === "background" ? "background" : "foreground",
+			profileClass:
+				params.profileClass ?? (execution === "background" && params.helperProfile ? "cheap" : "none"),
+			branchFromTaskId: params.branchFromTaskId,
+			branchStrategy: params.branchStrategy,
+			todos: initialTodos.map((todo) => todo.content).join("\n"),
+			outcome: "delegated",
+			reasonCode: params.recommendationReasonCode,
 		})
 
 		try {
@@ -170,6 +229,10 @@ export class SubagentDelegationService {
 			initialTodos: params.initialTodos,
 			mode: params.mode,
 			isolation: params.isolation,
+			helperProfile: params.helperProfile,
+			profileClass: params.profileClass,
+			routingSource: params.routingSource,
+			recommendationReasonCode: params.recommendationReasonCode,
 		})
 		if (!coordinator.hasCapacity(preflightRequest)) {
 			return undefined
@@ -181,6 +244,19 @@ export class SubagentDelegationService {
 			detachFromParentRoot: true,
 			execution: "background",
 			isolation: params.isolation,
+			patternContext: {
+				taskArchetype: sanitizeTaskArchetype({
+					mode: params.mode,
+					message: params.message,
+					todos: params.initialTodos.map((todo) => todo.content).join("\n"),
+				}),
+				mode: params.mode,
+				executionType: "background",
+				profileClass: params.profileClass ?? (params.helperProfile ? "cheap" : "none"),
+				...(params.recommendationReasonCode
+					? { recommendationReasonCode: params.recommendationReasonCode }
+					: {}),
+			},
 			initialStatus: "active",
 		})
 
@@ -201,6 +277,10 @@ export class SubagentDelegationService {
 				initialTodos: params.initialTodos,
 				mode: params.mode,
 				isolation: params.isolation,
+				helperProfile: params.helperProfile,
+				profileClass: params.profileClass,
+				routingSource: params.routingSource,
+				recommendationReasonCode: params.recommendationReasonCode,
 			}),
 		)
 		if (outcome.mode === "foreground") {
@@ -211,6 +291,24 @@ export class SubagentDelegationService {
 			parentTaskId: params.parentTaskId,
 			parentDelegationDepth: parent.delegationDepth,
 			childTaskId: child.taskId,
+		})
+
+		TelemetryService.instance.captureTaskOutcomeDelegated(params.parentTaskId, {
+			childTaskId: child.taskId,
+			execution: "background",
+			delegationDepth: nextDelegationDepth,
+			isBackground: true,
+		})
+		await recordDelegationPatternOutcome({
+			provider: this.runtime,
+			taskId: params.parentTaskId,
+			message: params.message,
+			mode: params.mode,
+			executionType: "background",
+			profileClass: params.profileClass ?? (params.helperProfile ? "cheap" : "none"),
+			todos: params.initialTodos.map((todo) => todo.content).join("\n"),
+			outcome: "delegated",
+			reasonCode: params.recommendationReasonCode,
 		})
 
 		return child
@@ -253,6 +351,10 @@ export class SubagentDelegationService {
 		initialTodos: TodoItem[]
 		mode: string
 		isolation?: "auto" | "shared" | "worktree"
+		helperProfile?: string
+		profileClass?: "strong" | "balanced" | "cheap" | "none"
+		routingSource?: "explicit" | "recommended" | "default"
+		recommendationReasonCode?: string
 	}): SubagentLaunchRequest {
 		return {
 			parentTaskId: params.parentTaskId,
@@ -266,6 +368,15 @@ export class SubagentDelegationService {
 			execution: "background",
 			isolation: params.isolation ?? "auto",
 			relayPolicy: "parent_only",
+			...(params.helperProfile ? { helperProfile: params.helperProfile } : {}),
+			...(params.profileClass ? { profileClass: params.profileClass } : {}),
+			...(params.routingSource ? { routingSource: params.routingSource } : {}),
+			...(params.recommendationReasonCode
+				? {
+						routingReasonCode: params.recommendationReasonCode,
+						recommendationReasonCode: params.recommendationReasonCode,
+					}
+				: {}),
 		}
 	}
 
@@ -274,6 +385,11 @@ export class SubagentDelegationService {
 		parentDelegationDepth: number | undefined
 		child: Task
 		execution?: "auto" | "foreground" | "background"
+		mode?: string
+		helperProfile?: string
+		profileClass?: "strong" | "balanced" | "cheap" | "none"
+		routingSource?: "explicit" | "recommended" | "default"
+		recommendationReasonCode?: string
 	}): Promise<void> {
 		try {
 			const { historyItem } = await this.runtime.getTaskWithId(params.parentTaskId)
@@ -297,6 +413,21 @@ export class SubagentDelegationService {
 					params.execution === "background"
 						? `Background subagent queued from ${params.parentTaskId}`
 						: `Subtask ${params.child.taskId} started from ${params.parentTaskId}`,
+				explainability: {
+					stage: "delegation",
+					reasonCode:
+						params.execution === "background"
+							? (params.recommendationReasonCode ?? "background_subagent_selected")
+							: (params.recommendationReasonCode ?? "foreground_subtask_selected"),
+					...(params.routingSource ? { source: params.routingSource } : {}),
+					...(params.mode ? { mode: params.mode } : {}),
+					execution: params.execution === "background" ? "background" : "foreground",
+					...(params.profileClass ? { profileClass: params.profileClass } : {}),
+					...(params.helperProfile ? { helperProfile: params.helperProfile } : {}),
+					...(params.recommendationReasonCode
+						? { recommendationReasonCode: params.recommendationReasonCode }
+						: {}),
+				},
 				timestamp,
 			})
 		} catch (error) {

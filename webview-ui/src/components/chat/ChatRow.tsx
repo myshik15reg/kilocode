@@ -920,7 +920,8 @@ export const ChatRowContent = ({
 						</div>
 					</>
 				)
-			case "newTask":
+			case "newTask": {
+				const explainability = (tool as any).explainability
 				return (
 					<>
 						<div style={headerStyle}>
@@ -959,10 +960,39 @@ export const ChatRowContent = ({
 							</div>
 							<div style={{ padding: "12px 16px", backgroundColor: "var(--vscode-editor-background)" }}>
 								<MarkdownBlock markdown={tool.content} />
+								{explainability && (
+									<div
+										className="mt-3 flex flex-col gap-1 text-xs text-vscode-descriptionForeground"
+										data-testid="new-task-explainability">
+										{explainability.mode && (
+											<div data-testid="new-task-explainability-mode">
+												Mode: {explainability.mode.value} · {explainability.mode.source} ·{" "}
+												{explainability.mode.reasonCode}
+											</div>
+										)}
+										{explainability.execution && (
+											<div data-testid="new-task-explainability-execution">
+												Execution: {explainability.execution.value} ·{" "}
+												{explainability.execution.source} ·{" "}
+												{explainability.execution.reasonCode}
+											</div>
+										)}
+										{explainability.profile && (
+											<div data-testid="new-task-explainability-profile">
+												{`Helper: ${explainability.profile.value}${
+													explainability.profile.helperProfile
+														? ` · ${explainability.profile.helperProfile}`
+														: ""
+												} · ${explainability.profile.reasonCode}`}
+											</div>
+										)}
+									</div>
+								)}
 							</div>
 						</div>
 					</>
 				)
+			}
 			case "finishTask":
 				return (
 					<>

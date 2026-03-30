@@ -136,6 +136,19 @@ export class SubagentCoordinator {
 			binding.sessionId,
 			this.toActivityStatus(binding.status),
 			binding.status === "queued" ? "Background subagent queued" : "Background subagent started",
+			{
+				stage: "delegation",
+				reasonCode:
+					request.routingReasonCode ?? request.recommendationReasonCode ?? "background_subagent_selected",
+				...(request.routingSource ? { source: request.routingSource } : {}),
+				mode: request.mode,
+				execution: request.execution,
+				...(request.profileClass ? { profileClass: request.profileClass } : {}),
+				...(request.helperProfile ? { helperProfile: request.helperProfile } : {}),
+				...(request.recommendationReasonCode
+					? { recommendationReasonCode: request.recommendationReasonCode }
+					: {}),
+			},
 		)
 
 		return {
@@ -277,6 +290,8 @@ export class SubagentCoordinator {
 			return
 		}
 
+		const statusSummary = event.message || this.getDefaultSubagentSummary(event.state)
+
 		if (event.state === "failed" || event.state === "cancelled") {
 			this.completedSessionIds.add(event.sessionId)
 			binding.status = event.state
@@ -286,7 +301,20 @@ export class SubagentCoordinator {
 				binding.childTaskId,
 				binding.sessionId,
 				this.toActivityStatus(event.state),
-				event.message || `Background subagent ${event.state}`,
+				statusSummary,
+				{
+					stage: "outcome",
+					reasonCode: `subagent_${event.state}`,
+					source: "status",
+					mode: binding.request.mode,
+					execution: binding.request.execution,
+					...(binding.request.profileClass ? { profileClass: binding.request.profileClass } : {}),
+					...(binding.request.helperProfile ? { helperProfile: binding.request.helperProfile } : {}),
+					...(binding.request.recommendationReasonCode
+						? { recommendationReasonCode: binding.request.recommendationReasonCode }
+						: {}),
+					outcomeSummary: statusSummary,
+				},
 			)
 			this.bindingsByTaskId.delete(binding.childTaskId)
 			this.bindingsBySessionId.delete(binding.sessionId)
@@ -301,7 +329,20 @@ export class SubagentCoordinator {
 			binding.childTaskId,
 			binding.sessionId,
 			this.toActivityStatus(event.state),
-			event.message || `Background subagent ${event.state}`,
+			statusSummary,
+			{
+				stage: "status",
+				reasonCode: `subagent_${event.state}`,
+				source: "status",
+				mode: binding.request.mode,
+				execution: binding.request.execution,
+				...(binding.request.profileClass ? { profileClass: binding.request.profileClass } : {}),
+				...(binding.request.helperProfile ? { helperProfile: binding.request.helperProfile } : {}),
+				...(binding.request.recommendationReasonCode
+					? { recommendationReasonCode: binding.request.recommendationReasonCode }
+					: {}),
+				outcomeSummary: statusSummary,
+			},
 		)
 	}
 
@@ -317,6 +358,9 @@ export class SubagentCoordinator {
 
 		this.completedSessionIds.add(event.sessionId)
 
+		const outcomeSummary = this.getDefaultSubagentSummary(event.status)
+		const completionResultSummary = event.summary || event.output || outcomeSummary
+
 		binding.status = event.status
 		binding.updatedAt = event.timestamp
 		this.appendSubagentActivity(
@@ -324,14 +368,27 @@ export class SubagentCoordinator {
 			binding.childTaskId,
 			binding.sessionId,
 			this.toActivityStatus(event.status),
-			event.summary || event.output,
+			outcomeSummary,
+			{
+				stage: "outcome",
+				reasonCode: `subagent_${event.status}`,
+				source: "status",
+				mode: binding.request.mode,
+				execution: binding.request.execution,
+				...(binding.request.profileClass ? { profileClass: binding.request.profileClass } : {}),
+				...(binding.request.helperProfile ? { helperProfile: binding.request.helperProfile } : {}),
+				...(binding.request.recommendationReasonCode
+					? { recommendationReasonCode: binding.request.recommendationReasonCode }
+					: {}),
+				outcomeSummary,
+			},
 		)
 
 		if (event.status === "completed") {
 			await this.provider.reopenParentFromDelegation({
 				parentTaskId: binding.parentTaskId,
 				childTaskId: binding.childTaskId,
-				completionResultSummary: event.summary || event.output,
+				completionResultSummary,
 				preserveParentFocus: true,
 			})
 		}
@@ -347,6 +404,7 @@ export class SubagentCoordinator {
 		sessionId: string,
 		status: "queued" | "running" | "paused" | "completed" | "failed" | "cancelled",
 		summary: string,
+		explainability?: Extract<ActivityItem, { kind: "subagent" }>["explainability"],
 	): void {
 		const timestamp = Date.now()
 		void this.publishActivity(parentTaskId, {
@@ -356,6 +414,7 @@ export class SubagentCoordinator {
 			sessionId,
 			status,
 			summary,
+			...(explainability ? { explainability } : {}),
 			timestamp,
 		})
 	}
@@ -475,6 +534,27 @@ export class SubagentCoordinator {
 		return `Relay delivered from ${envelope.fromTaskId} to ${targetSummary} (${recipientTaskIds.length} recipients).`
 	}
 	// kilocode_change end
+
+	private getDefaultSubagentSummary(state: SubagentStatusEvent["state"] | SubagentResultEvent["status"]): string {
+		switch (state) {
+			case "queued":
+			case "starting":
+				return "Background subagent queued"
+			case "running":
+			case "waiting_input":
+			case "waiting_approval":
+				return "Background subagent running"
+			case "paused":
+				return "Background subagent paused"
+			case "completed":
+				return "Background subagent completed"
+			case "cancelled":
+				return "Background subagent cancelled"
+			case "failed":
+			default:
+				return "Background subagent failed"
+		}
+	}
 
 	private toActivityStatus(
 		state: SubagentStatusEvent["state"] | SubagentResultEvent["status"],

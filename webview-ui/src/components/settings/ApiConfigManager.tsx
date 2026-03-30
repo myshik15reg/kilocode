@@ -263,9 +263,10 @@ const ApiConfigManager = ({
 										: config.name
 
 								const isActive = config.name === activeApiConfigName // kilocode_change - added isActive
+								const activeLabelSuffix = t("settings:providers.activeProfileSuffix")
 								return {
 									value: config.name,
-									label: isActive ? `${label} (Active)` : label, // kilocode_change - added active
+									label: isActive ? `${label} ${activeLabelSuffix}` : label, // kilocode_change - added active
 									// kilocode_change end
 									disabled: !valid,
 									icon: !valid ? (

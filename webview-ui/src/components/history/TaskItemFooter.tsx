@@ -10,6 +10,7 @@ import { StandardTooltip } from "../ui/standard-tooltip"
 import { vscode } from "@/utils/vscode"
 import { LucideIconButton } from "../chat/LucideIconButton"
 import { PauseIcon, PlayIcon, GitBranchIcon } from "lucide-react"
+import { useAppTranslation } from "@/i18n/TranslationContext"
 
 export interface TaskItemFooterProps {
 	item: HistoryItem
@@ -19,6 +20,7 @@ export interface TaskItemFooterProps {
 }
 
 const TaskItemFooter: React.FC<TaskItemFooterProps> = ({ item, variant, isSelectionMode = false, onDelete }) => {
+	const { t } = useAppTranslation()
 	// kilocode_change start
 	const isCompletedItem = item.status === "completed" || item.lifecycleState === "completed"
 	// kilocode_change end
@@ -47,7 +49,9 @@ const TaskItemFooter: React.FC<TaskItemFooterProps> = ({ item, variant, isSelect
 						<>
 							<LucideIconButton
 								icon={item.lifecycleState === "paused" ? PlayIcon : PauseIcon}
-								title={item.lifecycleState === "paused" ? "Resume task" : "Pause task"}
+								title={
+									item.lifecycleState === "paused" ? t("chat:resumeTask.title") : t("chat:task.pause")
+								}
 								onClick={() =>
 									vscode.postMessage({
 										type: item.lifecycleState === "paused" ? "resumeTask" : "pauseTask",
@@ -57,7 +61,7 @@ const TaskItemFooter: React.FC<TaskItemFooterProps> = ({ item, variant, isSelect
 							/>
 							<LucideIconButton
 								icon={GitBranchIcon}
-								title="Branch task"
+								title={t("chat:task.branch")}
 								onClick={() => vscode.postMessage({ type: "branchTask", text: item.id })}
 							/>
 						</>

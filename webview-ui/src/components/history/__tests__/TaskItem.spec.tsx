@@ -77,8 +77,8 @@ describe("TaskItem", () => {
 
 		expect(screen.getByTestId("copy-prompt-button")).toBeInTheDocument()
 		expect(screen.getByTestId("export")).toBeInTheDocument()
-		expect(screen.getByLabelText("Pause task")).toBeInTheDocument()
-		expect(screen.getByLabelText("Branch task")).toBeInTheDocument()
+		expect(screen.getByLabelText("chat:task.pause")).toBeInTheDocument()
+		expect(screen.getByLabelText("chat:task.branch")).toBeInTheDocument()
 	})
 
 	it("displays time ago information", () => {

@@ -95,8 +95,8 @@ describe("TaskItemFooter", () => {
 	it("posts pause and branch actions from history orchestration controls", () => {
 		render(<TaskItemFooter item={mockItem} variant="full" />)
 
-		fireEvent.click(screen.getByLabelText("Pause task"))
-		fireEvent.click(screen.getByLabelText("Branch task"))
+		fireEvent.click(screen.getByLabelText("chat:task.pause"))
+		fireEvent.click(screen.getByLabelText("chat:task.branch"))
 
 		expect(postMessageMock).toHaveBeenNthCalledWith(1, { type: "pauseTask", text: "1" })
 		expect(postMessageMock).toHaveBeenNthCalledWith(2, { type: "branchTask", text: "1" })
@@ -105,7 +105,7 @@ describe("TaskItemFooter", () => {
 	it("shows resume control for paused orchestration items", () => {
 		render(<TaskItemFooter item={{ ...mockItem, lifecycleState: "paused" }} variant="full" />)
 
-		fireEvent.click(screen.getByLabelText("Resume task"))
+		fireEvent.click(screen.getByLabelText("chat:resumeTask.title"))
 
 		expect(postMessageMock).toHaveBeenCalledWith({ type: "resumeTask", text: "1" })
 	})
@@ -115,9 +115,9 @@ describe("TaskItemFooter", () => {
 			<TaskItemFooter item={{ ...mockItem, status: "completed", lifecycleState: "completed" }} variant="full" />,
 		)
 
-		expect(screen.queryByLabelText("Pause task")).not.toBeInTheDocument()
-		expect(screen.queryByLabelText("Resume task")).not.toBeInTheDocument()
-		expect(screen.queryByLabelText("Branch task")).not.toBeInTheDocument()
+		expect(screen.queryByLabelText("chat:task.pause")).not.toBeInTheDocument()
+		expect(screen.queryByLabelText("chat:resumeTask.title")).not.toBeInTheDocument()
+		expect(screen.queryByLabelText("chat:task.branch")).not.toBeInTheDocument()
 	})
 	// kilocode_change end
 })

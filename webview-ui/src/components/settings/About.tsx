@@ -125,7 +125,7 @@ export const About = ({
 									setKiloCodeBloat([...kiloCodeBloat, new Array<number>(20_000_000).fill(0)])
 									console.debug(`Memory percentage: ${getMemoryPercentage()}`)
 								}}>
-								Development: Allocate memory
+								{t("settings:about.development.allocateMemory")}
 							</Button>
 						</div>
 					)

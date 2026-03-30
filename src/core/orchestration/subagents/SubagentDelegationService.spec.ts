@@ -1,3 +1,4 @@
+import { TelemetryService } from "@roo-code/telemetry"
 import type { HistoryItem } from "@roo-code/types"
 
 import { beforeEach, describe, expect, it, vi } from "vitest"
@@ -7,6 +8,14 @@ import {
 	SubagentDelegationService,
 	type SubagentDelegationRuntime,
 } from "./SubagentDelegationService"
+
+vi.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: {
+			captureTaskOutcomeDelegated: vi.fn(),
+		},
+	},
+}))
 
 // kilocode_change - new file
 
@@ -89,6 +98,8 @@ describe("SubagentDelegationService", () => {
 			publishActivity: vi.fn().mockResolvedValue(undefined),
 			emitTaskDelegated: vi.fn(),
 			log: vi.fn(),
+			getValue: vi.fn(() => undefined),
+			setValue: vi.fn().mockResolvedValue(undefined),
 			getSubagentCoordinator: vi.fn(() => coordinator),
 		}
 	})
@@ -137,6 +148,12 @@ describe("SubagentDelegationService", () => {
 			expect.objectContaining({ status: "running", taskId: "child-1" }),
 		)
 		expect(runtime.emitTaskDelegated).toHaveBeenCalledWith("parent-1", "child-1")
+		expect(TelemetryService.instance.captureTaskOutcomeDelegated).toHaveBeenCalledWith("parent-1", {
+			childTaskId: "child-1",
+			execution: "foreground",
+			delegationDepth: 2,
+			isBackground: false,
+		})
 	})
 
 	it("preflights background capacity before creating child tasks and falls back cleanly", async () => {
@@ -214,6 +231,28 @@ describe("SubagentDelegationService", () => {
 				awaitingChildId: "child-1",
 			}),
 		)
+		expect(TelemetryService.instance.captureTaskOutcomeDelegated).toHaveBeenCalledWith("parent-1", {
+			childTaskId: "child-1",
+			execution: "background",
+			delegationDepth: 2,
+			isBackground: true,
+		})
+	})
+
+	it("passes helper profile metadata into background launch requests", async () => {
+		const service = new SubagentDelegationService(runtime)
+
+		await service.launchBackgroundSubagent({
+			parentTaskId: "parent-1",
+			message: "Research",
+			initialTodos: [{ id: "todo-1", content: "Check logs", status: "pending" } as any],
+			mode: "code",
+			isolation: "shared",
+			helperProfile: "Cheap helper",
+		})
+
+		expect(coordinator.hasCapacity).toHaveBeenCalledWith(expect.objectContaining({ helperProfile: "Cheap helper" }))
+		expect(coordinator.launch).toHaveBeenCalledWith(expect.objectContaining({ helperProfile: "Cheap helper" }))
 	})
 
 	it("enforces the delegation depth limit consistently", async () => {

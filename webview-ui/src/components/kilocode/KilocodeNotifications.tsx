@@ -6,6 +6,7 @@ import { telemetryClient } from "@/utils/TelemetryClient"
 import { OPENROUTER_DEFAULT_PROVIDER_NAME, TelemetryEventName } from "@roo-code/types"
 import { useProviderModels } from "./hooks/useProviderModels"
 import { getModelIdKey } from "./hooks/useSelectedModel"
+import { useAppTranslation } from "@/i18n/TranslationContext"
 
 interface NotificationAction {
 	actionText: string
@@ -20,9 +21,8 @@ interface Notification {
 	suggestModelId?: string
 }
 
-const USE_MODEL_BUTTON_LABEL = "Try model"
-
 export const KilocodeNotifications: React.FC = () => {
+	const { t } = useAppTranslation()
 	const { dismissedNotificationIds, currentApiConfigName, apiConfiguration } = useExtensionState()
 	const { provider, providerModels, isLoading, isError } = useProviderModels(apiConfiguration)
 	const [notifications, setNotifications] = useState<Notification[]>([])
@@ -76,7 +76,7 @@ export const KilocodeNotifications: React.FC = () => {
 			},
 		})
 		telemetryClient.capture(TelemetryEventName.NOTIFICATION_CLICKED, {
-			actionText: USE_MODEL_BUTTON_LABEL,
+			actionText: t("kilocode:notifications.tryModel"),
 			suggestModelId,
 		})
 	}
@@ -120,7 +120,7 @@ export const KilocodeNotifications: React.FC = () => {
 					<button
 						onClick={() => dismissNotificationId(currentNotification.id)}
 						className="text-vscode-descriptionForeground hover:text-vscode-foreground p-1 cursor-pointer"
-						title="Dismiss notification">
+						title={t("kilocode:notifications.dismiss")}>
 						<span className="codicon codicon-close"></span>
 					</button>
 				</div>
@@ -131,7 +131,7 @@ export const KilocodeNotifications: React.FC = () => {
 					<div className="flex items-center justify-end gap-2">
 						{suggestModelId && isReadyToSwitchModels && (
 							<VSCodeButton appearance="primary" onClick={() => switchModel(suggestModelId)}>
-								{USE_MODEL_BUTTON_LABEL}
+								{t("kilocode:notifications.tryModel")}
 							</VSCodeButton>
 						)}
 						{action && (
@@ -147,7 +147,7 @@ export const KilocodeNotifications: React.FC = () => {
 					<button
 						onClick={goToPrevious}
 						className="text-vscode-descriptionForeground hover:text-vscode-foreground p-1 inline-flex items-center cursor-pointer"
-						title="Previous notification">
+						title={t("kilocode:notifications.previous")}>
 						<span className="codicon codicon-chevron-left"></span>
 					</button>
 					<span className="text-xs text-vscode-descriptionForeground whitespace-nowrap">
@@ -156,7 +156,7 @@ export const KilocodeNotifications: React.FC = () => {
 					<button
 						onClick={goToNext}
 						className="text-vscode-descriptionForeground hover:text-vscode-foreground p-1 inline-flex items-center cursor-pointer"
-						title="Next notification">
+						title={t("kilocode:notifications.next")}>
 						<span className="codicon codicon-chevron-right"></span>
 					</button>
 				</div>

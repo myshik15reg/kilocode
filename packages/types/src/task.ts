@@ -6,6 +6,7 @@ import type { ClineMessage, QueuedMessage, TokenUsage } from "./message.js"
 import type { BranchTaskOptions, TaskHistoryStatus, TaskResumeControl } from "./task-control.js"
 import type { ToolUsage, ToolName } from "./tool.js"
 import type { StaticAppProperties, GitProperties, TelemetryProperties } from "./telemetry.js"
+import type { TaskPatternContext } from "./orchestration-pattern-memory.js"
 import type { TodoItem } from "./todo.js"
 
 /**
@@ -106,6 +107,7 @@ export interface CreateTaskOptions {
 	isolation?: "auto" | "shared" | "worktree"
 	branchFromTaskId?: string
 	branchStrategy?: BranchTaskOptions["branchStrategy"]
+	patternContext?: TaskPatternContext
 	/** Initial status for the task's history item (e.g., "active" for child tasks) */
 	initialStatus?: TaskHistoryStatus // kilocode_change
 }

@@ -16,6 +16,8 @@
 		"export": "Экспортировать историю задач",
 		"delete": "Удалить задачу (Shift + клик для пропуска подтверждения)",
 		"condenseContext": "Интеллектуально сжать контекст",
+		"pause": "Приостановить задачу",
+		"branch": "Разветвить задачу",
 		"share": "Поделиться задачей",
 		"shareWithOrganization": "Поделиться с организацией",
 		"shareWithOrganizationDescription": "Только члены вашей организации могут получить доступ",
@@ -456,6 +458,32 @@
 		"indexed": "Проиндексировано",
 		"error": "Ошибка индекса",
 		"status": "Статус индекса"
+	},
+	"orchestration": {
+		"title": "Оркестрация",
+		"status": {
+			"queued": "В очереди",
+			"running": "Выполняется",
+			"paused": "Приостановлено",
+			"recoverable": "Можно продолжить",
+			"completed": "Завершено",
+			"cancelled": "Отменено",
+			"failed": "Ошибка"
+		},
+		"queuedCount_one": "{{count}} в очереди",
+		"queuedCount_other": "{{count}} в очереди",
+		"runningCount_one": "{{count}} выполняется",
+		"runningCount_other": "{{count}} выполняется",
+		"pausedCount_one": "{{count}} приостановлено",
+		"pausedCount_other": "{{count}} приостановлено",
+		"recoverableCount_one": "{{count}} можно продолжить",
+		"recoverableCount_other": "{{count}} можно продолжить",
+		"completedCount_one": "{{count}} завершено",
+		"completedCount_other": "{{count}} завершено",
+		"cancelledCount_one": "{{count}} отменено",
+		"cancelledCount_other": "{{count}} отменено",
+		"failedCount_one": "{{count}} с ошибкой",
+		"failedCount_other": "{{count}} с ошибкой"
 	},
 	"versionIndicator": {
 		"ariaLabel": "Версия {{version}} - Нажмите, чтобы просмотреть примечания к выпуску"

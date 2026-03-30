@@ -77,7 +77,15 @@ const mockStartSubtask = vi
 
 // Adapter to satisfy legacy expectations while exercising new delegation path
 const mockDelegateParentAndOpenChild = vi.fn(
-	async (args: { parentTaskId: string; message: string; initialTodos: any[]; mode: string }) => {
+	async (args: {
+		parentTaskId: string
+		message: string
+		initialTodos: any[]
+		mode: string
+		execution?: string
+		isolation?: string
+		helperProfile?: string
+	}) => {
 		// Call legacy spy so existing expectations still pass
 		await mockStartSubtask(args.message, args.initialTodos, args.mode)
 		return { taskId: "child-1" }
@@ -101,6 +109,8 @@ const mockCline = {
 	providerRef: {
 		deref: vi.fn(() => ({
 			getState: vi.fn(() => ({ customModes: [], mode: "ask" })),
+			getValue: vi.fn(() => undefined),
+			setValue: vi.fn().mockResolvedValue(undefined),
 			handleModeSwitch: vi.fn(),
 			delegateParentAndOpenChild: mockDelegateParentAndOpenChild,
 		})),
@@ -339,19 +349,25 @@ describe("newTaskTool", () => {
 			toolProtocol: "xml",
 		})
 
-		expect(mockDelegateParentAndOpenChild).toHaveBeenCalledWith({
-			parentTaskId: "mock-parent-task-id",
-			message: "Research this in background",
-			initialTodos: expect.arrayContaining([
-				expect.objectContaining({ content: "Gather context" }),
-				expect.objectContaining({ content: "Report findings" }),
-			]),
-			mode: "code",
-			execution: "background",
-			isolation: "shared",
-			branchFromTaskId: undefined,
-			branchStrategy: undefined,
-		})
+		expect(mockDelegateParentAndOpenChild).toHaveBeenCalledWith(
+			expect.objectContaining({
+				parentTaskId: "mock-parent-task-id",
+				message: "Research this in background",
+				initialTodos: expect.arrayContaining([
+					expect.objectContaining({ content: "Gather context" }),
+					expect.objectContaining({ content: "Report findings" }),
+				]),
+				mode: "code",
+				execution: "background",
+				isolation: "shared",
+				helperProfile: undefined,
+				profileClass: expect.any(String),
+				routingSource: expect.any(String),
+				recommendationReasonCode: undefined,
+				branchFromTaskId: undefined,
+				branchStrategy: undefined,
+			}),
+		)
 		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
 	})
 	// kilocode_change end
@@ -683,6 +699,8 @@ describe("newTaskTool delegation flow", () => {
 				mode: "ask",
 				experiments: {},
 			}),
+			getValue: vi.fn(() => undefined),
+			setValue: vi.fn().mockResolvedValue(undefined),
 			delegateParentAndOpenChild: vi.fn().mockResolvedValue({ taskId: "child-1" }),
 			handleModeSwitch: vi.fn(),
 		} as any
@@ -728,12 +746,16 @@ describe("newTaskTool delegation flow", () => {
 		})
 
 		// Assert: provider method called with correct params
-		expect(providerSpy.delegateParentAndOpenChild).toHaveBeenCalledWith({
-			parentTaskId: "mock-parent-task-id",
-			message: "Do something",
-			initialTodos: [],
-			mode: "code",
-		})
+		expect(providerSpy.delegateParentAndOpenChild).toHaveBeenCalledWith(
+			expect.objectContaining({
+				parentTaskId: "mock-parent-task-id",
+				message: "Do something",
+				initialTodos: [],
+				mode: "code",
+				profileClass: expect.any(String),
+				recommendationReasonCode: undefined,
+			}),
+		)
 
 		// Assert: legacy path not used
 		expect(localStartSubtask).not.toHaveBeenCalled()
@@ -751,6 +773,8 @@ describe("newTaskTool delegation flow", () => {
 	it("passes execution background through to provider delegation", async () => {
 		const providerSpy = {
 			getState: vi.fn().mockResolvedValue({ mode: "ask", experiments: {} }),
+			getValue: vi.fn(() => undefined),
+			setValue: vi.fn().mockResolvedValue(undefined),
 			delegateParentAndOpenChild: vi.fn().mockResolvedValue({ taskId: "child-bg" }),
 			handleModeSwitch: vi.fn(),
 		} as any
@@ -793,6 +817,8 @@ describe("newTaskTool delegation flow", () => {
 	it("keeps legacy new_task behavior when new orchestration params are omitted", async () => {
 		const providerSpy = {
 			getState: vi.fn().mockResolvedValue({ mode: "ask", experiments: {} }),
+			getValue: vi.fn(() => undefined),
+			setValue: vi.fn().mockResolvedValue(undefined),
 			delegateParentAndOpenChild: vi.fn().mockResolvedValue({ taskId: "child-legacy" }),
 			handleModeSwitch: vi.fn(),
 		} as any
@@ -835,6 +861,10 @@ describe("newTaskTool delegation flow", () => {
 			mode: "code",
 			execution: undefined,
 			isolation: undefined,
+			helperProfile: undefined,
+			profileClass: "strong",
+			routingSource: "default",
+			recommendationReasonCode: undefined,
 			branchFromTaskId: undefined,
 			branchStrategy: undefined,
 		})

@@ -47,6 +47,8 @@
 	},
 	"viewAllHistory": "Показать всё",
 	"shareSession": "Поделиться сессией",
+	"favoriteTask": "Добавить задачу в избранное",
+	"unfavoriteTask": "Убрать задачу из избранного",
 	"focusedRoot": "Выполняется",
 	"backgroundRoot": "Выполняется",
 	"parent": "Родительская",

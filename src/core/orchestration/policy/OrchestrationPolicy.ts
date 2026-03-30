@@ -71,6 +71,10 @@ function buildSubagentLaunchRequest(
 		argumentsRecord.isolation === "auto"
 			? argumentsRecord.isolation
 			: "auto"
+	const helperProfile =
+		typeof argumentsRecord.helperProfile === "string" && argumentsRecord.helperProfile.trim().length > 0
+			? argumentsRecord.helperProfile.trim()
+			: undefined
 
 	if (!mode || !message || execution !== "background") {
 		return undefined
@@ -87,6 +91,7 @@ function buildSubagentLaunchRequest(
 		execution,
 		isolation,
 		relayPolicy: "parent_only",
+		...(helperProfile ? { helperProfile } : {}),
 	}
 }
 // kilocode_change end
