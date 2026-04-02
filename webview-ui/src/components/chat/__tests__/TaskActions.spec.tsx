@@ -506,6 +506,13 @@ describe("TaskActions", () => {
 			expect(mockPostMessage).toHaveBeenCalledWith({ type: "pauseTask", text: "test-task-id" })
 		})
 
+		it("shows only resume control for paused tasks", () => {
+			render(<TaskActions item={{ ...mockItem, lifecycleState: "paused" } as any} buttonsDisabled={false} />)
+
+			expect(screen.queryByLabelText("Pause task")).not.toBeInTheDocument()
+			expect(screen.getByLabelText("Resume task")).toBeInTheDocument()
+		})
+
 		it("sends resumeTask when resume button is clicked", () => {
 			render(<TaskActions item={{ ...mockItem, lifecycleState: "paused" } as any} buttonsDisabled={false} />)
 
@@ -514,16 +521,31 @@ describe("TaskActions", () => {
 			expect(mockPostMessage).toHaveBeenCalledWith({ type: "resumeTask", text: "test-task-id" })
 		})
 
-		it("sends branchTask when branch button is clicked", () => {
-			render(<TaskActions item={mockItem} buttonsDisabled={false} />)
+		it("shows only resume control for stopped tasks", () => {
+			mockUseExtensionState.mockReturnValue({
+				sharingEnabled: true,
+				publicSharingEnabled: true,
+				cloudIsAuthenticated: true,
+				cloudUserInfo: {
+					organizationName: "Test Organization",
+				},
+				debug: false,
+				runningRootTaskIds: [],
+			} as any)
 
-			fireEvent.click(screen.getByLabelText("Branch task"))
+			render(
+				<TaskActions
+					item={{ ...mockItem, status: "active", lastStopReason: "user_cancelled" } as any}
+					buttonsDisabled={false}
+				/>,
+			)
 
-			expect(mockPostMessage).toHaveBeenCalledWith({ type: "branchTask", text: "test-task-id" })
+			expect(screen.queryByLabelText("Pause task")).not.toBeInTheDocument()
+			expect(screen.getByLabelText("Resume task")).toBeInTheDocument()
 		})
 
 		// kilocode_change start
-		it("hides pause, resume, and branch controls for completed tasks", () => {
+		it("hides pause and resume controls for completed tasks", () => {
 			render(
 				<TaskActions
 					item={{ ...mockItem, status: "completed", lifecycleState: "completed" } as any}
@@ -533,7 +555,6 @@ describe("TaskActions", () => {
 
 			expect(screen.queryByLabelText("Pause task")).not.toBeInTheDocument()
 			expect(screen.queryByLabelText("Resume task")).not.toBeInTheDocument()
-			expect(screen.queryByLabelText("Branch task")).not.toBeInTheDocument()
 		})
 		// kilocode_change end
 	})

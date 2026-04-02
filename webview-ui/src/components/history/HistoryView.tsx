@@ -101,11 +101,35 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	}, [tasks, activeRootTaskIds, focusedRootTaskId])
 
 	// kilocode_change start
-	const historyRootItems = useMemo(
-		() => (extensionTaskHistory.length > 0 ? extensionTaskHistory : tasks),
-		[extensionTaskHistory, tasks],
+	const historyRootItems = useMemo(() => {
+		if (extensionTaskHistory.length === 0) {
+			return tasks
+		}
+
+		if (tasks.length === 0) {
+			return extensionTaskHistory
+		}
+
+		const mergedItemsById = new Map(extensionTaskHistory.map((item) => [item.id, item]))
+		const mergedItems = tasks.map((item) => ({
+			...(mergedItemsById.get(item.id) ?? {}),
+			...item,
+		}))
+
+		for (const item of extensionTaskHistory) {
+			if (!mergedItemsById.has(item.id) || tasks.some((task) => task.id === item.id)) {
+				continue
+			}
+			mergedItems.push(item)
+		}
+
+		return mergedItems
+	}, [extensionTaskHistory, tasks])
+	const visibleTaskItems = tasks.length > 0 ? tasks : historyRootItems
+	const taskRows = useMemo(
+		() => buildTaskTreeRows(visibleTaskItems, expandedTaskIds, historyRootItems),
+		[visibleTaskItems, expandedTaskIds, historyRootItems],
 	)
-	const taskRows = useMemo(() => buildTaskTreeRows(tasks, expandedTaskIds), [tasks, expandedTaskIds])
 	const rootTaskSummaryMap = useMemo(() => getRootTaskDescendantSummaryMap(historyRootItems), [historyRootItems]) // kilocode_change
 	const rootTaskStatusSummary = useMemo(
 		() =>

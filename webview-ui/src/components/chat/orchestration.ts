@@ -95,6 +95,86 @@ export const orchestrationGroupDefaultLabels: Record<ActivityGroup["label"], str
 export function getOrchestrationCountDefaultLabel(status: OrchestrationStatus, count: number) {
 	return `${count} ${status}`
 }
+
+const ORCHESTRATION_SECONDARY_SEGMENT_LIMIT = 2
+const ORCHESTRATION_SECONDARY_LINE_MAX_LENGTH = 84
+const orchestrationExplainabilityTitlePriority: Record<string, number> = {
+	Route: 0,
+	Status: 0,
+	Outcome: 0,
+	Helper: 1,
+	Why: 2,
+	Reason: 2,
+}
+const orchestrationExplainabilityCompactTitleLabels: Record<string, string> = {
+	Route: "route",
+	Status: "status",
+	Outcome: "outcome",
+	Helper: "helper",
+	Why: "why",
+	Reason: "reason",
+}
+
+function truncateOrchestrationText(text: string, maxLength = ORCHESTRATION_SECONDARY_LINE_MAX_LENGTH) {
+	if (text.length <= maxLength) {
+		return text
+	}
+
+	return `${text.slice(0, Math.max(maxLength - 1, 1)).trimEnd()}…`
+}
+
+export function formatCompactOrchestrationCounts(
+	counts: Record<OrchestrationStatus, number>,
+	limit = ORCHESTRATION_SECONDARY_SEGMENT_LIMIT,
+) {
+	return getVisibleOrchestrationCounts(counts)
+		.slice(0, limit)
+		.map(({ status, count }) => getOrchestrationCountDefaultLabel(status, count))
+		.join(" · ")
+}
+
+export function formatCompactExplainability(
+	entries: OrchestrationExplainabilityEntry[] | undefined,
+	maxSegments = ORCHESTRATION_SECONDARY_SEGMENT_LIMIT,
+) {
+	if (!entries?.length) {
+		return undefined
+	}
+
+	const compactEntries = [...entries]
+		.sort(
+			(left, right) =>
+				(orchestrationExplainabilityTitlePriority[left.title] ?? Number.MAX_SAFE_INTEGER) -
+				(orchestrationExplainabilityTitlePriority[right.title] ?? Number.MAX_SAFE_INTEGER),
+		)
+		.slice(0, maxSegments)
+		.map(({ title, detail }) => {
+			const compactTitle = orchestrationExplainabilityCompactTitleLabels[title] ?? title.toLowerCase()
+			return `${compactTitle}: ${detail}`
+		})
+		.join(" · ")
+
+	return truncateOrchestrationText(compactEntries)
+}
+
+export function formatOrchestrationSecondaryLine(params: {
+	summary?: string
+	explainability?: OrchestrationExplainabilityEntry[]
+	timestamp?: string
+	maxLength?: number
+}) {
+	const secondaryParts = [
+		params.summary?.trim() || undefined,
+		formatCompactExplainability(params.explainability),
+		params.timestamp?.trim() || undefined,
+	].filter((value): value is string => Boolean(value))
+
+	if (secondaryParts.length === 0) {
+		return undefined
+	}
+
+	return truncateOrchestrationText(secondaryParts.join(" · "), params.maxLength)
+}
 // kilocode_change end
 
 const DEFAULT_COUNTS: Record<OrchestrationStatus, number> = {

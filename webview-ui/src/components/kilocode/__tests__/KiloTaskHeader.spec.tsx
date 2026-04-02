@@ -561,14 +561,24 @@ describe("KiloTaskHeader", () => {
 		expect(postMessageMock).toHaveBeenCalledWith({ type: "showTaskWithId", text: "child-1" })
 	})
 
-	it("shows overflow toggle for extra tasks and reveals hidden children on click", () => {
+	it("shows parent plus child hierarchy items without overflow collapsing on the main page", () => {
 		mockExtensionState = {
 			...mockExtensionState,
 			currentTaskItem: {
 				id: "parent-1",
+				parentTaskId: "root-0",
 				childIds: ["child-1", "child-2", "child-3", "child-4"],
 			},
 			taskHistory: [
+				{
+					id: "root-0",
+					task: "Original parent task",
+					number: 0,
+					ts: 0,
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+				},
 				{
 					id: "parent-1",
 					task: "Main orchestration task",
@@ -642,15 +652,106 @@ describe("KiloTaskHeader", () => {
 			/>,
 		)
 
-		expect(screen.getByTestId("task-hierarchy-overflow-toggle")).toBeInTheDocument()
-		expect(screen.queryByTestId("task-hierarchy-item-child-4")).not.toBeInTheDocument()
-
-		fireEvent.click(screen.getByTestId("task-hierarchy-overflow-toggle"))
-
+		expect(screen.queryByTestId("task-hierarchy-overflow-toggle")).not.toBeInTheDocument()
+		expect(screen.getByTestId("task-hierarchy-item-root-0")).toBeInTheDocument()
 		expect(screen.getByTestId("task-hierarchy-item-child-4")).toBeInTheDocument()
+
 		fireEvent.click(screen.getByTestId("task-hierarchy-item-child-4"))
 
 		expect(postMessageMock).toHaveBeenCalledWith({ type: "showTaskWithId", text: "child-4" })
+	})
+
+	it("does not render a second compact '+ more' list when hierarchy chips already show child tasks", () => {
+		mockExtensionState = {
+			...mockExtensionState,
+			currentTaskItem: {
+				id: "parent-1",
+				childIds: ["child-1", "child-2", "child-3", "child-4"],
+			},
+			taskHistory: [
+				{
+					id: "parent-1",
+					task: "Main orchestration task",
+					number: 1,
+					ts: 1,
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+					childIds: ["child-1", "child-2", "child-3", "child-4"],
+				},
+				{
+					id: "child-1",
+					task: "Parser helper task",
+					number: 2,
+					ts: 2,
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+					parentTaskId: "parent-1",
+					rootTaskId: "parent-1",
+					execution: "background",
+					status: "active",
+				},
+				{
+					id: "child-2",
+					task: "UI helper task",
+					number: 3,
+					ts: 3,
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+					parentTaskId: "parent-1",
+					rootTaskId: "parent-1",
+					execution: "background",
+					status: "active",
+				},
+				{
+					id: "child-3",
+					task: "Docs helper task",
+					number: 4,
+					ts: 4,
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+					parentTaskId: "parent-1",
+					rootTaskId: "parent-1",
+					execution: "background",
+					status: "active",
+				},
+				{
+					id: "child-4",
+					task: "Tests helper task",
+					number: 5,
+					ts: 5,
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+					parentTaskId: "parent-1",
+					rootTaskId: "parent-1",
+					execution: "background",
+					status: "active",
+				},
+			],
+			currentTaskActivity: [],
+		}
+
+		render(
+			<KiloTaskHeader
+				task={{ type: "say", ts: Date.now(), text: "Current root", images: [] } as any}
+				tokensIn={0}
+				tokensOut={0}
+				totalCost={0}
+				contextTokens={0}
+				buttonsDisabled={false}
+				handleCondenseContext={vi.fn()}
+				onClose={vi.fn()}
+				groupedMessages={[]}
+			/>,
+		)
+
+		expect(screen.queryByTestId("child-task-more-indicator")).not.toBeInTheDocument()
+		expect(screen.queryByTestId("child-task-link-child-4")).not.toBeInTheDocument()
+		expect(screen.getByTestId("task-hierarchy-item-child-4")).toBeInTheDocument()
 	})
 
 	it("does not mix in an unrelated task with the same title into parent-child hierarchy", () => {

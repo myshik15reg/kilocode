@@ -1,8 +1,8 @@
 ﻿// kilocode_change: new file
-import { memo, useEffect, useMemo, useRef, useState } from "react"
+import { memo, useMemo, useRef, useState } from "react"
 import { useWindowSize } from "react-use"
 import { useTranslation } from "react-i18next"
-import { CloudUpload, CloudDownload, FoldVertical, MoreHorizontal } from "lucide-react"
+import { CloudUpload, CloudDownload, FoldVertical } from "lucide-react"
 import { validateSlashCommand } from "@/utils/slash-commands"
 
 import type { ClineMessage, Command } from "@roo-code/types"
@@ -55,20 +55,6 @@ function shortenTaskLabel(label: string | undefined, fallbackId: string): string
 	return `${candidate.slice(0, TASK_HIERARCHY_LABEL_LIMIT - 1).trimEnd()}…`
 }
 
-function getMaxVisibleHierarchyItems(windowWidth: number): number {
-	if (windowWidth < 480) {
-		return 2
-	}
-	if (windowWidth < 720) {
-		return 3
-	}
-	if (windowWidth < 1040) {
-		return 4
-	}
-
-	return 5
-}
-
 export interface TaskHeaderProps {
 	task: ClineMessage
 	tokensIn: number
@@ -116,7 +102,6 @@ const KiloTaskHeader = ({
 	} = useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
-	const [showOverflowHierarchyItems, setShowOverflowHierarchyItems] = useState(false)
 
 	const diffStats = useTaskDiffStats(clineMessages)
 	const hasDiffStats = diffStats.added > 0 || diffStats.removed > 0
@@ -124,7 +109,6 @@ const KiloTaskHeader = ({
 	const textContainerRef = useRef<HTMLDivElement>(null)
 	const textRef = useRef<HTMLDivElement>(null)
 	const contextWindow = model?.contextWindow || 1
-
 	const { width: windowWidth } = useWindowSize()
 	const taskHistoryById = useMemo(() => new Map(taskHistory.map((item) => [item.id, item])), [taskHistory])
 
@@ -148,47 +132,43 @@ const KiloTaskHeader = ({
 		}
 
 		const items: TaskHierarchyItem[] = []
+		const seenTaskIds = new Set<string>()
 		const currentHistoryItem = taskHistoryById.get(currentTaskItem.id)
-		const currentFullLabel = currentHistoryItem?.task || task.text || currentTaskItem.id
+		const parentTaskId =
+			currentTaskItem.parentTaskId ||
+			(currentTaskItem.rootTaskId && currentTaskItem.rootTaskId !== currentTaskItem.id
+				? currentTaskItem.rootTaskId
+				: undefined)
+		const derivedChildTaskIds = taskHistory
+			.filter((historyItem) => historyItem.parentTaskId === currentTaskItem.id)
+			.map((historyItem) => historyItem.id)
+		const childTaskIds = [...(currentTaskItem.childIds ?? []), ...derivedChildTaskIds]
 
-		if (currentTaskItem.parentTaskId) {
-			const parentHistoryItem = taskHistoryById.get(currentTaskItem.parentTaskId)
-			const parentFullLabel = parentHistoryItem?.task || currentTaskItem.parentTaskId
-			items.push({
-				id: currentTaskItem.parentTaskId,
-				label: shortenTaskLabel(parentFullLabel, currentTaskItem.parentTaskId),
-				fullLabel: parentFullLabel,
-				role: "parent",
-				isCurrent: false,
-			})
-		}
-
-		items.push({
-			id: currentTaskItem.id,
-			label: shortenTaskLabel(currentFullLabel, currentTaskItem.id),
-			fullLabel: currentFullLabel,
-			role: "current",
-			isCurrent: true,
-		})
-
-		for (const childTaskId of currentTaskItem.childIds ?? []) {
-			if (childTaskId === currentTaskItem.id) {
-				continue
+		const appendHierarchyItem = (taskId: string | undefined, role: TaskHierarchyRole) => {
+			if (!taskId || seenTaskIds.has(taskId)) {
+				return
 			}
 
-			const childHistoryItem = taskHistoryById.get(childTaskId)
-			const childFullLabel = childHistoryItem?.task || childTaskId
+			const historyItem = taskHistoryById.get(taskId)
+			const fullLabel =
+				role === "current" ? currentHistoryItem?.task || task.text || taskId : historyItem?.task || taskId
+
 			items.push({
-				id: childTaskId,
-				label: shortenTaskLabel(childFullLabel, childTaskId),
-				fullLabel: childFullLabel,
-				role: "child",
-				isCurrent: false,
+				id: taskId,
+				label: shortenTaskLabel(fullLabel, taskId),
+				fullLabel,
+				role,
+				isCurrent: taskId === currentTaskItem.id,
 			})
+			seenTaskIds.add(taskId)
 		}
 
+		appendHierarchyItem(parentTaskId, "parent")
+		appendHierarchyItem(currentTaskItem.id, "current")
+		childTaskIds.forEach((childTaskId) => appendHierarchyItem(childTaskId, "child"))
+
 		return items
-	}, [currentTaskItem, task.text, taskHistoryById])
+	}, [currentTaskItem, task.text, taskHistory, taskHistoryById])
 	const rootTaskSummaryMap = getRootTaskDescendantSummaryMap(taskHistory) // kilocode_change
 	const orchestrationSummary = useMemo(
 		() => getTaskOrchestrationSummary({ activity: currentTaskActivity, currentTaskItem, taskHistory }),
@@ -201,17 +181,6 @@ const KiloTaskHeader = ({
 				? rootTaskSummaryMap.get(currentTaskItem.id)
 				: undefined,
 	) // kilocode_change
-	const maxVisibleHierarchyItems = getMaxVisibleHierarchyItems(windowWidth)
-	const hasTaskHierarchyOverflow = taskHierarchyItems.length > maxVisibleHierarchyItems
-	const visibleTaskHierarchyItems =
-		hasTaskHierarchyOverflow && !showOverflowHierarchyItems
-			? taskHierarchyItems.slice(0, maxVisibleHierarchyItems)
-			: taskHierarchyItems
-	const hiddenTaskHierarchyCount = Math.max(taskHierarchyItems.length - visibleTaskHierarchyItems.length, 0)
-
-	useEffect(() => {
-		setShowOverflowHierarchyItems(false)
-	}, [currentTaskItem?.id, windowWidth])
 
 	const handleTaskSwitch = (taskId: string) => {
 		if (taskId === currentTaskItem?.id) {
@@ -248,39 +217,43 @@ const KiloTaskHeader = ({
 									{highlightText(task.text ?? "", false, customModes, commands)}
 								</span>
 							)}
-							{currentRootSummaryLabel && (
-								<span
-									className="ml-2 text-[10px] text-vscode-descriptionForeground"
-									data-testid="current-root-summary">
-									{currentRootSummaryLabel}
-								</span>
-							)}
-							{/* kilocode_change start */}
 							{!isTaskExpanded && orchestrationSummary.hasStatusSignals && (
-								<span className="ml-2" data-testid="task-orchestration-badge">
+								<span
+									className="ml-2 inline-flex shrink-0 items-center"
+									data-testid="task-orchestration-badge">
 									<OrchestrationStatusSummary
 										summary={orchestrationSummary}
 										showTitle={false}
-										className="gap-1.5"
+										className="gap-1"
 										badgeClassName="text-[10px]"
 										countsClassName="text-[10px]"
 										dataTestId="task-orchestration-summary"
 									/>
 								</span>
 							)}
-							{/* kilocode_change end */}
+							{!isTaskExpanded && currentRootSummaryLabel && !orchestrationSummary.hasStatusSignals && (
+								<span
+									className="ml-2 truncate text-[10px] text-vscode-descriptionForeground"
+									data-testid="current-root-summary">
+									{currentRootSummaryLabel}
+								</span>
+							)}
 						</div>
 					</div>
 					<StandardTooltip content={t("chat:task.closeAndStart")}>
-						<Button variant="ghost" size="icon" onClick={onClose} className="shrink-0 w-5 h-5">
-							<span className="codicon codicon-close" />
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={onClose}
+							className="shrink-0 h-5 w-5 rounded-md border-0 bg-transparent p-0 text-vscode-descriptionForeground hover:bg-vscode-list-hoverBackground hover:text-vscode-foreground">
+							<span className="codicon codicon-close text-[12px] leading-none" />
 						</Button>
 					</StandardTooltip>
 				</div>
 				{taskHierarchyItems.length > 1 && (
-					<div className="mt-2 flex flex-wrap items-center gap-1" data-testid="task-hierarchy-nav">
-						{visibleTaskHierarchyItems.map((hierarchyItem, index) => (
-							<div key={hierarchyItem.id} className="flex min-w-0 items-center gap-1">
+					<div className="mt-2 w-full flex flex-wrap items-start gap-1" data-testid="task-hierarchy-nav">
+						{taskHierarchyItems.map((hierarchyItem, index) => (
+							<div key={hierarchyItem.id} className="flex max-w-full min-w-0 items-center gap-1">
 								{index > 0 && <span className="text-xs text-vscode-descriptionForeground">›</span>}
 								<button
 									type="button"
@@ -299,20 +272,6 @@ const KiloTaskHeader = ({
 								</button>
 							</div>
 						))}
-						{hasTaskHierarchyOverflow && (
-							<button
-								type="button"
-								onClick={() => setShowOverflowHierarchyItems((current) => !current)}
-								className="inline-flex items-center gap-1 rounded-md border border-vscode-panel-border bg-vscode-editor-background px-2 py-1 text-xs text-vscode-descriptionForeground hover:bg-vscode-list-hoverBackground hover:text-vscode-foreground"
-								aria-expanded={showOverflowHierarchyItems}
-								data-testid="task-hierarchy-overflow-toggle"
-								title={showOverflowHierarchyItems ? "Hide extra tasks" : "Show extra tasks"}>
-								<MoreHorizontal size={14} />
-								{!showOverflowHierarchyItems && hiddenTaskHierarchyCount > 0 && (
-									<span>{hiddenTaskHierarchyCount}</span>
-								)}
-							</button>
-						)}
 					</div>
 				)}
 				{!isTaskExpanded && contextWindow > 0 && (
@@ -323,6 +282,7 @@ const KiloTaskHeader = ({
 							taskHistory={taskHistory}
 							compact
 							showSummary={false}
+							showChildTasks={false}
 						/>
 						{showTaskTimeline && (
 							<TaskTimeline

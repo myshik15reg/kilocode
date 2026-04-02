@@ -153,9 +153,7 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 	}
 
 	public async resumeTask(taskId: string): Promise<void> {
-		const { historyItem } = await this.sidebarProvider.getTaskWithId(taskId)
-		await this.sidebarProvider.createTaskWithHistoryItem(historyItem)
-		await this.sidebarProvider.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
+		this.sidebarProvider.resumeTask(taskId)
 	}
 
 	public async isTaskInHistory(taskId: string): Promise<boolean> {

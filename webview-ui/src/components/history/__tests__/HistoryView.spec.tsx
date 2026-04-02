@@ -695,7 +695,7 @@ describe("HistoryView", () => {
 		render(<HistoryView onDone={vi.fn()} />)
 
 		expect(screen.getByTestId("history-active-root-switcher")).toBeInTheDocument()
-		expect(screen.getByTestId("orchestration-status-badge-paused")).toBeInTheDocument()
+		expect(screen.getAllByTestId("orchestration-status-badge-paused").length).toBeGreaterThan(0)
 		expect(screen.queryByText("chat:orchestration.title")).not.toBeInTheDocument()
 	})
 
@@ -740,7 +740,7 @@ describe("HistoryView", () => {
 		render(<HistoryView onDone={vi.fn()} />)
 
 		expect(screen.getByTestId("history-active-root-switcher")).toBeInTheDocument()
-		expect(screen.getByTestId("orchestration-status-badge-recoverable")).toBeInTheDocument()
+		expect(screen.getAllByTestId("orchestration-status-badge-recoverable").length).toBeGreaterThan(0)
 	})
 
 	it("does not show orchestration badge in header for relay-only activity", () => {
@@ -798,34 +798,39 @@ describe("HistoryView", () => {
 	})
 
 	it("renders grouped tasks collapsed by default and expands children on toggle", () => {
+		const parentTask = {
+			id: "parent",
+			number: 1,
+			task: "Parent task",
+			ts: Date.now() + 1000,
+			tokensIn: 10,
+			tokensOut: 10,
+			totalCost: 0.001,
+			workspace: "/test/workspace",
+			childIds: ["child"],
+		}
+		const childTask = {
+			id: "child",
+			number: 2,
+			task: "Child task",
+			ts: Date.now(),
+			tokensIn: 5,
+			tokensOut: 5,
+			totalCost: 0.001,
+			workspace: "/test/workspace",
+			parentTaskId: "parent",
+			rootTaskId: "parent",
+		}
+
+		;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+			taskHistory: [parentTask, childTask],
+			cwd: "/test/workspace",
+			runningRootTaskIds: [],
+		})
 		;(useTaskHistory as ReturnType<typeof vi.fn>).mockReturnValue({
 			data: {
 				requestId: "",
-				historyItems: [
-					{
-						id: "parent",
-						number: 1,
-						task: "Parent task",
-						ts: Date.now() + 1000,
-						tokensIn: 10,
-						tokensOut: 10,
-						totalCost: 0.001,
-						workspace: "/test/workspace",
-						childIds: ["child"],
-					},
-					{
-						id: "child",
-						number: 2,
-						task: "Child task",
-						ts: Date.now(),
-						tokensIn: 5,
-						tokensOut: 5,
-						totalCost: 0.001,
-						workspace: "/test/workspace",
-						parentTaskId: "parent",
-						rootTaskId: "parent",
-					},
-				],
+				historyItems: [parentTask],
 				pageIndex: 0,
 				pageCount: 1,
 			},
@@ -840,5 +845,55 @@ describe("HistoryView", () => {
 		fireEvent.click(screen.getByTestId("task-group-toggle-parent"))
 
 		expect(screen.getByTestId("task-item-child")).toBeInTheDocument()
+	})
+
+	it("expands paged parent rows using descendants from extension history", () => {
+		const parentTask = {
+			id: "parent",
+			number: 1,
+			task: "Parent task",
+			ts: Date.now() + 1000,
+			tokensIn: 10,
+			tokensOut: 10,
+			totalCost: 0.001,
+			workspace: "/test/workspace",
+			childIds: ["child"],
+		}
+		const childTask = {
+			id: "child",
+			number: 2,
+			task: "Child task",
+			ts: Date.now(),
+			tokensIn: 5,
+			tokensOut: 5,
+			totalCost: 0.001,
+			workspace: "/test/workspace",
+			parentTaskId: "parent",
+			rootTaskId: "parent",
+			lifecycleState: "paused",
+		}
+
+		;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+			taskHistory: [parentTask, childTask],
+			cwd: "/test/workspace",
+			runningRootTaskIds: [],
+			activeRootTaskIds: [],
+			focusedRootTaskId: undefined,
+		})
+		;(useTaskHistory as ReturnType<typeof vi.fn>).mockReturnValue({
+			data: {
+				requestId: "",
+				historyItems: [parentTask],
+				pageIndex: 0,
+				pageCount: 1,
+			},
+		})
+
+		render(<HistoryView onDone={vi.fn()} />)
+
+		expect(screen.queryByTestId("task-item-child")).not.toBeInTheDocument()
+		fireEvent.click(screen.getByTestId("task-group-toggle-parent"))
+		expect(screen.getByTestId("task-item-child")).toBeInTheDocument()
+		expect(screen.getByTestId("history-active-root-switcher")).toHaveTextContent("history:statusStopped 1")
 	})
 })

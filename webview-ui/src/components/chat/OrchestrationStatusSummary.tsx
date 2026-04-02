@@ -6,10 +6,9 @@ import { cn } from "@/lib/utils"
 
 import type { OrchestrationStatusSummary as OrchestrationStatusSummaryValue } from "./orchestration"
 import {
-	getOrchestrationCountDefaultLabel,
+	formatCompactOrchestrationCounts,
 	getVisibleOrchestrationCounts,
 	orchestrationStatusDefaultLabels,
-	orchestrationStatusCountLabelKeys,
 	orchestrationStatusLabelKeys,
 } from "./orchestration"
 import OrchestrationStatusBadge from "./OrchestrationStatusBadge"
@@ -38,15 +37,11 @@ const OrchestrationStatusSummary = ({
 	const badgeLabel = t(orchestrationStatusLabelKeys[summary.status], {
 		defaultValue: orchestrationStatusDefaultLabels[summary.status],
 	})
+	const compactCountsLabel = useMemo(() => formatCompactOrchestrationCounts(summary.counts), [summary.counts])
 	const badgeTitle = [
 		showTitle ? t("chat:orchestration.title", { defaultValue: "Orchestration" }) : undefined,
 		badgeLabel,
-		...visibleCounts.map(({ status, count }) =>
-			t(orchestrationStatusCountLabelKeys[status], {
-				count,
-				defaultValue: getOrchestrationCountDefaultLabel(status, count),
-			}),
-		),
+		compactCountsLabel || undefined,
 	]
 		.filter(Boolean)
 		.join(" · ")
@@ -56,9 +51,9 @@ const OrchestrationStatusSummary = ({
 	}
 
 	return (
-		<span className={cn("inline-flex flex-wrap items-center gap-2", className)} data-testid={dataTestId}>
+		<span className={cn("inline-flex flex-wrap items-center gap-1.5", className)} data-testid={dataTestId}>
 			{showTitle && (
-				<span className={cn("text-xs font-medium text-vscode-descriptionForeground", titleClassName)}>
+				<span className={cn("text-[11px] font-medium text-vscode-descriptionForeground", titleClassName)}>
 					{t("chat:orchestration.title", { defaultValue: "Orchestration" })}
 				</span>
 			)}
@@ -68,16 +63,15 @@ const OrchestrationStatusSummary = ({
 				title={badgeTitle}
 				className={badgeClassName}
 			/>
-			{visibleCounts.map(({ status, count }) => (
+			{visibleCounts.length > 0 && compactCountsLabel && (
 				<span
-					key={status}
-					className={cn("text-[10px] text-vscode-descriptionForeground whitespace-nowrap", countsClassName)}>
-					{t(orchestrationStatusCountLabelKeys[status], {
-						count,
-						defaultValue: getOrchestrationCountDefaultLabel(status, count),
-					})}
+					className={cn(
+						"text-[10px] leading-tight whitespace-nowrap text-vscode-descriptionForeground/85",
+						countsClassName,
+					)}>
+					{compactCountsLabel}
 				</span>
-			))}
+			)}
 		</span>
 	)
 }

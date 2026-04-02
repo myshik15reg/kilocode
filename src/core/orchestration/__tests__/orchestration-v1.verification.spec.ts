@@ -217,6 +217,7 @@ describe("orchestration v1 verification pack", () => {
 			publishActivity: publishActivity as any,
 			postStateToWebview,
 			showTaskWithId,
+			cascadeResumeDescendantTasks: vi.fn().mockResolvedValue([]),
 			log,
 			getSubagentCoordinator: vi.fn(() => coordinator as any),
 		}

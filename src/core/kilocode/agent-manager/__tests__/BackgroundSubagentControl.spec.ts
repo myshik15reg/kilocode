@@ -183,6 +183,8 @@ describe("BackgroundSubagentControl", () => {
 		expect(updateTaskHistory).toHaveBeenLastCalledWith(
 			expect.objectContaining({
 				id: "child-1",
+				status: "active",
+				statusUpdatedAt: 999,
 				lifecycleState: "running",
 				pauseReason: undefined,
 				pausedAt: undefined,

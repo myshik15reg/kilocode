@@ -105,6 +105,8 @@ export function SessionDetail() {
 	const canBroadcastToGroup =
 		!!selectedSession.sessionGroup?.groupId && !!(groupRelayContent || compactGroupRelayContent)
 	const relayWillCompactUnderPressure = Boolean(relayCompactPolicyLabel)
+	const sessionStatusLabel =
+		selectedSessionState === "creating" ? t("status.creating") : t(`status.${selectedSession.status}`)
 	// kilocode_change start
 	const canResumeSession =
 		selectedSessionState === "paused" ||
@@ -174,20 +176,18 @@ export function SessionDetail() {
 					<div className="am-header-title" title={selectedSession.prompt}>
 						{selectedSession.label}
 					</div>
-					<div className="am-header-meta">
-						{showSpinner && (
-							<div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-								<Loader2 size={12} className="am-spinning" />
-								<span>
-									{selectedSessionState === "creating" ? t("status.creating") : t("status.running")}
-								</span>
-							</div>
-						)}
+					<div className="am-header-meta" style={{ gap: 8 }}>
+						<span
+							style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+							data-testid="session-detail-status">
+							{showSpinner && <Loader2 size={12} className="am-spinning" />}
+							<span>{sessionStatusLabel}</span>
+						</span>
 						<span>{formatRelativeTime(selectedSession.startTime, timeLabels)}</span>
 						{isWorktree ? (
 							<div
 								className="am-worktree-badge"
-								style={{ display: "flex", alignItems: "center", gap: 4 }}
+								style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
 								title={branchName || t("sessionDetail.runningInWorktree")}>
 								<GitBranch size={12} />
 								<span>{branchName || t("sidebar.worktree")}</span>
@@ -195,39 +195,57 @@ export function SessionDetail() {
 						) : (
 							<div
 								className="am-local-badge"
-								style={{ display: "flex", alignItems: "center", gap: 4 }}
+								style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
 								title={t("sessionDetail.runningLocally")}>
 								<Folder size={12} />
 								<span>{t("sessionDetail.runModeLocal")}</span>
 							</div>
 						)}
-						{sessionGroupSummaryLabel && (
-							<span data-testid="session-detail-group-summary">{sessionGroupSummaryLabel}</span>
-						)}
-						{sessionPressureLabel && (
-							<span data-testid="session-detail-group-pressure">{sessionPressureLabel}</span>
-						)}
-						{sessionRelayLabel && <span data-testid="session-detail-group-relay">{sessionRelayLabel}</span>}
-						{relayCompactPolicyLabel && (
-							<span data-testid="session-detail-relay-policy">{relayCompactPolicyLabel}</span>
-						)}
-						{taskLinkageLabel && <span data-testid="session-detail-task-linkage">{taskLinkageLabel}</span>}
-						{rootTaskSummaryLabel && (
-							<span data-testid="session-detail-root-summary">{rootTaskSummaryLabel}</span>
-						)}
-						{rootTaskPressureLabel && (
-							<span data-testid="session-detail-root-pressure">{rootTaskPressureLabel}</span>
-						)}
-						{rootTaskProblemLabel && (
-							<span data-testid="session-detail-root-problems">{rootTaskProblemLabel}</span>
-						)}
-						{rootTaskRelayLabel && (
-							<span data-testid="session-detail-root-relay">{rootTaskRelayLabel}</span>
-						)}
-						{rootTaskGuardrailLabel && (
-							<span data-testid="session-detail-root-guardrail">{rootTaskGuardrailLabel}</span>
-						)}
 					</div>
+					{(taskLinkageLabel || sessionGroupSummaryLabel || rootTaskSummaryLabel) && (
+						<div className="am-header-meta" style={{ gap: 8 }}>
+							{taskLinkageLabel && (
+								<span data-testid="session-detail-task-linkage">{taskLinkageLabel}</span>
+							)}
+							{sessionGroupSummaryLabel && (
+								<span data-testid="session-detail-group-summary">{sessionGroupSummaryLabel}</span>
+							)}
+							{rootTaskSummaryLabel && (
+								<span data-testid="session-detail-root-summary">{rootTaskSummaryLabel}</span>
+							)}
+						</div>
+					)}
+					{(sessionPressureLabel ||
+						sessionRelayLabel ||
+						relayCompactPolicyLabel ||
+						rootTaskPressureLabel ||
+						rootTaskProblemLabel ||
+						rootTaskRelayLabel ||
+						rootTaskGuardrailLabel) && (
+						<div className="am-header-meta" style={{ gap: 8, opacity: 0.8 }}>
+							{sessionPressureLabel && (
+								<span data-testid="session-detail-group-pressure">{sessionPressureLabel}</span>
+							)}
+							{sessionRelayLabel && (
+								<span data-testid="session-detail-group-relay">{sessionRelayLabel}</span>
+							)}
+							{relayCompactPolicyLabel && (
+								<span data-testid="session-detail-relay-policy">{relayCompactPolicyLabel}</span>
+							)}
+							{rootTaskPressureLabel && (
+								<span data-testid="session-detail-root-pressure">{rootTaskPressureLabel}</span>
+							)}
+							{rootTaskProblemLabel && (
+								<span data-testid="session-detail-root-problems">{rootTaskProblemLabel}</span>
+							)}
+							{rootTaskRelayLabel && (
+								<span data-testid="session-detail-root-relay">{rootTaskRelayLabel}</span>
+							)}
+							{rootTaskGuardrailLabel && (
+								<span data-testid="session-detail-root-guardrail">{rootTaskGuardrailLabel}</span>
+							)}
+						</div>
+					)}
 				</div>
 				<div className="am-header-actions">
 					{/* kilocode_change start */}

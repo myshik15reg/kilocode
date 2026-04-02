@@ -241,4 +241,160 @@ describe("ClineProvider cascade stop handling", () => {
 			expect.objectContaining({ id: "done-child", status: "aborted" }),
 		)
 	})
+
+	it("resume parent reactivates unfinished descendants, normalizes delegated child status, and keeps completed branches untouched", async () => {
+		const history: HistoryItem[] = [
+			{
+				id: "parent",
+				number: 1,
+				ts: 4,
+				task: "Parent",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				status: "active",
+				lifecycleState: "paused",
+				childIds: ["child-paused", "child-running", "child-done"],
+			},
+			{
+				id: "child-paused",
+				number: 2,
+				ts: 3,
+				task: "Paused child",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				status: "delegated",
+				lifecycleState: "paused",
+				pauseReason: "Paused by user",
+				pausedAt: 100,
+				awaitingChildId: "nested-child",
+				parentTaskId: "parent",
+				rootTaskId: "parent",
+			},
+			{
+				id: "child-running",
+				number: 3,
+				ts: 2,
+				task: "Already running child",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				status: "active",
+				lifecycleState: "running",
+				parentTaskId: "parent",
+				rootTaskId: "parent",
+			},
+			{
+				id: "child-done",
+				number: 4,
+				ts: 1,
+				task: "Done child",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				status: "completed",
+				lifecycleState: "completed",
+				parentTaskId: "parent",
+				rootTaskId: "parent",
+			},
+		]
+
+		const provider = Object.create(ClineProvider.prototype) as any
+		provider.getTaskHistory = vi.fn(() => history)
+		provider.updateTaskHistory = vi.fn(async (item: HistoryItem) => {
+			const index = history.findIndex((entry) => entry.id === item.id)
+			if (index >= 0) {
+				history[index] = item
+			}
+			return history
+		})
+		provider.subagentCoordinator = {
+			getBindingForTask: vi.fn(() => undefined),
+			resume: vi.fn(),
+		}
+
+		await (provider as any).cascadeResumeDescendantTasks("parent")
+
+		expect(provider.updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "child-paused",
+				status: "active",
+				statusUpdatedAt: expect.any(Number),
+				lifecycleState: "running",
+				pauseReason: undefined,
+				pausedAt: undefined,
+			}),
+		)
+		expect(provider.updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "child-running",
+				status: "active",
+				lifecycleState: "running",
+			}),
+		)
+		expect(provider.updateTaskHistory).not.toHaveBeenCalledWith(
+			expect.objectContaining({ id: "child-done", lifecycleState: "running" }),
+		)
+	})
+
+	it("resume parent persists active running state for background-bound descendants so UI updates immediately", async () => {
+		const history: HistoryItem[] = [
+			{
+				id: "parent",
+				number: 1,
+				ts: 3,
+				task: "Parent",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				status: "active",
+				lifecycleState: "paused",
+				childIds: ["child-bg"],
+			},
+			{
+				id: "child-bg",
+				number: 2,
+				ts: 2,
+				task: "Background child",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				status: "delegated",
+				lifecycleState: "paused",
+				pauseReason: "Paused by user",
+				pausedAt: 123,
+				parentTaskId: "parent",
+				rootTaskId: "parent",
+			},
+		]
+
+		const provider = Object.create(ClineProvider.prototype) as any
+		provider.getTaskHistory = vi.fn(() => history)
+		provider.updateTaskHistory = vi.fn(async (item: HistoryItem) => {
+			const index = history.findIndex((entry) => entry.id === item.id)
+			if (index >= 0) {
+				history[index] = item
+			}
+			return history
+		})
+		provider.subagentCoordinator = {
+			getBindingForTask: vi.fn((taskId: string) => (taskId === "child-bg" ? { childTaskId: taskId } : undefined)),
+			resume: vi.fn().mockResolvedValue(undefined),
+		}
+
+		await (provider as any).cascadeResumeDescendantTasks("parent")
+
+		expect(provider.subagentCoordinator.resume).toHaveBeenCalledWith("child-bg")
+		expect(provider.updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "child-bg",
+				status: "active",
+				statusUpdatedAt: expect.any(Number),
+				lifecycleState: "running",
+				pauseReason: undefined,
+				pausedAt: undefined,
+			}),
+		)
+	})
 })

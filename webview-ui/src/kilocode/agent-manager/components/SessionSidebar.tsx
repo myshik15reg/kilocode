@@ -546,49 +546,73 @@ function SessionGroupItem({
 					{depth > 0 ? `${String.fromCharCode(0x21b3)} ${group.label}` : group.label}
 				</div>
 				<div className="am-session-meta">
-					<Layers size={10} />
-					<span>{t("sidebar.sessionCount", { count: group.sessions.length })}</span>
-					{branchSummaryLabel && (
-						<span data-testid={`group-branch-summary-${group.groupId}`}>{branchSummaryLabel}</span>
-					)}
-					{groupTaskLinkageLabel && (
-						<span data-testid={`group-task-linkage-${group.groupId}`}>{groupTaskLinkageLabel}</span>
-					)}
-					{subtreeSummaryLabel && (
-						<span data-testid={`group-subtree-summary-${group.groupId}`}>{subtreeSummaryLabel}</span>
-					)}
-					{subtreePressureLabel && (
-						<span data-testid={`group-subtree-pressure-${group.groupId}`}>{subtreePressureLabel}</span>
-					)}
-					{subtreeProblemLabel && (
-						<span data-testid={`group-subtree-problems-${group.groupId}`}>{subtreeProblemLabel}</span>
-					)}
-					{subtreeRelayLabel && (
-						<span data-testid={`group-subtree-relay-${group.groupId}`}>{subtreeRelayLabel}</span>
-					)}
-					{subtreeGuardrailLabel && (
-						<span data-testid={`group-subtree-guardrail-${group.groupId}`}>{subtreeGuardrailLabel}</span>
-					)}
-
-					{groupBudget && <span>{t("sidebar.budgetLabel", { value: groupBudget })}</span>}
-					{queuedCount > 0 && <span>{t("sidebar.queuedLabel", { count: queuedCount })}</span>}
-					{pressureLabel && <span data-testid={`group-pressure-${group.groupId}`}>{pressureLabel}</span>}
-					{guardrailLabel && <span data-testid={`group-guardrail-${group.groupId}`}>{guardrailLabel}</span>}
-					{relayLabel && <span data-testid={`group-relay-${group.groupId}`}>{relayLabel}</span>}
-					{relayPolicyLabel && (
-						<span data-testid={`group-relay-policy-${group.groupId}`}>{relayPolicyLabel}</span>
-					)}
-					{stopReasonLabel && (
-						<span data-testid={`group-stop-reason-${group.groupId}`}>{stopReasonLabel}</span>
-					)}
-					{restartPolicyLabel && (
-						<span data-testid={`group-restart-policy-${group.groupId}`}>{restartPolicyLabel}</span>
-					)}
-					{autoRestartLabel && (
-						<span data-testid={`group-auto-restart-${group.groupId}`}>{autoRestartLabel}</span>
-					)}
 					{statusLabel && <span data-testid={`group-status-${group.groupId}`}>{t(statusLabel)}</span>}
+					<span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+						<Layers size={10} />
+						<span>{t("sidebar.sessionCount", { count: group.sessions.length })}</span>
+					</span>
+					{queuedCount > 0 && <span>{t("sidebar.queuedLabel", { count: queuedCount })}</span>}
 				</div>
+				{(groupTaskLinkageLabel || branchSummaryLabel || subtreeSummaryLabel) && (
+					<div className="am-session-meta">
+						{groupTaskLinkageLabel && (
+							<span data-testid={`group-task-linkage-${group.groupId}`}>{groupTaskLinkageLabel}</span>
+						)}
+						{branchSummaryLabel && (
+							<span data-testid={`group-branch-summary-${group.groupId}`}>{branchSummaryLabel}</span>
+						)}
+						{subtreeSummaryLabel && (
+							<span data-testid={`group-subtree-summary-${group.groupId}`}>{subtreeSummaryLabel}</span>
+						)}
+					</div>
+				)}
+				{(groupBudget ||
+					pressureLabel ||
+					guardrailLabel ||
+					relayLabel ||
+					relayPolicyLabel ||
+					stopReasonLabel ||
+					restartPolicyLabel ||
+					autoRestartLabel ||
+					subtreePressureLabel ||
+					subtreeProblemLabel ||
+					subtreeRelayLabel ||
+					subtreeGuardrailLabel) && (
+					<div className="am-session-meta" style={{ opacity: 0.8 }}>
+						{groupBudget && <span>{t("sidebar.budgetLabel", { value: groupBudget })}</span>}
+						{pressureLabel && <span data-testid={`group-pressure-${group.groupId}`}>{pressureLabel}</span>}
+						{guardrailLabel && (
+							<span data-testid={`group-guardrail-${group.groupId}`}>{guardrailLabel}</span>
+						)}
+						{relayLabel && <span data-testid={`group-relay-${group.groupId}`}>{relayLabel}</span>}
+						{relayPolicyLabel && (
+							<span data-testid={`group-relay-policy-${group.groupId}`}>{relayPolicyLabel}</span>
+						)}
+						{stopReasonLabel && (
+							<span data-testid={`group-stop-reason-${group.groupId}`}>{stopReasonLabel}</span>
+						)}
+						{restartPolicyLabel && (
+							<span data-testid={`group-restart-policy-${group.groupId}`}>{restartPolicyLabel}</span>
+						)}
+						{autoRestartLabel && (
+							<span data-testid={`group-auto-restart-${group.groupId}`}>{autoRestartLabel}</span>
+						)}
+						{subtreePressureLabel && (
+							<span data-testid={`group-subtree-pressure-${group.groupId}`}>{subtreePressureLabel}</span>
+						)}
+						{subtreeProblemLabel && (
+							<span data-testid={`group-subtree-problems-${group.groupId}`}>{subtreeProblemLabel}</span>
+						)}
+						{subtreeRelayLabel && (
+							<span data-testid={`group-subtree-relay-${group.groupId}`}>{subtreeRelayLabel}</span>
+						)}
+						{subtreeGuardrailLabel && (
+							<span data-testid={`group-subtree-guardrail-${group.groupId}`}>
+								{subtreeGuardrailLabel}
+							</span>
+						)}
+					</div>
+				)}
 			</div>
 			<div style={{ display: "flex", gap: 4 }}>
 				{isPressureSaturated && problematicSession && (
@@ -824,28 +848,37 @@ function SessionItem({
 				<div className="am-session-label">{session.label}</div>
 				<div className="am-session-meta">
 					{showSpinner && <Loader2 size={12} className="am-spinning" />}
+					<span>{t(`status.${session.status}`)}</span>
 					<span>{formatRelativeTime(session.startTime, timeLabels)}</span>
+				</div>
+				<div className="am-session-meta">
 					{isWorktree ? (
-						<span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+						<span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
 							<GitBranch size={10} />
 							{branchName || t("sidebar.worktree")}
 						</span>
 					) : (
-						<span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+						<span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
 							<Folder size={10} />
 							{t("sidebar.local")}
 						</span>
-					)}
-					{restartPolicyLabel && (
-						<span data-testid={`session-restart-policy-${session.sessionId}`}>{restartPolicyLabel}</span>
-					)}
-					{autoRestartLabel && (
-						<span data-testid={`session-auto-restart-${session.sessionId}`}>{autoRestartLabel}</span>
 					)}
 					{taskLinkageLabel && (
 						<span data-testid={`session-task-linkage-${session.sessionId}`}>{taskLinkageLabel}</span>
 					)}
 				</div>
+				{(restartPolicyLabel || autoRestartLabel) && (
+					<div className="am-session-meta" style={{ opacity: 0.8 }}>
+						{restartPolicyLabel && (
+							<span data-testid={`session-restart-policy-${session.sessionId}`}>
+								{restartPolicyLabel}
+							</span>
+						)}
+						{autoRestartLabel && (
+							<span data-testid={`session-auto-restart-${session.sessionId}`}>{autoRestartLabel}</span>
+						)}
+					</div>
+				)}
 			</div>
 			<div style={{ display: "flex", gap: 4 }}>
 				{showRecoveryActions && (

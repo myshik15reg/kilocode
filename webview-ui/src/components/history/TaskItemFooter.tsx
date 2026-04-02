@@ -9,25 +9,47 @@ import { KiloShareSessionButton } from "./KiloShareSessionButton" // kilocode_ch
 import { StandardTooltip } from "../ui/standard-tooltip"
 import { vscode } from "@/utils/vscode"
 import { LucideIconButton } from "../chat/LucideIconButton"
-import { PauseIcon, PlayIcon, GitBranchIcon } from "lucide-react"
+import { PauseIcon, PlayIcon } from "lucide-react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
+import { getHistoryRootTaskStatus } from "./taskTree"
 
 export interface TaskItemFooterProps {
 	item: HistoryItem
 	variant: "compact" | "full"
+	runningRootTaskIds?: readonly string[]
 	isSelectionMode?: boolean
 	onDelete?: (taskId: string) => void
 }
 
-const TaskItemFooter: React.FC<TaskItemFooterProps> = ({ item, variant, isSelectionMode = false, onDelete }) => {
+const TaskItemFooter: React.FC<TaskItemFooterProps> = ({
+	item,
+	variant,
+	runningRootTaskIds = [],
+	isSelectionMode = false,
+	onDelete,
+}) => {
 	const { t } = useAppTranslation()
 	// kilocode_change start
 	const isCompletedItem = item.status === "completed" || item.lifecycleState === "completed"
+	const isRootTask = !item.parentTaskId && (!item.rootTaskId || item.rootTaskId === item.id)
+	const rootTaskStatus =
+		item.status && isRootTask ? getHistoryRootTaskStatus(item, { runningRootTaskIds }) : undefined
+	const showResumeTask =
+		!isCompletedItem &&
+		(item.lifecycleState === "paused" ||
+			((item.status === "active" || item.status === "aborted") &&
+				!!item.lastStopReason &&
+				rootTaskStatus === "stopped"))
+	const showPauseTask =
+		!isCompletedItem &&
+		!showResumeTask &&
+		(item.lifecycleState === "running" ||
+			(!item.lifecycleState && (item.status === undefined || rootTaskStatus === "running")))
 	// kilocode_change end
 
 	return (
-		<div className="text-xs text-vscode-descriptionForeground flex justify-between items-center">
-			<div className="flex gap-1 items-center text-vscode-descriptionForeground/60">
+		<div className="flex items-center justify-between gap-2 text-[11px] text-vscode-descriptionForeground">
+			<div className="flex min-w-0 flex-wrap items-center gap-1 text-vscode-descriptionForeground/70">
 				{/* Datetime with time-ago format */}
 				<StandardTooltip content={new Date(item.ts).toLocaleString()}>
 					<span className="first-letter:uppercase">{formatTimeAgo(item.ts)}</span>
@@ -35,7 +57,9 @@ const TaskItemFooter: React.FC<TaskItemFooterProps> = ({ item, variant, isSelect
 				<span>·</span>
 				{/* Cost */}
 				{!!item.totalCost && (
-					<span className="flex items-center" data-testid="cost-footer-compact">
+					<span
+						className="flex items-center text-vscode-descriptionForeground/60"
+						data-testid="cost-footer-compact">
 						{"$" + item.totalCost.toFixed(2)}
 					</span>
 				)}
@@ -43,28 +67,26 @@ const TaskItemFooter: React.FC<TaskItemFooterProps> = ({ item, variant, isSelect
 
 			{/* Action Buttons for non-compact view */}
 			{!isSelectionMode && (
-				<div className="flex flex-row gap-0 -mx-2 items-center text-vscode-descriptionForeground/60 hover:text-vscode-descriptionForeground">
+				<div className="flex flex-row items-center gap-0.5 text-vscode-descriptionForeground/55 hover:text-vscode-descriptionForeground/85">
 					{/* kilocode_change start */}
-					{!isCompletedItem && (
-						<>
-							<LucideIconButton
-								icon={item.lifecycleState === "paused" ? PlayIcon : PauseIcon}
-								title={
-									item.lifecycleState === "paused" ? t("chat:resumeTask.title") : t("chat:task.pause")
-								}
-								onClick={() =>
-									vscode.postMessage({
-										type: item.lifecycleState === "paused" ? "resumeTask" : "pauseTask",
-										text: item.id,
-									})
-								}
-							/>
-							<LucideIconButton
-								icon={GitBranchIcon}
-								title={t("chat:task.branch")}
-								onClick={() => vscode.postMessage({ type: "branchTask", text: item.id })}
-							/>
-						</>
+					{showPauseTask && (
+						<LucideIconButton
+							icon={PauseIcon}
+							title={t("chat:task.pause")}
+							onClick={() =>
+								vscode.postMessage({
+									type: "pauseTask",
+									text: item.id,
+								})
+							}
+						/>
+					)}
+					{showResumeTask && (
+						<LucideIconButton
+							icon={PlayIcon}
+							title={t("chat:resumeTask.title")}
+							onClick={() => vscode.postMessage({ type: "resumeTask", text: item.id })}
+						/>
 					)}
 					{/* kilocode_change end */}
 					<CopyButton itemTask={item.task} />

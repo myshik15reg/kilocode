@@ -18,8 +18,8 @@ import {
 	MessageSquareCodeIcon,
 	PauseIcon,
 	PlayIcon,
-	GitBranchIcon,
 } from "lucide-react"
+import { getHistoryRootTaskStatus } from "../history/taskTree"
 import { LucideIconButton } from "./LucideIconButton"
 
 interface TaskActionsProps {
@@ -31,33 +31,55 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 	const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null)
 	const { t } = useTranslation()
 	const { copyWithFeedback } = useCopyToClipboard()
-	const { debug } = useExtensionState()
+	const { debug, runningRootTaskIds = [] } = useExtensionState()
 	// kilocode_change start
 	const isCompletedItem = item?.status === "completed" || item?.lifecycleState === "completed"
-	const showLifecycleControls = !!item?.id && !isCompletedItem
+	const isRootTask = !!item && !item.parentTaskId && (!item.rootTaskId || item.rootTaskId === item.id)
+	const rootTaskStatus =
+		item?.status && isRootTask ? getHistoryRootTaskStatus(item, { runningRootTaskIds }) : undefined
+	const showResumeTask =
+		!!item?.id &&
+		!isCompletedItem &&
+		(item.lifecycleState === "paused" ||
+			item.lifecycleState === "cancelled" ||
+			((item.status === "active" || item.status === "aborted") &&
+				!!item.lastStopReason &&
+				rootTaskStatus === "stopped"))
+	const showPauseTask =
+		!!item?.id &&
+		!isCompletedItem &&
+		!showResumeTask &&
+		(item.lifecycleState === "running" ||
+			rootTaskStatus === "running" ||
+			(!item.lifecycleState && item.status === undefined))
 	// kilocode_change end
 
 	return (
 		<div className="flex flex-row items-center -ml-0.5 mt-1 gap-1">
-			{showLifecycleControls && (
+			{showPauseTask && (
 				<LucideIconButton
-					icon={item.lifecycleState === "paused" ? PlayIcon : PauseIcon}
-					title={item.lifecycleState === "paused" ? "Resume task" : "Pause task"}
+					icon={PauseIcon}
+					title="Pause task"
 					disabled={buttonsDisabled}
 					onClick={() =>
 						vscode.postMessage({
-							type: item.lifecycleState === "paused" ? "resumeTask" : "pauseTask",
+							type: "pauseTask",
 							text: item.id,
 						})
 					}
 				/>
 			)}
-			{showLifecycleControls && (
+			{showResumeTask && (
 				<LucideIconButton
-					icon={GitBranchIcon}
-					title="Branch task"
+					icon={PlayIcon}
+					title="Resume task"
 					disabled={buttonsDisabled}
-					onClick={() => vscode.postMessage({ type: "branchTask", text: item.id })}
+					onClick={() =>
+						vscode.postMessage({
+							type: "resumeTask",
+							text: item.id,
+						})
+					}
 				/>
 			)}
 			<LucideIconButton

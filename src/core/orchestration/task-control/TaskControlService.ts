@@ -15,6 +15,7 @@ export interface TaskControlRuntime {
 	publishActivity(taskId: string, activity: TaskActivity): Promise<void>
 	postStateToWebview(): Promise<void>
 	showTaskWithId(taskId: string): Promise<void>
+	cascadeResumeDescendantTasks(taskId: string): Promise<string[]>
 	log(message: string): void
 	getSubagentCoordinator(): PauseResumeCoordinator | undefined
 }
@@ -82,19 +83,26 @@ export class TaskControlService {
 			task.emit(RooCodeEventName.TaskUnpaused, taskId)
 		}
 
-		void this.runtime
-			.getTaskWithId(taskId)
-			.then(({ historyItem }) =>
-				this.runtime.updateTaskHistory({
+		void (async () => {
+			try {
+				const { historyItem } = await this.runtime.getTaskWithId(taskId)
+				const statusUpdatedAt = Date.now()
+				await this.runtime.updateTaskHistory({
 					...historyItem,
+					...(historyItem.status === "completed" || historyItem.status === "aborted"
+						? {}
+						: {
+								status: "active",
+								statusUpdatedAt,
+							}),
 					lifecycleState: "running",
 					pauseReason: undefined,
 					pausedAt: undefined,
-				}),
-			)
-			.then(() => {
+				})
+				await this.runtime.cascadeResumeDescendantTasks(taskId)
+
 				const timestamp = Date.now()
-				return this.runtime.publishActivity(taskId, {
+				await this.runtime.publishActivity(taskId, {
 					kind: "taskControl",
 					id: `task-control-${control}-${timestamp}`,
 					taskId,
@@ -102,15 +110,14 @@ export class TaskControlService {
 					summary: control === "continue" ? "Task continued" : "Task resumed",
 					timestamp,
 				})
-			})
-			.catch((error) => {
-				this.runtime.log(`Failed to update task state for resume ${taskId}: ${error.message}`)
-			})
-
-		// Use the existing showTaskWithId method which handles both current and
-		// historical tasks.
-		this.runtime.showTaskWithId(taskId).catch((error) => {
-			this.runtime.log(`Failed to resume task ${taskId}: ${error.message}`)
-		})
+			} catch (error) {
+				this.runtime.log(`Failed to update task state for resume ${taskId}: ${(error as Error).message}`)
+			} finally {
+				await this.runtime.postStateToWebview()
+				await this.runtime.showTaskWithId(taskId).catch((error) => {
+					this.runtime.log(`Failed to resume task ${taskId}: ${error.message}`)
+				})
+			}
+		})()
 	}
 }

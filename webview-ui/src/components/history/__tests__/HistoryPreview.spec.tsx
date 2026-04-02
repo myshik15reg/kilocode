@@ -381,7 +381,7 @@ describe("HistoryPreview", () => {
 				variant: "compact",
 				isActiveRootTask: true,
 				isFocusedRootTask: true,
-				runningRootTaskIds: [],
+				runningRootTaskIds: ["task-1"],
 				className: "flex-1 min-w-0",
 			}),
 			expect.anything(),
@@ -402,6 +402,64 @@ describe("HistoryPreview", () => {
 			}),
 			expect.anything(),
 		)
+	})
+
+	it("expands parent rows on the main page using descendants from extension state", async () => {
+		extensionStateMock.state = {
+			activeRootTaskIds: ["parent"],
+			runningRootTaskIds: ["parent"],
+			focusedRootTaskId: "parent",
+			taskHistory: [
+				{
+					id: "parent",
+					number: 1,
+					task: "Parent task",
+					ts: Date.now(),
+					tokensIn: 1,
+					tokensOut: 1,
+					totalCost: 0,
+					childIds: ["child"],
+				},
+				{
+					id: "child",
+					number: 2,
+					task: "Child task",
+					ts: Date.now() - 1,
+					tokensIn: 1,
+					tokensOut: 1,
+					totalCost: 0,
+					parentTaskId: "parent",
+					rootTaskId: "parent",
+					lifecycleState: "running",
+					status: "active",
+				},
+			],
+		}
+		kiloCodeSetUpUseTaskHistoryMock({
+			tasks: [
+				{
+					id: "parent",
+					number: 1,
+					task: "Parent task",
+					ts: Date.now(),
+					tokensIn: 1,
+					tokensOut: 1,
+					totalCost: 0,
+				},
+			],
+		})
+
+		render(<HistoryPreview taskHistoryVersion={mockKiloCodeTaskHistoryVersion} />)
+
+		expect(screen.getByTestId("task-item-parent")).toBeInTheDocument()
+		expect(screen.getByTestId("task-item-child")).toBeInTheDocument()
+
+		const toggleButton = screen.getByTestId("history-preview-toggle-parent")
+		expect(toggleButton).toHaveClass("top-1/2", "-translate-y-1/2")
+
+		await toggleButton.click()
+
+		expect(screen.queryByTestId("task-item-child")).not.toBeInTheDocument()
 	})
 
 	it("renders with correct container classes", () => {

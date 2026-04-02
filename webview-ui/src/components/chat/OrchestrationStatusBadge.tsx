@@ -10,19 +10,19 @@ interface OrchestrationStatusBadgeProps {
 }
 
 const statusToneClasses: Record<OrchestrationStatus, string> = {
-	queued: "border-vscode-panel-border text-vscode-descriptionForeground",
-	running: "border-yellow-500/70 text-yellow-300",
-	paused: "border-blue-500/70 text-blue-300",
-	recoverable: "border-blue-500/70 text-blue-300",
-	completed: "border-green-500/70 text-green-300",
-	cancelled: "border-orange-500/70 text-orange-300",
-	failed: "border-red-500/70 text-red-300",
+	queued: "border-vscode-panel-border/70 bg-vscode-editor-background/40 text-vscode-descriptionForeground",
+	running: "border-yellow-500/35 bg-yellow-500/8 text-yellow-200/85",
+	paused: "border-blue-500/35 bg-blue-500/8 text-blue-200/85",
+	recoverable: "border-blue-500/30 bg-blue-500/8 text-blue-200/80",
+	completed: "border-green-500/35 bg-green-500/8 text-green-200/85",
+	cancelled: "border-orange-500/30 bg-orange-500/8 text-orange-200/85",
+	failed: "border-red-500/35 bg-red-500/8 text-red-200/90",
 }
 
 const OrchestrationStatusBadge = ({ status, label, className, title }: OrchestrationStatusBadgeProps) => (
 	<span
 		className={cn(
-			"inline-flex shrink-0 items-center rounded border bg-vscode-editor-background px-1.5 py-0.5 text-[10px] leading-tight whitespace-nowrap",
+			"inline-flex h-5 shrink-0 items-center rounded-md border px-1.5 text-[10px] leading-none whitespace-nowrap",
 			statusToneClasses[status],
 			className,
 		)}

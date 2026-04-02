@@ -3469,6 +3469,38 @@ export class ClineProvider
 		return descendantIds
 	}
 
+	private async cascadeResumeDescendantTasks(taskId: string): Promise<string[]> {
+		const history = this.getTaskHistory()
+		const descendantIds = this.getDescendantTaskIds(taskId, history)
+
+		for (const descendantId of descendantIds) {
+			const historyItem = history.find((item) => item.id === descendantId)
+			if (!historyItem || historyItem.status === "completed" || historyItem.status === "aborted") {
+				continue
+			}
+
+			const normalizedHistoryItem: HistoryItem = {
+				...historyItem,
+				status: "active",
+				statusUpdatedAt: Date.now(),
+				lifecycleState: "running",
+				pauseReason: undefined,
+				pausedAt: undefined,
+			}
+
+			const backgroundBinding = this.subagentCoordinator?.getBindingForTask?.(descendantId)
+			if (backgroundBinding && this.subagentCoordinator?.resume) {
+				await this.subagentCoordinator.resume(descendantId)
+				await this.updateTaskHistory(normalizedHistoryItem)
+				continue
+			}
+
+			await this.updateTaskHistory(normalizedHistoryItem)
+		}
+
+		return descendantIds
+	}
+
 	private async handleTaskCompletionLifecycle(taskId: string): Promise<void> {
 		await this.persistTaskStopState(taskId, undefined, "Task completed successfully.", "completed")
 		await this.cascadeStopDescendantTasks(taskId, "parent_completed", `Parent task ${taskId} completed.`)
@@ -4225,6 +4257,7 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 			publishActivity: (taskId, activity) => this.publishActivity(taskId, activity),
 			cascadeStopDescendantTasks: (taskId, lastStopReason, lastStopSummary) =>
 				this.cascadeStopDescendantTasks(taskId, lastStopReason, lastStopSummary),
+			cascadeResumeDescendantTasks: (taskId) => this.cascadeResumeDescendantTasks(taskId),
 			emitTaskDelegated: (parentTaskId, childTaskId) => {
 				this.emit(RooCodeEventName.TaskDelegated, parentTaskId, childTaskId)
 			},

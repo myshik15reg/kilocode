@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react"
+import { memo, useEffect, useMemo, useState } from "react"
 
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
@@ -24,17 +24,38 @@ const HistoryPreview = ({ taskHistoryVersion }: { taskHistoryVersion: number } /
 	const tasks = useMemo(() => data?.historyItems ?? [], [data?.historyItems])
 	// kilocode_change end
 	const { t } = useAppTranslation()
-	const { activeRootTaskIds = [], focusedRootTaskId, taskHistory = [] } = useExtensionState()
+	const { activeRootTaskIds = [], runningRootTaskIds = [], focusedRootTaskId, taskHistory = [] } = useExtensionState()
 	const historyRootItems = useMemo(() => (taskHistory.length > 0 ? taskHistory : tasks), [taskHistory, tasks])
-	const autoExpandedTaskIds = useMemo(
-		() => getAutoExpandedTaskIds(historyRootItems, { focusedTaskId: focusedRootTaskId, activeRootTaskIds }),
-		[historyRootItems, focusedRootTaskId, activeRootTaskIds],
-	)
+	const [expandedTaskIds, setExpandedTaskIds] = useState<Set<string>>(() => new Set())
+
+	useEffect(() => {
+		const nextExpandedIds = getAutoExpandedTaskIds(historyRootItems, {
+			focusedTaskId: focusedRootTaskId,
+			activeRootTaskIds,
+		})
+
+		if (nextExpandedIds.size > 0) {
+			setExpandedTaskIds((prev) => new Set([...prev, ...nextExpandedIds]))
+		}
+	}, [historyRootItems, activeRootTaskIds, focusedRootTaskId])
+
 	const rootTaskSummaryMap = useMemo(() => getRootTaskDescendantSummaryMap(historyRootItems), [historyRootItems]) // kilocode_change
+	const visibleTaskItems = tasks.length > 0 ? tasks : historyRootItems
 	const previewRows = useMemo(
-		() => buildTaskTreeRows(tasks, autoExpandedTaskIds).slice(0, 4),
-		[tasks, autoExpandedTaskIds],
+		() => buildTaskTreeRows(visibleTaskItems, expandedTaskIds, historyRootItems).slice(0, 4),
+		[visibleTaskItems, expandedTaskIds, historyRootItems],
 	)
+	const toggleTaskExpansion = (taskId: string) => {
+		setExpandedTaskIds((prev) => {
+			const next = new Set(prev)
+			if (next.has(taskId)) {
+				next.delete(taskId)
+			} else {
+				next.add(taskId)
+			}
+			return next
+		})
+	}
 
 	const handleViewAllHistory = () => {
 		vscode.postMessage({ type: "switchTab", tab: "history" })
@@ -61,6 +82,9 @@ const HistoryPreview = ({ taskHistoryVersion }: { taskHistoryVersion: number } /
 								isExpanded={row.isExpanded}
 								ancestorHasNextSiblings={row.ancestorHasNextSiblings}
 								isLastSibling={row.isLastSibling}
+								toggleTestId={`history-preview-toggle-${row.item.id}`}
+								toggleLabel={row.isExpanded ? t("chat:collapse") : t("chat:expand")}
+								onToggle={() => toggleTaskExpansion(row.item.id)}
 								className="pt-0.5"
 							/>
 							<TaskItem
@@ -73,7 +97,7 @@ const HistoryPreview = ({ taskHistoryVersion }: { taskHistoryVersion: number } /
 								variant="compact"
 								isActiveRootTask={activeRootTaskIds.includes(row.item.id)}
 								isFocusedRootTask={focusedRootTaskId === row.item.id}
-								runningRootTaskIds={[]}
+								runningRootTaskIds={runningRootTaskIds}
 								descendantSummary={row.depth === 0 ? rootTaskSummaryMap.get(row.item.id) : undefined}
 								className={row.depth > 0 ? "ml-1 flex-1 min-w-0" : "flex-1 min-w-0"}
 							/>

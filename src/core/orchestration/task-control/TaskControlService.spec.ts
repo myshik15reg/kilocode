@@ -66,6 +66,7 @@ describe("TaskControlService", () => {
 			publishActivity,
 			postStateToWebview,
 			showTaskWithId,
+			cascadeResumeDescendantTasks: vi.fn().mockResolvedValue([]),
 			log,
 			getSubagentCoordinator: vi.fn(() => coordinator),
 		}
@@ -112,7 +113,13 @@ describe("TaskControlService", () => {
 		)
 	})
 
-	it("resumes the bound task, clears pause metadata, publishes resume activity, and reopens the task", async () => {
+	it("resumes the bound task, normalizes parent status, cascades resume to unfinished descendants, publishes resume activity, and reopens the task", async () => {
+		historyItem = {
+			...historyItem,
+			status: "delegated",
+			lifecycleState: "paused",
+			awaitingChildId: "child-1",
+		}
 		getBindingForTask.mockReturnValue({ childTaskId: "task-1" })
 		const service = new TaskControlService(runtime)
 
@@ -125,11 +132,15 @@ describe("TaskControlService", () => {
 		expect(updateTaskHistory).toHaveBeenCalledWith(
 			expect.objectContaining({
 				id: "task-1",
+				status: "active",
+				statusUpdatedAt: expect.any(Number),
 				lifecycleState: "running",
 				pauseReason: undefined,
 				pausedAt: undefined,
 			}),
 		)
+		expect(runtime.cascadeResumeDescendantTasks).toHaveBeenCalledWith("task-1")
+		expect(postStateToWebview).toHaveBeenCalledTimes(1)
 		expect(publishActivity).toHaveBeenCalledWith(
 			"task-1",
 			expect.objectContaining({ kind: "taskControl", control: "resume", summary: "Task resumed" }),
@@ -157,7 +168,17 @@ describe("TaskControlService", () => {
 		await vi.waitFor(() => expect(log).toHaveBeenCalled())
 
 		expect(log).toHaveBeenCalledWith("Failed to update task state for resume task-1: history failed")
+		expect(postStateToWebview).toHaveBeenCalledTimes(1)
 		expect(showTaskWithId).toHaveBeenCalledWith("task-1")
+	})
+
+	it("keeps completed and aborted descendants untouched when parent resume triggers cascade", async () => {
+		const service = new TaskControlService(runtime)
+
+		service.resumeTask("task-1")
+		await vi.waitFor(() => expect(runtime.cascadeResumeDescendantTasks).toHaveBeenCalledWith("task-1"))
+
+		expect(runtime.cascadeResumeDescendantTasks).toHaveBeenCalledTimes(1)
 	})
 
 	it("returns early when pauseTask has no explicit task id and no current task", async () => {

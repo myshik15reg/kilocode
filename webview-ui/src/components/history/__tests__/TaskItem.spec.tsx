@@ -64,10 +64,10 @@ describe("TaskItem", () => {
 		expect(onToggleSelection).toHaveBeenCalledWith("1", true)
 	})
 
-	it("shows action buttons", () => {
+	it("shows pause action for running tasks", () => {
 		render(
 			<TaskItem
-				item={mockTask}
+				item={{ ...mockTask, lifecycleState: "running" }}
 				variant="full"
 				isSelected={false}
 				onToggleSelection={vi.fn()}
@@ -78,7 +78,7 @@ describe("TaskItem", () => {
 		expect(screen.getByTestId("copy-prompt-button")).toBeInTheDocument()
 		expect(screen.getByTestId("export")).toBeInTheDocument()
 		expect(screen.getByLabelText("chat:task.pause")).toBeInTheDocument()
-		expect(screen.getByLabelText("chat:task.branch")).toBeInTheDocument()
+		expect(screen.queryByLabelText("chat:resumeTask.title")).not.toBeInTheDocument()
 	})
 
 	it("displays time ago information", () => {
@@ -125,11 +125,9 @@ describe("TaskItem", () => {
 			/>,
 		)
 
-		expect(screen.getByTestId("task-item-descendants-root")).toHaveTextContent("history:children 4")
-		expect(screen.getByTestId("task-item-summary-root")).toHaveTextContent("history:active 1")
-		expect(screen.getByTestId("task-item-summary-root")).toHaveTextContent("history:delegated 1")
-		expect(screen.getByTestId("task-item-summary-root")).toHaveTextContent("history:done 1")
-		expect(screen.getByTestId("task-item-summary-root")).toHaveTextContent("history:error 1")
+		expect(screen.getByTestId("task-item-descendants-root")).toHaveTextContent(
+			"history:children 4 · history:active 1 · history:delegated 1",
+		)
 	})
 
 	it("renders running status badge for active roots", () => {
@@ -185,11 +183,11 @@ describe("TaskItem", () => {
 
 		const badge = screen.getByText("history:statusDone")
 		expect(badge).toBeInTheDocument()
-		expect(badge).toHaveClass("text-green-300")
-		expect(badge).toHaveClass("border-green-500/80")
+		expect(badge).toHaveClass("text-green-200/85")
+		expect(badge).toHaveClass("border-green-500/35")
 	})
 
-	it("renders done status as muted after viewed", () => {
+	it("keeps done status bright after viewed", () => {
 		render(
 			<TaskItem
 				item={{
@@ -205,8 +203,8 @@ describe("TaskItem", () => {
 
 		const badge = screen.getByText("history:statusDone")
 		expect(badge).toBeInTheDocument()
-		expect(badge).toHaveClass("text-green-400/70")
-		expect(badge).toHaveClass("border-green-500/40")
+		expect(badge).toHaveClass("text-green-200/85")
+		expect(badge).toHaveClass("border-green-500/35")
 	})
 
 	it("renders error status as bright until viewed", () => {
@@ -226,8 +224,8 @@ describe("TaskItem", () => {
 
 		const badge = screen.getByText("history:statusError")
 		expect(badge).toBeInTheDocument()
-		expect(badge).toHaveClass("text-red-300")
-		expect(badge).toHaveClass("border-red-500/80")
+		expect(badge).toHaveClass("text-red-200/90")
+		expect(badge).toHaveClass("border-red-500/35")
 	})
 
 	it("renders error status as muted after viewed", () => {
@@ -247,8 +245,8 @@ describe("TaskItem", () => {
 
 		const badge = screen.getByText("history:statusError")
 		expect(badge).toBeInTheDocument()
-		expect(badge).toHaveClass("text-red-400/70")
-		expect(badge).toHaveClass("border-red-500/40")
+		expect(badge).toHaveClass("text-red-300/70")
+		expect(badge).toHaveClass("border-red-500/25")
 	})
 	// kilocode_change end
 

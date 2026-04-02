@@ -86,12 +86,16 @@ const TaskItem = ({
 	const isCompact = variant === "compact"
 	// kilocode_change start
 	const descendantCount = descendantSummary?.totalDescendants ?? 0
-	const showBadges =
-		Boolean(rootTaskStatus) ||
-		orchestrationSummary.hasStatusSignals ||
-		descendantCount > 0 ||
-		Boolean(descendantSummary)
+	const showTopMeta = Boolean(rootTaskStatus) || orchestrationSummary.hasStatusSignals || descendantCount > 0
 	const showDescendantSummary = !item.parentTaskId && descendantCount > 0
+	const compactMetaParts = [
+		showDescendantSummary ? `${t("history:children")} ${descendantCount}` : undefined,
+		descendantSummary?.active ? `${t("history:active")} ${descendantSummary.active}` : undefined,
+		descendantSummary?.delegated ? `${t("history:delegated")} ${descendantSummary.delegated}` : undefined,
+		descendantSummary?.completed ? `${t("history:done")} ${descendantSummary.completed}` : undefined,
+		descendantSummary?.aborted ? `${t("history:error")} ${descendantSummary.aborted}` : undefined,
+	].filter((value): value is string => Boolean(value))
+	const compactMetaLabel = compactMetaParts.slice(0, 3).join(" · ")
 	// kilocode_change end
 
 	return (
@@ -99,7 +103,7 @@ const TaskItem = ({
 			key={item.id}
 			data-testid={`task-item-${item.id}`}
 			className={cn(
-				"cursor-pointer group bg-vscode-editor-background rounded relative overflow-hidden border hover:bg-vscode-list-hoverBackground transition-colors",
+				"group relative overflow-hidden rounded border bg-vscode-editor-background transition-colors hover:bg-vscode-list-hoverBackground cursor-pointer",
 				isFocusedRootTask ? "border-vscode-focusBorder" : "border-transparent",
 				className,
 			)}
@@ -119,78 +123,61 @@ const TaskItem = ({
 					</div>
 				)}
 
-				<div className="flex-1 min-w-0">
-					{showBadges && (
-						<div className="mb-1 flex flex-wrap gap-1" data-testid={`task-item-badges-${item.id}`}>
+				<div className="min-w-0 flex-1">
+					{showTopMeta && (
+						<div
+							className="mb-1.5 flex flex-wrap items-center gap-1.5"
+							data-testid={`task-item-badges-${item.id}`}>
 							{rootTaskStatus && !orchestrationSummary.hasStatusSignals && (
 								<span
 									className={cn(
-										"px-1.5 py-0.5 text-[10px] rounded border bg-vscode-editor-background",
-										rootTaskStatus.tone === "running" && "border-yellow-500/70 text-yellow-300",
+										"inline-flex h-5 items-center rounded-md border px-1.5 text-[10px] leading-none",
+										rootTaskStatus.tone === "running" &&
+											"border-yellow-500/35 bg-yellow-500/8 text-yellow-200/85",
 										rootTaskStatus.tone === "done" &&
-											(rootTaskStatus.viewed
-												? "border-green-500/40 text-green-400/70"
-												: "border-green-500/80 text-green-300"),
+											"border-green-500/35 bg-green-500/8 text-green-200/85",
 										rootTaskStatus.tone === "stopped" &&
-											"border-vscode-panel-border text-vscode-descriptionForeground",
+											"border-vscode-panel-border/70 bg-vscode-editor-background/40 text-vscode-descriptionForeground",
 										rootTaskStatus.tone === "error" &&
 											(rootTaskStatus.viewed
-												? "border-red-500/40 text-red-400/70"
-												: "border-red-500/80 text-red-300"),
+												? "border-red-500/25 bg-red-500/6 text-red-300/70"
+												: "border-red-500/35 bg-red-500/8 text-red-200/90"),
 									)}>
 									{t(rootTaskStatus.labelKey)}
 								</span>
 							)}
-							{showDescendantSummary && (
-								<span
-									className="px-1.5 py-0.5 text-[10px] rounded border border-vscode-panel-border text-vscode-descriptionForeground bg-vscode-editor-background"
-									data-testid={`task-item-descendants-${item.id}`}>
-									{t("history:children")} {descendantCount}
-								</span>
-							)}
-							{/* kilocode_change start */}
 							{orchestrationSummary.hasStatusSignals && (
 								<OrchestrationStatusSummary
 									summary={orchestrationSummary}
 									showTitle={false}
-									className="gap-1.5"
+									className="gap-1"
 									badgeClassName="text-[10px]"
 									countsClassName="text-[10px]"
 									dataTestId={`task-item-orchestration-${item.id}`}
 								/>
 							)}
-							{/* kilocode_change end */}
-						</div>
-					)}
-					{showDescendantSummary && descendantSummary && (
-						<div
-							className="mb-2 flex flex-wrap gap-1 text-[10px] text-vscode-descriptionForeground"
-							data-testid={`task-item-summary-${item.id}`}>
-							{descendantSummary.active > 0 && (
-								<span>
-									{t("history:active")} {descendantSummary.active}
-								</span>
-							)}
-							{descendantSummary.delegated > 0 && (
-								<span>
-									{t("history:delegated")} {descendantSummary.delegated}
-								</span>
-							)}
-							{descendantSummary.completed > 0 && (
-								<span>
-									{t("history:done")} {descendantSummary.completed}
-								</span>
-							)}
-							{descendantSummary.aborted > 0 && (
-								<span>
-									{t("history:error")} {descendantSummary.aborted}
+							{!orchestrationSummary.hasStatusSignals && compactMetaLabel && (
+								<span
+									className="truncate text-[10px] text-vscode-descriptionForeground"
+									data-testid={`task-item-descendants-${item.id}`}>
+									{compactMetaLabel}
 								</span>
 							)}
 						</div>
 					)}
+					{showDescendantSummary &&
+						descendantSummary &&
+						orchestrationSummary.hasStatusSignals &&
+						compactMetaLabel && (
+							<div
+								className="mb-1.5 truncate text-[10px] text-vscode-descriptionForeground"
+								data-testid={`task-item-summary-${item.id}`}>
+								{compactMetaLabel}
+							</div>
+						)}
 					<div
 						className={cn(
-							"overflow-hidden whitespace-pre-wrap font-light text-vscode-foreground text-ellipsis line-clamp-3",
+							"overflow-hidden whitespace-pre-wrap text-ellipsis font-light text-vscode-foreground line-clamp-3",
 							{
 								"text-base": !isCompact,
 							},
@@ -204,12 +191,13 @@ const TaskItem = ({
 					<TaskItemFooter
 						item={item}
 						variant={variant}
+						runningRootTaskIds={runningRootTaskIds}
 						isSelectionMode={isSelectionMode}
 						onDelete={onDelete}
 					/>
 
 					{showWorkspace && item.workspace && (
-						<div className="flex flex-row gap-1 text-vscode-descriptionForeground text-xs mt-1">
+						<div className="mt-1 flex flex-row gap-1 text-xs text-vscode-descriptionForeground">
 							<span className="codicon codicon-folder scale-80" />
 							<span>{item.workspace}</span>
 						</div>

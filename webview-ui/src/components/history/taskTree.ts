@@ -106,16 +106,27 @@ export function getHistoryRootTaskStatus(
 	}
 }
 
-export function buildTaskTreeRows(items: DisplayHistoryItem[], expandedTaskIds: ReadonlySet<string>): TaskTreeRow[] {
+export function buildTaskTreeRows(
+	items: DisplayHistoryItem[],
+	expandedTaskIds: ReadonlySet<string>,
+	relationshipItems: DisplayHistoryItem[] = items,
+): TaskTreeRow[] {
 	if (items.length === 0) {
 		return []
 	}
 
-	const { parentById, childrenByParentId, originalIndex } = buildTaskRelationships(items)
-	const sortByOriginalOrder = (left: DisplayHistoryItem, right: DisplayHistoryItem) =>
-		(originalIndex.get(left.id) ?? 0) - (originalIndex.get(right.id) ?? 0)
+	const { parentById, childrenByParentId } = buildTaskRelationships(relationshipItems)
+	const visibleIndex = new Map(items.map((item, index) => [item.id, index]))
+	const visibleItemIds = new Set(items.map((item) => item.id))
+	const sortByVisibleOrder = (left: DisplayHistoryItem, right: DisplayHistoryItem) =>
+		(visibleIndex.get(left.id) ?? 0) - (visibleIndex.get(right.id) ?? 0)
 
-	const roots = items.filter((item) => !parentById.has(item.id)).sort(sortByOriginalOrder)
+	const roots = items
+		.filter((item) => {
+			const parentId = parentById.get(item.id)
+			return !parentId || !visibleItemIds.has(parentId)
+		})
+		.sort(sortByVisibleOrder)
 	const rows: TaskTreeRow[] = []
 	const appendedIds = new Set<string>()
 
@@ -130,8 +141,8 @@ export function buildTaskTreeRows(items: DisplayHistoryItem[], expandedTaskIds: 
 			return
 		}
 
-		const children = childrenByParentId.get(item.id) ?? []
-		const hasChildren = (item.childIds?.length ?? 0) > 0 || children.length > 0
+		const visibleChildren = childrenByParentId.get(item.id) ?? []
+		const hasChildren = (item.childIds?.length ?? 0) > 0 || visibleChildren.length > 0
 		const isExpanded = hasChildren && expandedTaskIds.has(item.id)
 
 		rows.push({ item, depth, hasChildren, isExpanded, ancestorHasNextSiblings, isLastSibling })
@@ -144,14 +155,34 @@ export function buildTaskTreeRows(items: DisplayHistoryItem[], expandedTaskIds: 
 		const nextLineage = new Set(lineage)
 		nextLineage.add(item.id)
 
-		for (const [index, child] of children.entries()) {
-			const childIsLastSibling = index === children.length - 1
+		for (const [index, child] of visibleChildren.entries()) {
+			const childIsLastSibling = index === visibleChildren.length - 1
 			appendItem(child, depth + 1, nextLineage, [...ancestorHasNextSiblings, !isLastSibling], childIsLastSibling)
 		}
 	}
 
 	for (const [index, root] of roots.entries()) {
 		appendItem(root, 0, new Set(), [], index === roots.length - 1)
+	}
+
+	const hasVisibleAncestor = (itemId: string): boolean => {
+		let currentParentId = parentById.get(itemId)
+		const visitedParentIds = new Set<string>()
+		while (currentParentId && !visitedParentIds.has(currentParentId)) {
+			if (visibleItemIds.has(currentParentId)) {
+				return true
+			}
+			visitedParentIds.add(currentParentId)
+			currentParentId = parentById.get(currentParentId)
+		}
+		return false
+	}
+
+	for (const item of items) {
+		if (appendedIds.has(item.id) || hasVisibleAncestor(item.id)) {
+			continue
+		}
+		appendItem(item, 0, new Set(), [], true)
 	}
 
 	return rows

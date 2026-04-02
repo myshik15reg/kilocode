@@ -53,11 +53,11 @@ const HistoryTreeGutter = ({
 						style={{
 							left: (depth - 1) * SEGMENT_WIDTH + SEGMENT_WIDTH / 2,
 							top: 0,
-							height: isLastSibling ? 20 : "100%",
+							height: isLastSibling ? "50%" : "100%",
 						}}
 					/>
 					<div
-						className="absolute top-5 border-t border-dashed border-vscode-panel-border/70"
+						className="absolute top-1/2 border-t border-dashed border-vscode-panel-border/70"
 						style={{
 							left: (depth - 1) * SEGMENT_WIDTH + SEGMENT_WIDTH / 2,
 							width: SEGMENT_WIDTH,
@@ -70,7 +70,7 @@ const HistoryTreeGutter = ({
 					type="button"
 					data-testid={toggleTestId}
 					aria-label={toggleLabel}
-					className="absolute top-2.5 flex h-5 w-5 items-center justify-center rounded-sm border border-vscode-panel-border bg-vscode-editor-background text-[12px] leading-none text-vscode-foreground hover:bg-vscode-list-hoverBackground"
+					className="absolute top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-sm border border-vscode-panel-border bg-vscode-editor-background p-0 text-[12px] leading-none text-vscode-foreground align-middle hover:bg-vscode-list-hoverBackground"
 					style={{ left: depth === 0 ? 0 : depth * SEGMENT_WIDTH - 1 }}
 					onClick={(event) => {
 						event.stopPropagation()

@@ -334,8 +334,7 @@ describe("TaskActivityPanel", () => {
 		)
 
 		expect(screen.getAllByTestId("orchestration-status-badge-failed").length).toBeGreaterThan(0)
-		expect(screen.getByText("chat:orchestration.failedCount 1")).toBeInTheDocument()
-		expect(screen.getByText("chat:orchestration.queuedCount 1")).toBeInTheDocument()
+		expect(screen.getByTestId("orchestration-summary")).toHaveTextContent("1 failed · 1 queued")
 		expect(screen.getByText("chat:orchestration.itemFallback")).toBeInTheDocument()
 		expect(screen.queryByTestId("child-task-link-child-1")).not.toBeInTheDocument()
 	})
@@ -411,7 +410,7 @@ describe("TaskActivityPanel", () => {
 			/>,
 		)
 
-		expect(screen.getByText("chat:orchestration.runningCount 2")).toBeInTheDocument()
+		expect(screen.getByTestId("orchestration-summary")).toHaveTextContent("2 running")
 	})
 
 	it("includes tech debt events in the activity timeline group", () => {
@@ -516,17 +515,11 @@ describe("TaskActivityPanel", () => {
 			/>,
 		)
 
-		expect(screen.getAllByTestId("activity-item-explanation-sa-delegation")[0]).toHaveTextContent(
-			"Route: background · code",
-		)
-		expect(screen.getAllByTestId("activity-item-explanation-sa-delegation")[1]).toHaveTextContent(
-			"Helper: cheap · Fast helper",
-		)
-		expect(screen.getAllByTestId("activity-item-explanation-sa-delegation")[2]).toHaveTextContent(
-			"Why: historical_background_win",
+		expect(screen.getByTestId("activity-item-explanation-sa-delegation")).toHaveTextContent(
+			"route: background · code · helper: cheap · Fast helper · 10",
 		)
 		expect(screen.getByTestId("activity-item-explanation-sa-outcome")).toHaveTextContent(
-			"Outcome: Produced concise implementation summary",
+			"outcome: Produced concise implementation summary · 20",
 		)
 	})
 

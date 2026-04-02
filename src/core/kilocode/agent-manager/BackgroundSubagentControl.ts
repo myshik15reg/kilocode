@@ -8,6 +8,8 @@ interface BackgroundTaskHistoryLifecyclePatch {
 	pauseReason?: string
 	pausedAt?: number
 	resumeContextSummary?: string
+	status?: HistoryItem["status"]
+	statusUpdatedAt?: number
 }
 
 export interface BackgroundSubagentControlDependencies {
@@ -238,6 +240,8 @@ export class BackgroundSubagentControl {
 			binding.request.handoff.summary
 
 		await this.syncTaskHistoryLifecycle(sessionId, {
+			status: "active",
+			statusUpdatedAt: this.getNow(),
 			lifecycleState: "running",
 			pauseReason: undefined,
 			pausedAt: undefined,
