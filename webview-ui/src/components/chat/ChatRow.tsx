@@ -451,10 +451,17 @@ export const ChatRowContent = ({
 
 	const followUpData = useMemo(() => {
 		if (message.type === "ask" && message.ask === "followup" && !message.partial) {
-			return safeJsonParse<FollowUpData>(message.text)
+			const metadata = (message.metadata as Partial<FollowUpData> | undefined) ?? {}
+			const parsed = safeJsonParse<FollowUpData>(message.text)
+
+			return {
+				question: metadata.question ?? parsed?.question ?? message.text ?? "",
+				suggest: metadata.suggest ?? parsed?.suggest,
+				requestUserInput: metadata.requestUserInput ?? parsed?.requestUserInput,
+			}
 		}
 		return null
-	}, [message.type, message.ask, message.partial, message.text])
+	}, [message.type, message.ask, message.partial, message.text, message.metadata])
 
 	if (tool) {
 		const toolIcon = (name: string) => (
@@ -1867,7 +1874,11 @@ export const ChatRowContent = ({
 							)}
 							<div className="flex flex-col gap-2 ml-6">
 								<Markdown
-									markdown={message.partial === true ? message?.text : followUpData?.question}
+									markdown={
+										message.partial === true
+											? message?.text
+											: followUpData?.question || message.text
+									}
 								/>
 								<FollowUpSuggest
 									suggestions={followUpData?.suggest}

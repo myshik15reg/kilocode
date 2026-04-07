@@ -1,10 +1,15 @@
-﻿# Context
+# Context
 
 ## Current status
-Workflow pack is usable and structurally rich, but its startup layer is heavier than necessary for repeated agent sessions.
+
+- 2026-04-09 выполнено исследование внешних agent runtime patterns и добавлена первая operational wave в workflow-pack.
+- В pack появились явные workflow для `workspace context bootstrap` и `session checkpoint`.
 
 ## Current focus
-Reduce entrypoint duplication, keep rules source-of-truth based, and improve autonomy by making the first read cheaper and clearer.
+
+- Проверить новые workflow на реальной нетривиальной задаче в consuming project.
+- Не смешивать long-lived `Memory Bank` с transient execution state.
 
 ## Next step
-Continue tightening high-traffic docs, keep archive evidence separate from operational context, and add lightweight consistency checks for internal links.
+
+- На следующей длинной задаче прогнать связку `workspace-context-bootstrap.md` -> `protocol-new.md` -> `session-checkpoint.md` -> `protocol-resume.md` и уточнить шаблоны по результатам.

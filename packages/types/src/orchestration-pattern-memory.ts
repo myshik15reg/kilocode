@@ -19,6 +19,8 @@ export const orchestrationPatternKeySchema = z
 export const orchestrationPatternExecutionTypeSchema = z.enum(["foreground", "background"])
 export const orchestrationPatternProfileClassSchema = z.enum(["strong", "balanced", "cheap", "none"])
 export const orchestrationPatternReasonCodeSchema = sanitizedPatternLabelSchema
+export const orchestrationPatternRetrievalPolicySchema = z.enum(["adaptive", "semantic_only", "hybrid", "rerank_heavy"])
+export const orchestrationPatternEvaluatorVerdictSchema = z.enum(["pass", "retry", "clarify", "conflict"])
 
 export const taskPatternContextSchema = z
 	.object({
@@ -29,6 +31,8 @@ export const taskPatternContextSchema = z
 		branchStrategy: z.enum(["full", "summary"]).optional(),
 		helperProfileUsed: z.boolean().optional(),
 		recommendationReasonCode: orchestrationPatternReasonCodeSchema.optional(),
+		retrievalPolicy: orchestrationPatternRetrievalPolicySchema.optional(),
+		evaluatorVerdict: orchestrationPatternEvaluatorVerdictSchema.optional(),
 	})
 	.strict()
 
@@ -50,6 +54,8 @@ export const orchestrationPatternRecordSchema = z
 		profileClass: orchestrationPatternProfileClassSchema,
 		counters: orchestrationPatternCountersSchema,
 		recommendationReasonCode: orchestrationPatternReasonCodeSchema.optional(),
+		retrievalPolicy: orchestrationPatternRetrievalPolicySchema.optional(),
+		evaluatorVerdict: orchestrationPatternEvaluatorVerdictSchema.optional(),
 		createdAt: z.number().int().nonnegative(),
 		updatedAt: z.number().int().nonnegative(),
 	})
@@ -69,3 +75,5 @@ export type OrchestrationPatternCounters = z.infer<typeof orchestrationPatternCo
 export type OrchestrationPatternRecord = z.infer<typeof orchestrationPatternRecordSchema>
 export type OrchestrationPatternMemoryState = z.infer<typeof orchestrationPatternMemoryStateSchema>
 export type OrchestrationPatternReasonCode = z.infer<typeof orchestrationPatternReasonCodeSchema>
+export type OrchestrationPatternRetrievalPolicy = z.infer<typeof orchestrationPatternRetrievalPolicySchema>
+export type OrchestrationPatternEvaluatorVerdict = z.infer<typeof orchestrationPatternEvaluatorVerdictSchema>

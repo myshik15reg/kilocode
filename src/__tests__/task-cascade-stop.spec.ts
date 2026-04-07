@@ -397,4 +397,59 @@ describe("ClineProvider cascade stop handling", () => {
 			}),
 		)
 	})
+	it("cancels background-bound descendants through the subagent coordinator during cascade stop", async () => {
+		const history: HistoryItem[] = [
+			{
+				id: "parent",
+				number: 1,
+				ts: 2,
+				task: "Parent",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				status: "active",
+				childIds: ["child-bg"],
+			},
+			{
+				id: "child-bg",
+				number: 2,
+				ts: 1,
+				task: "Background child",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				status: "delegated",
+				parentTaskId: "parent",
+				rootTaskId: "parent",
+			},
+		]
+
+		const cancel = vi.fn().mockResolvedValue(undefined)
+		const provider = Object.create(ClineProvider.prototype) as any
+		provider.clineStack = []
+		provider.getTaskHistory = vi.fn(() => history)
+		provider.updateTaskHistory = vi.fn(async (item: HistoryItem) => {
+			const index = history.findIndex((entry) => entry.id === item.id)
+			if (index >= 0) {
+				history[index] = item
+			}
+			return history
+		})
+		provider.log = vi.fn()
+		provider.subagentCoordinator = {
+			getBindingForTask: vi.fn((taskId: string) => (taskId === "child-bg" ? { childTaskId: taskId } : undefined)),
+			cancel,
+		}
+
+		await (provider as any).cascadeStopDescendantTasks(
+			"parent",
+			"parent_cancelled",
+			"Parent task parent was cancelled by the user.",
+		)
+
+		expect(cancel).toHaveBeenCalledWith("child-bg")
+		expect(provider.updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "child-bg", status: "aborted", lastStopReason: "parent_cancelled" }),
+		)
+	})
 })

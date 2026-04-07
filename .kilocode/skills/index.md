@@ -22,6 +22,8 @@ Skills - это переиспользуемые, узкие, ориентиро
 | [`humanizer-ru/`](humanizer-ru/)                         | Очеловечивание ИИ-текста на русском (text-only)        |
 | [`defer/`](defer/)                                       | Дефер находок в backlog (skill + скрипт)               |
 | [`load-context/`](load-context/)                         | Загрузка общего контекста для шага протокола           |
+| [`detect-tech-stack/`](detect-tech-stack/)               | Определение tech stack проекта (вывод в JSON)          |
+| [`fix-broken-links/`](fix-broken-links/)                 | Проверка ссылок в `.kilocode/memory-bank/**`           |
 
 ## Навыки оркестрации (Orchestration)
 
@@ -42,11 +44,27 @@ Skills - это переиспользуемые, узкие, ориентиро
 | [`task-solution/`](task-solution/)                                 | Написание решения по задаче (solution.md)                                                        |
 | [`effort-estimation-human-hours/`](effort-estimation-human-hours/) | Оценка трудозатрат разработки (человеко‑часы) по solution + git‑прокси, с калибровкой по истории |
 
+## Curated skills.sh bridges
+
+| Skill                                                                                        | Описание                                                                         |
+| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [`skills-sh-writing-plans/`](skills-sh-writing-plans/)                                       | Bridge для многошагового планирования через локальные protocols и planning rules |
+| [`skills-sh-systematic-debugging/`](skills-sh-systematic-debugging/)                         | Bridge для root-cause-first debugging через локальный debug path                 |
+| [`skills-sh-verification-before-completion/`](skills-sh-verification-before-completion/)     | Bridge для свежей verification перед любым completion claim                      |
+| [`skills-sh-dispatching-parallel-agents/`](skills-sh-dispatching-parallel-agents/)           | Bridge для безопасной параллельной делегации с local handoff/result contract     |
+| [`skills-sh-subagent-driven-development/`](skills-sh-subagent-driven-development/)           | Bridge для выполнения decision-complete плана через subagents                    |
+| [`skills-sh-using-git-worktrees/`](skills-sh-using-git-worktrees/)                           | Bridge для branch/path isolation через git worktrees                             |
+| [`skills-sh-codex-readiness-unit-test/`](skills-sh-codex-readiness-unit-test/)               | Bridge для оценки unit-test readiness под agentic workflows                      |
+| [`skills-sh-codex-readiness-integration-test/`](skills-sh-codex-readiness-integration-test/) | Bridge для оценки integration-test readiness под agentic workflows               |
+| [`skills-sh-gh-fix-ci/`](skills-sh-gh-fix-ci/)                                               | Bridge для диагностики и минимального safe fix path для GitHub Actions           |
+| [`skills-sh-skill-creator/`](skills-sh-skill-creator/)                                       | Bridge для создания локальных skills без копирования upstream SoT                |
+
 ## 1C Generic
 
-| Skill                          | Описание                     |
-| ------------------------------ | ---------------------------- |
-| [`1c-workflow/`](1c-workflow/) | Общий workflow разработки 1С |
+| Skill                                | Описание                                                              |
+| ------------------------------------ | --------------------------------------------------------------------- |
+| [`1c-workflow/`](1c-workflow/)       | Общий workflow разработки 1С                                          |
+| [`1c-review-pack/`](1c-review-pack/) | Retrieval-first 1C code review через vendored Alfa/v8std/tooling pack |
 
 ## 1C-Alfa (фирменные стандарты)
 
@@ -72,7 +90,7 @@ Skills - это переиспользуемые, узкие, ориентиро
 
 ---
 
-**Всего: 43 навыка**
+**Всего: 56 навыков**
 
 ## Как использовать
 

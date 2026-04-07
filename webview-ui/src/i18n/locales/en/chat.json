@@ -298,6 +298,7 @@
 		"wantsToCreate": "AlfaCode assistant wants to create a new subtask in {{mode}} mode",
 		"wantsToFinish": "AlfaCode assistant wants to finish this subtask",
 		"newTaskContent": "Subtask Instructions",
+		"createTask": "Create subtask",
 		"completionContent": "Subtask Completed",
 		"resultContent": "Subtask Results",
 		"defaultResult": "Please continue to the next task.",
@@ -467,6 +468,7 @@
 			"recoverable": "Recoverable",
 			"completed": "Completed",
 			"cancelled": "Cancelled",
+			"abstained": "Abstained",
 			"failed": "Failed"
 		},
 		"queuedCount_one": "{{count}} queued",
@@ -481,6 +483,8 @@
 		"completedCount_other": "{{count}} completed",
 		"cancelledCount_one": "{{count}} cancelled",
 		"cancelledCount_other": "{{count}} cancelled",
+		"abstainedCount_one": "{{count}} abstained",
+		"abstainedCount_other": "{{count}} abstained",
 		"failedCount_one": "{{count}} failed",
 		"failedCount_other": "{{count}} failed"
 	},

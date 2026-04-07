@@ -23,7 +23,6 @@ import {
 	type Language,
 	type GlobalState,
 	type ClineMessage,
-	type HistoryItem,
 	type TelemetrySetting,
 	type UserSettingsConfig,
 	type ModelRecord,
@@ -109,14 +108,23 @@ import { ManagedIndexer } from "../../services/code-index/managed/ManagedIndexer
 import { SessionManager } from "../../shared/kilocode/cli-sessions/core/SessionManager" // kilocode_change
 import { getEffectiveTelemetrySetting } from "../kilocode/wrapper"
 import { handleSingleCompletionRequest } from "./webviewSingleCompletion"
+import { runLocalAiDiagnostics } from "./localAiDiagnostics" // kilocode_change
 import { singleCompletionHandler } from "../../utils/single-completion-handler"
+import { openTrustedExternalUrl } from "./externalUrlPolicy"
+import { tryHandleTextResumeIntent } from "./textResumeIntent"
+
+type WebviewMessageHandlingOptions = {
+	source?: "webview" | "internal"
+}
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
 	message: MaybeTypedWebviewMessage, // kilocode_change switch to MaybeTypedWebviewMessage for better type-safety
 	marketplaceManager?: MarketplaceManager,
+	options?: WebviewMessageHandlingOptions,
 ) => {
 	// Utility functions provided for concise get/update of global state via contextProxy API.
+	const messageSource = options?.source ?? "webview"
 	const getGlobalState = <K extends keyof GlobalState>(key: K) => provider.contextProxy.getValue(key)
 	const updateGlobalState = async <K extends keyof GlobalState>(key: K, value: GlobalState[K]) =>
 		await provider.contextProxy.setValue(key, value)
@@ -124,6 +132,21 @@ export const webviewMessageHandler = async (
 	const getCurrentCwd = () => {
 		return provider.getCurrentTask()?.cwd || provider.cwd
 	}
+
+	const rejectUntrustedMessage = (type: string) => {
+		provider.log(`[Security] Rejected ${type} from ${messageSource} message source`)
+	}
+
+	const tryOpenTrustedExternalUrl = async (rawUrl: string) => {
+		const opened = await openTrustedExternalUrl(rawUrl)
+		if (!opened) {
+			provider.log(`[Security] Rejected external URL with unsupported scheme: ${rawUrl}`)
+			vscode.window.showErrorMessage("Unsupported external URL. Only http(s) links are allowed.")
+		}
+		return opened
+	}
+
+	const isTaskInVisibleHistory = (taskId: string) => provider.getTaskHistory().some((item) => item.id === taskId)
 
 	/**
 	 * Resolves image file mentions in incoming messages.
@@ -145,68 +168,6 @@ export const webviewMessageHandler = async (
 		return resolved
 	}
 
-	// kilocode_change start
-	const RESUME_INTENT_PATTERN = /^(?:continue|resume|продолжить)$/i
-
-	const isResumeIntentMessage = (text?: string) => {
-		if (!text) {
-			return false
-		}
-
-		return RESUME_INTENT_PATTERN.test(text.trim())
-	}
-
-	const getPausedHistoryItems = (): HistoryItem[] => {
-		return provider
-			.getTaskHistory()
-			.filter((item) => item.lifecycleState === "paused")
-			.sort((left, right) => (right.pausedAt ?? right.ts) - (left.pausedAt ?? left.ts))
-	}
-
-	const buildPausedTasksSelectionMessage = (pausedTasks: HistoryItem[]) => {
-		const taskList = pausedTasks
-			.map((task, index) => `${index + 1}. ${task.task}${task.id ? ` (${task.id})` : ""}`)
-			.join("\n")
-
-		return `There are multiple paused tasks. Please choose which one to resume:\n${taskList}`
-	}
-
-	const tryHandleTextResumeIntent = async (text?: string, images?: string[]) => {
-		void images
-		if (!isResumeIntentMessage(text)) {
-			return false
-		}
-
-		const pausedTasks = getPausedHistoryItems()
-
-		if (pausedTasks.length === 0) {
-			return false
-		}
-
-		if (pausedTasks.length > 1) {
-			await provider.postMessageToWebview({
-				type: "invoke",
-				invoke: "setChatBoxMessage",
-				text: buildPausedTasksSelectionMessage(pausedTasks),
-			})
-			return true
-		}
-
-		const [pausedTask] = pausedTasks
-		provider.resumeTask(pausedTask.id, "continue")
-
-		try {
-			await pWaitFor(() => provider.getCurrentTask()?.taskId === pausedTask.id, { timeout: 3_000 })
-			provider.getCurrentTask()?.handleWebviewAskResponse("yesButtonClicked")
-		} catch (error) {
-			provider.log(
-				`[textResumeIntent] Failed to confirm resume for ${pausedTask.id}: ${error instanceof Error ? error.message : String(error)}`,
-			)
-		}
-
-		return true
-	}
-	// kilocode_change end
 	/**
 	 * Shared utility to find message indices based on timestamp.
 	 * When multiple messages share the same timestamp (e.g., after condense),
@@ -645,7 +606,7 @@ export const webviewMessageHandler = async (
 			// task. This essentially creates a fresh slate for the new task.
 			try {
 				const resolved = await resolveIncomingImages({ text: message.text, images: message.images })
-				if (await tryHandleTextResumeIntent(resolved.text, resolved.images)) {
+				if (await tryHandleTextResumeIntent(provider, resolved.text, resolved.images)) {
 					break
 				}
 				await provider.createTask(resolved.text, resolved.images)
@@ -1439,7 +1400,7 @@ export const webviewMessageHandler = async (
 			break
 		case "openExternal":
 			if (message.url) {
-				vscode.env.openExternal(vscode.Uri.parse(message.url))
+				await tryOpenTrustedExternalUrl(message.url)
 			}
 			break
 		case "checkpointDiff":
@@ -1827,7 +1788,7 @@ export const webviewMessageHandler = async (
 			break
 		case "openInBrowser":
 			if (message.url) {
-				vscode.env.openExternal(vscode.Uri.parse(message.url))
+				await tryOpenTrustedExternalUrl(message.url)
 			}
 			break
 		// kilocode_change end
@@ -1931,7 +1892,7 @@ export const webviewMessageHandler = async (
 			break
 		// kilocode_change start
 		case "morphApiKey":
-			await updateGlobalState("morphApiKey", message.text)
+			await provider.contextProxy.setValue("morphApiKey", message.text || undefined)
 			await provider.postStateToWebview()
 			break
 		case "fastApplyModel": {
@@ -2052,13 +2013,17 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		// kilocode_change start
+		case "openRouterImageApiKey":
+			await provider.contextProxy.setValue("openRouterImageApiKey", message.text || undefined)
+			await provider.postStateToWebview()
+			break
 		case "kiloCodeImageApiKey":
-			await provider.contextProxy.setValue("kiloCodeImageApiKey", message.text)
+			await provider.contextProxy.setValue("kiloCodeImageApiKey", message.text || undefined)
 			await provider.postStateToWebview()
 			break
 		// kilocode_change start
 		case "litellmImageApiKey":
-			await provider.contextProxy.setValue("litellmImageApiKey", message.text)
+			await provider.contextProxy.setValue("litellmImageApiKey", message.text || undefined)
 			await provider.postStateToWebview()
 			break
 		case "litellmImageBaseUrl":
@@ -3028,7 +2993,7 @@ export const webviewMessageHandler = async (
 							},
 						}
 
-						await webviewMessageHandler(provider, upsertMessage)
+						await webviewMessageHandler(provider, upsertMessage, undefined, options)
 						await updateGlobalState("hasPerformedOrganizationAutoSwitch", true)
 
 						vscode.window.showInformationMessage(
@@ -3138,7 +3103,7 @@ export const webviewMessageHandler = async (
 				if (response.status !== 303 || !response.headers.location) {
 					return
 				}
-				await vscode.env.openExternal(vscode.Uri.parse(response.headers.location))
+				await tryOpenTrustedExternalUrl(response.headers.location)
 			} catch (error: any) {
 				const errorMessage = error?.message || "Unknown error"
 				const errorStack = error?.stack ? ` Stack: ${error.stack}` : ""
@@ -3320,7 +3285,7 @@ export const webviewMessageHandler = async (
 				const authUrl = claudeCodeOAuthManager.startAuthorizationFlow()
 
 				// Open the authorization URL in the browser
-				await vscode.env.openExternal(vscode.Uri.parse(authUrl))
+				await tryOpenTrustedExternalUrl(authUrl)
 
 				// Wait for the callback in a separate promise (non-blocking)
 				claudeCodeOAuthManager
@@ -3359,7 +3324,7 @@ export const webviewMessageHandler = async (
 				const authUrl = openAiCodexOAuthManager.startAuthorizationFlow()
 
 				// Open the authorization URL in the browser
-				await vscode.env.openExternal(vscode.Uri.parse(authUrl))
+				await tryOpenTrustedExternalUrl(authUrl)
 
 				// Wait for the callback in a separate promise (non-blocking)
 				openAiCodexOAuthManager
@@ -3520,6 +3485,10 @@ export const webviewMessageHandler = async (
 					codebaseIndexBedrockProfile: settings.codebaseIndexBedrockProfile,
 					codebaseIndexSearchMaxResults: settings.codebaseIndexSearchMaxResults,
 					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
+					codebaseIndexAdaptiveRetrievalEnabled: settings.codebaseIndexAdaptiveRetrievalEnabled,
+					codebaseIndexAdaptiveRetrievalMinConfidence: settings.codebaseIndexAdaptiveRetrievalMinConfidence,
+					codebaseIndexAdaptiveRetrievalKneeSensitivity:
+						settings.codebaseIndexAdaptiveRetrievalKneeSensitivity,
 					// kilocode_change start
 					codebaseIndexRerankEnabled: settings.codebaseIndexRerankEnabled,
 					codebaseIndexRerankBaseUrl: settings.codebaseIndexRerankBaseUrl,
@@ -4400,6 +4369,10 @@ export const webviewMessageHandler = async (
 		// kilocode_change end
 		// kilocode_change start: Type-safe global state handler
 		case "updateGlobalState": {
+			if (messageSource !== "internal") {
+				rejectUntrustedMessage("updateGlobalState")
+				break
+			}
 			const { stateKey, stateValue } = message as UpdateGlobalStateMessage
 			if (stateKey !== undefined && stateValue !== undefined && isGlobalStateKey(stateKey)) {
 				await updateGlobalState(stateKey, stateValue)
@@ -4775,6 +4748,10 @@ export const webviewMessageHandler = async (
 		}
 		// kilocode_change start
 		case "addTaskToHistory": {
+			if (messageSource !== "internal") {
+				rejectUntrustedMessage("addTaskToHistory")
+				break
+			}
 			if (message.historyItem) {
 				await provider.updateTaskHistory(message.historyItem)
 				await provider.postStateToWebview()
@@ -4801,7 +4778,7 @@ export const webviewMessageHandler = async (
 			try {
 				const sessionService = SessionManager.init()
 
-				const sessionId = message.sessionId || sessionService?.sessionId
+				const sessionId = sessionService?.sessionId
 
 				if (!sessionId) {
 					vscode.window.showErrorMessage("No active session. Start a new task to create a session.")
@@ -4835,6 +4812,11 @@ export const webviewMessageHandler = async (
 				}
 
 				const taskId = message.text
+				if (!isTaskInVisibleHistory(taskId)) {
+					rejectUntrustedMessage(`shareTaskSession:${taskId}`)
+					vscode.window.showErrorMessage("Task is not available in current workspace history")
+					break
+				}
 				const sessionService = SessionManager.init()
 
 				const sessionId = await sessionService?.getSessionFromTask(taskId, provider)
@@ -4913,6 +4895,16 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "runLocalAiDiagnostics": {
+			const localAiDiagnostics = await runLocalAiDiagnostics(provider)
+			await provider.postMessageToWebview({
+				type: "localAiDiagnosticsResult",
+				localAiDiagnostics,
+				success: !localAiDiagnostics.checks.some((check) => check.status === "failed"),
+			})
+			break
+		}
+
 		case "acceptTechDebt": {
 			if (message.text && message.itemId) {
 				await provider.updateTechDebtStatus(message.text, message.itemId, "accepted")

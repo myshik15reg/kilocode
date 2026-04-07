@@ -19,6 +19,11 @@ export interface SessionManagerConfig {
 		 * When the queue length exceeds this threshold, a sync operation is initiated.
 		 */
 		queueFlushThreshold: number
+
+		/**
+		 * Hard cap for queued sync items before stale entries are trimmed.
+		 */
+		queueMaxItems: number
 	}
 
 	/**
@@ -65,6 +70,7 @@ export interface SessionManagerConfig {
 export const DEFAULT_CONFIG: SessionManagerConfig = {
 	sync: {
 		queueFlushThreshold: 5,
+		queueMaxItems: 100,
 	},
 	title: {
 		maxLength: 140,

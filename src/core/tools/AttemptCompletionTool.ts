@@ -9,22 +9,25 @@ import { Package } from "../../shared/package"
 import type { ToolUse } from "../../shared/tools"
 import { t } from "../../i18n"
 import { getCommitRangeForNewCompletion } from "../checkpoints/kilocode/seeNewChanges" // kilocode_change
+import { inferDelegationOutcomeStatus } from "../orchestration/subagents/delegationOutcome"
 
 // kilocode_change start
 async function getClineMessageOptions(
 	task: Task,
+	result?: string,
 ): Promise<{ isNonInteractive?: boolean; metadata?: Record<string, unknown> }> {
 	const commitRange = await getCommitRangeForNewCompletion(task)
+	const metadata: Record<string, unknown> = {}
 
-	if (!commitRange) {
-		return {}
+	if (commitRange) {
+		metadata.kiloCode = { commitRange }
 	}
 
-	return {
-		metadata: {
-			kiloCode: { commitRange },
-		},
+	if (task.parentTaskId && inferDelegationOutcomeStatus(result) === "abstained") {
+		metadata.delegationOutcomeStatus = "abstained"
 	}
+
+	return Object.keys(metadata).length > 0 ? { metadata } : {}
 }
 // kilocode_change end
 
@@ -112,7 +115,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				// kilocode_change start
 				undefined,
 				undefined,
-				await getClineMessageOptions(task),
+				await getClineMessageOptions(task, result),
 				// kilocode_change end
 			)
 
@@ -263,7 +266,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 					// kilocode_change start
 					undefined,
 					undefined,
-					await getClineMessageOptions(task),
+					await getClineMessageOptions(task, result),
 					// kilocode_change end
 				)
 
@@ -297,7 +300,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				// kilocode_change start
 				undefined,
 				undefined,
-				await getClineMessageOptions(task),
+				await getClineMessageOptions(task, result),
 				// kilocode_change end
 			)
 		}

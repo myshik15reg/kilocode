@@ -1,4 +1,5 @@
 // kilocode_change - new file
+import { HelperRoutingContextBuilder } from "../helper-routing/HelperRoutingContextBuilder"
 import { HelperModelRouter } from "../helper-routing/HelperModelRouter"
 import { singleCompletionHandler } from "../../utils/single-completion-handler"
 
@@ -25,16 +26,21 @@ export async function handleSingleCompletionRequest(
 
 	let config = state.apiConfiguration
 	try {
-		const route = await HelperModelRouter.selectConfig({
-			job: "search_assist",
-			state: {
-				apiConfiguration: state.apiConfiguration,
-				enhancementApiConfigId: state.enhancementApiConfigId,
-				condensingApiConfigId: state.condensingApiConfigId,
-				listApiConfigMeta: state.listApiConfigMeta,
-			},
-			providerSettingsManager: provider.providerSettingsManager,
-		})
+		const route = await HelperModelRouter.selectConfig(
+			HelperRoutingContextBuilder.build({
+				job: "search_assist",
+				state: {
+					apiConfiguration: state.apiConfiguration,
+					enhancementApiConfigId: state.enhancementApiConfigId,
+					condensingApiConfigId: state.condensingApiConfigId,
+					listApiConfigMeta: state.listApiConfigMeta,
+					helperLocalityPreference: state.helperLocalityPreference,
+					orchestrationEscalationSensitivity: state.orchestrationEscalationSensitivity,
+					orchestrationTelemetryEnabled: state.orchestrationTelemetryEnabled,
+				},
+				providerSettingsManager: provider.providerSettingsManager,
+			}),
+		)
 		config = route.config
 	} catch (error) {
 		provider.log(

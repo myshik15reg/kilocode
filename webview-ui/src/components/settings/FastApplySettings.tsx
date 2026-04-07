@@ -1,15 +1,17 @@
-// kilocode_change: Fast Apply - global settings version
+﻿// kilocode_change: Fast Apply - global settings version
 import { VSCodeDropdown, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { SetCachedStateField } from "./types"
 
 export const FastApplySettings = ({
 	morphApiKey,
+	hasMorphApiKey,
 	fastApplyModel,
 	fastApplyApiProvider,
 	setCachedStateField,
 }: {
 	morphApiKey?: string
+	hasMorphApiKey?: boolean
 	fastApplyModel?: string
 	fastApplyApiProvider?: string
 	setCachedStateField: SetCachedStateField<"morphApiKey" | "fastApplyModel" | "fastApplyApiProvider">
@@ -66,14 +68,21 @@ export const FastApplySettings = ({
 			</div>
 
 			{fastApplyApiProvider !== "current" && (
-				<VSCodeTextField
-					type="password"
-					value={morphApiKey || ""}
-					placeholder={t("settings:experimental.MORPH_FAST_APPLY.placeholder")}
-					onChange={(e) => setCachedStateField("morphApiKey", (e.target as any)?.value || "")}
-					className="w-full">
-					{t("settings:experimental.MORPH_FAST_APPLY.apiKey")}
-				</VSCodeTextField>
+				<div className="flex flex-col gap-1">
+					<VSCodeTextField
+						type="password"
+						value={morphApiKey || ""}
+						placeholder={t("settings:experimental.MORPH_FAST_APPLY.placeholder")}
+						onChange={(e) => setCachedStateField("morphApiKey", (e.target as any)?.value || "")}
+						className="w-full">
+						{t("settings:experimental.MORPH_FAST_APPLY.apiKey")}
+					</VSCodeTextField>
+					{hasMorphApiKey && !morphApiKey && (
+						<p className="text-xs text-vscode-descriptionForeground">
+							Saved key is stored securely. Enter a new key only to replace it.
+						</p>
+					)}
+				</div>
 			)}
 		</div>
 	)

@@ -22,6 +22,7 @@ import {
 import { convertToMentionPath } from "@/utils/path-mentions"
 import { escapeHtml } from "@/utils/highlight" // kilocode_change - FIM autocomplete
 import { useChatGhostText } from "./hooks/useChatGhostText" // kilocode_change: FIM autocomplete
+import { getChatInputFrameClassName } from "./chatInputFrame"
 import { DropdownOptionType, Button, StandardTooltip } from "@/components/ui"
 
 import Thumbnails from "../common/Thumbnails"
@@ -1516,15 +1517,11 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		// Helper function to render the text area section
 		const renderTextAreaSection = () => (
 			<div
-				className={cn(
-					"relative",
-					"flex-1",
-					"flex",
-					"flex-col-reverse",
-					"min-h-0",
-					"overflow-hidden",
-					"rounded",
-				)}>
+				className={getChatInputFrameClassName({
+					isDraggingOver,
+					isFocused,
+					isRecording,
+				})}>
 				<div
 					ref={highlightLayerRef}
 					className={cn(
@@ -1538,9 +1535,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						"font-vscode-font-family",
 						"text-vscode-editor-font-size",
 						"leading-vscode-editor-line-height",
-						isDraggingOver
-							? "border-2 border-dashed border-vscode-focusBorder"
-							: "border border-transparent",
+						"border border-transparent",
 						isEditMode ? "pt-1.5 pb-10 px-2" : "py-1.5 px-2",
 						"px-[8px]",
 						"pr-9",
@@ -1596,13 +1591,6 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					minRows={3}
 					maxRows={15}
 					autoFocus={true}
-					// kilocode_change start - isRecording active
-					style={{
-						border: isRecording
-							? "1px solid var(--vscode-editorError-foreground)"
-							: "1px solid transparent",
-					}}
-					// kilocode_change end - isRecording active
 					className={cn(
 						"w-full",
 						"text-vscode-input-foreground",

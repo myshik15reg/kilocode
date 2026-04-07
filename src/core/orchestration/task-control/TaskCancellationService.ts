@@ -55,6 +55,11 @@ export class TaskCancellationService {
 				lastStopSummary: "Background subagent cancelled by the user.",
 				lifecycleState: "cancelled",
 			})
+			await this.runtime.cascadeStopDescendantTasks(
+				task.taskId,
+				"parent_cancelled",
+				`Parent task ${task.taskId} was cancelled by the user.`,
+			)
 			await this.runtime.postStateToWebview()
 			return
 		}

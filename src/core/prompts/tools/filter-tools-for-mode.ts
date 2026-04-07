@@ -332,10 +332,11 @@ export function filterNativeToolsForMode(
 	}
 
 	// kilocode_change start
-	// Conditionally exclude ask_followup_question in yolo mode
+	// Conditionally exclude user question tools in yolo mode
 	// This prevents the agent from asking itself questions and auto-answering them
 	if (state?.yoloMode) {
 		allowedToolNames.delete("ask_followup_question")
+		allowedToolNames.delete("request_user_input")
 	}
 	// kilocode_change end
 

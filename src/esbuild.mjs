@@ -12,6 +12,26 @@ import { copyPaths, copyWasms, copyLocales, setupLocaleWatcher } from "@roo-code
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+function sleepSync(delayMs) {
+	Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delayMs)
+}
+
+function removeDirectoryWithRetries(targetDir, retries = 5, retryDelayMs = 100) {
+	for (let attempt = 0; attempt <= retries; attempt++) {
+		try {
+			fs.rmSync(targetDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 })
+			return
+		} catch (error) {
+			const isRetryable = error?.code === "ENOTEMPTY" || error?.code === "EPERM" || error?.code === "EBUSY"
+			if (!isRetryable || attempt === retries) {
+				throw error
+			}
+
+			sleepSync(retryDelayMs * (attempt + 1))
+		}
+	}
+}
+
 async function main() {
 	const name = "extension"
 	const production = process.argv.includes("--production")
@@ -43,7 +63,7 @@ async function main() {
 
 	if (fs.existsSync(distDir)) {
 		console.log(`[${name}] Cleaning dist directory: ${distDir}`)
-		fs.rmSync(distDir, { recursive: true, force: true })
+		removeDirectoryWithRetries(distDir)
 	}
 
 	/**
@@ -79,30 +99,30 @@ async function main() {
 						["../LICENSE", "LICENSE"],
 						["../.env", ".env", { optional: true }],
 						// kilocode_change start: bundle runtime-focused WorkFlowAI pack
-						["../WorkFlowAI/AGENTS.md", "WorkFlowAI/AGENTS.md"],
-						["../WorkFlowAI/README.md", "WorkFlowAI/README.md"],
-						["../WorkFlowAI/THIRD_PARTY_NOTICES.md", "WorkFlowAI/THIRD_PARTY_NOTICES.md"],
-						["../WorkFlowAI/.clinerules", "WorkFlowAI/.clinerules"],
-						["../WorkFlowAI/.gitattributes", "WorkFlowAI/.gitattributes"],
-						["../WorkFlowAI/.kilocodemodes", "WorkFlowAI/.kilocodemodes"],
-						["../WorkFlowAI/.protocols/README.md", "WorkFlowAI/.protocols/README.md"],
-						["../WorkFlowAI/.protocols/index.md", "WorkFlowAI/.protocols/index.md"],
-						["../WorkFlowAI/.kilocode/QUICK.md", "WorkFlowAI/.kilocode/QUICK.md"],
-						["../WorkFlowAI/.kilocode/system-map.md", "WorkFlowAI/.kilocode/system-map.md"],
-						["../WorkFlowAI/.kilocode/cli", "WorkFlowAI/.kilocode/cli"],
-						["../WorkFlowAI/.kilocode/commands", "WorkFlowAI/.kilocode/commands"],
-						["../WorkFlowAI/.kilocode/memory-bank", "WorkFlowAI/.kilocode/memory-bank"],
-						["../WorkFlowAI/.kilocode/modes", "WorkFlowAI/.kilocode/modes"],
-						["../WorkFlowAI/.kilocode/patterns", "WorkFlowAI/.kilocode/patterns"],
-						["../WorkFlowAI/.kilocode/rules", "WorkFlowAI/.kilocode/rules"],
-						["../WorkFlowAI/.kilocode/rules-architect", "WorkFlowAI/.kilocode/rules-architect"],
-						["../WorkFlowAI/.kilocode/rules-code", "WorkFlowAI/.kilocode/rules-code"],
-						["../WorkFlowAI/.kilocode/rules-orchestrator", "WorkFlowAI/.kilocode/rules-orchestrator"],
-						["../WorkFlowAI/.kilocode/skills", "WorkFlowAI/.kilocode/skills"],
-						["../WorkFlowAI/.kilocode/sources", "WorkFlowAI/.kilocode/sources"],
-						["../WorkFlowAI/.kilocode/templates", "WorkFlowAI/.kilocode/templates"],
-						["../WorkFlowAI/.kilocode/workflows", "WorkFlowAI/.kilocode/workflows"],
-						["../WorkFlowAI/third_party", "WorkFlowAI/third_party"],
+						["../WorkFlowAI/AGENTS.md", "WorkFlowAI/AGENTS.md", { optional: true }],
+						["../WorkFlowAI/README.md", "WorkFlowAI/README.md", { optional: true }],
+						["../WorkFlowAI/THIRD_PARTY_NOTICES.md", "WorkFlowAI/THIRD_PARTY_NOTICES.md", { optional: true }],
+						["../WorkFlowAI/.clinerules", "WorkFlowAI/.clinerules", { optional: true }],
+						["../WorkFlowAI/.gitattributes", "WorkFlowAI/.gitattributes", { optional: true }],
+						["../WorkFlowAI/.kilocodemodes", "WorkFlowAI/.kilocodemodes", { optional: true }],
+						["../WorkFlowAI/.protocols/README.md", "WorkFlowAI/.protocols/README.md", { optional: true }],
+						["../WorkFlowAI/.protocols/index.md", "WorkFlowAI/.protocols/index.md", { optional: true }],
+						["../WorkFlowAI/.kilocode/QUICK.md", "WorkFlowAI/.kilocode/QUICK.md", { optional: true }],
+						["../WorkFlowAI/.kilocode/system-map.md", "WorkFlowAI/.kilocode/system-map.md", { optional: true }],
+						["../WorkFlowAI/.kilocode/cli", "WorkFlowAI/.kilocode/cli", { optional: true }],
+						["../WorkFlowAI/.kilocode/commands", "WorkFlowAI/.kilocode/commands", { optional: true }],
+						["../WorkFlowAI/.kilocode/memory-bank", "WorkFlowAI/.kilocode/memory-bank", { optional: true }],
+						["../WorkFlowAI/.kilocode/modes", "WorkFlowAI/.kilocode/modes", { optional: true }],
+						["../WorkFlowAI/.kilocode/patterns", "WorkFlowAI/.kilocode/patterns", { optional: true }],
+						["../WorkFlowAI/.kilocode/rules", "WorkFlowAI/.kilocode/rules", { optional: true }],
+						["../WorkFlowAI/.kilocode/rules-architect", "WorkFlowAI/.kilocode/rules-architect", { optional: true }],
+						["../WorkFlowAI/.kilocode/rules-code", "WorkFlowAI/.kilocode/rules-code", { optional: true }],
+						["../WorkFlowAI/.kilocode/rules-orchestrator", "WorkFlowAI/.kilocode/rules-orchestrator", { optional: true }],
+						["../WorkFlowAI/.kilocode/skills", "WorkFlowAI/.kilocode/skills", { optional: true }],
+						["../WorkFlowAI/.kilocode/sources", "WorkFlowAI/.kilocode/sources", { optional: true }],
+						["../WorkFlowAI/.kilocode/templates", "WorkFlowAI/.kilocode/templates", { optional: true }],
+						["../WorkFlowAI/.kilocode/workflows", "WorkFlowAI/.kilocode/workflows", { optional: true }],
+						["../WorkFlowAI/third_party", "WorkFlowAI/third_party", { optional: true }],
 						// kilocode_change end
 						["node_modules/vscode-material-icons/generated", "assets/vscode-material-icons"],
 						["../webview-ui/audio", "webview-ui/audio"],
@@ -114,8 +134,12 @@ async function main() {
 					// kilocode_change start: generate embedded WorkFlowAI pack manifest (fingerprint)
 					try {
 						const workflowAiPackDir = path.join(buildDir, "WorkFlowAI")
-						generateEmbeddedPackManifest(workflowAiPackDir)
-						console.log(`[${name}] Generated WorkFlowAI embedded pack manifest`)
+						if (fs.existsSync(workflowAiPackDir)) {
+							generateEmbeddedPackManifest(workflowAiPackDir)
+							console.log(`[${name}] Generated WorkFlowAI embedded pack manifest`)
+						} else {
+							console.log(`[${name}] WorkFlowAI pack not found, skipping embedded pack manifest`)
+						}
 					} catch (error) {
 						console.error(
 							`[${name}] Failed to generate WorkFlowAI embedded pack manifest:`,

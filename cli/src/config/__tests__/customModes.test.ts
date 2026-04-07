@@ -17,7 +17,8 @@ vi.mock("fs/promises", () => ({
 	readFile: vi.fn(),
 }))
 
-vi.mock("fs", () => ({
+vi.mock("fs", async (importOriginal) => ({
+	...(await importOriginal<typeof import("fs")>()),
 	existsSync: vi.fn(),
 }))
 

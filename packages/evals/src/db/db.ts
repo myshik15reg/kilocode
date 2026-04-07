@@ -1,45 +1,67 @@
-import { drizzle } from "drizzle-orm/postgres-js"
+import type { PGlite } from "@electric-sql/pglite"
+import { drizzle as drizzlePglite, type PgliteDatabase } from "drizzle-orm/pglite"
+import { drizzle as drizzlePostgresJs, type PostgresJsDatabase } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 
 import * as schema from "./schema.js"
+import { TEST_DB_DATA_DIR, isLoopbackTestDatabaseUrl } from "./test-config.js"
 
-const pgClient = postgres(process.env.DATABASE_URL!, { prepare: false })
-const client = drizzle({ client: pgClient, schema })
+type AppSchema = typeof schema
+type TestDatabase = PgliteDatabase<AppSchema> & { $client: PGlite }
+type AppDatabase = TestDatabase | PostgresJsDatabase<AppSchema>
 
-let testDb: typeof client | undefined = undefined
+const databaseUrl = process.env.DATABASE_URL
 
-if (process.env.NODE_ENV === "test") {
-	if (!process.env.DATABASE_URL!.includes("test") || !process.env.DATABASE_URL!.includes("localhost")) {
-		throw new Error("DATABASE_URL is not a test database")
-	}
-
-	testDb = client
+if (!databaseUrl) {
+	throw new Error("DATABASE_URL is not set")
 }
 
-let _productionPgClient: ReturnType<typeof postgres> | undefined = undefined
-let _productionClient: typeof client | undefined = undefined
+const createPgClient = (connectionString: string) =>
+	postgres(connectionString, {
+		prepare: false,
+	})
 
-const getProductionClient = () => {
+const isTestEnvironment = process.env.NODE_ENV === "test"
+
+if (isTestEnvironment && !isLoopbackTestDatabaseUrl(databaseUrl)) {
+	throw new Error("DATABASE_URL is not a loopback test database")
+}
+
+const createTestDb = (): TestDatabase => drizzlePglite(TEST_DB_DATA_DIR, { schema })
+
+const pgClient = isTestEnvironment ? undefined : createPgClient(databaseUrl)
+const testDb: TestDatabase | undefined = isTestEnvironment ? createTestDb() : undefined
+const client: AppDatabase = testDb ?? drizzlePostgresJs({ client: pgClient!, schema })
+
+let _productionPgClient: ReturnType<typeof postgres> | undefined = undefined
+let _productionClient: PostgresJsDatabase<AppSchema> | undefined = undefined
+
+const getProductionClient = (): PostgresJsDatabase<AppSchema> => {
 	if (!process.env.PRODUCTION_DATABASE_URL) {
 		throw new Error("PRODUCTION_DATABASE_URL is not set")
 	}
 
 	if (!_productionClient) {
-		_productionPgClient = postgres(process.env.PRODUCTION_DATABASE_URL, { prepare: false })
-		_productionClient = drizzle({ client: _productionPgClient, schema })
+		_productionPgClient = createPgClient(process.env.PRODUCTION_DATABASE_URL)
+		_productionClient = drizzlePostgresJs({ client: _productionPgClient, schema })
 	}
 
 	return _productionClient
 }
 
 const disconnect = async () => {
-	await pgClient.end()
+	if (testDb) {
+		await testDb.$client.close()
+		return
+	}
+
+	await pgClient?.end()
 
 	if (_productionPgClient) {
 		await _productionPgClient.end()
 	}
 }
 
-type DatabaseOrTransaction = typeof client | Parameters<Parameters<typeof client.transaction>[0]>[0]
+type DatabaseOrTransaction = typeof client
 
 export { client, testDb, getProductionClient, disconnect, type DatabaseOrTransaction }

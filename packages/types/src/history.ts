@@ -47,6 +47,7 @@ export const historyItemSchema = z.object({
 	childIds: z.array(z.string()).optional(), // All children spawned by this task
 	awaitingChildId: z.string().optional(), // Child currently awaited (set when delegated)
 	completedByChildId: z.string().optional(), // Child that completed and resumed this parent
+	delegationOutcomeStatus: z.enum(["completed", "abstained"]).optional(), // Final delegation outcome for persisted child tasks
 	completionResultSummary: z.string().optional(), // Summary from completed child
 	lastStopReason: taskStopReasonSchema.optional(), // kilocode_change
 	lastStopSummary: z.string().optional(), // kilocode_change

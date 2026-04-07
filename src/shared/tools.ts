@@ -51,6 +51,7 @@ export const toolParamNames = [
 	"arguments",
 	"uri",
 	"question",
+	"questions",
 	"result",
 	"diff",
 	"mode_slug",
@@ -76,6 +77,7 @@ export const toolParamNames = [
 	"new_str",
 	// kilocode_change end
 	"query",
+	"provider",
 	"args",
 	"start_line",
 	"end_line",
@@ -85,6 +87,16 @@ export const toolParamNames = [
 	"isolation",
 	"branchFromTaskId",
 	"branchStrategy",
+	"deliverable",
+	"constraints",
+	"acceptanceCriteria",
+	"inputs",
+	"evidenceNeeded",
+	"expectedArtifact",
+	"role",
+	"permissions",
+	"retryBudget",
+	"retrievalPackId",
 	// kilocode_change end
 	"prompt",
 	"image",
@@ -122,9 +134,18 @@ export type NativeToolArgs = {
 		question: string
 		follow_up: Array<{ text: string; mode?: string }>
 	}
+	request_user_input: {
+		questions: Array<{
+			header: string
+			question: string
+			options: Array<{ label: string; description: string; preview?: string; value?: string }>
+			multiSelect?: boolean
+			preview?: string
+		}>
+	}
 	browser_action: BrowserActionParams
 	codebase_search: { query: string; path?: string }
-	web_search: { query: string }
+	web_search: { query: string; provider?: string }
 	fetch_instructions: { task: string }
 	generate_image: GenerateImageParams
 	run_slash_command: { command: string; args?: string }
@@ -133,6 +154,25 @@ export type NativeToolArgs = {
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
 	write_to_file: { path: string; content: string }
+	new_task: {
+		mode: string
+		message: string
+		todos?: string | null
+		execution?: "auto" | "foreground" | "background"
+		isolation?: "auto" | "shared" | "worktree"
+		branchFromTaskId?: string
+		branchStrategy?: "full" | "summary"
+		deliverable?: string | null
+		constraints?: string[] | string | null
+		acceptanceCriteria?: string[] | string | null
+		inputs?: Array<{ kind?: string; ref?: string } | string> | string | null
+		evidenceNeeded?: boolean | string | null
+		expectedArtifact?: string | null
+		role?: string | null
+		permissions?: string[] | string | null
+		retryBudget?: number | string | null
+		retrievalPackId?: string | null
+	}
 	// Add more tools as they are migrated to native protocol
 }
 
@@ -242,6 +282,11 @@ export interface AskFollowupQuestionToolUse extends ToolUse<"ask_followup_questi
 	params: Partial<Pick<Record<ToolParamName, string>, "question" | "follow_up">>
 }
 
+export interface RequestUserInputToolUse extends ToolUse<"request_user_input"> {
+	name: "request_user_input"
+	params: Partial<Pick<Record<ToolParamName, string>, "questions">>
+}
+
 export interface AttemptCompletionToolUse extends ToolUse<"attempt_completion"> {
 	name: "attempt_completion"
 	params: Partial<Pick<Record<ToolParamName, string>, "result">>
@@ -257,7 +302,23 @@ export interface NewTaskToolUse extends ToolUse<"new_task"> {
 	params: Partial<
 		Pick<
 			Record<ToolParamName, string>,
-			"mode" | "message" | "todos" | "execution" | "isolation" | "branchFromTaskId" | "branchStrategy"
+			| "mode"
+			| "message"
+			| "todos"
+			| "execution"
+			| "isolation"
+			| "branchFromTaskId"
+			| "branchStrategy"
+			| "deliverable"
+			| "constraints"
+			| "acceptanceCriteria"
+			| "inputs"
+			| "evidenceNeeded"
+			| "expectedArtifact"
+			| "role"
+			| "permissions"
+			| "retryBudget"
+			| "retrievalPackId"
 		>
 	>
 }
@@ -312,6 +373,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	use_mcp_tool: "use mcp tools",
 	access_mcp_resource: "access mcp resources",
 	ask_followup_question: "ask questions",
+	request_user_input: "request structured input",
 	attempt_completion: "complete tasks",
 	switch_mode: "switch modes",
 	new_task: "create new task",
@@ -361,6 +423,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 // Tools that are always available to all modes.
 export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"ask_followup_question",
+	"request_user_input",
 	"attempt_completion",
 	"switch_mode",
 	"new_task",

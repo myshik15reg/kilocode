@@ -46,15 +46,21 @@ export class MessageEnhancer {
 
 			// Determine which API configuration to use
 			let configToUse: ProviderSettings = apiConfiguration
+			let helperConfigInUse = false
 
 			// Try to get enhancement config first, fall back to current config
 			if (enhancementApiConfigId && listApiConfigMeta.find(({ id }) => id === enhancementApiConfigId)) {
-				const { name: _, ...providerSettings } = await providerSettingsManager.getProfile({
-					id: enhancementApiConfigId,
-				})
+				try {
+					const { name: _, ...providerSettings } = await providerSettingsManager.getProfile({
+						id: enhancementApiConfigId,
+					})
 
-				if (providerSettings.apiProvider) {
-					configToUse = providerSettings
+					if (providerSettings.apiProvider) {
+						configToUse = providerSettings
+						helperConfigInUse = true
+					}
+				} catch {
+					configToUse = apiConfiguration
 				}
 			}
 
@@ -77,11 +83,23 @@ export class MessageEnhancer {
 			)
 
 			// Call the single completion handler to get the enhanced prompt
-			const enhancedText = await singleCompletionHandler(configToUse, enhancementPrompt)
+			try {
+				const enhancedText = await singleCompletionHandler(configToUse, enhancementPrompt)
 
-			return {
-				success: true,
-				enhancedText,
+				return {
+					success: true,
+					enhancedText,
+				}
+			} catch (error) {
+				if (!helperConfigInUse) {
+					throw error
+				}
+
+				const enhancedText = await singleCompletionHandler(apiConfiguration, enhancementPrompt)
+				return {
+					success: true,
+					enhancedText,
+				}
 			}
 		} catch (error) {
 			return {

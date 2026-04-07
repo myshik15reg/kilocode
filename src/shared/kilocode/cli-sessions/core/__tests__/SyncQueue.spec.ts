@@ -547,4 +547,76 @@ describe("SyncQueue", () => {
 			expect(queue.getUniqueBlobNamesForTask("task-1")).toEqual(new Set(["api_conversation_history"]))
 		})
 	})
+	describe("Capacity hardening", () => {
+		it("deduplicates stale blob updates before enforcing the hard cap", () => {
+			const overflowHandler = vi.fn()
+			const cappedQueue = new SyncQueue(10, 2)
+			cappedQueue.setOverflowHandler(overflowHandler)
+
+			const item1: SyncQueueItem = {
+				taskId: "task-1",
+				blobName: "api_conversation_history",
+				blobPath: "/path/to/file1.json",
+				timestamp: 1000,
+			}
+			const item2: SyncQueueItem = {
+				taskId: "task-1",
+				blobName: "api_conversation_history",
+				blobPath: "/path/to/file2.json",
+				timestamp: 2000,
+			}
+			const item3: SyncQueueItem = {
+				taskId: "task-1",
+				blobName: "ui_messages",
+				blobPath: "/path/to/file3.json",
+				timestamp: 3000,
+			}
+
+			cappedQueue.enqueue(item1)
+			cappedQueue.enqueue(item2)
+			cappedQueue.enqueue(item3)
+
+			expect(cappedQueue.length).toBe(2)
+			expect(cappedQueue.getItemsForTask("task-1")).toEqual([item2, item3])
+			expect(cappedQueue.getLastItemForBlob("task-1", "api_conversation_history")).toEqual(item2)
+			expect(overflowHandler).toHaveBeenCalledWith({
+				previousLength: 3,
+				newLength: 2,
+				droppedCount: 1,
+				deduplicatedCount: 1,
+				maxItems: 2,
+			})
+		})
+
+		it("keeps the newest unique items when the queue still exceeds the hard cap", () => {
+			const cappedQueue = new SyncQueue(10, 2)
+
+			const item1: SyncQueueItem = {
+				taskId: "task-1",
+				blobName: "api_conversation_history",
+				blobPath: "/path/to/file1.json",
+				timestamp: 1000,
+			}
+			const item2: SyncQueueItem = {
+				taskId: "task-2",
+				blobName: "ui_messages",
+				blobPath: "/path/to/file2.json",
+				timestamp: 2000,
+			}
+			const item3: SyncQueueItem = {
+				taskId: "task-3",
+				blobName: "task_metadata",
+				blobPath: "/path/to/file3.json",
+				timestamp: 3000,
+			}
+
+			cappedQueue.enqueue(item1)
+			cappedQueue.enqueue(item2)
+			cappedQueue.enqueue(item3)
+
+			expect(cappedQueue.getAll()).toEqual([item2, item3])
+			expect(cappedQueue.getUniqueTaskIds()).toEqual(new Set(["task-2", "task-3"]))
+			expect(cappedQueue.getLastItem()).toEqual(item3)
+		})
+	})
 })

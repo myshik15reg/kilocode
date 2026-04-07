@@ -51,6 +51,7 @@ export interface SessionManagerDependencies extends TrpcClientDependencies {
 	getMode: (taskId: string) => Promise<string | undefined>
 	getModel: (taskId: string) => Promise<string | undefined>
 	getParentTaskId: (taskId: string) => Promise<string | undefined>
+	getHistoryItem: (taskId: string) => Promise<import("@roo-code/types").HistoryItem | undefined>
 }
 
 /**
@@ -138,6 +139,17 @@ export class SessionManager {
 		// Create SyncQueue without a handler - we'll set it after creating syncService
 		// This avoids the circular dependency where syncQueue needs syncService.doSync()
 		this.syncQueue = new SyncQueue()
+		this.syncQueue.setOverflowHandler(
+			({ previousLength, newLength, droppedCount, deduplicatedCount, maxItems }) => {
+				this.logger.warn("Session sync queue reached capacity and was trimmed", LOG_SOURCES.SESSION_SYNC, {
+					previousLength,
+					newLength,
+					droppedCount,
+					deduplicatedCount,
+					maxItems,
+				})
+			},
+		)
 
 		this.syncService = new SessionSyncService({
 			sessionClient: this.sessionClient,
@@ -154,6 +166,7 @@ export class SessionManager {
 			getMode: dependencies.getMode,
 			getModel: dependencies.getModel,
 			getParentTaskId: dependencies.getParentTaskId,
+			getHistoryItem: dependencies.getHistoryItem,
 			onSessionCreated: dependencies.onSessionCreated,
 			onSessionSynced: dependencies.onSessionSynced,
 		})

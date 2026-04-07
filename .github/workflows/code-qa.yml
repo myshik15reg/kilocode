@@ -37,7 +37,7 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-turbo-
             - name: Install dependencies
-              run: pnpm install
+              run: pnpm install --frozen-lockfile
             - name: Build
               run: pnpm build
             - name: Check types
@@ -67,7 +67,7 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-turbo-
             - name: Install dependencies
-              run: pnpm install
+              run: pnpm install --frozen-lockfile
             - name: Verify all translations are complete
               run: node scripts/find-missing-translations.js
 
@@ -96,7 +96,7 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-turbo-
             - name: Install dependencies
-              run: pnpm install
+              run: pnpm install --frozen-lockfile
             - name: Build (to build and copy WASM files)
               run: pnpm run vsix
               shell: bash
@@ -138,17 +138,49 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-turbo-
             - name: Install dependencies
-              run: pnpm install
+              run: pnpm install --frozen-lockfile
             - name: Run unit tests
               working-directory: webview-ui
               run: pnpm test
 
-    unit-test:
+    coverage-core:
         needs: [test-extension, test-webview]
+        runs-on: ubuntu-latest
+        timeout-minutes: 60
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+            - name: Install pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: "pnpm"
+            - name: Turbo cache setup
+              uses: actions/cache@v5
+              with:
+                  path: .turbo
+                  key: ${{ runner.os }}-turbo-${{ github.sha }}
+                  restore-keys: |
+                      ${{ runner.os }}-turbo-
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+            - name: Run extension coverage
+              working-directory: src
+              run: pnpm test:coverage
+            - name: Run webview coverage
+              working-directory: webview-ui
+              run: pnpm test:coverage
+
+    unit-test:
+        needs: [test-extension, test-webview, coverage-core, test-web-evals, test-evals]
         runs-on: ubuntu-latest
         steps:
             - name: NO-OP
-              run: echo "All unit tests passed."
+              run: echo "All unit and coverage checks passed."
 
     test-jetbrains:
         runs-on: ubuntu-latest
@@ -195,7 +227,7 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-turbo-
             - name: Install dependencies
-              run: pnpm install
+              run: pnpm install --frozen-lockfile
             - name: Build
               run: pnpm run jetbrains:build
               shell: bash
@@ -222,7 +254,80 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-turbo-
             - name: Install dependencies
-              run: pnpm install
+              run: pnpm install --frozen-lockfile
             - name: Run unit tests
               working-directory: cli
+              run: pnpm test
+    test-web-evals:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+            - name: Install pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: "pnpm"
+            - name: Turbo cache setup
+              uses: actions/cache@v5
+              with:
+                  path: .turbo
+                  key: ${{ runner.os }}-turbo-${{ github.sha }}
+                  restore-keys: |
+                      ${{ runner.os }}-turbo-
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+            - name: Run web-evals tests
+              working-directory: apps/web-evals
+              run: pnpm test
+            - name: Build web-evals
+              working-directory: apps/web-evals
+              run: pnpm build
+
+    test-evals:
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:15.4
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: password
+                    POSTGRES_DB: evals_test
+                ports:
+                    - 5433:5432
+                options: >-
+                    --health-cmd "pg_isready -U postgres -d evals_test"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+            - name: Install pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: "pnpm"
+            - name: Turbo cache setup
+              uses: actions/cache@v5
+              with:
+                  path: .turbo
+                  key: ${{ runner.os }}-turbo-${{ github.sha }}
+                  restore-keys: |
+                      ${{ runner.os }}-turbo-
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+            - name: Apply evals test schema
+              working-directory: packages/evals
+              run: pnpm db:test:push
+            - name: Run evals tests
+              working-directory: packages/evals
               run: pnpm test

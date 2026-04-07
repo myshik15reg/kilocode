@@ -46,9 +46,17 @@
  * ```
  */
 
+import { pathToFileURL } from "node:url"
 import { createExtensionService, type ExtensionService } from "./services/extension.js"
 import { logs, setLogger, createIPCLogger } from "./utils/logger.js"
-import type { ExtensionMessage, WebviewMessage, ExtensionState, ModeConfig, ProviderSettings } from "./types/index.js"
+import type {
+	AgentExecutionGuardrails,
+	ExtensionMessage,
+	WebviewMessage,
+	ExtensionState,
+	ModeConfig,
+	ProviderSettings,
+} from "./types/index.js"
 
 /**
  * Agent configuration passed via AGENT_CONFIG environment variable
@@ -66,6 +74,7 @@ interface AgentConfig {
 
 	// Behavior
 	autoApprove?: boolean // replaces --yolo
+	guardrails?: AgentExecutionGuardrails
 
 	// Session management
 	sessionId?: string // for resuming sessions
@@ -186,6 +195,40 @@ function summarizeMessage(message: ChildMessage): string {
 /**
  * Send message to parent process
  */
+export function buildInitialExtensionState(config: {
+	providerSettings: ProviderSettings
+	mode?: string
+	guardrails?: AgentExecutionGuardrails
+	autoApprove?: boolean
+}): Partial<ExtensionState> {
+	const stateConfig: Partial<ExtensionState> = {
+		apiConfiguration: config.providerSettings,
+		currentApiConfigName: "default",
+		mode: config.mode || "code",
+		agentGuardrails: config.guardrails,
+	}
+
+	if (config.autoApprove && !config.guardrails?.shadowMode) {
+		stateConfig.autoApprovalEnabled = true
+		stateConfig.alwaysAllowReadOnly = true
+		stateConfig.alwaysAllowReadOnlyOutsideWorkspace = true
+		stateConfig.alwaysAllowWrite = true
+		stateConfig.alwaysAllowWriteOutsideWorkspace = true
+		stateConfig.alwaysAllowExecute = true
+		stateConfig.allowedCommands = ["*"] // Wildcard to allow all commands
+		stateConfig.alwaysAllowBrowser = true
+		stateConfig.alwaysAllowMcp = true
+		stateConfig.alwaysAllowModeSwitch = true
+		stateConfig.alwaysAllowSubtasks = true
+	}
+
+	if (config.guardrails?.shadowMode) {
+		stateConfig.autoApprovalEnabled = false
+	}
+
+	return stateConfig
+}
+
 function sendToParent(message: ChildMessage): void {
 	if (process.send) {
 		// Log outgoing message to parent (except verbose ones)
@@ -252,6 +295,8 @@ async function main(): Promise<void> {
 		mode: config.mode,
 		customModesCount: config.customModes?.length || 0,
 		customModeSlugs,
+		shadowMode: config.guardrails?.shadowMode ?? false,
+		verificationMode: config.guardrails?.verificationMode ?? "standard",
 	})
 
 	let agent: ExtensionService | null = null
@@ -279,29 +324,7 @@ async function main(): Promise<void> {
 			// Inject provider configuration
 			try {
 				const extensionHost = agent!.getExtensionHost()
-				const stateConfig: Partial<ExtensionState> = {
-					apiConfiguration: config.providerSettings,
-					currentApiConfigName: "default",
-					mode: config.mode || "code",
-				}
-
-				// Handle auto-approve settings
-				// TODO: Once approval UI is implemented in Agent Manager, remove the blanket
-				// auto-approve and instead forward approval requests to the parent process
-				// via IPC, allowing the user to approve/deny individual operations.
-				if (config.autoApprove) {
-					stateConfig.autoApprovalEnabled = true
-					stateConfig.alwaysAllowReadOnly = true
-					stateConfig.alwaysAllowReadOnlyOutsideWorkspace = true
-					stateConfig.alwaysAllowWrite = true
-					stateConfig.alwaysAllowWriteOutsideWorkspace = true
-					stateConfig.alwaysAllowExecute = true
-					stateConfig.allowedCommands = ["*"] // Wildcard to allow all commands
-					stateConfig.alwaysAllowBrowser = true
-					stateConfig.alwaysAllowMcp = true
-					stateConfig.alwaysAllowModeSwitch = true
-					stateConfig.alwaysAllowSubtasks = true
-				}
+				const stateConfig = buildInitialExtensionState(config)
 
 				await extensionHost.injectConfiguration(stateConfig)
 				logs.info("Configuration injected", "AgentProcess")
@@ -514,8 +537,14 @@ async function main(): Promise<void> {
 	}
 }
 
+function isDirectExecution(): boolean {
+	return typeof process.argv[1] === "string" && import.meta.url === pathToFileURL(process.argv[1]).href
+}
+
 // Run main function
-main().catch((error) => {
-	console.error("Fatal error in agent process:", error)
-	process.exit(1)
-})
+if (isDirectExecution()) {
+	main().catch((error) => {
+		console.error("Fatal error in agent process:", error)
+		process.exit(1)
+	})
+}

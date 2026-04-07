@@ -1,6 +1,11 @@
-// npx vitest run src/lib/server/__tests__/sse-stream.spec.ts
-
 import { SSEStream } from "../sse-stream"
+
+type StreamWithMockableWriter = {
+	_writer: {
+		write?: ReturnType<typeof vi.fn>
+		close: ReturnType<typeof vi.fn>
+	}
+}
 
 describe("SSEStream", () => {
 	let stream: SSEStream
@@ -56,11 +61,32 @@ describe("SSEStream", () => {
 		expect(result).toBe(false)
 	})
 
+	it("should mark the stream as closed when writes fail", async () => {
+		const error = new Error("write failed")
+		const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+		;(stream as unknown as StreamWithMockableWriter)._writer = {
+			write: vi.fn().mockRejectedValue(error),
+			close: vi.fn().mockResolvedValue(undefined),
+		}
+
+		await expect(stream.write("test message")).resolves.toBe(false)
+		expect(stream.isClosed).toBe(true)
+		expect(consoleErrorSpy).toHaveBeenCalledWith("[SSEStream#write]", error)
+	})
+
 	it("should handle multiple close calls gracefully", async () => {
 		await stream.close()
 		expect(stream.isClosed).toBe(true)
 
-		// Second close should not throw.
+		await expect(stream.close()).resolves.toBeUndefined()
+		expect(stream.isClosed).toBe(true)
+	})
+
+	it("should ignore writer close errors", async () => {
+		;(stream as unknown as StreamWithMockableWriter)._writer = {
+			close: vi.fn().mockRejectedValue(new Error("already closed")),
+		}
+
 		await expect(stream.close()).resolves.toBeUndefined()
 		expect(stream.isClosed).toBe(true)
 	})

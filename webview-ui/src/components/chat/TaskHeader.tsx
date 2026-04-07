@@ -340,7 +340,11 @@ const TaskHeader = ({
 						{task.images && task.images.length > 0 && <Thumbnails images={task.images} />}
 
 						<div onClick={(e) => e.stopPropagation()}>
-							<TaskActions item={currentTaskItem} buttonsDisabled={buttonsDisabled} />
+							<TaskActions
+								item={currentTaskItem}
+								buttonsDisabled={buttonsDisabled}
+								isTaskComplete={isTaskComplete}
+							/>
 						</div>
 
 						<div className="pt-3 mt-2 -mx-2.5 px-2.5 border-t border-vscode-sideBar-background">

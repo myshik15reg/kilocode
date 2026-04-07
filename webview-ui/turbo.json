@@ -7,6 +7,9 @@
 		},
 		"build:nightly": {
 			"outputs": ["../apps/vscode-nightly/build/webview-ui/**"]
+		},
+		"test": {
+			"dependsOn": ["^build", "alfa-code-assistant#bundle"]
 		}
 	}
 }

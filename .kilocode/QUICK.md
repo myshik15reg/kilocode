@@ -1,6 +1,6 @@
 # AlfaFlowAI Quick Start (Level 0)
 
-Читай только этот файл для старта. Детали только по ссылкам. Нормативная рамка: [`docs-standards.md`](rules/docs-standards.md:1).
+Читай только этот файл для старта. Остановись, как только маршрут задачи определён. Детали читай только по ссылкам. Если есть индекс или меню, сначала читай индексный файл, а не глубокие документы: это уменьшает лишний контекст и расход токенов. Нормативная рамка: [`docs-standards.md`](rules/docs-standards.md:1).
 
 ## 1) Confirm context
 
@@ -11,87 +11,52 @@
 [MB: OK]
 ```
 
-## 2) Protocol is mandatory for repo changes
+## 2) Route task (stop when matched)
 
-Любое изменение репозитория MUST иметь протокол:
+| Situation                                | Next step                                                                                                                                                                                                                                           | Stop condition                                           |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Вопрос / исследование без repo changes   | Выбери режим по [`mode-selection/SKILL.md`](skills/mode-selection/SKILL.md:1): `ask`, `planning-research-codebase` или `planning-research-web`; для retrieval-heavy research используй [`research-retrieval.md`](workflows/research-retrieval.md:1) | Ответ или staged findings готовы; протокол не нужен      |
+| Ambiguous or design-heavy request        | Сначала выполни [`brainstorm-design.md`](workflows/brainstorm-design.md:1), затем при repo change переходи к [`protocol-new.md`](workflows/protocol-new.md:1)                                                                                       | Есть `approved design summary` или `needs-clarification` |
+| Точная micro-change с явным фрагментом   | Используй FAST PATH [`quick-fix.md`](workflows/quick-fix.md:1)                                                                                                                                                                                      | Готов patch-first ответ                                  |
+| Repo change: trivial                     | Проверь условия в [`task-classification.md`](rules/task-classification.md:1), затем создай минимальный протокол через [`protocol-new.md`](workflows/protocol-new.md:1)                                                                              | `brief.md` и `plan.md` готовы в минимальной глубине      |
+| Repo change: non-trivial                 | Сразу создай полный протокол через [`protocol-new.md`](workflows/protocol-new.md:1)                                                                                                                                                                 | Протокол готов к реализации                              |
+| Multi-step / multi-domain задача         | Создай полный протокол, затем выбери режим по [`mode-selection/SKILL.md`](skills/mode-selection/SKILL.md:1); если нужна координация, используй `orchestrator` по [`agent-routing.md`](rules/agent-routing.md:1)                                     | Есть protocol + mode + handoff plan                      |
+| Tool-heavy / MCP-heavy task              | Используй [`planner-executor.md`](workflows/planner-executor.md:1) вместе со specialist-first routing                                                                                                                                               | Есть planner contract + executor path                    |
+| Изменение может быть high-blast-radius   | Сначала выполни [`risk-tier-review.md`](workflows/risk-tier-review.md:1)                                                                                                                                                                            | Risk tier зафиксирован                                   |
+| Перед risky action нужен safety corridor | Выполни [`pre-action-check.md`](workflows/pre-action-check.md:1)                                                                                                                                                                                    | Есть go/no-go решение                                    |
 
-```text
-.protocols/YYYY-MM-DD-name/
-  brief.md
-  plan.md
-  execution.md (optional)
-  artifacts/
-```
+## 3) Non-negotiables
 
-Source: [`protocol-new.md`](workflows/protocol-new.md:1).
+| Rule               | Requirement                                                                                                                     | Source                                                                                                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Protocol           | Любое изменение репозитория MUST иметь `.protocols/YYYY-MM-DD-name/`                                                            | [`protocol-new.md`](workflows/protocol-new.md:1)                                                                                                                                       |
+| Depth              | Trivial и non-trivial задачи различаются только глубиной `plan.md`                                                              | [`task-classification.md`](rules/task-classification.md:1)                                                                                                                             |
+| Design discovery   | Если design ещё не схлопнут, SHOULD пройти через `brainstorm-design` до `protocol-new`                                          | [`brainstorm-design.md`](workflows/brainstorm-design.md:1)                                                                                                                             |
+| FAST PATH          | Patch-first разрешён только как short path; repo changes всё равно требуют протокол                                             | [`quick-fix.md`](workflows/quick-fix.md:1)                                                                                                                                             |
+| Specialist-first   | Выбирай самый узкий specialist; `code` только last resort                                                                       | [`mode-selection/SKILL.md`](skills/mode-selection/SKILL.md:1)                                                                                                                          |
+| Orchestrator       | `orchestrator` MUST NOT делать аналитику; только маршрутизация/делегирование                                                    | [`agent-routing.md`](rules/agent-routing.md:1)                                                                                                                                         |
+| Handoff            | Любая делегация MUST использовать `CONTEXT HANDOFF` + `Result Contract`                                                         | [`patterns/orchestration/context-handoff.md`](patterns/orchestration/context-handoff.md:1), [`patterns/orchestration/result-contract.md`](patterns/orchestration/result-contract.md:1) |
+| Prompt contract    | Workflow/prompts MUST follow execution-contract shape                                                                           | [`workflow-prompt-writing.md`](rules/workflow-prompt-writing.md:1)                                                                                                                     |
+| Curated memory     | Memory updates MUST follow write policy                                                                                         | [`memory-write-policy.md`](rules/memory-write-policy.md:1)                                                                                                                             |
+| Language and UTF-8 | Чат с пользователем, протоколы и Memory Bank MUST быть на русском; файлы с кириллицей MUST быть UTF-8 без BOM                   | [`language-and-encoding.md`](rules/language-and-encoding.md:1)                                                                                                                         |
+| Review feedback    | Review comments MUST be triaged, not blindly accepted                                                                           | [`review-feedback-policy.md`](rules/review-feedback-policy.md:1)                                                                                                                       |
+| Fresh verification | `done`/`ready`/`merged` claims MUST have fresh verification                                                                     | [`verification-before-completion.md`](rules/verification-before-completion.md:1)                                                                                                       |
+| Quality gates      | Применимые гейты MUST следовать [`quality-gates.md`](rules/quality-gates.md:1) и [`testing-rules.md`](rules/testing-rules.md:1) | [`rules/index.md`](rules/index.md:1)                                                                                                                                                   |
 
-## 2.1) FAST PATH для быстрых правок (Micro-change)
+## 4) Read next only if needed
 
-Если пользователь явно просит **быструю правку / микро‑рефакторинг / extract method / обёртку** и даёт точный фрагмент кода, агент SHOULD использовать FAST PATH workflow: [`quick-fix.md`](workflows/quick-fix.md:1).
+Сначала выбирай индекс/роутер (`quickref.md`, `overview.md`, `rules/index.md`), и только потом углубляйся по нужным ссылкам.
 
-Правило: FAST PATH **не отменяет** протокол для repo changes; он меняет порядок ответа: **patch → verify → (если применяем к репозиторию) протокол**.
-
-## 3) Choose mode (specialist-first)
-
-Алгоритм выбора режима: [`mode-selection/SKILL.md`](skills/mode-selection/SKILL.md:1).
-
-| If you do                                  | Use mode                                     |
-| ------------------------------------------ | -------------------------------------------- |
-| Планируешь/пишешь docs/закрываешь протокол | `architect`                                  |
-| Декомпозируешь и делегируешь               | `orchestrator`                               |
-| Реализуешь по стеку                        | narrowest `*-dev/*-specialist`, иначе `code` |
-| Работаешь с 1C                             | `1c-orchestrator`                            |
-
-## 4) Quality gates (non-negotiable)
-
-| Gate     | Requirement                     | Source                                                 |
-| -------- | ------------------------------- | ------------------------------------------------------ |
-| Coverage | 100% (lines/branches/functions) | [`quality-gates.md`](rules/quality-gates.md:1)         |
-| Lint     | 0 errors and 0 warnings         | [`quality-gates.md`](rules/quality-gates.md:1)         |
-| TDD      | Red -> Green -> Refactor        | [`testing-rules.md`](rules/testing-rules.md:1)         |
-| Waiver   | only via waiver workflow        | [`waiver-workflow.md`](workflows/waiver-workflow.md:1) |
-
-## 5) Delegation (strict handoff)
-
-В Alfa Code смена режима MUST быть через `new_task`; `switch_mode` MUST NOT использоваться. Handoff MUST соответствовать SoT: [`context-handoff.md`](patterns/orchestration/context-handoff.md:1).
-
-```text
-<new_task>
-<mode>react-dev</mode>
-<message>
-ЗАДАЧА: ...
-
-=== CONTEXT HANDOFF ===
-ROOT: d:/path/to/project
-PROTOCOL: .protocols/YYYY-MM-DD-name/
-ORIGIN: architect -> react-dev
-DOMAIN: React
-PHASE: Implementation
-
-GOAL:
-...
-
-INPUTS:
-1. .protocols/YYYY-MM-DD-name/brief.md:1 - requirements
-2. .protocols/YYYY-MM-DD-name/plan.md:1 - steps
-
-CONSTRAINTS:
-1. TDD MUST be used.
-2. Coverage MUST be 100%.
-3. Lint MUST be 0/0.
-
-EXPECTED OUTPUT:
-...
-=======================
-</message>
-</new_task>
-```
-
-## What to read next
-
-| Need                               | Read                                                           |
-| ---------------------------------- | -------------------------------------------------------------- |
-| Меню процессов                     | [`quickref.md`](workflows/quickref.md:1)                       |
-| Карта процессов                    | [`overview.md`](workflows/overview.md:1)                       |
-| Путь к скриптам `workflowai-*.ps1` | [`scripts-entrypoints.md`](workflows/scripts-entrypoints.md:1) |
-| Правила и SoT индекс               | [`rules/index.md`](rules/index.md:1)                           |
+| Need                               | Read                                                                             |
+| ---------------------------------- | -------------------------------------------------------------------------------- |
+| Меню процессов                     | [`quickref.md`](workflows/quickref.md:1)                                         |
+| Карта процессов                    | [`overview.md`](workflows/overview.md:1)                                         |
+| Design discovery before protocol   | [`brainstorm-design.md`](workflows/brainstorm-design.md:1)                       |
+| Путь к скриптам `workflowai-*.ps1` | [`scripts-entrypoints.md`](workflows/scripts-entrypoints.md:1)                   |
+| Разбор входящих заметок            | [`notes-inbox-processing.md`](workflows/notes-inbox-processing.md:1)             |
+| Retrieval-first research           | [`research-retrieval.md`](workflows/research-retrieval.md:1)                     |
+| Planner/Executor                   | [`planner-executor.md`](workflows/planner-executor.md:1)                         |
+| Review feedback triage             | [`review-feedback-policy.md`](rules/review-feedback-policy.md:1)                 |
+| Close-out verification discipline  | [`verification-before-completion.md`](rules/verification-before-completion.md:1) |
+| Риск-ориентированный review        | [`risk-tier-review.md`](workflows/risk-tier-review.md:1)                         |
+| Правила и SoT индекс               | [`rules/index.md`](rules/index.md:1)                                             |

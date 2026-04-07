@@ -1,4 +1,4 @@
-import React, { HTMLAttributes } from "react"
+﻿import React, { HTMLAttributes } from "react"
 
 import type { Experiments, ImageGenerationProvider } from "@roo-code/types"
 
@@ -25,13 +25,16 @@ type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	setExperimentEnabled: SetExperimentEnabled
 	// kilocode_change start
 	morphApiKey?: string
+	hasMorphApiKey?: boolean
 	fastApplyModel?: string
 	fastApplyApiProvider?: string
 	setCachedStateField: SetCachedStateField<"morphApiKey" | "fastApplyModel" | "fastApplyApiProvider">
 	kiloCodeImageApiKey?: string
+	hasKiloCodeImageApiKey?: boolean
 	setKiloCodeImageApiKey?: (apiKey: string) => void
 	currentProfileKilocodeToken?: string
 	litellmImageApiKey?: string
+	hasLitellmImageApiKey?: boolean
 	setLitellmImageApiKey?: (apiKey: string) => void
 	litellmImageBaseUrl?: string
 	setLitellmImageBaseUrl?: (baseUrl: string) => void
@@ -40,6 +43,7 @@ type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	setApiConfigurationField?: any
 	imageGenerationProvider?: ImageGenerationProvider
 	openRouterImageApiKey?: string
+	hasOpenRouterImageApiKey?: boolean
 	openRouterImageGenerationSelectedModel?: string
 	setImageGenerationProvider?: (provider: ImageGenerationProvider) => void
 	setOpenRouterImageApiKey?: (apiKey: string) => void
@@ -53,6 +57,7 @@ export const ExperimentalSettings = ({
 	setApiConfigurationField,
 	imageGenerationProvider,
 	openRouterImageApiKey,
+	hasOpenRouterImageApiKey,
 	openRouterImageGenerationSelectedModel,
 	setImageGenerationProvider,
 	setOpenRouterImageApiKey,
@@ -60,13 +65,16 @@ export const ExperimentalSettings = ({
 	className,
 	// kilocode_change start
 	morphApiKey,
+	hasMorphApiKey,
 	fastApplyModel, // kilocode_change: Fast Apply model selection
 	fastApplyApiProvider, // kilocode_change: Fast Apply model api base url
 	setCachedStateField,
 	setKiloCodeImageApiKey,
 	kiloCodeImageApiKey,
+	hasKiloCodeImageApiKey,
 	currentProfileKilocodeToken,
 	litellmImageApiKey,
+	hasLitellmImageApiKey,
 	setLitellmImageApiKey,
 	litellmImageBaseUrl,
 	setLitellmImageBaseUrl,
@@ -128,6 +136,7 @@ export const ExperimentalSettings = ({
 										<FastApplySettings
 											setCachedStateField={setCachedStateField}
 											morphApiKey={morphApiKey}
+											hasMorphApiKey={hasMorphApiKey}
 											fastApplyModel={fastApplyModel}
 											fastApplyApiProvider={fastApplyApiProvider}
 										/>
@@ -174,14 +183,17 @@ export const ExperimentalSettings = ({
 										}
 										imageGenerationProvider={imageGenerationProvider}
 										openRouterImageApiKey={openRouterImageApiKey}
+										hasOpenRouterImageApiKey={hasOpenRouterImageApiKey}
 										openRouterImageGenerationSelectedModel={openRouterImageGenerationSelectedModel}
 										setImageGenerationProvider={setImageGenerationProvider}
 										setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 										setImageGenerationSelectedModel={setImageGenerationSelectedModel}
 										kiloCodeImageApiKey={kiloCodeImageApiKey}
+										hasKiloCodeImageApiKey={hasKiloCodeImageApiKey}
 										setKiloCodeImageApiKey={setKiloCodeImageApiKey}
 										currentProfileKilocodeToken={currentProfileKilocodeToken}
 										litellmImageApiKey={litellmImageApiKey}
+										hasLitellmImageApiKey={hasLitellmImageApiKey}
 										setLitellmImageApiKey={setLitellmImageApiKey}
 										litellmImageBaseUrl={litellmImageBaseUrl}
 										setLitellmImageBaseUrl={setLitellmImageBaseUrl}

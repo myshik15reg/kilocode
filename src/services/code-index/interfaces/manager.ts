@@ -1,9 +1,17 @@
-import { VectorStoreSearchResult } from "./vector-store"
+import type { RetrievalMode } from "@roo-code/types"
+import { CodeIndexStructuredSearchResult, VectorStoreSearchResult } from "./vector-store"
 import * as vscode from "vscode"
 
 /**
  * Interface for the code index manager
  */
+export interface CodeIndexSearchRequest {
+	query: string
+	directoryPrefix?: string
+	retrievalMode?: RetrievalMode
+	taskId?: string
+}
+
 export interface ICodeIndexManager {
 	/**
 	 * Event emitted when progress is updated
@@ -55,7 +63,14 @@ export interface ICodeIndexManager {
 	 * @param limit Maximum number of results to return
 	 * @returns Promise resolving to search results
 	 */
-	searchIndex(query: string, limit: number): Promise<VectorStoreSearchResult[]>
+	searchIndex(query: string, directoryPrefix?: string): Promise<VectorStoreSearchResult[]>
+	searchIndex(request: CodeIndexSearchRequest): Promise<VectorStoreSearchResult[]>
+
+	/**
+	 * Searches the index and returns structured retrieval metadata.
+	 */
+	searchIndexDetailed(query: string, directoryPrefix?: string): Promise<CodeIndexStructuredSearchResult>
+	searchIndexDetailed(request: CodeIndexSearchRequest): Promise<CodeIndexStructuredSearchResult>
 
 	/**
 	 * Gets the current status of the indexing system

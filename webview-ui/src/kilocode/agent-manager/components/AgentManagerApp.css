@@ -714,3 +714,140 @@
 	opacity: 0;
 	transition: opacity 0.15s ease;
 }
+
+.am-followup-structured {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.am-structured-input {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 12px;
+	border: 1px solid var(--vscode-editorGroup-border);
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--vscode-sideBar-background) 72%, transparent);
+}
+
+.am-structured-question {
+	border: 0;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.am-structured-legend {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-bottom: 4px;
+}
+
+.am-structured-header {
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--vscode-descriptionForeground);
+}
+
+.am-structured-question-text {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--vscode-editor-foreground);
+}
+
+.am-structured-preview {
+	margin: 0;
+	font-size: 12px;
+	color: var(--vscode-descriptionForeground);
+}
+
+.am-structured-options {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.am-structured-option {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 10px 12px;
+	border: 1px solid var(--vscode-editorGroup-border);
+	border-radius: 8px;
+	background: var(--vscode-input-background);
+	cursor: pointer;
+	transition:
+		border-color 120ms ease,
+		background-color 120ms ease;
+}
+
+.am-structured-option:hover {
+	border-color: color-mix(in srgb, var(--vscode-focusBorder) 65%, transparent);
+	background: color-mix(in srgb, var(--vscode-list-hoverBackground) 55%, transparent);
+}
+
+.am-structured-option-selected {
+	border-color: color-mix(in srgb, var(--vscode-focusBorder) 75%, transparent);
+	background: color-mix(in srgb, var(--vscode-list-activeSelectionBackground) 28%, transparent);
+}
+
+.am-structured-option-input {
+	margin-top: 2px;
+	accent-color: var(--vscode-focusBorder);
+}
+
+.am-structured-option-copy {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.am-structured-option-label {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--vscode-editor-foreground);
+}
+
+.am-structured-option-description {
+	font-size: 12px;
+	line-height: 1.4;
+	color: var(--vscode-editor-foreground);
+}
+
+.am-structured-option-preview {
+	font-size: 12px;
+	line-height: 1.4;
+	color: var(--vscode-descriptionForeground);
+}
+
+.am-structured-actions {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.am-structured-submit {
+	border: 0;
+	border-radius: 6px;
+	padding: 8px 12px;
+	font-size: 12px;
+	font-weight: 600;
+	background: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+	cursor: pointer;
+}
+
+.am-structured-submit:hover:enabled {
+	background: var(--vscode-button-hoverBackground);
+}
+
+.am-structured-submit:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}

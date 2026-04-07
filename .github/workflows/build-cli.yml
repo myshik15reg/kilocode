@@ -34,13 +34,12 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-turbo-
             - name: Install dependencies
-              run: pnpm install
-            - name: Create .env file
-              run: echo "KILOCODE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}" >> .env
-              working-directory: cli
+              run: pnpm install --frozen-lockfile
             - name: Build
               run: pnpm run cli:bundle
               shell: bash
+              env:
+                  KILOCODE_INCLUDE_RUNTIME_ENV: "false"
             - name: NPM Pack
               run: npm pack
               working-directory: cli/dist

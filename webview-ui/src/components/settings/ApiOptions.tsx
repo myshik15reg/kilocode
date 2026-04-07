@@ -476,9 +476,23 @@ const ApiOptions = ({
 		return getModelValidationError(apiConfiguration, routerModels, organizationAllowList)
 	}, [apiConfiguration, routerModels, organizationAllowList])
 
+	const getProviderLabel = useCallback(
+		(value: string, fallbackLabel: string) => {
+			switch (value) {
+				case "openai":
+					return t("settings:codeIndex.openaiCompatibleProvider")
+				case "openai-responses":
+					return t("settings:codeIndex.openaiCompatibleResponsesProvider")
+				default:
+					return fallbackLabel
+			}
+		},
+		[t],
+	)
+
 	const docs = useMemo(() => {
 		const provider = PROVIDERS.find(({ value }) => value === selectedProvider)
-		const name = provider?.label
+		const name = provider ? getProviderLabel(provider.value, provider.label) : undefined
 
 		if (!name) {
 			return undefined
@@ -506,16 +520,16 @@ const ApiOptions = ({
 			url: buildDocLink(`providers/${slug}`, "provider_docs"),
 			name,
 		}
-	}, [selectedProvider])
+	}, [getProviderLabel, selectedProvider])
 
 	// Convert providers to SearchableSelect options
 	// kilocode_change start: no organizationAllowList
 	const providerOptions = useMemo(
 		() =>
 			PROVIDERS.map(({ value, label }) => {
-				return { value, label }
+				return { value, label: getProviderLabel(value, label) }
 			}),
-		[],
+		[getProviderLabel],
 	)
 	// kilocode_change end
 

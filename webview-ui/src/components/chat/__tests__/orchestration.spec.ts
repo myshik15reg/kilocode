@@ -6,6 +6,7 @@ import {
 	getExplainabilityEntries,
 	getHistoryOrchestrationSummary,
 	getTaskOrchestrationSummary,
+	normalizeActivityStatus,
 } from "../orchestration"
 
 describe("orchestration selectors", () => {
@@ -656,6 +657,74 @@ describe("orchestration selectors", () => {
 		expect(summary.counts.paused).toBe(1)
 	})
 
+	it("ignores self task-control activity for root task summary", () => {
+		const summary = getTaskOrchestrationSummary({
+			activity: [
+				{
+					kind: "taskControl",
+					id: "tc-root",
+					taskId: "root",
+					control: "pause",
+					summary: "Paused root",
+					timestamp: 5,
+				},
+			],
+			currentTaskItem: {
+				id: "root",
+				task: "Root",
+				number: 1,
+				ts: 1,
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				status: "completed",
+			} as any,
+		})
+
+		expect(summary.hasStatusSignals).toBe(false)
+		expect(summary.counts.paused).toBe(0)
+		expect(summary.status).toBe("completed")
+	})
+	it("collapses consecutive duplicate pause events in the timeline group", () => {
+		const groups = getActivityGroups([
+			{
+				kind: "taskControl",
+				id: "tc-1",
+				taskId: "root",
+				control: "pause",
+				summary: "Task cancelled by user",
+				timestamp: 1,
+			},
+			{
+				kind: "taskControl",
+				id: "tc-2",
+				taskId: "root",
+				control: "pause",
+				summary: "Task cancelled by user",
+				timestamp: 2,
+			},
+			{
+				kind: "taskControl",
+				id: "tc-3",
+				taskId: "root",
+				control: "resume",
+				summary: "Task resumed",
+				timestamp: 3,
+			},
+			{
+				kind: "taskControl",
+				id: "tc-4",
+				taskId: "root",
+				control: "pause",
+				summary: "Task cancelled by user",
+				timestamp: 4,
+			},
+		] as any)
+
+		const timeline = groups.find((group) => group.label === "timeline")
+		expect(timeline?.items.map((item) => item.id)).toEqual(["tc-2", "tc-3", "tc-4"])
+	})
+
 	it("maps continue controls to running and branch controls to completed timeline semantics", () => {
 		const summary = getTaskOrchestrationSummary({
 			activity: [
@@ -721,6 +790,41 @@ describe("orchestration selectors", () => {
 				timestamp: 8,
 			} as any),
 		).toEqual([])
+	})
+
+	it("exposes evaluator verdicts in outcome explainability entries", () => {
+		expect(
+			getExplainabilityEntries({
+				kind: "subagent",
+				id: "sa-outcome",
+				taskId: "child-1",
+				status: "completed",
+				summary: "Completed helper",
+				explainability: {
+					stage: "outcome",
+					reasonCode: "subagent_completed",
+					outcomeSummary: "Background subagent completed",
+					lastSubagentOutcome: "retry",
+				},
+				timestamp: 9,
+			} as any),
+		).toEqual([
+			{ title: "Outcome", detail: "Background subagent completed" },
+			{ title: "Reason", detail: "evaluator retry" },
+		])
+	})
+
+	it("maps abstained activity to an abstained orchestration status", () => {
+		expect(
+			normalizeActivityStatus({
+				kind: "subagent",
+				id: "sa-abstain",
+				taskId: "child-1",
+				status: "abstained",
+				summary: "Need clarification",
+				timestamp: 10,
+			} as any),
+		).toBe("abstained")
 	})
 
 	it("includes history-only queued background tasks in history summary", () => {

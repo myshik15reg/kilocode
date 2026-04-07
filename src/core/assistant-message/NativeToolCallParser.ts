@@ -463,6 +463,14 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "request_user_input":
+				if (partialArgs.questions !== undefined) {
+					nativeArgs = {
+						questions: Array.isArray(partialArgs.questions) ? partialArgs.questions : undefined,
+					}
+				}
+				break
+
 			case "apply_diff":
 				if (partialArgs.path !== undefined || partialArgs.diff !== undefined) {
 					nativeArgs = {
@@ -770,6 +778,14 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							question: args.question,
 							follow_up: args.follow_up,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "request_user_input":
+					if (args.questions !== undefined) {
+						nativeArgs = {
+							questions: args.questions,
 						} as NativeArgsFor<TName>
 					}
 					break

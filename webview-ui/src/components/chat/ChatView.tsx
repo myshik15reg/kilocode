@@ -129,6 +129,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		historyPreviewCollapsed === undefined ? true : !historyPreviewCollapsed,
 	)
 
+	useEffect(() => {
+		setIsExpanded(historyPreviewCollapsed === undefined ? true : !historyPreviewCollapsed)
+	}, [historyPreviewCollapsed])
 	const toggleExpanded = useCallback(() => {
 		const newState = !isExpanded
 		setIsExpanded(newState)
@@ -353,6 +356,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								case "finishTask":
 									setPrimaryButtonText(t("chat:completeSubtaskAndReturn"))
 									setSecondaryButtonText(undefined)
+									break
+								case "newTask":
+									setPrimaryButtonText(t("chat:subtasks.createTask"))
+									setSecondaryButtonText(t("chat:reject.title"))
 									break
 								case "readFile":
 									if (tool.batchFiles && Array.isArray(tool.batchFiles)) {
@@ -750,6 +757,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			userRespondedRef.current = true
 
 			const trimmedInput = text?.trim()
+			let requestedTool: ClineSayTool | undefined
+			if (clineAsk === "tool" && lastMessage?.text) {
+				try {
+					requestedTool = JSON.parse(lastMessage.text) as ClineSayTool
+				} catch {
+					requestedTool = undefined
+				}
+			}
 
 			switch (clineAsk) {
 				case "api_req_failed":
@@ -819,13 +834,20 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				// kilocode_change end
 			}
 
+			if (clineAsk === "tool" && requestedTool?.tool === "newTask" && lastMessage?.ts) {
+				setExpandedRows((prev: Record<number, boolean>) => ({
+					...prev,
+					[lastMessage.ts]: false,
+				}))
+			}
+
 			setSendingDisabled(true)
 			setClineAsk(undefined)
 			setEnableButtons(false)
 			setPrimaryButtonText(undefined)
 			setSecondaryButtonText(undefined)
 		},
-		[clineAsk, startNewTask, currentTaskItem?.parentTaskId, lastMessage?.text], // kilocode_change: add lastMessage?.text
+		[clineAsk, startNewTask, currentTaskItem?.parentTaskId, lastMessage?.text, lastMessage?.ts, setExpandedRows], // kilocode_change: add new_task collapse dependencies
 	)
 
 	const handleSecondaryButtonClick = useCallback(
@@ -1650,7 +1672,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						</div>
 					)}
 					{/* kilocode_change start: changed the classes to support notifications */}
-					<div className="w-full h-full flex flex-col gap-4 px-3.5 transition-all duration-300">
+					<div className="flex h-full min-h-0 w-full flex-col gap-4 px-3.5">
 						{/* kilocode_change end */}
 						{/* Version indicator in top-right corner - only on welcome screen */}
 						{/* kilocode_change: do not show */}
@@ -1668,30 +1690,37 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								<KilocodeNotifications />
 							</div>
 						)}
-						<div className="flex flex-grow flex-col justify-center gap-4">
+						<div
+							className={`flex flex-1 flex-col gap-4 ${taskHistoryFullLength > 0 && isExpanded ? "min-h-0 pt-2" : "justify-center"}`}>
 							{/* kilocode_change end */}
-							<p className="text-vscode-editor-foreground leading-normal font-vscode-font-family text-center text-balance max-w-[380px] mx-auto my-0">
-								<Trans
-									i18nKey="chat:about"
-									components={{
-										DocsLink: (
-											<a
-												href={buildDocLink("", "welcome")}
-												target="_blank"
-												rel="noopener noreferrer">
-												the docs
-											</a>
-										),
-									}}
-								/>
-							</p>
-							<IdeaSuggestionsBox /> {/* kilocode_change */}
+							<div className="mx-auto w-full max-w-[480px]">
+								<p className="mx-auto my-0 max-w-[380px] text-balance text-center font-vscode-font-family leading-normal text-vscode-editor-foreground">
+									<Trans
+										i18nKey="chat:about"
+										components={{
+											DocsLink: (
+												<a
+													href={buildDocLink("", "welcome")}
+													target="_blank"
+													rel="noopener noreferrer">
+													the docs
+												</a>
+											),
+										}}
+									/>
+								</p>
+							</div>
+							<div className="mx-auto w-full max-w-[720px]">
+								<IdeaSuggestionsBox /> {/* kilocode_change */}
+							</div>
 							{/*<div className="mb-2.5">
 								{cloudIsAuthenticated || taskHistory.length < 4 ? <RooTips /> : <RooCloudCTA />}
 							</div> kilocode_change: do not show */}
 							{/* Show the task history preview if expanded and tasks exist */}
 							{taskHistoryFullLength > 0 && isExpanded && (
-								<HistoryPreview taskHistoryVersion={taskHistoryVersion} />
+								<div className="flex min-h-0 flex-1 flex-col pb-2">
+									<HistoryPreview taskHistoryVersion={taskHistoryVersion} />
+								</div>
 							)}
 							{/* kilocode_change start: KilocodeNotifications + Layout fixes */}
 						</div>
@@ -1853,29 +1882,31 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}
 				}}
 			/>
-			<ChatTextArea
-				ref={textAreaRef}
-				inputValue={inputValue}
-				setInputValue={setInputValue}
-				sendingDisabled={sendingDisabled || isProfileDisabled}
-				selectApiConfigDisabled={sendingDisabled && clineAsk !== "api_req_failed"}
-				placeholderText={placeholderText}
-				selectedImages={selectedImages}
-				setSelectedImages={setSelectedImages}
-				onSend={() => handleSendMessage(inputValue, selectedImages)}
-				onSelectImages={selectImages}
-				shouldDisableImages={shouldDisableImages}
-				onHeightChange={() => {
-					if (isAtBottom) {
-						scrollToBottomAuto()
-					}
-				}}
-				mode={mode}
-				setMode={setMode}
-				modeShortcutText={modeShortcutText}
-				sendMessageOnEnter={sendMessageOnEnter} // kilocode_change
-				showBrowserDockToggle={showBrowserDockToggle}
-			/>
+			<div className={!task && taskHistoryFullLength > 0 && isExpanded ? "mt-3" : undefined}>
+				<ChatTextArea
+					ref={textAreaRef}
+					inputValue={inputValue}
+					setInputValue={setInputValue}
+					sendingDisabled={sendingDisabled || isProfileDisabled}
+					selectApiConfigDisabled={sendingDisabled && clineAsk !== "api_req_failed"}
+					placeholderText={placeholderText}
+					selectedImages={selectedImages}
+					setSelectedImages={setSelectedImages}
+					onSend={() => handleSendMessage(inputValue, selectedImages)}
+					onSelectImages={selectImages}
+					shouldDisableImages={shouldDisableImages}
+					onHeightChange={() => {
+						if (isAtBottom) {
+							scrollToBottomAuto()
+						}
+					}}
+					mode={mode}
+					setMode={setMode}
+					modeShortcutText={modeShortcutText}
+					sendMessageOnEnter={sendMessageOnEnter} // kilocode_change
+					showBrowserDockToggle={showBrowserDockToggle}
+				/>
+			</div>
 			{/* kilocode_change: added settings toggle the profile and model selection */}
 			<BottomControls showApiConfig />
 			{/* kilocode_change: end */}

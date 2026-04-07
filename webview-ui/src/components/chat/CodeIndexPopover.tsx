@@ -89,6 +89,9 @@ interface LocalCodeIndexSettings {
 	codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
 	codebaseIndexSearchMaxResults?: number
 	codebaseIndexSearchMinScore?: number
+	codebaseIndexAdaptiveRetrievalEnabled?: boolean
+	codebaseIndexAdaptiveRetrievalMinConfidence?: number
+	codebaseIndexAdaptiveRetrievalKneeSensitivity?: number
 	codebaseIndexEmbeddingBatchSize?: number
 	codebaseIndexScannerMaxBatchRetries?: number
 	codebaseIndexEmbedderRequestsPerMinute?: number // kilocode_change
@@ -207,6 +210,10 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexEmbedderModelDimension: undefined,
 		codebaseIndexSearchMaxResults: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 		codebaseIndexSearchMinScore: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+		codebaseIndexAdaptiveRetrievalEnabled: false,
+		codebaseIndexAdaptiveRetrievalMinConfidence: CODEBASE_INDEX_DEFAULTS.DEFAULT_ADAPTIVE_RETRIEVAL_MIN_CONFIDENCE,
+		codebaseIndexAdaptiveRetrievalKneeSensitivity:
+			CODEBASE_INDEX_DEFAULTS.DEFAULT_ADAPTIVE_RETRIEVAL_KNEE_SENSITIVITY,
 		codebaseIndexEmbeddingBatchSize: CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDING_BATCH_SIZE,
 		codebaseIndexScannerMaxBatchRetries: CODEBASE_INDEX_DEFAULTS.DEFAULT_SCANNER_MAX_BATCH_RETRIES,
 		codebaseIndexEmbedderRequestsPerMinute: CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDER_RPM, // kilocode_change
@@ -282,6 +289,14 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					codebaseIndexConfig.codebaseIndexSearchMaxResults ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 				codebaseIndexSearchMinScore:
 					codebaseIndexConfig.codebaseIndexSearchMinScore ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+				codebaseIndexAdaptiveRetrievalEnabled:
+					codebaseIndexConfig.codebaseIndexAdaptiveRetrievalEnabled ?? false,
+				codebaseIndexAdaptiveRetrievalMinConfidence:
+					codebaseIndexConfig.codebaseIndexAdaptiveRetrievalMinConfidence ??
+					CODEBASE_INDEX_DEFAULTS.DEFAULT_ADAPTIVE_RETRIEVAL_MIN_CONFIDENCE,
+				codebaseIndexAdaptiveRetrievalKneeSensitivity:
+					codebaseIndexConfig.codebaseIndexAdaptiveRetrievalKneeSensitivity ??
+					CODEBASE_INDEX_DEFAULTS.DEFAULT_ADAPTIVE_RETRIEVAL_KNEE_SENSITIVITY,
 				// kilocode_change start
 				codebaseIndexRerankEnabled: codebaseIndexConfig.codebaseIndexRerankEnabled ?? false,
 				codebaseIndexRerankBaseUrl: codebaseIndexConfig.codebaseIndexRerankBaseUrl || "",
@@ -2093,6 +2108,77 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 											updateSetting("codebaseIndexScannerMaxBatchRetries", value)
 										}
 									/>
+
+									<div className="space-y-3 rounded border border-vscode-input-border p-3">
+										<VSCodeCheckbox
+											checked={currentSettings.codebaseIndexAdaptiveRetrievalEnabled ?? false}
+											onChange={(e: any) =>
+												updateSetting("codebaseIndexAdaptiveRetrievalEnabled", e.target.checked)
+											}
+											data-testid="adaptive-retrieval-enabled-checkbox">
+											<span className="font-medium">Adaptive retrieval</span>
+										</VSCodeCheckbox>
+										<div className="text-vscode-descriptionForeground text-sm">
+											Expand retrieval only when confidence is low, and stop at the relevance
+											knee-point.
+										</div>
+										<div className="space-y-2">
+											<label className="text-sm font-medium">Minimum confidence</label>
+											<div className="flex items-center gap-2">
+												<Slider
+													min={0}
+													max={1}
+													step={0.01}
+													value={[
+														currentSettings.codebaseIndexAdaptiveRetrievalMinConfidence ??
+															CODEBASE_INDEX_DEFAULTS.DEFAULT_ADAPTIVE_RETRIEVAL_MIN_CONFIDENCE,
+													]}
+													onValueChange={(values) =>
+														updateSetting(
+															"codebaseIndexAdaptiveRetrievalMinConfidence",
+															values[0],
+														)
+													}
+													className="flex-1"
+													data-testid="adaptive-retrieval-min-confidence-slider"
+												/>
+												<span className="w-12 text-center">
+													{(
+														currentSettings.codebaseIndexAdaptiveRetrievalMinConfidence ??
+														CODEBASE_INDEX_DEFAULTS.DEFAULT_ADAPTIVE_RETRIEVAL_MIN_CONFIDENCE
+													).toFixed(2)}
+												</span>
+											</div>
+										</div>
+										<div className="space-y-2">
+											<label className="text-sm font-medium">Knee sensitivity</label>
+											<div className="flex items-center gap-2">
+												<Slider
+													min={0.01}
+													max={0.5}
+													step={0.01}
+													value={[
+														currentSettings.codebaseIndexAdaptiveRetrievalKneeSensitivity ??
+															CODEBASE_INDEX_DEFAULTS.DEFAULT_ADAPTIVE_RETRIEVAL_KNEE_SENSITIVITY,
+													]}
+													onValueChange={(values) =>
+														updateSetting(
+															"codebaseIndexAdaptiveRetrievalKneeSensitivity",
+															values[0],
+														)
+													}
+													className="flex-1"
+													data-testid="adaptive-retrieval-knee-sensitivity-slider"
+												/>
+												<span className="w-12 text-center">
+													{(
+														currentSettings.codebaseIndexAdaptiveRetrievalKneeSensitivity ??
+														CODEBASE_INDEX_DEFAULTS.DEFAULT_ADAPTIVE_RETRIEVAL_KNEE_SENSITIVITY
+													).toFixed(2)}
+												</span>
+											</div>
+										</div>
+									</div>
 									{/* kilocode_change end */}
 								</div>
 							)}

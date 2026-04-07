@@ -48,7 +48,17 @@ export class AgentManagerCompletionFollowUp {
 
 	public getEffectiveQueueKeyCap(queueKey: string): number {
 		const pressure = this.deps.queueKeyPressure.get(queueKey) ?? 0
-		return pressure >= 2 ? 0 : this.deps.maxConcurrentPerQueueKey()
+		const baseCap = this.deps.maxConcurrentPerQueueKey()
+
+		if (pressure <= 0) {
+			return baseCap
+		}
+
+		if (pressure >= Math.max(2, baseCap)) {
+			return 0
+		}
+
+		return Math.max(1, baseCap - pressure)
 	}
 
 	public updateQueueKeyPressure(queueKey: string, outcome: QueuePressureOutcome): void {
@@ -149,32 +159,43 @@ export class AgentManagerCompletionFollowUp {
 		session: AgentSession | undefined
 		exitCode?: number
 	}): void {
-		const isSuccess = params.exitCode === 0 || params.exitCode === undefined
-		this.deps.updateSessionStatus(params.sessionId, isSuccess ? "done" : "error", params.exitCode)
+		const isProcessSuccess = params.exitCode === 0 || params.exitCode === undefined
+		const terminalStatus =
+			isProcessSuccess && params.session?.lifecycleStatus === "abstained"
+				? "abstained"
+				: isProcessSuccess
+					? "completed"
+					: "failed"
+		this.deps.updateSessionStatus(params.sessionId, isProcessSuccess ? "done" : "error", params.exitCode)
 		this.deps.updateSession(params.sessionId, {
-			lifecycleStatus: isSuccess ? "completed" : "failed",
+			lifecycleStatus: terminalStatus,
 			activityState: "idle",
-			needsAttention: !isSuccess,
-			recoveryState: isSuccess ? undefined : "handoff_available",
-			pendingReaction: isSuccess ? undefined : "restart",
+			needsAttention: terminalStatus === "failed",
+			recoveryState: terminalStatus === "failed" ? "handoff_available" : undefined,
+			pendingReaction: terminalStatus === "failed" ? "restart" : undefined,
 			lastEventAt: Date.now(),
 		})
-		this.updateSessionQueuePressure(params.session, isSuccess ? "success" : "problematic")
-		this.deps.log(
-			params.sessionId,
-			isSuccess ? "Agent completed" : `Agent failed with exit code ${params.exitCode}`,
-		)
+		this.updateSessionQueuePressure(params.session, terminalStatus === "failed" ? "problematic" : "success")
 		const failureSummary = `Exit code ${params.exitCode}`
+		const statusSummary =
+			terminalStatus === "abstained"
+				? "Agent abstained"
+				: terminalStatus === "completed"
+					? "Agent completed"
+					: `Agent failed with exit code ${params.exitCode}`
+		this.deps.log(params.sessionId, statusSummary)
 		this.deps.publishSessionGroupEvent(
 			params.session,
 			params.sessionId,
-			isSuccess ? "completed" : "error",
-			isSuccess ? "Agent completed" : failureSummary,
+			terminalStatus === "failed" ? "error" : "completed",
+			terminalStatus === "failed" ? failureSummary : statusSummary,
 		)
 		void this.deps.fetchAndPostRemoteSessions()
-		if (isSuccess) {
+		if (terminalStatus === "completed" || terminalStatus === "abstained") {
 			this.deps.postStateEvent(params.sessionId, { eventType: "ask_completion_result" })
-			captureAgentManagerSessionCompleted(params.sessionId, params.session?.parallelMode?.enabled ?? false)
+			if (terminalStatus === "completed") {
+				captureAgentManagerSessionCompleted(params.sessionId, params.session?.parallelMode?.enabled ?? false)
+			}
 			return
 		}
 		captureAgentManagerSessionError(

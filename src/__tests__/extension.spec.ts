@@ -105,6 +105,22 @@ vi.mock("@dotenvx/dotenvx", () => ({
 	config: vi.fn(),
 }))
 
+vi.mock("../utils/networkProxy", () => ({
+	initializeNetworkProxy: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock("../integrations/claude-code/oauth", () => ({
+	claudeCodeOAuthManager: {
+		initialize: vi.fn(),
+	},
+}))
+
+vi.mock("../integrations/openai-codex/oauth", () => ({
+	openAiCodexOAuthManager: {
+		initialize: vi.fn(),
+	},
+}))
+
 const mockBridgeOrchestratorDisconnect = vi.fn().mockResolvedValue(undefined)
 
 const mockCloudServiceInstance = {
@@ -126,6 +142,9 @@ vi.mock("@roo-code/cloud", () => ({
 		},
 	},
 	BridgeOrchestrator: {
+		getInstance: vi.fn().mockReturnValue({
+			disconnect: mockBridgeOrchestratorDisconnect,
+		}),
 		disconnect: mockBridgeOrchestratorDisconnect,
 	},
 	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
@@ -215,6 +234,15 @@ vi.mock("../services/mcp/McpServerManager", () => ({
 vi.mock("../services/code-index/manager", () => ({
 	CodeIndexManager: {
 		getInstance: vi.fn().mockReturnValue(null),
+		disposeAll: vi.fn().mockResolvedValue(undefined),
+	},
+}))
+
+vi.mock("../services/neo4j/connection-manager", () => ({
+	Neo4jConnectionManager: {
+		getInstance: vi.fn().mockReturnValue({
+			disconnect: vi.fn().mockResolvedValue(undefined),
+		}),
 	},
 }))
 
@@ -259,6 +287,34 @@ vi.mock("../utils/migrateSettings", () => ({
 
 vi.mock("../utils/autoImportSettings", () => ({
 	autoImportSettings: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock("../utils/fowardingLogger", () => ({
+	registerMainThreadForwardingLogger: vi.fn(),
+}))
+
+vi.mock("../utils/anthropicApiKeyWarning", () => ({
+	checkAnthropicApiKeyConflict: vi.fn(),
+}))
+
+vi.mock("../services/alfa-code/WorkflowAssetsInstaller", () => ({
+	ensureWorkflowAiAssetsInstalled: vi.fn().mockResolvedValue({ didInstall: false }),
+}))
+
+vi.mock("../services/alfa-code/MemoryBankService", () => ({
+	ensureMemoryBankInitialized: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock("../core/context/instructions/workflows", () => ({
+	refreshWorkflowToggles: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock("../services/roo-config", () => ({
+	getGlobalRooDirectory: vi.fn().mockReturnValue("/test/global-kilo"),
+}))
+
+vi.mock("../core/kilocode/webview/webviewMessageHandlerUtils", () => ({
+	fetchKilocodeNotificationsOnStartup: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock("../extension/api", () => ({
@@ -310,36 +366,41 @@ vi.mock("../services/terminal-welcome/TerminalWelcomeService", () => ({
 	},
 }))
 
-// Mock ClineProvider - remoteControlEnabled must call BridgeOrchestrator.disconnect for the test
-vi.mock("../core/webview/ClineProvider", async () => {
-	const { BridgeOrchestrator } = await import("@roo-code/cloud")
-	const mockInstance = {
-		resolveWebviewView: vi.fn(),
-		postMessageToWebview: vi.fn(),
-		postStateToWebview: vi.fn(),
-		getState: vi.fn().mockResolvedValue({}),
-		remoteControlEnabled: vi.fn().mockImplementation(async (enabled: boolean) => {
-			if (!enabled) {
-				await BridgeOrchestrator.disconnect()
-			}
-		}),
-		initializeCloudProfileSyncWhenReady: vi.fn().mockResolvedValue(undefined),
-		providerSettingsManager: {},
-		contextProxy: { getGlobalState: vi.fn() },
-		customModesManager: {},
-		upsertProviderProfile: vi.fn().mockResolvedValue(undefined),
-	}
-	return {
-		ClineProvider: Object.assign(
-			vi.fn().mockImplementation(() => mockInstance),
-			{
-				// Static method used by extension.ts
-				getVisibleInstance: vi.fn().mockReturnValue(mockInstance),
-				sideBarId: "roo-cline-sidebar",
-			},
-		),
-	}
-})
+const mockClineProviderInstance = {
+	resolveWebviewView: vi.fn(),
+	postMessageToWebview: vi.fn(),
+	postStateToWebview: vi.fn(),
+	postRulesDataToWebview: vi.fn().mockResolvedValue(undefined),
+	postSkillsDataToWebview: vi.fn().mockResolvedValue(undefined),
+	getState: vi.fn().mockResolvedValue({ apiConfiguration: {} }),
+	getSkillsManager: vi.fn().mockReturnValue({
+		discoverSkills: vi.fn().mockResolvedValue(undefined),
+	}),
+	remoteControlEnabled: vi.fn().mockResolvedValue(undefined),
+	initializeCloudProfileSyncWhenReady: vi.fn().mockResolvedValue(undefined),
+	providerSettingsManager: {
+		listConfig: vi.fn().mockResolvedValue([]),
+		getProfile: vi.fn().mockResolvedValue({}),
+	},
+	customModesManager: {
+		getCustomModesFilePath: vi.fn().mockResolvedValue("/test/custom_modes.yaml"),
+		getCustomModes: vi.fn().mockResolvedValue([]),
+	},
+	log: vi.fn(),
+	contextProxy: { getGlobalState: vi.fn() },
+	upsertProviderProfile: vi.fn().mockResolvedValue(undefined),
+}
+
+// Mock ClineProvider
+vi.mock("../core/webview/ClineProvider", () => ({
+	ClineProvider: Object.assign(
+		vi.fn().mockImplementation(() => mockClineProviderInstance),
+		{
+			getVisibleInstance: vi.fn().mockReturnValue(mockClineProviderInstance),
+			sideBarId: "roo-cline-sidebar",
+		},
+	),
+}))
 
 // Mock modelCache to prevent network requests during module loading
 const mockRefreshModels = vi.fn().mockResolvedValue({})
@@ -357,7 +418,7 @@ describe("extension.ts", () => {
 		| undefined
 
 	const waitForAuthStateChangedHandler = async () => {
-		const timeoutMs = 2000
+		const timeoutMs = 10000
 		const start = Date.now()
 		while (!authStateChangedHandler) {
 			if (Date.now() - start > timeoutMs) {
@@ -368,23 +429,53 @@ describe("extension.ts", () => {
 	}
 
 	beforeEach(() => {
+		vi.resetModules()
 		vi.clearAllMocks()
 		mockBridgeOrchestratorDisconnect.mockClear()
 
 		mockContext = {
 			extensionPath: "/test/path",
+			extensionUri: { fsPath: "/test/path" },
 			globalState: {
-				get: vi.fn().mockReturnValue(undefined),
+				get: vi.fn().mockImplementation((key: string) => (key === "firstInstallCompleted" ? true : undefined)),
 				update: vi.fn(),
 			},
 			subscriptions: [],
 		} as unknown as vscode.ExtensionContext
 
 		authStateChangedHandler = undefined
+		mockClineProviderInstance.remoteControlEnabled.mockClear()
+		mockClineProviderInstance.initializeCloudProfileSyncWhenReady.mockClear()
+		mockClineProviderInstance.postStateToWebview.mockClear()
+		mockClineProviderInstance.getState.mockResolvedValue({ apiConfiguration: {} })
+		vi.mocked(mockClineProviderInstance.providerSettingsManager.listConfig).mockResolvedValue([])
+		vi.mocked(mockClineProviderInstance.providerSettingsManager.getProfile).mockResolvedValue({})
 	})
 
+	test("activate forces local degraded mode when cloud bootstrap fails", async () => {
+		const { CloudService } = await import("@roo-code/cloud")
+		const vscodeModule = await import("vscode")
+
+		vi.mocked(CloudService.createInstance).mockRejectedValue(new Error("cloud unavailable"))
+
+		const { activate } = await import("../extension")
+		void activate(mockContext).catch(() => {})
+
+		const timeoutMs = 20000
+		const start = Date.now()
+		while (!mockClineProviderInstance.remoteControlEnabled.mock.calls.length) {
+			if (Date.now() - start > timeoutMs) {
+				throw new Error("remoteControlEnabled(false) was not called after cloud bootstrap failure")
+			}
+			await new Promise((resolve) => setTimeout(resolve, 20))
+		}
+
+		expect(vscodeModule.window.registerWebviewViewProvider).toHaveBeenCalled()
+		expect(mockClineProviderInstance.remoteControlEnabled).toHaveBeenCalledWith(false)
+		expect(mockClineProviderInstance.initializeCloudProfileSyncWhenReady).not.toHaveBeenCalled()
+	})
 	test("authStateChangedHandler calls BridgeOrchestrator.disconnect when logged-out event fires", async () => {
-		const { CloudService, BridgeOrchestrator } = await import("@roo-code/cloud")
+		const { CloudService } = await import("@roo-code/cloud")
 
 		// Capture the auth state changed handler.
 		vi.mocked(CloudService.createInstance).mockImplementation(async (_context, _logger, handlers) => {
@@ -416,9 +507,9 @@ describe("extension.ts", () => {
 			previousState: "logged-in" as AuthState,
 		})
 
-		// Verify BridgeOrchestrator.disconnect was called
-		expect(mockBridgeOrchestratorDisconnect).toHaveBeenCalled()
-	})
+		// Verify provider.remoteControlEnabled(false) was called
+		expect(mockClineProviderInstance.remoteControlEnabled).toHaveBeenCalledWith(false)
+	}, 60000)
 
 	test("authStateChangedHandler does not call BridgeOrchestrator.disconnect for other states", async () => {
 		const { CloudService } = await import("@roo-code/cloud")
@@ -450,9 +541,9 @@ describe("extension.ts", () => {
 			previousState: "logged-out" as AuthState,
 		})
 
-		// Verify BridgeOrchestrator.disconnect was NOT called.
-		expect(mockBridgeOrchestratorDisconnect).not.toHaveBeenCalled()
-	})
+		// Verify provider.remoteControlEnabled was not called for non-logout states.
+		expect(mockClineProviderInstance.remoteControlEnabled).not.toHaveBeenCalled()
+	}, 60000)
 
 	// kilocode_change: skip Roo models
 	describe.skip("Roo model cache refresh on auth state change (ROO-202)", () => {

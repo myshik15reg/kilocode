@@ -178,6 +178,63 @@ describe("BackgroundSubagentLifecycle", () => {
 		])
 	})
 
+	it("keeps terminal bindings for reconciliation when parent history is not terminal yet", () => {
+		const restoration = planPersistedBackgroundBindingRestoration(
+			{
+				backgroundBindings: [
+					{
+						sessionId: "child-completed",
+						taskId: "child-completed",
+						request: createRequest({ targetTaskId: "child-completed" }),
+						lastKnownState: "completed",
+						updatedAt: 789,
+					},
+					{
+						sessionId: "child-failed",
+						taskId: "child-failed",
+						request: createRequest({ targetTaskId: "child-failed" }),
+						lastKnownState: "failed",
+						updatedAt: 790,
+					},
+				],
+			},
+			{
+				getHistoryItem: (sessionId) => ({
+					id: sessionId,
+					rootTaskId: "root-1",
+					parentTaskId: "parent-1",
+					number: 1,
+					ts: 500,
+					task: sessionId,
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+					lifecycleState: "running",
+				}),
+				getExistingSession: () => undefined,
+			},
+		)
+
+		expect(restoration.terminalSessionIds).toEqual([])
+		expect(restoration.removedTerminalBindings).toBe(false)
+		expect(restoration.plans).toEqual([
+			expect.objectContaining({
+				sessionId: "child-completed",
+				restoredLifecycleStatus: "completed",
+				restoredActivityState: "idle",
+				restoredRecoveryState: undefined,
+				restoredPendingReaction: undefined,
+			}),
+			expect.objectContaining({
+				sessionId: "child-failed",
+				restoredLifecycleStatus: "failed",
+				restoredActivityState: "idle",
+				restoredRecoveryState: undefined,
+				restoredPendingReaction: undefined,
+			}),
+		])
+	})
+
 	it("lists bindings with paused recoverable status and queued fallback", () => {
 		const bindings = new Map<string, BackgroundSessionBinding>([
 			["child-paused", { request: createRequest({ targetTaskId: "child-paused" }), taskId: "child-paused" }],

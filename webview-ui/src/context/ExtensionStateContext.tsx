@@ -333,6 +333,14 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		problematicProcessRestartLimit: 1, // kilocode_change
 		parallelAgentsEnabled: false, // kilocode_change
 		parallelAgentCount: 2, // kilocode_change
+		orchestrationTelemetryEnabled: true, // kilocode_change
+		helperLocalityPreference: "prefer", // kilocode_change
+		orchestrationEscalationSensitivity: "balanced", // kilocode_change
+		structuredDelegationEnabled: false,
+		evaluatorPassEnabled: false,
+		memoryPromotionEnabled: false,
+		retrievalPolicy: "adaptive",
+		queryClassifierDebug: false,
 		kilocodeDefaultModel: openRouterDefaultModelId,
 		reasoningBlockCollapsed: true, // Default to collapsed
 		enterBehavior: "send", // Default: Enter sends, Shift+Enter creates newline
@@ -370,8 +378,15 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		codebaseIndexModels: { ollama: {}, openai: {} },
 		includeDiagnosticMessages: true,
 		maxDiagnosticMessages: 50,
+		morphApiKey: "",
+		hasMorphApiKey: false,
 		openRouterImageApiKey: "",
+		hasOpenRouterImageApiKey: false,
 		kiloCodeImageApiKey: "",
+		hasKiloCodeImageApiKey: false,
+		litellmImageApiKey: "",
+		hasLitellmImageApiKey: false,
+		litellmImageBaseUrl: "",
 		// kilocode_change start - Auto Purge
 		autoPurgeEnabled: false,
 		autoPurgeDefaultRetentionDays: 30,

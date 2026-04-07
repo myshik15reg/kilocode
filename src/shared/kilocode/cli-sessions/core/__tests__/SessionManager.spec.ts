@@ -48,6 +48,7 @@ describe("SessionManager", () => {
 	let mockGetMode: any
 	let mockGetModel: any
 	let mockGetParentTaskId: any
+	let mockGetHistoryItem: any
 
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -93,6 +94,7 @@ describe("SessionManager", () => {
 
 		mockSyncQueue = {
 			setFlushHandler: vi.fn(),
+			setOverflowHandler: vi.fn(),
 		}
 
 		// Mock constructors
@@ -133,6 +135,7 @@ describe("SessionManager", () => {
 		mockGetMode = vi.fn().mockResolvedValue("code")
 		mockGetModel = vi.fn().mockResolvedValue("gpt-4")
 		mockGetParentTaskId = vi.fn().mockResolvedValue(undefined)
+		mockGetHistoryItem = vi.fn().mockResolvedValue(undefined)
 	})
 
 	describe("Singleton Pattern", () => {
@@ -151,6 +154,7 @@ describe("SessionManager", () => {
 				getMode: mockGetMode,
 				getModel: mockGetModel,
 				getParentTaskId: mockGetParentTaskId,
+				getHistoryItem: mockGetHistoryItem,
 			}
 
 			const instance = SessionManager.init(dependencies)
@@ -185,6 +189,7 @@ describe("SessionManager", () => {
 				getMode: mockGetMode,
 				getModel: mockGetModel,
 				getParentTaskId: mockGetParentTaskId,
+				getHistoryItem: mockGetHistoryItem,
 			}
 			const firstInstance = SessionManager.init(dependencies)
 
@@ -217,6 +222,7 @@ describe("SessionManager", () => {
 				getMode: mockGetMode,
 				getModel: mockGetModel,
 				getParentTaskId: mockGetParentTaskId,
+				getHistoryItem: mockGetHistoryItem,
 			}
 			SessionManager.init(dependencies)
 		})
@@ -269,6 +275,7 @@ describe("SessionManager", () => {
 				getMode: mockGetMode,
 				getModel: mockGetModel,
 				getParentTaskId: mockGetParentTaskId,
+				getHistoryItem: mockGetHistoryItem,
 			}
 			manager = SessionManager.init(dependencies)
 		})
@@ -384,6 +391,7 @@ describe("SessionManager", () => {
 				getMode: mockGetMode,
 				getModel: mockGetModel,
 				getParentTaskId: mockGetParentTaskId,
+				getHistoryItem: mockGetHistoryItem,
 			}
 
 			SessionManager.init(dependencies)
@@ -414,6 +422,7 @@ describe("SessionManager", () => {
 				getMode: mockGetMode,
 				getModel: mockGetModel,
 				getParentTaskId: mockGetParentTaskId,
+				getHistoryItem: mockGetHistoryItem,
 			}
 
 			SessionManager.init(dependencies)
@@ -436,6 +445,7 @@ describe("SessionManager", () => {
 				getMode: mockGetMode,
 				getModel: mockGetModel,
 				getParentTaskId: mockGetParentTaskId,
+				getHistoryItem: mockGetHistoryItem,
 			}
 
 			SessionManager.init(dependencies)

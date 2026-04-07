@@ -1,4 +1,5 @@
 import { CODEBASE_INDEX_DEFAULTS } from "@roo-code/types"
+export { CODEBASE_INDEX_DEFAULTS }
 
 /**Parser */
 export const MAX_BLOCK_CHARS = 1000

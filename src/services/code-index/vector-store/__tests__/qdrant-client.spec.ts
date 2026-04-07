@@ -38,6 +38,7 @@ const mockQdrantClientInstance = {
 	upsert: vitest.fn(),
 	query: vitest.fn(),
 	delete: vitest.fn(),
+	scroll: vitest.fn(),
 }
 
 const mockCreateHashInstance = {
@@ -613,13 +614,13 @@ describe("QdrantVectorStore", () => {
 				field_name: "type",
 				field_schema: "keyword",
 			})
-			for (let i = 0; i <= 4; i++) {
+			for (let i = 0; i < 16; i++) {
 				expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledWith(expectedCollectionName, {
 					field_name: `pathSegments.${i}`,
 					field_schema: "keyword",
 				})
 			}
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(18)
 		})
 		it("should not create a new collection if one exists with matching vectorSize and return false", async () => {
 			// Mock getCollection to return existing collection info with matching vector size
@@ -647,13 +648,13 @@ describe("QdrantVectorStore", () => {
 				field_name: "type",
 				field_schema: "keyword",
 			})
-			for (let i = 0; i <= 4; i++) {
+			for (let i = 0; i < 16; i++) {
 				expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledWith(expectedCollectionName, {
 					field_name: `pathSegments.${i}`,
 					field_schema: "keyword",
 				})
 			}
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(18)
 		})
 		it("should recreate collection if it exists but vectorSize mismatches and return true", async () => {
 			const differentVectorSize = 768
@@ -704,13 +705,13 @@ describe("QdrantVectorStore", () => {
 				field_name: "type",
 				field_schema: "keyword",
 			})
-			for (let i = 0; i <= 4; i++) {
+			for (let i = 0; i < 16; i++) {
 				expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledWith(expectedCollectionName, {
 					field_name: `pathSegments.${i}`,
 					field_schema: "keyword",
 				})
 			}
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(18)
 			;(console.warn as any).mockRestore() // Restore console.warn
 		})
 		it("should log warning for non-404 errors but still create collection", async () => {
@@ -724,7 +725,7 @@ describe("QdrantVectorStore", () => {
 			expect(mockQdrantClientInstance.getCollection).toHaveBeenCalledTimes(1)
 			expect(mockQdrantClientInstance.createCollection).toHaveBeenCalledTimes(1)
 			expect(mockQdrantClientInstance.deleteCollection).not.toHaveBeenCalled()
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(18)
 			expect(console.warn).toHaveBeenCalledWith(
 				expect.stringContaining(`Warning during getCollectionInfo for "${expectedCollectionName}"`),
 				genericError.message,
@@ -772,16 +773,16 @@ describe("QdrantVectorStore", () => {
 			expect(mockQdrantClientInstance.createCollection).toHaveBeenCalledTimes(1)
 
 			// Verify all payload index creations were attempted (6: type + 5 pathSegments)
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(18)
 
 			// Verify warnings were logged for each failed index (now 6)
-			expect(console.warn).toHaveBeenCalledTimes(6)
+			expect(console.warn).toHaveBeenCalledTimes(18)
 			// Verify warning for 'type' index
 			expect(console.warn).toHaveBeenCalledWith(
 				expect.stringContaining(`Could not create payload index for type`),
 				indexError.message,
 			)
-			for (let i = 0; i <= 4; i++) {
+			for (let i = 0; i < 16; i++) {
 				expect(console.warn).toHaveBeenCalledWith(
 					expect.stringContaining(`Could not create payload index for pathSegments.${i}`),
 					indexError.message,
@@ -909,7 +910,7 @@ describe("QdrantVectorStore", () => {
 			expect(mockQdrantClientInstance.getCollection).toHaveBeenCalledTimes(2)
 			expect(mockQdrantClientInstance.deleteCollection).toHaveBeenCalledTimes(1)
 			expect(mockQdrantClientInstance.createCollection).toHaveBeenCalledTimes(1)
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(18)
 			;(console.warn as any).mockRestore()
 		})
 
@@ -1006,7 +1007,7 @@ describe("QdrantVectorStore", () => {
 					on_disk: true,
 				},
 			})
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(18)
 			;(console.warn as any).mockRestore()
 		})
 
@@ -1863,6 +1864,83 @@ describe("QdrantVectorStore", () => {
 					must_not: [{ key: "type", match: { value: "metadata" } }],
 				}) // Should still create filter for regular paths
 			})
+		})
+	})
+	describe("getPointsByFilePaths", () => {
+		it("returns existing points for requested file paths", async () => {
+			mockQdrantClientInstance.getCollection.mockResolvedValue({} as any)
+			mockQdrantClientInstance.scroll.mockResolvedValue({
+				points: [
+					{
+						id: "point-1",
+						vector: [0.1, 0.2, 0.3],
+						payload: {
+							filePath: "src/test.ts",
+							codeChunk: "const test = true",
+							startLine: 1,
+							endLine: 2,
+						},
+					},
+				],
+				next_page_offset: undefined,
+			})
+
+			const points = await vectorStore.getPointsByFilePaths(["/test/workspace/src/test.ts"])
+
+			expect(mockQdrantClientInstance.scroll).toHaveBeenCalledWith(expectedCollectionName, {
+				filter: {
+					must: [{ key: "filePath", match: { value: "src\\test.ts" } }],
+				},
+				limit: 64,
+				offset: undefined,
+				with_payload: true,
+				with_vector: true,
+			})
+			expect(points).toEqual([
+				{
+					id: "point-1",
+					vector: [0.1, 0.2, 0.3],
+					payload: {
+						filePath: "src/test.ts",
+						codeChunk: "const test = true",
+						startLine: 1,
+						endLine: 2,
+					},
+				},
+			])
+		})
+
+		it("returns empty array when the collection does not exist", async () => {
+			mockQdrantClientInstance.getCollection.mockRejectedValue(new Error("missing"))
+
+			const points = await vectorStore.getPointsByFilePaths(["src/test.ts"])
+
+			expect(points).toEqual([])
+			expect(mockQdrantClientInstance.scroll).not.toHaveBeenCalled()
+		})
+	})
+	describe("deletePointsByMultipleFilePaths", () => {
+		it("should preserve absolute paths outside the workspace", async () => {
+			mockQdrantClientInstance.getCollection.mockResolvedValue({} as any)
+			mockQdrantClientInstance.delete.mockResolvedValue({} as any)
+
+			await vectorStore.deletePointsByMultipleFilePaths(["/outside-workspace/test.ts"])
+
+			expect(mockQdrantClientInstance.delete).toHaveBeenCalledTimes(1)
+
+			const deleteArgs = mockQdrantClientInstance.delete.mock.calls[0][1]
+			expect(deleteArgs).toMatchObject({
+				filter: {
+					must: [
+						{
+							key: "filePath",
+							match: { value: expect.stringContaining("outside-workspace") },
+						},
+					],
+				},
+				wait: true,
+			})
+			expect(JSON.stringify(deleteArgs.filter)).not.toContain("..")
 		})
 	})
 })

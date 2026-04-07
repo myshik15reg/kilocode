@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { requestUserInputDataSchema, suggestionItemSchema } from "./followup.js"
 import { kiloCodeMetaDataSchema } from "./kilocode/kilocode.js"
 
 /**
@@ -303,8 +304,12 @@ export const clineMessageSchema = z.object({
 	// kilocode_change start
 	metadata: z
 		.object({
+			question: z.string().optional(),
+			suggest: z.array(suggestionItemSchema).optional(),
+			requestUserInput: requestUserInputDataSchema.optional(),
 			kiloCode: kiloCodeMetaDataSchema.optional(),
 		})
+		.catchall(z.unknown())
 		.optional(),
 	// kilocode_change end
 })

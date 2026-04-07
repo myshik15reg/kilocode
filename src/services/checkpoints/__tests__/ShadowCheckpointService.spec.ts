@@ -1,5 +1,6 @@
 // npx vitest run src/services/checkpoints/__tests__/ShadowCheckpointService.spec.ts
 
+import fsSync from "fs"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
@@ -22,7 +23,93 @@ vi.mock("@roo-code/telemetry", () => ({
 }))
 // kilocode_change end
 
-const tmpDir = path.join(os.tmpdir(), "CheckpointService")
+vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 })
+
+afterAll(() => {
+	vi.resetConfig()
+})
+
+const resolveTmpDir = () => {
+	const osTempDir = os.tmpdir()
+
+	try {
+		return path.join(fsSync.realpathSync.native(osTempDir), "CheckpointService")
+	} catch {
+		return path.join(osTempDir, "CheckpointService")
+	}
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+const stableCwd = process.cwd()
+
+const createTestGit = (baseDir: string) => {
+	const sanitizedEnv: Record<string, string> = {}
+	for (const [key, value] of Object.entries(process.env)) {
+		if (value === undefined) {
+			continue
+		}
+
+		if (
+			[
+				"GIT_DIR",
+				"GIT_WORK_TREE",
+				"GIT_INDEX_FILE",
+				"GIT_OBJECT_DIRECTORY",
+				"GIT_ALTERNATE_OBJECT_DIRECTORIES",
+				"GIT_CEILING_DIRECTORIES",
+			].includes(key)
+		) {
+			continue
+		}
+
+		sanitizedEnv[key] = value
+	}
+
+	return simpleGit({
+		baseDir,
+		config: ["commit.gpgSign=false", "tag.gpgSign=false"],
+	}).env(sanitizedEnv)
+}
+
+const removeDirWithRetries = async (dir?: string) => {
+	if (!dir) {
+		return
+	}
+
+	for (let attempt = 0; attempt < 20; attempt++) {
+		try {
+			await fs.rm(dir, { recursive: true, force: true })
+			return
+		} catch (error: any) {
+			if (error?.code === "ENOENT") {
+				return
+			}
+
+			if (!["EBUSY", "EPERM", "ENOTEMPTY"].includes(error?.code) || attempt === 19) {
+				throw error
+			}
+
+			await sleep(250 * (attempt + 1))
+		}
+	}
+}
+
+const createTempPath = (prefix: string) =>
+	path.join(tmpDir, `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
+
+const tmpDir = resolveTmpDir()
+
+const isRecoverableGitSetupError = (error: unknown) => {
+	const message = error instanceof Error ? error.message : String(error)
+	return [
+		"not a git repository",
+		"current working directory",
+		"spawn git ENOENT",
+		"--local can only be used inside a git repository",
+		"The empty string is not a valid path",
+		"not a valid path",
+	].some((needle) => message.includes(needle))
+}
 
 const initWorkspaceRepo = async ({
 	workspaceDir,
@@ -41,10 +128,12 @@ const initWorkspaceRepo = async ({
 	await fs.mkdir(workspaceDir, { recursive: true })
 
 	// Initialize git repo.
-	const git = simpleGit(workspaceDir)
+	const git = createTestGit(workspaceDir)
 	await git.init()
 	await git.addConfig("user.name", userName)
 	await git.addConfig("user.email", userEmail)
+	await git.addConfig("commit.gpgSign", "false")
+	await git.addConfig("tag.gpgSign", "false")
 
 	// Create test file.
 	const testFile = path.join(workspaceDir, testFileName)
@@ -65,26 +154,60 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 		let workspaceGit: SimpleGit
 		let testFile: string
 		let service: RepoPerTaskCheckpointService
+		let shadowDir: string
+		let workspaceDir: string
 
 		beforeEach(async () => {
-			const shadowDir = path.join(tmpDir, `${prefix}-${Date.now()}`)
-			const workspaceDir = path.join(tmpDir, `workspace-${Date.now()}`)
-			const repo = await initWorkspaceRepo({ workspaceDir })
+			let lastError: unknown
 
-			workspaceGit = repo.git
-			testFile = repo.testFile
+			for (let attempt = 0; attempt < 3; attempt++) {
+				process.chdir(stableCwd)
+				shadowDir = createTempPath(prefix)
+				workspaceDir = createTempPath("workspace")
 
-			service = await klass.create({ taskId, shadowDir, workspaceDir, log: () => {} })
-			await service.initShadowGit()
-		})
+				try {
+					const repo = await initWorkspaceRepo({ workspaceDir })
+
+					workspaceGit = repo.git
+					testFile = repo.testFile
+
+					service = await klass.create({ taskId, shadowDir, workspaceDir, log: () => {} })
+					await service.initShadowGit()
+					return
+				} catch (error) {
+					lastError = error
+					await removeDirWithRetries(shadowDir)
+					await removeDirWithRetries(workspaceDir)
+
+					if (!isRecoverableGitSetupError(error) || attempt === 2) {
+						throw error
+					}
+
+					await sleep(500 * (attempt + 1))
+				}
+			}
+
+			throw lastError
+		}, 180_000)
 
 		afterEach(async () => {
+			process.chdir(stableCwd)
 			vitest.restoreAllMocks()
-		})
+
+			const dirsToCleanup = new Set([shadowDir, workspaceDir, service?.checkpointsDir, service?.workspaceDir])
+
+			for (const dir of dirsToCleanup) {
+				await removeDirWithRetries(dir)
+			}
+
+			service = undefined as unknown as RepoPerTaskCheckpointService
+		}, 180_000)
 
 		afterAll(async () => {
-			await fs.rm(tmpDir, { recursive: true, force: true })
-		})
+			process.chdir(stableCwd)
+			await sleep(1_000)
+			await removeDirWithRetries(tmpDir)
+		}, 180_000)
 
 		describe(`${klass.name}#getDiff`, () => {
 			it("returns the correct diff between commits", async () => {
@@ -116,7 +239,7 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				expect(diff12[0].paths.absolute).toBe(testFile)
 				expect(diff12[0].content.before).toBe("Ahoy, world!")
 				expect(diff12[0].content.after).toBe("Goodbye, world!")
-			})
+			}, 180_000)
 
 			it("handles new files in diff", async () => {
 				const newFile = path.join(service.workspaceDir, "new.txt")
@@ -257,8 +380,10 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 
 				// Verify the untracked file was included in the checkpoint.
 				const details = await service.getDiff({ to: commit1!.commit })
-				expect(details[0].content.before).toContain("")
-				expect(details[0].content.after).toContain("I am untracked!")
+				const untrackedChange = details.find((change) => change.paths.relative === "untracked.txt")
+				expect(untrackedChange).toBeDefined()
+				expect(untrackedChange?.content.before).toBe("")
+				expect(untrackedChange?.content.after).toContain("I am untracked!")
 
 				// Create another checkpoint with a different state.
 				await fs.writeFile(testFile, "Changed tracked file")
@@ -355,13 +480,11 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 			it("initializes a git repository if one does not already exist", async () => {
 				const shadowDir = path.join(tmpDir, `${prefix}2-${Date.now()}`)
 				const workspaceDir = path.join(tmpDir, `workspace2-${Date.now()}`)
-				await fs.mkdir(workspaceDir)
-
-				const newTestFile = path.join(workspaceDir, "test.txt")
-				await fs.writeFile(newTestFile, "Hello, world!")
+				const repo = await initWorkspaceRepo({ workspaceDir })
+				const newTestFile = repo.testFile
 				expect(await fs.readFile(newTestFile, "utf-8")).toBe("Hello, world!")
 
-				// Ensure the git repository was initialized.
+				// Ensure the shadow git repository was initialized.
 				const newService = await klass.create({ taskId, shadowDir, workspaceDir, log: () => {} })
 				const { created } = await newService.initShadowGit()
 				expect(created).toBeTruthy()
@@ -383,8 +506,8 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await newService.restoreCheckpoint(commit1!.commit)
 				expect(await fs.readFile(newTestFile, "utf-8")).toBe("Ahoy, world!")
 
-				await fs.rm(newService.checkpointsDir, { recursive: true, force: true })
-				await fs.rm(newService.workspaceDir, { recursive: true, force: true })
+				await removeDirWithRetries(newService.checkpointsDir)
+				await removeDirWithRetries(newService.workspaceDir)
 			})
 		})
 
@@ -396,18 +519,22 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 
 				// Create a primary workspace repo.
 				await fs.mkdir(workspaceDir, { recursive: true })
-				const mainGit = simpleGit(workspaceDir)
+				const mainGit = createTestGit(workspaceDir)
 				await mainGit.init()
 				await mainGit.addConfig("user.name", "Roo Code")
 				await mainGit.addConfig("user.email", "support@roocode.com")
+				await mainGit.addConfig("commit.gpgSign", "false")
+				await mainGit.addConfig("tag.gpgSign", "false")
 
 				// Create a nested repo inside the workspace.
 				const nestedRepoPath = path.join(workspaceDir, "nested-project")
 				await fs.mkdir(nestedRepoPath, { recursive: true })
-				const nestedGit = simpleGit(nestedRepoPath)
+				const nestedGit = createTestGit(nestedRepoPath)
 				await nestedGit.init()
 				await nestedGit.addConfig("user.name", "Roo Code")
 				await nestedGit.addConfig("user.email", "support@roocode.com")
+				await nestedGit.addConfig("commit.gpgSign", "false")
+				await nestedGit.addConfig("tag.gpgSign", "false")
 
 				// Add a file to the nested repo.
 				const nestedFile = path.join(nestedRepoPath, "nested-file.txt")
@@ -455,8 +582,8 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 
 				// Clean up.
 				vitest.restoreAllMocks()
-				await fs.rm(shadowDir, { recursive: true, force: true })
-				await fs.rm(workspaceDir, { recursive: true, force: true })
+				await removeDirWithRetries(shadowDir)
+				await removeDirWithRetries(workspaceDir)
 			})
 
 			it("succeeds when no nested git repositories are detected", async () => {
@@ -466,10 +593,12 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 
 				// Create a primary workspace repo without any nested repos.
 				await fs.mkdir(workspaceDir, { recursive: true })
-				const mainGit = simpleGit(workspaceDir)
+				const mainGit = createTestGit(workspaceDir)
 				await mainGit.init()
 				await mainGit.addConfig("user.name", "Roo Code")
 				await mainGit.addConfig("user.email", "support@roocode.com")
+				await mainGit.addConfig("commit.gpgSign", "false")
+				await mainGit.addConfig("tag.gpgSign", "false")
 
 				// Create a test file in the main workspace.
 				const mainFile = path.join(workspaceDir, "main-file.txt")
@@ -490,8 +619,8 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 
 				// Clean up.
 				vitest.restoreAllMocks()
-				await fs.rm(shadowDir, { recursive: true, force: true })
-				await fs.rm(workspaceDir, { recursive: true, force: true })
+				await removeDirWithRetries(shadowDir)
+				await removeDirWithRetries(workspaceDir)
 			})
 		})
 
@@ -543,8 +672,8 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				expect(typeof initializeEvent.duration).toBe("number")
 
 				// Clean up.
-				await fs.rm(shadowDir, { recursive: true, force: true })
-				await fs.rm(workspaceDir, { recursive: true, force: true })
+				await removeDirWithRetries(shadowDir)
+				await removeDirWithRetries(workspaceDir)
 			})
 
 			it("emits checkpoint event when saving checkpoint", async () => {
@@ -843,10 +972,12 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				// Create a separate git directory to simulate GIT_DIR pointing elsewhere
 				const externalGitDir = path.join(tmpDir, `external-git-${Date.now()}`)
 				await fs.mkdir(externalGitDir, { recursive: true })
-				const externalGit = simpleGit(externalGitDir)
+				const externalGit = createTestGit(externalGitDir)
 				await externalGit.init()
 				await externalGit.addConfig("user.name", "External User")
 				await externalGit.addConfig("user.email", "external@example.com")
+				await externalGit.addConfig("commit.gpgSign", "false")
+				await externalGit.addConfig("tag.gpgSign", "false")
 
 				// Create and commit a file in the external repo
 				const externalFile = path.join(externalGitDir, "external.txt")
@@ -891,7 +1022,7 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 					// Verify the checkpoint was saved in the shadow repo, not the external repo
 					// Temporarily clear GIT_DIR to check the external repo
 					delete process.env.GIT_DIR
-					const externalGitCheck = simpleGit(externalGitDir)
+					const externalGitCheck = createTestGit(externalGitDir)
 					const externalLogAfter = await externalGitCheck.log()
 					const externalCommitCountAfter = externalLogAfter.total
 					// Restore GIT_DIR
@@ -919,7 +1050,7 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 					}
 
 					// Clean up external git directory
-					await fs.rm(externalGitDir, { recursive: true, force: true })
+					await removeDirWithRetries(externalGitDir)
 				}
 			})
 		})

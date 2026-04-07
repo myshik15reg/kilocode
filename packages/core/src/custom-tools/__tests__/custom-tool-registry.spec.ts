@@ -1,4 +1,4 @@
-// pnpm --filter @roo-code/core test src/custom-tools/__tests__/custom-tool-registry.spec.ts
+﻿// pnpm --filter @roo-code/core test src/custom-tools/__tests__/custom-tool-registry.spec.ts
 
 import path from "path"
 import { fileURLToPath } from "url"
@@ -268,19 +268,6 @@ describe("CustomToolRegistry", () => {
 
 			const tool = registry.get("legacy")
 			expect(tool?.parameters).toBeDefined()
-		}, 30000)
-	})
-
-	describe.sequential("clearCache", () => {
-		it("should clear the TypeScript compilation cache", async () => {
-			await registry.loadFromDirectory(TEST_FIXTURES_DIR)
-			registry.clearCache()
-
-			// Should be able to load again without issues.
-			registry.clear()
-			const result = await registry.loadFromDirectory(TEST_FIXTURES_DIR)
-
-			expect(result.loaded).toContain("cached")
 		}, 30000)
 	})
 

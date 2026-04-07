@@ -1,7 +1,7 @@
 // pnpm --filter @roo-code/vscode-webview test src/components/chat/__tests__/ChatView.spec.tsx
 
 import React from "react"
-import { render, waitFor, act, fireEvent } from "@/utils/test-utils"
+import { render, waitFor, act, fireEvent, screen } from "@/utils/test-utils"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import { ExtensionStateContextProvider } from "@src/context/ExtensionStateContext"
@@ -52,8 +52,23 @@ vi.mock("../BrowserSessionRow", () => ({
 }))
 
 vi.mock("../ChatRow", () => ({
-	default: function MockChatRow({ message }: { message: ClineMessage }) {
-		return <div data-testid="chat-row">{JSON.stringify(message)}</div>
+	default: function MockChatRow({
+		message,
+		isExpanded,
+		onToggleExpand,
+	}: {
+		message: ClineMessage
+		isExpanded?: boolean
+		onToggleExpand?: (ts: number) => void
+	}) {
+		return (
+			<div data-testid="chat-row" data-row-ts={message.ts} data-expanded={isExpanded ? "true" : "false"}>
+				<button data-testid={`toggle-row-${message.ts}`} onClick={() => onToggleExpand?.(message.ts)}>
+					Toggle
+				</button>
+				{JSON.stringify(message)}
+			</div>
+		)
 	},
 }))
 
@@ -676,6 +691,25 @@ describe.skip("ChatView - Version Indicator Tests", () => {
 	})
 })
 
+describe("ChatView - Welcome Layout", () => {
+	beforeEach(() => vi.clearAllMocks())
+
+	it("adds spacing above the composer when recent tasks are shown on the welcome screen", async () => {
+		const { getByTestId } = renderChatView()
+
+		mockPostMessage({
+			clineMessages: [],
+			taskHistoryFullLength: 1,
+			taskHistoryVersion: 1,
+			taskHistory: [{ id: "task-1", ts: Date.now(), task: "Recent task" }],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId("chat-textarea").parentElement).toHaveClass("mt-3")
+		})
+	})
+})
+
 // kilocode_change skip
 it.skip("ChatView - RooCloudCTA Display Tests", () => {
 	beforeEach(() => vi.clearAllMocks())
@@ -1155,5 +1189,65 @@ describe("ChatView - Context Condensing Indicator Tests", () => {
 			},
 			{ timeout: 2000 },
 		)
+	})
+})
+
+describe("ChatView - new_task approval UX", () => {
+	beforeEach(() => vi.clearAllMocks())
+
+	it("labels new_task approvals with an explicit create action", async () => {
+		renderChatView()
+
+		await act(async () => {
+			mockPostMessage({
+				clineMessages: [
+					{ type: "say", say: "task", ts: 1, text: "Parent task" },
+					{
+						type: "ask",
+						ask: "tool",
+						ts: 2,
+						partial: false,
+						text: JSON.stringify({ tool: "newTask", mode: "orchestrator", content: "Delegate research" }),
+					},
+				],
+			})
+		})
+
+		await waitFor(() => {
+			expect(screen.getByText("chat:subtasks.createTask")).toBeInTheDocument()
+		})
+	})
+
+	it("collapses an expanded new_task row after approve", async () => {
+		renderChatView()
+
+		await act(async () => {
+			mockPostMessage({
+				clineMessages: [
+					{ type: "say", say: "task", ts: 11, text: "Parent task" },
+					{
+						type: "ask",
+						ask: "tool",
+						ts: 22,
+						partial: false,
+						text: JSON.stringify({ tool: "newTask", mode: "orchestrator", content: "Delegate research" }),
+					},
+				],
+			})
+		})
+
+		fireEvent.click(screen.getByTestId("toggle-row-22"))
+		await waitFor(() => {
+			expect(screen.getByTestId("chat-row")).toHaveAttribute("data-expanded", "true")
+		})
+
+		fireEvent.click(screen.getByText("chat:subtasks.createTask"))
+
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({ type: "askResponse", askResponse: "yesButtonClicked" })
+		})
+		await waitFor(() => {
+			expect(screen.getByTestId("chat-row")).toHaveAttribute("data-expanded", "false")
+		})
 	})
 })

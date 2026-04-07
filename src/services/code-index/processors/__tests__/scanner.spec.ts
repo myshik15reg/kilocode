@@ -83,6 +83,7 @@ describe("DirectoryScanner", () => {
 			upsertPoints: vi.fn().mockResolvedValue(undefined),
 			deletePointsByFilePath: vi.fn().mockResolvedValue(undefined),
 			deletePointsByMultipleFilePaths: vi.fn().mockResolvedValue(undefined),
+			getPointsByFilePaths: vi.fn().mockResolvedValue([]),
 			initialize: vi.fn().mockResolvedValue(true),
 			search: vi.fn().mockResolvedValue([]),
 			clearCollection: vi.fn().mockResolvedValue(undefined),
@@ -393,6 +394,48 @@ describe("DirectoryScanner", () => {
 			expect(points[0].payload.segmentHash).toBe("unique-segment-hash-1")
 			expect(points[1].payload.segmentHash).toBe("unique-segment-hash-2")
 			expect(points[2].payload.segmentHash).toBe("unique-segment-hash-3")
+		})
+
+		it("should restore previous points when a modified file batch fails after delete", async () => {
+			const { listFiles } = await import("../../../glob/list-files")
+			vi.mocked(listFiles).mockResolvedValue([["test/file1.js"], false])
+			mockCacheManager.getHash.mockReturnValue("old-hash")
+
+			const mockBlocks: any[] = [
+				{
+					file_path: "test/file1.js",
+					content: "updated content",
+					start_line: 1,
+					end_line: 5,
+					identifier: "test",
+					type: "function",
+					fileHash: "new-hash",
+					segmentHash: "updated-segment-hash",
+				},
+			]
+			const previousPoints = [
+				{
+					id: "previous-point",
+					vector: [0.9, 0.8, 0.7],
+					payload: {
+						filePath: "test/file1.js",
+						codeChunk: "old content",
+						startLine: 1,
+						endLine: 3,
+					},
+				},
+			]
+			;(mockCodeParser.parseFile as any).mockResolvedValue(mockBlocks)
+			mockVectorStore.getPointsByFilePaths.mockResolvedValue(previousPoints)
+			mockEmbedder.createEmbeddings.mockRejectedValue(new Error("Embedding provider unavailable"))
+			const onError = vi.fn()
+
+			await scanner.scanDirectory("/test", onError)
+
+			expect(mockVectorStore.getPointsByFilePaths).toHaveBeenCalledWith(["test/file1.js"])
+			expect(mockVectorStore.deletePointsByMultipleFilePaths).toHaveBeenCalledWith(["test/file1.js"])
+			expect(mockVectorStore.upsertPoints).toHaveBeenCalledWith(previousPoints)
+			expect(onError).toHaveBeenCalled()
 		})
 	})
 })

@@ -229,6 +229,22 @@ describe("ThinkingBudget", () => {
 		expect(setApiConfigurationField).toHaveBeenCalledWith("modelMaxTokens", 12000)
 	})
 
+	// kilocode_change start
+	it("should clamp max tokens during mount without marking it as a user action", () => {
+		const setApiConfigurationField = vi.fn()
+
+		render(
+			<ThinkingBudget
+				{...defaultProps}
+				apiConfiguration={{ modelMaxTokens: 32768 }}
+				setApiConfigurationField={setApiConfigurationField}
+			/>,
+		)
+
+		expect(setApiConfigurationField).toHaveBeenCalledWith("modelMaxTokens", 16384, false)
+	})
+	// kilocode_change end
+
 	describe("reasoning effort dropdown", () => {
 		const reasoningEffortModelInfo: ModelInfo = {
 			supportsReasoningEffort: true,

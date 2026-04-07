@@ -82,7 +82,7 @@ import type { IndexProgressUpdate } from "../../services/code-index/interfaces/m
 import { MdmService } from "../../services/mdm/MdmService"
 import { SessionManager } from "../../shared/kilocode/cli-sessions/core/SessionManager"
 import { SkillsManager } from "../../services/skills/SkillsManager"
-import type { ApiMessage } from "../task-persistence/apiMessages"
+import { readApiMessages, type ApiMessage } from "../task-persistence"
 
 import { fileExistsAtPath } from "../../utils/fs"
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
@@ -141,11 +141,12 @@ import {
 } from "../orchestration/subagents/SubagentServiceComposition"
 // kilocode_change end
 import { AgentManagerBridge } from "../orchestration/bridge/AgentManagerBridge"
+import { HelperRoutingContextBuilder } from "../helper-routing/HelperRoutingContextBuilder"
 import { HelperModelRouter } from "../helper-routing/HelperModelRouter"
 import { TechDebtService } from "../tech-debt/TechDebtService"
 
 //kilocode_change start
-import { McpDownloadResponse, McpMarketplaceCatalog } from "../../shared/kilocode/mcp"
+import { McpDownloadResponse, McpMarketplaceCatalog, McpMarketplaceItem } from "../../shared/kilocode/mcp"
 import { McpServer } from "../../shared/mcp"
 import { OpenRouterHandler } from "../../api/providers"
 import { stringifyError } from "../../shared/kilocode/errorUtils"
@@ -1045,6 +1046,8 @@ export class ClineProvider
 		const { targetRootTaskId, isRehydratingCurrentTask, restoredTask } =
 			await this.taskRehydrationService.prepareRehydration(historyItem) // kilocode_change
 		if (restoredTask) {
+			await this.taskRehydrationService.restoreModeAndProfile(historyItem) // kilocode_change
+			await this.postStateToWebview()
 			return restoredTask
 		}
 
@@ -1319,7 +1322,7 @@ export class ClineProvider
 	 */
 	public async handleCLIMessage(message: WebviewMessage): Promise<void> {
 		try {
-			await webviewMessageHandler(this, message, this.marketplaceManager)
+			await webviewMessageHandler(this, message, this.marketplaceManager, { source: "internal" })
 		} catch (error) {
 			this.log(`Error handling CLI message: ${error instanceof Error ? error.message : String(error)}`)
 			throw error
@@ -1801,6 +1804,11 @@ export class ClineProvider
 
 	// Task history
 
+	private getTaskHistoryItemById(id: string): HistoryItem | undefined {
+		const history = (this.getGlobalState("taskHistory") as HistoryItem[] | undefined) ?? []
+		return history.find((item) => item.id === id)
+	}
+
 	async getTaskWithId(
 		id: string,
 		kilo_withMessage = true, // kilocode_change session manager uses this method in the background
@@ -1811,8 +1819,7 @@ export class ClineProvider
 		uiMessagesFilePath: string
 		apiConversationHistory: Anthropic.MessageParam[]
 	}> {
-		const history = this.getGlobalState("taskHistory") ?? []
-		const historyItem = history.find((item) => item.id === id)
+		const historyItem = this.getTaskHistoryItemById(id)
 
 		if (historyItem) {
 			const { getTaskDirectoryPath } = await import("../../utils/storage")
@@ -1820,29 +1827,22 @@ export class ClineProvider
 			const taskDirPath = await getTaskDirectoryPath(globalStoragePath, id)
 			const apiConversationHistoryFilePath = path.join(taskDirPath, GlobalFileNames.apiConversationHistory)
 			const uiMessagesFilePath = path.join(taskDirPath, GlobalFileNames.uiMessages)
-			const fileExists = await fileExistsAtPath(apiConversationHistoryFilePath)
+			const apiConversationHistory = (await readApiMessages({
+				taskId: id,
+				globalStoragePath,
+			})) as Anthropic.MessageParam[]
 
-			if (fileExists) {
-				const apiConversationHistory = JSON.parse(await fs.readFile(apiConversationHistoryFilePath, "utf8"))
+			return {
+				historyItem,
+				taskDirPath,
+				apiConversationHistoryFilePath,
+				uiMessagesFilePath,
+				apiConversationHistory,
+			}
+		}
 
-				return {
-					historyItem,
-					taskDirPath,
-					apiConversationHistoryFilePath,
-					uiMessagesFilePath,
-					apiConversationHistory,
-				}
-			} else {
-				if (kilo_withMessage) {
-					vscode.window.showErrorMessage(
-						`Task file not found for task ID: ${id} (file ${apiConversationHistoryFilePath})`,
-					) //kilocode_change show extra debugging information to debug task not found issues
-				}
-			}
-		} else {
-			if (kilo_withMessage) {
-				vscode.window.showErrorMessage(`Task with ID: ${id} not found in history.`) // kilocode_change show extra debugging information to debug task not found issues
-			}
+		if (kilo_withMessage) {
+			vscode.window.showErrorMessage(`Task with ID: ${id} not found in history.`) // kilocode_change show extra debugging information to debug task not found issues
 		}
 
 		// if we tried to get a task that doesn't exist, remove it from state
@@ -1861,12 +1861,14 @@ export class ClineProvider
 		historyItem: HistoryItem
 		aggregatedCosts: AggregatedCosts
 	}> {
-		const { historyItem } = await this.getTaskWithId(taskId)
+		const historyItem = this.getTaskHistoryItemById(taskId)
+		if (!historyItem) {
+			throw new Error("Task not found")
+		}
 
-		const aggregatedCosts = await aggregateTaskCostsRecursive(taskId, async (id: string) => {
-			const result = await this.getTaskWithId(id)
-			return result.historyItem
-		})
+		const aggregatedCosts = await aggregateTaskCostsRecursive(taskId, async (id: string) =>
+			this.getTaskHistoryItemById(id),
+		)
 
 		return { historyItem, aggregatedCosts }
 	}
@@ -2488,7 +2490,8 @@ export class ClineProvider
 			hasOpenedModeSelector: this.getGlobalState("hasOpenedModeSelector") ?? false,
 			systemNotificationsEnabled: systemNotificationsEnabled ?? false, // kilocode_change
 			dismissedNotificationIds: dismissedNotificationIds ?? [], // kilocode_change
-			morphApiKey, // kilocode_change
+			morphApiKey: morphApiKey ? "" : undefined, // kilocode_change
+			hasMorphApiKey: Boolean(morphApiKey),
 			fastApplyModel: fastApplyModel ?? "auto", // kilocode_change: Fast Apply model selection
 			fastApplyApiProvider: fastApplyApiProvider ?? "current", // kilocode_change: Fast Apply model api base url
 			alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
@@ -2502,7 +2505,8 @@ export class ClineProvider
 			taskSyncEnabled,
 			remoteControlEnabled,
 			imageGenerationProvider,
-			openRouterImageApiKey,
+			openRouterImageApiKey: openRouterImageApiKey ? "" : undefined,
+			hasOpenRouterImageApiKey: Boolean(openRouterImageApiKey),
 			// kilocode_change start - Auto-purge settings
 			autoPurgeEnabled: await this.getState().then((s) => s.autoPurgeEnabled),
 			autoPurgeDefaultRetentionDays: await this.getState().then((s) => s.autoPurgeDefaultRetentionDays),
@@ -2518,8 +2522,10 @@ export class ClineProvider
 			autoPurgeLastRunTimestamp: await this.getState().then((s) => s.autoPurgeLastRunTimestamp),
 			selectedMicrophoneDevice, // kilocode_change: Selected microphone device for STT
 			// kilocode_change end
-			kiloCodeImageApiKey,
-			litellmImageApiKey,
+			kiloCodeImageApiKey: kiloCodeImageApiKey ? "" : undefined,
+			hasKiloCodeImageApiKey: Boolean(kiloCodeImageApiKey),
+			litellmImageApiKey: litellmImageApiKey ? "" : undefined,
+			hasLitellmImageApiKey: Boolean(litellmImageApiKey),
 			litellmImageBaseUrl,
 			openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled,
@@ -2693,6 +2699,14 @@ export class ClineProvider
 			autoCondenseContextPercent: stateValues.autoCondenseContextPercent ?? 85,
 			autoRestartProblematicProcesses: stateValues.autoRestartProblematicProcesses ?? false, // kilocode_change
 			problematicProcessRestartLimit: stateValues.problematicProcessRestartLimit ?? 1, // kilocode_change
+			orchestrationTelemetryEnabled: stateValues.orchestrationTelemetryEnabled ?? true, // kilocode_change
+			helperLocalityPreference: stateValues.helperLocalityPreference ?? "prefer", // kilocode_change
+			orchestrationEscalationSensitivity: stateValues.orchestrationEscalationSensitivity ?? "balanced", // kilocode_change
+			structuredDelegationEnabled: stateValues.structuredDelegationEnabled ?? false,
+			evaluatorPassEnabled: stateValues.evaluatorPassEnabled ?? false,
+			memoryPromotionEnabled: stateValues.memoryPromotionEnabled ?? false,
+			retrievalPolicy: stateValues.retrievalPolicy ?? "adaptive",
+			queryClassifierDebug: stateValues.queryClassifierDebug ?? false,
 			parallelAgentsEnabled: stateValues.parallelAgentsEnabled ?? false, // kilocode_change
 			parallelAgentCount: stateValues.parallelAgentCount ?? 2, // kilocode_change
 			contextRoutingEnabled: stateValues.contextRoutingEnabled ?? true, // kilocode_change: enable token-saving routing by default
@@ -3022,15 +3036,23 @@ export class ClineProvider
 	}): Promise<TechDebtItem[]> {
 		const { historyItem } = await this.getTaskWithId(params.taskId)
 		const state = await this.getState()
-		const route = await HelperModelRouter.selectConfig({
-			job: "tech_debt_extract",
-			state: {
-				apiConfiguration: state.apiConfiguration,
-				condensingApiConfigId: state.condensingApiConfigId,
-				listApiConfigMeta: state.listApiConfigMeta,
-			},
-			providerSettingsManager: this.providerSettingsManager,
-		})
+		const route = await HelperModelRouter.selectConfig(
+			HelperRoutingContextBuilder.build({
+				job: "tech_debt_extract",
+				state: {
+					apiConfiguration: state.apiConfiguration,
+					condensingApiConfigId: state.condensingApiConfigId,
+					listApiConfigMeta: state.listApiConfigMeta,
+					helperLocalityPreference: state.helperLocalityPreference,
+					orchestrationEscalationSensitivity: state.orchestrationEscalationSensitivity,
+					orchestrationTelemetryEnabled: state.orchestrationTelemetryEnabled,
+				},
+				providerSettingsManager: this.providerSettingsManager,
+				decisionContext: {
+					taskId: params.taskId,
+				},
+			}),
+		)
 
 		const extracted = await TechDebtService.extractItems({
 			sourceTaskId: params.taskId,
@@ -3457,6 +3479,20 @@ export class ClineProvider
 				lastStopReason,
 				lastStopSummary,
 			})
+
+			const backgroundBinding = this.subagentCoordinator?.getBindingForTask?.(descendantId)
+			if (backgroundBinding && this.subagentCoordinator?.cancel) {
+				try {
+					await this.subagentCoordinator.cancel(descendantId)
+				} catch (error) {
+					this.log(
+						"[cascadeStopDescendantTasks] Failed to cancel background descendant " +
+							descendantId +
+							": " +
+							(error instanceof Error ? error.message : String(error)),
+					)
+				}
+			}
 
 			const activeDescendant = this.clineStack.find((task) => task.taskId === descendantId)
 			if (activeDescendant) {
@@ -3979,20 +4015,85 @@ export class ClineProvider
 
 	// kilocode_change:
 	// MCP Marketplace
-	private async fetchMcpMarketplaceFromApi(silent: boolean = false): Promise<McpMarketplaceCatalog | undefined> {
-		try {
-			const response = await axios.get("https://api.cline.bot/v1/mcp/marketplace", {
-				headers: {
-					"Content-Type": "application/json",
-				},
-			})
+	private isAxiosRequestError(error: unknown): error is {
+		code?: string
+		response?: { status?: number }
+		request?: unknown
+		isAxiosError?: boolean
+	} {
+		const candidate = error as {
+			code?: string
+			response?: { status?: number }
+			request?: unknown
+			isAxiosError?: boolean
+		}
+		if (typeof (axios as any).isAxiosError === "function") {
+			return (axios as any).isAxiosError(error)
+		}
+		return Boolean(candidate?.isAxiosError || candidate?.response || candidate?.request || candidate?.code)
+	}
 
-			if (!response.data) {
+	private isRetryableMcpMarketplaceError(error: unknown): boolean {
+		if (!this.isAxiosRequestError(error)) {
+			return false
+		}
+
+		if (["ECONNABORTED", "ETIMEDOUT", "ECONNRESET"].includes(error.code ?? "")) {
+			return true
+		}
+
+		const status = error.response?.status
+		if (status === undefined) {
+			return Boolean(error.request)
+		}
+
+		return status === 408 || status === 429 || status >= 500
+	}
+
+	private async executeMcpMarketplaceRequest<T>(
+		request: () => Promise<{ data: T }>,
+		operationName: string,
+	): Promise<T> {
+		let lastError: unknown
+		for (let attempt = 1; attempt <= 3; attempt++) {
+			try {
+				const response = await request()
+				return response.data
+			} catch (error) {
+				lastError = error
+				if (!this.isRetryableMcpMarketplaceError(error) || attempt === 3) {
+					break
+				}
+				await delay(Math.pow(2, attempt - 1) * 1000)
+			}
+		}
+
+		throw lastError instanceof Error ? lastError : new Error(`Failed to ${operationName}`)
+	}
+
+	private async getCachedMcpMarketplaceCatalog(): Promise<McpMarketplaceCatalog | undefined> {
+		return (await this.getGlobalState("mcpMarketplaceCatalog")) as McpMarketplaceCatalog | undefined
+	}
+	private async fetchMcpMarketplaceFromApi(silent: boolean = false): Promise<McpMarketplaceCatalog | undefined> {
+		type McpMarketplaceApiItem = McpMarketplaceItem & { githubStars?: number; downloadCount?: number }
+		try {
+			const responseData = await this.executeMcpMarketplaceRequest<McpMarketplaceApiItem[]>(
+				() =>
+					axios.get("https://api.cline.bot/v1/mcp/marketplace", {
+						headers: {
+							"Content-Type": "application/json",
+						},
+						timeout: 10000,
+					}),
+				"fetch MCP marketplace",
+			)
+
+			if (!responseData) {
 				throw new Error("Invalid response from MCP marketplace API")
 			}
 
 			const catalog: McpMarketplaceCatalog = {
-				items: (response.data || []).map((item: any) => ({
+				items: responseData.map((item) => ({
 					...item,
 					githubStars: item.githubStars ?? 0,
 					downloadCount: item.downloadCount ?? 0,
@@ -4003,6 +4104,12 @@ export class ClineProvider
 			await this.updateGlobalState("mcpMarketplaceCatalog", catalog)
 			return catalog
 		} catch (error) {
+			const cachedCatalog = await this.getCachedMcpMarketplaceCatalog()
+			if (cachedCatalog?.items?.length) {
+				console.warn("Falling back to cached MCP marketplace catalog:", error)
+				return cachedCatalog
+			}
+
 			console.error("Failed to fetch MCP marketplace:", error)
 			if (!silent) {
 				const errorMessage = error instanceof Error ? error.message : "Failed to fetch MCP marketplace"
@@ -4015,7 +4122,6 @@ export class ClineProvider
 			return undefined
 		}
 	}
-
 	async silentlyRefreshMcpMarketplace() {
 		try {
 			const catalog = await this.fetchMcpMarketplaceFromApi(true)
@@ -4033,9 +4139,7 @@ export class ClineProvider
 	async fetchMcpMarketplace(forceRefresh: boolean = false) {
 		try {
 			// Check if we have cached data
-			const cachedCatalog = (await this.getGlobalState("mcpMarketplaceCatalog")) as
-				| McpMarketplaceCatalog
-				| undefined
+			const cachedCatalog = await this.getCachedMcpMarketplaceCatalog()
 			if (!forceRefresh && cachedCatalog?.items) {
 				await this.postMessageToWebview({
 					type: "mcpMarketplaceCatalog",
@@ -4064,7 +4168,6 @@ export class ClineProvider
 
 	async downloadMcp(mcpId: string) {
 		try {
-			// First check if we already have this MCP server installed
 			const servers = this.mcpHub?.getServers() || []
 			const isInstalled = servers.some((server: McpServer) => server.name === mcpId)
 
@@ -4072,25 +4175,25 @@ export class ClineProvider
 				throw new Error("This MCP server is already installed")
 			}
 
-			// Fetch server details from marketplace
-			const response = await axios.post<McpDownloadResponse>(
-				"https://api.cline.bot/v1/mcp/download",
-				{ mcpId },
-				{
-					headers: { "Content-Type": "application/json" },
-					timeout: 10000,
-				},
+			const mcpDetails = await this.executeMcpMarketplaceRequest(
+				() =>
+					axios.post<McpDownloadResponse>(
+						"https://api.cline.bot/v1/mcp/download",
+						{ mcpId },
+						{
+							headers: { "Content-Type": "application/json" },
+							timeout: 10000,
+						},
+					),
+				`download MCP ${mcpId}`,
 			)
 
-			if (!response.data) {
+			if (!mcpDetails) {
 				throw new Error("Invalid response from MCP marketplace API")
 			}
 
-			console.log("[downloadMcp] Response from download API", { response })
+			console.log("[downloadMcp] Response from download API", { mcpDetails })
 
-			const mcpDetails = response.data
-
-			// Validate required fields
 			if (!mcpDetails.githubUrl) {
 				throw new Error("Missing GitHub URL in MCP download response")
 			}
@@ -4098,13 +4201,11 @@ export class ClineProvider
 				throw new Error("Missing README content in MCP download response")
 			}
 
-			// Send details to webview
 			await this.postMessageToWebview({
 				type: "mcpDownloadDetails",
 				mcpDownloadDetails: mcpDetails,
 			})
 
-			// Create task with context from README and added guidelines for MCP server installation
 			const task = `Set up the MCP server from ${mcpDetails.githubUrl} while adhering to these MCP server installation rules:
 - Use "${mcpDetails.mcpId}" as the server name in ${GlobalFileNames.mcpSettings}.
 - Create the directory for the new MCP server before starting installation.
@@ -4113,7 +4214,6 @@ export class ClineProvider
 - Once installed, demonstrate the server's capabilities by using one of its tools.
 Here is the project's README to help you get started:\n\n${mcpDetails.readmeContent}\n${mcpDetails.llmsInstallationContent}`
 
-			// Initialize task and show chat view
 			await this.createTask(task)
 			await this.postMessageToWebview({
 				type: "action",
@@ -4123,7 +4223,7 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 			console.error("Failed to download MCP:", error)
 			let errorMessage = "Failed to download MCP"
 
-			if (axios.isAxiosError(error)) {
+			if (this.isAxiosRequestError(error)) {
 				if (error.code === "ECONNABORTED") {
 					errorMessage = "Request timed out. Please try again."
 				} else if (error.response?.status === 404) {
@@ -4137,15 +4237,13 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 				errorMessage = error.message
 			}
 
-			// Show error in both notification and marketplace UI
 			vscode.window.showErrorMessage(errorMessage)
 			await this.postMessageToWebview({
 				type: "mcpDownloadDetails",
 				error: errorMessage,
 			})
 		}
-	}
-	// end kilocode_change
+	} // end kilocode_change
 
 	// kilocode_change start
 	// Add new methods for favorite functionality

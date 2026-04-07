@@ -27,6 +27,12 @@ export interface SessionData {
 
 const REMOTE_SESSIONS_FETCH_LIMIT = 50
 
+export interface RemoteSessionFetchResult {
+	sessions: RemoteSession[]
+	available: boolean
+	reason?: string
+}
+
 export interface RemoteSessionServiceOptions {
 	outputChannel: vscode.OutputChannel
 }
@@ -46,18 +52,35 @@ export class RemoteSessionService {
 	 * Fetches a list of remote sessions from the cloud.
 	 * @returns Array of remote sessions, or empty array if SessionManager is not initialized
 	 */
-	async fetchRemoteSessions(): Promise<RemoteSession[]> {
+	async fetchRemoteSessions(): Promise<RemoteSessionFetchResult> {
 		const sessionManager = this.getSessionManager()
 		if (!sessionManager) {
-			return []
+			return {
+				sessions: [],
+				available: false,
+				reason: "session-manager-unavailable",
+			}
 		}
 
-		const response = await sessionManager.listSessions({ limit: REMOTE_SESSIONS_FETCH_LIMIT })
-		const remoteSessions: RemoteSession[] = response.cliSessions
+		try {
+			const response = await sessionManager.listSessions({ limit: REMOTE_SESSIONS_FETCH_LIMIT })
+			const remoteSessions: RemoteSession[] = response.cliSessions
 
-		this.log(`Fetched ${remoteSessions.length} remote sessions`)
+			this.log(`Fetched ${remoteSessions.length} remote sessions`)
 
-		return remoteSessions
+			return {
+				sessions: remoteSessions,
+				available: true,
+			}
+		} catch (error) {
+			const reason = error instanceof Error ? error.message : String(error)
+			this.log(`Remote sessions unavailable: ${reason}`)
+			return {
+				sessions: [],
+				available: false,
+				reason,
+			}
+		}
 	}
 
 	/**
@@ -164,12 +187,17 @@ export class RemoteSessionService {
 	}
 
 	private getSessionManager(): SessionManager | null {
-		const sessionManager = SessionManager.init()
-		if (!sessionManager) {
-			this.log("SessionManager not available")
+		try {
+			const sessionManager = SessionManager.init()
+			if (!sessionManager) {
+				this.log("SessionManager not available")
+				return null
+			}
+			return sessionManager
+		} catch (error) {
+			this.log(`SessionManager init failed: ${error instanceof Error ? error.message : String(error)}`)
 			return null
 		}
-		return sessionManager
 	}
 
 	private log(message: string): void {

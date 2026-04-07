@@ -70,8 +70,8 @@ assets/docs/**
 !assets/icons/**
 !assets/images/**
 
-# Include .env file for telemetry
-!.env
+# Do not package runtime env files
+.env
 
 # Ignore IntelliJ and Qodo plugin folders
 .idea/**

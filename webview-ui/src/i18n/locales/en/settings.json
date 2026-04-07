@@ -45,7 +45,8 @@
 		"about": "About AlfaCode assistant",
 		"autoPurge": "Auto-Cleanup",
 		"agentBehaviour": "Agent Behaviour",
-		"ghost": "Autocomplete"
+		"ghost": "Autocomplete",
+		"alfaCode": "AlfaCode"
 	},
 	"about": {
 		"version": "Version: {{version}}",
@@ -727,7 +728,6 @@
 			"description": "Controls how detailed the model's responses are. Low verbosity produces concise answers, while high verbosity provides thorough explanations."
 		},
 		"setReasoningLevel": "Enable Reasoning Effort",
-		"activeProfileSuffix": "(Active)",
 		"openAiCodex": {
 			"signInButton": "Sign in to OpenAI Codex",
 			"signOutButton": "Sign Out"

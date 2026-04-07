@@ -33,9 +33,10 @@
 		"freeModelsLink": "Узнать о бесплатных и бюджетных моделях"
 	},
 	"notifications": {
-		"toolRequest": "Запрос инструмента ожидает утверждения",
-		"browserAction": "Действие браузера ожидает утверждения",
-		"command": "Команда ожидает утверждения"
+		"tryModel": "Попробовать модель",
+		"dismiss": "Закрыть уведомление",
+		"previous": "Предыдущее уведомление",
+		"next": "Следующее уведомление"
 	},
 	"settings": {
 		"sections": {
@@ -133,7 +134,7 @@
 					"cheapest": "Самый дешёвый",
 					"recommendedLongContext": "Лучше для длинного контекста",
 					"onlyWhenNeeded": "Только при необходимости",
-					"bestIsolation": "Лучшая изоляция"
+					"bestIsolation": "Best isolation"
 				},
 				"local": {
 					"title": "Локальное продолжение",
@@ -177,7 +178,9 @@
 					"description": "Примените стратегию маршрутизации помощников в один клик, не меняя основной чат-профиль.",
 					"strongMainCheapHelpers": "Сильный основной + дешёвые помощники",
 					"balanced": "Баланс",
-					"maximumSaving": "Максимальная экономия"
+					"maximumSaving": "Максимальная экономия",
+					"cloudMainLocalHelpers": "Cloud Main + Local Helpers",
+					"localProfileUnavailable": "Локальный helper-профиль Ollama или LM Studio пока не найден."
 				}
 			},
 			"parallelAgents": {
@@ -208,6 +211,64 @@
 			"timeline": {
 				"label": "Показывать таймлайн задачи",
 				"description": "Отображает сгруппированный прогресс задачи в чате и помогает визуально отслеживать ход работы."
+			},
+			"diagnostics": {
+				"title": "Диагностика локального AI-стека",
+				"description": "Запустите детерминированную проверку Ollama, LiteLLM, локального helper-routing и локальных retrieval-компонентов, если они настроены.",
+				"run": "Запустить диагностику локального AI",
+				"running": "Диагностика выполняется..."
+			},
+			"expert": {
+				"title": "Экспертные настройки",
+				"description": "Настройка делегации, evaluator-pass и retrieval для продвинутых сценариев AlfaCode.",
+				"structuredDelegation": {
+					"label": "Структурированная делегация",
+					"description": "Требует явные goal и acceptance criteria для делегированных задач и возвращается к прямому пути при неполном handoff."
+				},
+				"evaluatorPass": {
+					"label": "Evaluator pass",
+					"description": "Allow an additional evaluator step for expensive, low-confidence, or conflicting helper results before synthesis."
+				},
+				"retrievalPolicy": {
+					"label": "Retrieval policy",
+					"description": "Choose how aggressively AlfaCode combines semantic search, hybrid search, and reranking for repository retrieval.",
+					"options": {
+						"adaptive": "Адаптивная",
+						"semanticOnly": "Только semantic",
+						"hybrid": "Hybrid",
+						"rerankHeavy": "Усиленный rerank"
+					}
+				},
+				"queryClassifierDebug": {
+					"label": "Отладка классификатора запросов",
+					"description": "Показывает внутреннюю классификацию retrieval-intent, чтобы было видно, почему выбрана конкретная стратегия поиска."
+				}
+			},
+			"platformControls": {
+				"title": "Platform controls",
+				"orchestrationTelemetry": {
+					"title": "Orchestration telemetry",
+					"label": "Enable routing telemetry",
+					"description": "Store privacy-safe routing metadata for helper and subagent decisions."
+				},
+				"helperLocality": {
+					"title": "Local helper preference",
+					"description": "Control whether helper tasks should stay local whenever possible.",
+					"options": {
+						"prefer": "Prefer local helpers",
+						"require": "Require local helpers",
+						"off": "Allow remote helpers first"
+					}
+				},
+				"escalationSensitivity": {
+					"title": "Escalation sensitivity",
+					"description": "Control when cheaper helper flows should escalate back to the stronger main model.",
+					"options": {
+						"conservative": "Conservative",
+						"balanced": "Balanced",
+						"aggressive": "Aggressive"
+					}
+				}
 			}
 		}
 	},
@@ -324,14 +385,8 @@
 			"idea7": "Создайте успокаивающее интерактивное звездное поле, которое движется с жестами мыши"
 		}
 	},
-	"notifications": {
-		"tryModel": "Попробовать модель",
-		"dismiss": "Закрыть уведомление",
-		"previous": "Предыдущее уведомление",
-		"next": "Следующее уведомление"
-	},
 	"ghost": {
-		"title": "Autocomplete",
+		"title": "Автодополнение",
 		"settings": {
 			"codeEditorSuggestions": "Предложения редактора кода",
 			"chatSuggestions": "Предложения чата",
@@ -483,6 +538,18 @@
 			"description": "Ты уверен, что хочешь удалить навык «{{skillName}}»? Это действие нельзя отменить.",
 			"cancel": "Отмена",
 			"delete": "Удалить"
+		}
+	},
+	"techDebt": {
+		"title": "Tech Debt",
+		"subtitle": "{{count}} suggested items",
+		"empty": "No suggested tech debt items right now.",
+		"evidence": "Evidence",
+		"actions": {
+			"accept": "Accept",
+			"dismiss": "Dismiss",
+			"convert": "Convert to task",
+			"openSource": "Open source task"
 		}
 	}
 }

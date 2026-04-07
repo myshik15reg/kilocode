@@ -1,13 +1,14 @@
 /* eslint-disable no-undef */
 import esbuild from "esbuild"
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import path from "node:path"
+import { fileURLToPath } from "node:url"
 import { chmodSync, mkdirSync, copyFileSync } from "fs"
 import { rimrafSync } from "rimraf"
 
 // ESM Polyfill
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const shouldCopyRuntimeEnv = process.env.KILOCODE_INCLUDE_RUNTIME_ENV === "true"
 
 // Function to copy post-build files
 function copyPostBuildFiles() {
@@ -19,14 +20,16 @@ function copyPostBuildFiles() {
 		copyFileSync("npm-shrinkwrap.dist.json", "dist/npm-shrinkwrap.json")
 		copyFileSync("README.md", "dist/README.md")
 
-		try {
-			copyFileSync(".env", "dist/.env")
-			copyFileSync(".env", "dist/kilocode/.env")
-		} catch {
-			// .env might not exist, that's okay
+		if (shouldCopyRuntimeEnv) {
+			try {
+				copyFileSync(".env", "dist/.env")
+				copyFileSync(".env", "dist/kilocode/.env")
+			} catch {
+				// .env might not exist, that's okay
+			}
 		}
 
-		console.log("✓ Post-build files copied")
+		console.log("[ok] Post-build files copied")
 	} catch (err) {
 		console.error("Error copying post-build files:", err)
 	}
@@ -35,7 +38,7 @@ function copyPostBuildFiles() {
 function removeUnneededFiles() {
 	rimrafSync("dist/kilocode/webview-ui")
 	rimrafSync("dist/kilocode/assets")
-	console.log("✓ Unneeded files removed")
+	console.log("[ok] Unneeded files removed")
 }
 
 const afterBuildPlugin = {
@@ -48,7 +51,7 @@ const afterBuildPlugin = {
 			removeUnneededFiles()
 			try {
 				chmodSync("dist/index.js", 0o755)
-				console.log("✓ dist/index.js made executable")
+				console.log("[ok] dist/index.js made executable")
 			} catch (err) {
 				console.error("Error making dist/index.js executable:", err)
 			}
@@ -63,7 +66,7 @@ const esbuildProblemMatcherPlugin = {
 		build.onStart(() => console.log("[esbuild-problem-matcher#onStart]"))
 		build.onEnd((result) => {
 			result.errors.forEach(({ text, location }) => {
-				console.error(`✘ [ERROR] ${text}`)
+				console.error(`[ERROR] ${text}`)
 				if (location && location.file) {
 					console.error(`    ${location.file}:${location.line}:${location.column}:`)
 				}
@@ -186,8 +189,8 @@ const __dirname = __dirname__(__filename);
 	logLevel: "info",
 	plugins: [esbuildProblemMatcherPlugin, afterBuildPlugin],
 	alias: {
-		'is-in-ci': path.resolve(__dirname, 'src/patches/is-in-ci.ts'),
-	}
+		"is-in-ci": path.resolve(__dirname, "src/patches/is-in-ci.ts"),
+	},
 }
 
 if (process.argv.includes("--watch")) {

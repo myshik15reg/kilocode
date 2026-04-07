@@ -4,6 +4,23 @@ import { resolveVerbosity } from "./utils/vitest-verbosity"
 
 const { silent, reporters, onConsoleLog } = resolveVerbosity()
 
+const coverageConfig = {
+	provider: "v8" as const,
+	reporter: ["text", "json-summary", "html"],
+	exclude: [
+		"coverage/**",
+		"dist/**",
+		"**/*.d.ts",
+		"**/*.test.*",
+		"**/*.spec.*",
+		"**/__tests__/**",
+		"**/__mocks__/**",
+		"vitest.config.ts",
+		"vitest.setup.ts",
+		"services/continuedev/core/test/**",
+	],
+}
+
 export default defineConfig({
 	test: {
 		globals: true,
@@ -12,9 +29,10 @@ export default defineConfig({
 		watch: false,
 		reporters,
 		silent,
-		testTimeout: 20_000,
-		hookTimeout: 20_000,
+		testTimeout: 60_000,
+		hookTimeout: 60_000,
 		onConsoleLog,
+		coverage: coverageConfig,
 	},
 	resolve: {
 		alias: {

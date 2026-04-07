@@ -195,10 +195,42 @@ export class McpHub {
 	private static readonly MAX_RECONNECT_ATTEMPTS = 5
 	private static readonly INITIAL_RECONNECT_DELAY_MS = 1000
 	private static readonly MAX_RECONNECT_DELAY_MS = 30000
+	private static registeredProviders: Set<ClineProvider> = new Set()
 	// kilocode_change end
+
+	public static registerProvider(provider: ClineProvider): void {
+		this.registeredProviders.add(provider)
+	}
+
+	public static unregisterProvider(provider: ClineProvider): void {
+		this.registeredProviders.delete(provider)
+	}
+
+	public static clearRegisteredProviders(): void {
+		this.registeredProviders.clear()
+	}
+
+	private static getRegisteredProviders(): ClineProvider[] {
+		return [...this.registeredProviders]
+	}
+
+	public static async notifyProviders(message: any): Promise<void> {
+		const providers = this.getRegisteredProviders()
+		if (providers.length === 0) {
+			return
+		}
+
+		const results = await Promise.allSettled(providers.map((provider) => provider.postMessageToWebview(message)))
+		for (const result of results) {
+			if (result.status === "rejected") {
+				console.error("[McpHub] Failed to notify provider:", result.reason)
+			}
+		}
+	}
 
 	constructor(provider: ClineProvider) {
 		this.providerRef = new WeakRef(provider)
+		McpHub.registerProvider(provider)
 		// kilocode_change start - MCP OAuth Authorization
 		this.initializeOAuthService()
 		// kilocode_change end
@@ -1203,9 +1235,8 @@ export class McpHub {
 						connection.server.status = "disconnected"
 						this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
 					}
-					await this.notifyWebviewOfServerChanges()
-					// kilocode_change - Schedule auto-reconnect on error
 					this.scheduleReconnect(name, source)
+					this.notifyWebviewOfServerChangesBestEffort(`transport error for "${name}"`)
 				}
 
 				transport.onclose = async () => {
@@ -1213,9 +1244,8 @@ export class McpHub {
 					if (connection) {
 						connection.server.status = "disconnected"
 					}
-					await this.notifyWebviewOfServerChanges()
-					// kilocode_change - Schedule auto-reconnect on close
 					this.scheduleReconnect(name, source)
+					this.notifyWebviewOfServerChangesBestEffort(`transport close for "${name}"`)
 				}
 
 				// transport.stderr is only available after the process has been started. However we can't start it separately from the .connect() call because it also starts the transport. And we can't place this after the connect call since we need to capture the stderr stream before the connection is established, in order to capture errors during the connection process.
@@ -1292,9 +1322,8 @@ export class McpHub {
 						connection.server.status = "disconnected"
 						this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
 					}
-					await this.notifyWebviewOfServerChanges()
-					// kilocode_change - Schedule auto-reconnect on error
 					this.scheduleReconnect(name, source)
+					this.notifyWebviewOfServerChangesBestEffort(`transport error for "${name}"`)
 				}
 
 				transport.onclose = async () => {
@@ -1302,9 +1331,8 @@ export class McpHub {
 					if (connection) {
 						connection.server.status = "disconnected"
 					}
-					await this.notifyWebviewOfServerChanges()
-					// kilocode_change - Schedule auto-reconnect on close
 					this.scheduleReconnect(name, source)
+					this.notifyWebviewOfServerChangesBestEffort(`transport close for "${name}"`)
 				}
 			} else if (configInjected.type === "sse") {
 				// SSE connection
@@ -1355,9 +1383,8 @@ export class McpHub {
 						connection.server.status = "disconnected"
 						this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
 					}
-					await this.notifyWebviewOfServerChanges()
-					// kilocode_change - Schedule auto-reconnect on error
 					this.scheduleReconnect(name, source)
+					this.notifyWebviewOfServerChangesBestEffort(`transport error for "${name}"`)
 				}
 
 				transport.onclose = async () => {
@@ -1365,9 +1392,8 @@ export class McpHub {
 					if (connection) {
 						connection.server.status = "disconnected"
 					}
-					await this.notifyWebviewOfServerChanges()
-					// kilocode_change - Schedule auto-reconnect on close
 					this.scheduleReconnect(name, source)
+					this.notifyWebviewOfServerChangesBestEffort(`transport close for "${name}"`)
 				}
 			} else {
 				// Should not happen if validateServerConfig is correct
@@ -2003,33 +2029,46 @@ export class McpHub {
 		}
 	}
 
-	private async notifyWebviewOfServerChanges(): Promise<void> {
-		// Get global server order from settings file
-		const settingsPath = await this.getMcpSettingsFilePath()
-		const content = await fs.readFile(settingsPath, "utf-8")
-		const config = JSON.parse(content)
-		const globalServerOrder = Object.keys(config.mcpServers || {})
-
-		// Get project server order if available
-		const projectMcpPath = await this.getProjectMcpPath()
-		let projectServerOrder: string[] = []
-		if (projectMcpPath) {
-			try {
-				const projectContent = await fs.readFile(projectMcpPath, "utf-8")
-				const projectConfig = JSON.parse(projectContent)
-				projectServerOrder = Object.keys(projectConfig.mcpServers || {})
-			} catch (error) {
-				// Silently continue with empty project server order
-			}
+	private async readServerOrder(
+		configPath: string | null | undefined,
+		scope: "global" | "project",
+	): Promise<string[]> {
+		if (!configPath) {
+			return []
 		}
 
-		// Sort connections: first project servers in their defined order, then global servers in their defined order
-		// This ensures that when servers have the same name, project servers are prioritized
+		try {
+			const content = await fs.readFile(configPath, "utf-8")
+			const config = JSON.parse(content)
+			return Object.keys(config.mcpServers || {})
+		} catch (error) {
+			console.error(`[McpHub] Failed to read ${scope} MCP config for ordering:`, error)
+			return []
+		}
+	}
+
+	private notifyWebviewOfServerChangesBestEffort(reason: string): void {
+		void this.notifyWebviewOfServerChanges().catch((error) => {
+			console.error(`[McpHub] Failed to notify webview of server changes after ${reason}:`, error)
+		})
+	}
+
+	private async notifyWebviewOfServerChanges(): Promise<void> {
+		const globalSettingsPath = await this.getMcpSettingsFilePath().catch((error) => {
+			console.error("[McpHub] Failed to resolve global MCP settings path:", error)
+			return undefined
+		})
+		const projectSettingsPath = await this.getProjectMcpPath().catch((error) => {
+			console.error("[McpHub] Failed to resolve project MCP settings path:", error)
+			return undefined
+		})
+		const globalServerOrder = await this.readServerOrder(globalSettingsPath, "global")
+		const projectServerOrder = await this.readServerOrder(projectSettingsPath, "project")
+
 		const sortedConnections = [...this.connections].sort((a, b) => {
 			const aIsGlobal = a.server.source === "global" || !a.server.source
 			const bIsGlobal = b.server.source === "global" || !b.server.source
 
-			// If both are global or both are project, sort by their respective order
 			if (aIsGlobal && bIsGlobal) {
 				const indexA = globalServerOrder.indexOf(a.server.name)
 				const indexB = globalServerOrder.indexOf(b.server.name)
@@ -2040,31 +2079,23 @@ export class McpHub {
 				return indexA - indexB
 			}
 
-			// Project servers come before global servers (reversed from original)
 			return aIsGlobal ? 1 : -1
 		})
 
-		// Send sorted servers to webview
-		const targetProvider: ClineProvider | undefined = this.providerRef.deref()
-
+		const targetProvider = this.providerRef.deref()
 		if (targetProvider) {
-			const serversToSend = sortedConnections.map((connection) => connection.server)
-
-			const message = {
-				type: "mcpServers" as const,
-				mcpServers: serversToSend,
-			}
-
-			try {
-				await targetProvider.postMessageToWebview(message)
-			} catch (error) {
-				console.error("[McpHub] Error calling targetProvider.postMessageToWebview:", error)
-			}
-		} else {
-			console.error(
-				"[McpHub] No target provider available (neither from getInstance nor providerRef) - cannot send mcpServers message to webview",
-			)
+			McpHub.registerProvider(targetProvider)
 		}
+
+		if (McpHub.getRegisteredProviders().length === 0) {
+			console.error("[McpHub] No registered providers available - cannot send mcpServers message to webview")
+			return
+		}
+
+		await McpHub.notifyProviders({
+			type: "mcpServers" as const,
+			mcpServers: sortedConnections.map((connection) => connection.server),
+		})
 	}
 
 	public async toggleServerDisabled(

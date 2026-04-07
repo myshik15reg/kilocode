@@ -238,6 +238,49 @@ describe("MessageEnhancer", () => {
 			expect(mockSingleCompletionHandler).toHaveBeenCalledWith(mockApiConfiguration, expect.any(String))
 		})
 
+		it("should fall back to default config when enhancement profile lookup fails", async () => {
+			mockProviderSettingsManager.getProfile = vi.fn().mockRejectedValue(new Error("profile missing"))
+
+			const result = await MessageEnhancer.enhanceMessage({
+				text: "Test",
+				apiConfiguration: mockApiConfiguration,
+				listApiConfigMeta: mockListApiConfigMeta,
+				enhancementApiConfigId: "config2",
+				providerSettingsManager: mockProviderSettingsManager,
+			})
+
+			expect(result.success).toBe(true)
+			expect(mockSingleCompletionHandler).toHaveBeenCalledTimes(1)
+			expect(mockSingleCompletionHandler).toHaveBeenCalledWith(mockApiConfiguration, expect.any(String))
+		})
+
+		it("should retry with default config when helper completion fails", async () => {
+			mockSingleCompletionHandler
+				.mockRejectedValueOnce(new Error("helper offline"))
+				.mockResolvedValueOnce("Enhanced via primary fallback")
+
+			const result = await MessageEnhancer.enhanceMessage({
+				text: "Test",
+				apiConfiguration: mockApiConfiguration,
+				listApiConfigMeta: mockListApiConfigMeta,
+				enhancementApiConfigId: "config2",
+				providerSettingsManager: mockProviderSettingsManager,
+			})
+
+			expect(result.success).toBe(true)
+			expect(result.enhancedText).toBe("Enhanced via primary fallback")
+			expect(mockSingleCompletionHandler).toHaveBeenNthCalledWith(
+				1,
+				{
+					apiProvider: "anthropic",
+					apiKey: "enhancement-key",
+					apiModelId: "claude-3",
+				},
+				expect.any(String),
+			)
+			expect(mockSingleCompletionHandler).toHaveBeenNthCalledWith(2, mockApiConfiguration, expect.any(String))
+		})
+
 		it("should handle empty task history gracefully", async () => {
 			const result = await MessageEnhancer.enhanceMessage({
 				text: "Test",

@@ -302,12 +302,12 @@ export const ErrorRow = memo(
 				{/* Error Details Dialog */}
 				{formattedErrorDetails && (
 					<Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-						<DialogContent className="max-w-2xl">
+						<DialogContent className="max-w-2xl overflow-hidden">
 							<DialogHeader>
 								<DialogTitle>{t("chat:errorDetails.title")}</DialogTitle>
 							</DialogHeader>
-							<div className="max-h-96 overflow-auto bg-vscode-editor-background rounded-xl border border-vscode-editorGroup-border">
-								<pre className="font-mono text-sm whitespace-pre-wrap break-words bg-transparent px-3">
+							<div className="min-w-0 max-h-96 overflow-auto bg-vscode-editor-background rounded-xl border border-vscode-editorGroup-border">
+								<pre className="min-w-0 bg-transparent p-3 font-mono text-sm whitespace-pre-wrap break-words">
 									{formattedErrorDetails}
 								</pre>
 								{usesProxy && (
@@ -319,8 +319,11 @@ export const ErrorRow = memo(
 									</div>
 								)}
 							</div>
-							<DialogFooter>
-								<Button variant="secondary" className="w-full" onClick={handleCopyDetails}>
+							<DialogFooter className="!grid !grid-cols-1 items-stretch gap-2 sm:!grid-cols-2">
+								<Button
+									variant="secondary"
+									className="w-full min-w-0 !h-auto !whitespace-normal py-2 text-center"
+									onClick={handleCopyDetails}>
 									{showDetailsCopySuccess ? (
 										<>
 											<Check className="size-3" />
@@ -333,7 +336,10 @@ export const ErrorRow = memo(
 										</>
 									)}
 								</Button>
-								<Button variant="secondary" className="w-full" onClick={handleDownloadDiagnostics}>
+								<Button
+									variant="secondary"
+									className="w-full min-w-0 !h-auto !whitespace-normal py-2 text-center"
+									onClick={handleDownloadDiagnostics}>
 									<Microscope className="size-3" />
 									{t("chat:errorDetails.diagnostics")}
 								</Button>

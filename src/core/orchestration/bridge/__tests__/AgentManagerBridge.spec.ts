@@ -13,6 +13,7 @@ describe("AgentManagerBridge", () => {
 		resumeBackgroundSubagent: ReturnType<typeof vi.fn>
 		listBackgroundSubagentBindings: ReturnType<typeof vi.fn>
 		sendMessage: ReturnType<typeof vi.fn>
+		releaseBackgroundSubagentBinding: ReturnType<typeof vi.fn>
 	}
 
 	beforeEach(() => {
@@ -28,6 +29,7 @@ describe("AgentManagerBridge", () => {
 			resumeBackgroundSubagent: vi.fn().mockResolvedValue(undefined),
 			listBackgroundSubagentBindings: vi.fn().mockReturnValue([]),
 			sendMessage: vi.fn().mockResolvedValue(undefined),
+			releaseBackgroundSubagentBinding: vi.fn().mockResolvedValue(undefined),
 		}
 	})
 
@@ -73,5 +75,73 @@ describe("AgentManagerBridge", () => {
 			relayPolicy: "parent_only",
 		})
 		expect(result).toEqual({ taskId: "parent-1", sessionId: "parent-1", status: "running" })
+	})
+
+	it("maps abstained background bindings in listBindings", () => {
+		agentManager.listBackgroundSubagentBindings.mockReturnValue([
+			{
+				request: {
+					parentTaskId: "parent-1",
+					rootTaskId: "root-1",
+					mode: "code",
+					handoff: { summary: "Research" },
+				},
+				taskId: "child-1",
+				sessionId: "session-1",
+				status: "abstained",
+				updatedAt: 123,
+			},
+		])
+		const bridge = new AgentManagerBridge(agentManager as any)
+
+		expect(bridge.listBindings()).toEqual([
+			{
+				request: {
+					parentTaskId: "parent-1",
+					rootTaskId: "root-1",
+					mode: "code",
+					handoff: { summary: "Research" },
+				},
+				parentTaskId: "parent-1",
+				childTaskId: "child-1",
+				sessionId: "session-1",
+				status: "abstained",
+				updatedAt: 123,
+			},
+		])
+	})
+
+	it("releases background bindings through the agent manager", async () => {
+		const bridge = new AgentManagerBridge(agentManager as any)
+
+		await bridge.release("session-1")
+
+		expect(agentManager.releaseBackgroundSubagentBinding).toHaveBeenCalledWith("session-1")
+	})
+
+	it("formats relay envelopes and sends them to each recipient", async () => {
+		const bridge = new AgentManagerBridge(agentManager as any)
+
+		await bridge.relay({
+			envelope: {
+				kind: "parent",
+				fromTaskId: "child-1",
+				rootTaskId: "root-1",
+				toTaskId: "parent-1",
+				content: "Need fresh verification",
+				requiresParentVisibility: true,
+				timestamp: 456,
+				metadata: { reason: "insufficient_context" },
+			},
+			recipientTaskIds: ["parent-1", "observer-1"],
+		})
+
+		expect(agentManager.sendMessage).toHaveBeenCalledTimes(2)
+		expect(agentManager.sendMessage).toHaveBeenNthCalledWith(1, "parent-1", expect.stringContaining("<task_relay>"))
+		expect(agentManager.sendMessage).toHaveBeenNthCalledWith(
+			2,
+			"observer-1",
+			expect.stringContaining("reason: insufficient_context"),
+		)
 	})
 })

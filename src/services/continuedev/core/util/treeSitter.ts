@@ -118,12 +118,18 @@ export const IGNORE_PATH_PATTERNS: Partial<Record<LanguageName, RegExp[]>> = {
 	[LanguageName.JAVASCRIPT]: [/.*node_modules/],
 }
 
+let parserInitPromise: Promise<void> | undefined
+
+async function ensureParserInitialized() {
+	const { Parser } = require("web-tree-sitter")
+	parserInitPromise ??= Parser.init()
+	await parserInitPromise
+	return Parser
+}
+
 export async function getParserForFile(filepath: string) {
 	try {
-		// Dynamically import Parser to avoid issues with WASM loading
-		const { Parser } = require("web-tree-sitter")
-
-		await Parser.init()
+		const Parser = await ensureParserInitialized()
 		const parser = new Parser()
 
 		const language = await getLanguageForFile(filepath)
@@ -152,8 +158,8 @@ function findExistingPath(candidatePaths: string[]): string | undefined {
 
 // Loading the wasm files to create a Language object is an expensive operation and with
 // sufficient number of files can result in errors, instead keep a map of language name
-// to Language object
-const nameToLanguage = new Map<string, Language>()
+// to the in-flight Language promise so concurrent callers share the same load.
+const nameToLanguage = new Map<string, Promise<Language>>()
 
 function getExtensionFromPathOrUri(input: string): string {
 	// Treat inputs with a scheme as URIs; otherwise as local filesystem paths
@@ -173,13 +179,16 @@ async function getLanguageForFile(filepathOrUri: string): Promise<Language | und
 		if (!languageName) {
 			return undefined
 		}
-		let language = nameToLanguage.get(languageName)
+		let languagePromise = nameToLanguage.get(languageName)
 
-		if (!language) {
-			language = await loadLanguageForFileExt(extension)
-			nameToLanguage.set(languageName, language)
+		if (!languagePromise) {
+			languagePromise = loadLanguageForFileExt(extension).catch((error) => {
+				nameToLanguage.delete(languageName)
+				throw error
+			})
+			nameToLanguage.set(languageName, languagePromise)
 		}
-		return language
+		return await languagePromise
 	} catch (e) {
 		console.debug("Unable to load language for file", filepathOrUri, e)
 		return undefined

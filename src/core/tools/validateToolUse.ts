@@ -1,5 +1,5 @@
 import type { ToolName, ModeConfig, ExperimentId, GroupOptions, GroupEntry } from "@roo-code/types"
-import { toolNames as validToolNames } from "@roo-code/types"
+import { requestUserInputDataSchema, toolNames as validToolNames } from "@roo-code/types"
 import { customToolRegistry } from "@roo-code/core"
 
 import { type Mode, FileRestrictionError, getModeBySlug, getGroupName } from "../../shared/modes"
@@ -27,6 +27,25 @@ export function isValidToolName(toolName: string, experiments?: Record<string, b
 	}
 
 	return false
+}
+
+function normalizeNonEmptyToolPath(value: unknown): string | null {
+	if (typeof value !== "string") {
+		return null
+	}
+
+	const trimmed = value.trim()
+	return trimmed === "" ? null : trimmed
+}
+
+function isSuspiciousToolPath(value: string): boolean {
+	return (
+		/[\u0000-\u001f]/.test(value) ||
+		/[<>{}"`]/.test(value) ||
+		/<\/?[a-z][^>]*>/i.test(value) ||
+		/\b[a-z0-9_-]*assistant\s+to=/i.test(value) ||
+		/\bto=functions?\./i.test(value)
+	)
 }
 
 export function validateToolUse(
@@ -79,13 +98,25 @@ export function validateToolUse(
 				'Invalid arguments for web_search: missing or empty required parameter "query". Do NOT retry with {}. Retry with JSON arguments like: { "query": "latest MCP HTTP/2 guidance" }. If you do not know what to search for, ask the user a clarifying question instead of calling web_search with an empty query.',
 			)
 		}
+
+		const provider = toolParams?.provider
+		if (provider !== undefined && (typeof provider !== "string" || provider.trim() === "")) {
+			throw new Error(
+				'Invalid arguments for web_search: optional parameter "provider" must be a non-empty string when provided. Retry with JSON like: { "query": "latest MCP HTTP/2 guidance", "provider": "duckduckgo" }.',
+			)
+		}
 	}
 
 	if (toolName === "read_file") {
-		const legacyPath = toolParams?.path
+		const legacyPath = normalizeNonEmptyToolPath(toolParams?.path)
 		const nativeFiles = toolParams?.files
-		const hasLegacyPath = typeof legacyPath === "string" && legacyPath.trim() !== ""
-		// kilocode_change start
+
+		if (legacyPath && isSuspiciousToolPath(legacyPath)) {
+			throw new Error(
+				'Invalid arguments for read_file: parameter "path" contains non-path stream content from a malformed tool call. Retry with a clean file path only.',
+			)
+		}
+
 		const hasValidNativeFiles =
 			Array.isArray(nativeFiles) &&
 			nativeFiles.length > 0 &&
@@ -94,12 +125,28 @@ export function validateToolUse(
 					return false
 				}
 
-				const filePath = (file as Record<string, unknown>).path
-				return typeof filePath === "string" && filePath.trim() !== ""
+				const filePath = normalizeNonEmptyToolPath((file as Record<string, unknown>).path)
+				return filePath !== null && !isSuspiciousToolPath(filePath)
 			})
-		// kilocode_change end
 
-		if (!hasLegacyPath && !hasValidNativeFiles) {
+		const hasMalformedNativeFilePath =
+			Array.isArray(nativeFiles) &&
+			nativeFiles.some((file) => {
+				if (!file || typeof file !== "object") {
+					return false
+				}
+
+				const filePath = normalizeNonEmptyToolPath((file as Record<string, unknown>).path)
+				return filePath !== null && isSuspiciousToolPath(filePath)
+			})
+
+		if (hasMalformedNativeFilePath) {
+			throw new Error(
+				'Invalid arguments for read_file: one or more "files[].path" values contain non-path stream content from a malformed tool call. Retry with clean file paths only.',
+			)
+		}
+
+		if (!legacyPath && !hasValidNativeFiles) {
 			throw new Error(
 				'Invalid arguments for read_file: provide either a non-empty legacy "path" or a non-empty "files" array with string "path" entries. Do NOT retry with {}.',
 			)
@@ -346,6 +393,15 @@ export function validateToolUse(
 		if (hasInvalidSuggestion) {
 			throw new Error(
 				'Invalid arguments for ask_followup_question: each follow_up item must include a non-empty string "text" and optional string/null "mode".',
+			)
+		}
+	}
+
+	if (toolName === "request_user_input") {
+		const parsed = requestUserInputDataSchema.safeParse({ questions: toolParams?.questions })
+		if (!parsed.success) {
+			throw new Error(
+				'Invalid arguments for request_user_input: provide a valid "questions" array with 1-4 structured questions, and 2-4 options per question.',
 			)
 		}
 	}

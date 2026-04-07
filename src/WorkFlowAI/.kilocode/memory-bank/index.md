@@ -1,28 +1,27 @@
 # Memory Bank
 
-This directory defines the project Memory Bank structure for the current workspace.
-
-## Core boundary
-
-- This pack provides a Memory Bank template only.
-- The real, writable Memory Bank must live in the current project at `.kilocode/memory-bank/`.
-- Do not treat the template pack copy as live project state.
-- Read the workspace copy first, then confirm `[MB: OK]`.
+Проектный контекст для людей и AI-агентов. Хранится в репозитории проекта: `.kilocode/memory-bank/`.
 
 ## Session start
 
-1. Read this file in the workspace copy.
-2. Read `context.md` in the workspace copy.
-3. Confirm in chat: `[MB: OK]`.
+1. Прочитать этот файл.
+2. Прочитать `context.md`.
+3. Подтвердить в чате: `[MB: OK]`.
 
-## File roles
+## Navigation
 
-- `brief.md` - goals, constraints, Definition of Done
-- `product.md` - users, flows, UX expectations
-- `architecture.md` - system design and decisions
-- `tech.md` - stack, tooling, key commands
-- `context.md` - current focus, risks, next step
+- `brief.md` — цель/требования/DoD
+- `product.md` — пользователи и сценарии
+- `architecture.md` — архитектура и решения
+- `tech.md` — стек и команды
+- `context.md` — текущий фокус и следующий шаг
 
-## Update rule
+## Update policy
 
-Update workspace Memory Bank files after meaningful changes. Do not write task-specific history back into the template pack.
+Язык и кодировка: active Memory Bank ведётся на русском; файлы с кириллицей MUST быть UTF-8 без BOM. См. [`../rules/language-and-encoding.md`](../rules/language-and-encoding.md:1).
+
+Memory Bank MUST обновляться только для долгоживущего контекста проекта.
+
+1. Используй [`../rules/memory-write-policy.md`](../rules/memory-write-policy.md:1) перед любой записью.
+2. Используй [`../commands/update-memory-bank.md`](../commands/update-memory-bank.md:1) после meaningful work.
+3. Raw notes и task-local artifacts MUST NOT попадать сюда напрямую; сначала `.notes/` или `.protocols/.../artifacts/`.

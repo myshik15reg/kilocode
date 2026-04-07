@@ -1,9 +1,11 @@
 import { expect } from "vitest"
 import { MockLLM } from "../../../llm/llms/Mock"
-import { testMinimalConfigProvider, testIde } from "../../../test/fixtures"
+import { testIde } from "../../../test/fixtures"
 import { joinPathsToUri } from "../../../util/uri"
 import { CompletionProvider } from "../../CompletionProvider"
+import { MinimalConfigProvider } from "../../MinimalConfig"
 import { AutocompleteInput } from "../../util/types"
+import { DEFAULT_AUTOCOMPLETE_OPTS } from "../../../util/parameters"
 
 const FIM_DELIMITER = "<|fim|>"
 
@@ -32,7 +34,14 @@ export async function testAutocompleteFiltering(test: AutocompleteFileringTestIn
 	})
 	llm.completion = test.llmOutput
 	const ide = testIde
-	const configHandler = testMinimalConfigProvider
+	const configHandler = new MinimalConfigProvider({
+		tabAutocompleteOptions: {
+			...DEFAULT_AUTOCOMPLETE_OPTS,
+			modelTimeout: 5_000,
+			showWhateverWeHaveAtXMs: 5_000,
+			useCache: false,
+		},
+	})
 
 	// Create a real file
 	const [workspaceDir] = await ide.getWorkspaceDirs()

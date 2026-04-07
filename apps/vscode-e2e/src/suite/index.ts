@@ -7,10 +7,12 @@ import type { RooCodeAPI } from "@roo-code/types"
 
 import { waitFor } from "./utils"
 
-/**
- * Models to test against - high-performing models from different providers
- */
 const MODELS_TO_TEST = ["openai/gpt-5.2", "anthropic/claude-sonnet-4.5", "google/gemini-3-pro-preview"]
+
+type TestRunTarget = {
+	label: string
+	model?: string
+}
 
 interface ModelTestResult {
 	model: string
@@ -19,24 +21,61 @@ interface ModelTestResult {
 	duration: number
 }
 
+async function ensureTestWorkspace() {
+	const testWorkspace = process.env.TEST_WORKSPACE
+	if (!testWorkspace) {
+		return
+	}
+
+	const workspaceUri = vscode.Uri.file(testWorkspace)
+	const existingFolders = vscode.workspace.workspaceFolders ?? []
+	const alreadyOpened = existingFolders.some((folder) => folder.uri.fsPath === testWorkspace)
+
+	if (!alreadyOpened) {
+		const updated = vscode.workspace.updateWorkspaceFolders(0, existingFolders.length, {
+			uri: workspaceUri,
+			name: path.basename(testWorkspace),
+		})
+
+		if (!updated) {
+			throw new Error(`Failed to attach test workspace: ${testWorkspace}`)
+		}
+	}
+
+	await waitFor(
+		() => vscode.workspace.workspaceFolders?.some((folder) => folder.uri.fsPath === testWorkspace) ?? false,
+		{
+			timeout: 15_000,
+		},
+	)
+}
+
 export async function run() {
-	const extension = vscode.extensions.getExtension<RooCodeAPI>("kilocode.alfa-code-assistant")
+	console.log("Starting VS Code e2e suite")
+
+	const extension = vscode.extensions.getExtension<RooCodeAPI>("alfacode.alfa-code-assistant")
 
 	if (!extension) {
 		throw new Error("Extension not found")
 	}
 
 	const api = extension.isActive ? extension.exports : await extension.activate()
+	const hasOpenRouterApiKey = Boolean(process.env.OPENROUTER_API_KEY)
 
-	// Initial configuration with first model (will be reconfigured per model)
-	await api.setConfiguration({
-		apiProvider: "openrouter" as const,
-		openRouterApiKey: process.env.OPENROUTER_API_KEY!,
-		openRouterModelId: MODELS_TO_TEST[0],
-	})
+	await ensureTestWorkspace()
 
-	await vscode.commands.executeCommand("alfa-code-assistant.SidebarProvider.focus")
-	await waitFor(() => api.isReady())
+	if (hasOpenRouterApiKey) {
+		await vscode.commands.executeCommand("alfa-code-assistant.SidebarProvider.focus")
+		await api.setConfiguration({
+			apiProvider: "openrouter" as const,
+			openRouterApiKey: process.env.OPENROUTER_API_KEY,
+			openRouterModelId: MODELS_TO_TEST[0],
+		})
+
+		await waitFor(() => api.isReady())
+	} else {
+		console.warn("OPENROUTER_API_KEY is not set; only smoke-style VS Code e2e tests can run in this environment")
+	}
 
 	globalThis.api = api
 
@@ -51,6 +90,9 @@ export async function run() {
 
 		testFiles = await glob(`**/${specificFile}`, { cwd })
 		console.log(`Running specific test file: ${specificFile}`)
+	} else if (!hasOpenRouterApiKey) {
+		testFiles = ["extension.test.js"]
+		console.log("Running smoke-only VS Code e2e suite because OPENROUTER_API_KEY is not set")
 	} else {
 		testFiles = await glob("**/**.test.js", { cwd })
 	}
@@ -59,30 +101,33 @@ export async function run() {
 		throw new Error(`No test files found matching criteria: ${process.env.TEST_FILE || "all tests"}`)
 	}
 
+	const runTargets: TestRunTarget[] = hasOpenRouterApiKey
+		? MODELS_TO_TEST.map((model) => ({ label: model, model }))
+		: [{ label: "smoke-no-api-key" }]
+
 	const results: ModelTestResult[] = []
 	let totalFailures = 0
 
-	// Run tests for each model sequentially
-	for (const model of MODELS_TO_TEST) {
+	for (const target of runTargets) {
 		console.log(`\n${"=".repeat(60)}`)
-		console.log(`  TESTING WITH MODEL: ${model}`)
+		console.log(`  TESTING WITH TARGET: ${target.label}`)
 		console.log(`${"=".repeat(60)}\n`)
 
-		// Reconfigure API for this model
-		await api.setConfiguration({
-			apiProvider: "openrouter" as const,
-			openRouterApiKey: process.env.OPENROUTER_API_KEY!,
-			openRouterModelId: model,
-		})
+		if (target.model) {
+			await api.setConfiguration({
+				apiProvider: "openrouter" as const,
+				openRouterApiKey: process.env.OPENROUTER_API_KEY,
+				openRouterModelId: target.model,
+			})
 
-		// Wait for API to be ready with new configuration
-		await waitFor(() => api.isReady())
+			await waitFor(() => api.isReady())
+		}
 
 		const startTime = Date.now()
 
 		const mochaOptions: Mocha.MochaOptions = {
 			ui: "tdd",
-			timeout: 20 * 60 * 1_000, // 20m
+			timeout: 20 * 60 * 1_000,
 		}
 
 		if (process.env.TEST_GREP) {
@@ -91,11 +136,8 @@ export async function run() {
 		}
 
 		const mocha = new Mocha(mochaOptions)
-
-		// Add test files fresh for each model run
 		testFiles.forEach((testFile) => mocha.addFile(path.resolve(cwd, testFile)))
 
-		// Run tests for this model
 		const modelResult = await new Promise<{ failures: number; passes: number }>((resolve) => {
 			const runner = mocha.run((failures) => {
 				resolve({
@@ -108,7 +150,7 @@ export async function run() {
 		const duration = Date.now() - startTime
 
 		results.push({
-			model,
+			model: target.label,
 			failures: modelResult.failures,
 			passes: modelResult.passes,
 			duration,
@@ -117,10 +159,9 @@ export async function run() {
 		totalFailures += modelResult.failures
 
 		console.log(
-			`\n[${model}] Completed: ${modelResult.passes} passed, ${modelResult.failures} failed (${(duration / 1000).toFixed(1)}s)\n`,
+			`\n[${target.label}] Completed: ${modelResult.passes} passed, ${modelResult.failures} failed (${(duration / 1000).toFixed(1)}s)\n`,
 		)
 
-		// Clear mocha's require cache to allow re-running tests
 		mocha.dispose()
 		testFiles.forEach((testFile) => {
 			const fullPath = path.resolve(cwd, testFile)
@@ -128,13 +169,12 @@ export async function run() {
 		})
 	}
 
-	// Print summary
 	console.log(`\n${"=".repeat(60)}`)
-	console.log(`  MULTI-MODEL TEST SUMMARY`)
+	console.log(`  VS CODE E2E SUMMARY`)
 	console.log(`${"=".repeat(60)}`)
 
 	for (const result of results) {
-		const status = result.failures === 0 ? "✓ PASS" : "✗ FAIL"
+		const status = result.failures === 0 ? "PASS" : "FAIL"
 		console.log(`  ${status} ${result.model}`)
 		console.log(
 			`       ${result.passes} passed, ${result.failures} failed (${(result.duration / 1000).toFixed(1)}s)`,
@@ -144,6 +184,6 @@ export async function run() {
 	console.log(`${"=".repeat(60)}\n`)
 
 	if (totalFailures > 0) {
-		throw new Error(`${totalFailures} total test failures across all models.`)
+		throw new Error(`${totalFailures} total test failures across all run targets.`)
 	}
 }

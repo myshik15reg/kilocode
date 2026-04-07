@@ -3,8 +3,9 @@ import { fireEvent, render, screen } from "@/utils/test-utils"
 
 import KiloTaskHeader from "../KiloTaskHeader"
 
-const { postMessageMock } = vi.hoisted(() => ({
+const { postMessageMock, taskActionsMock } = vi.hoisted(() => ({
 	postMessageMock: vi.fn(),
+	taskActionsMock: vi.fn((_props: any) => null), // kilocode_change
 }))
 
 vi.mock("react-i18next", () => ({
@@ -63,8 +64,8 @@ vi.mock("../DiffStatsDisplay", () => ({
 	default: () => null,
 }))
 
-vi.mock("../chat/TaskActions", () => ({
-	TaskActions: () => null,
+vi.mock("../../chat/TaskActions", () => ({
+	TaskActions: (props: any) => taskActionsMock(props),
 }))
 
 vi.mock("../chat/ShareButton", () => ({
@@ -90,6 +91,7 @@ vi.mock("../chat/TodoListDisplay", () => ({
 describe("KiloTaskHeader", () => {
 	beforeEach(() => {
 		postMessageMock.mockClear()
+		taskActionsMock.mockClear()
 		mockExtensionState = {
 			showTaskTimeline: false,
 			showDiffStats: false,
@@ -108,7 +110,7 @@ describe("KiloTaskHeader", () => {
 		} as any
 	})
 
-	it("renders activity groups without duplicating child summary links when detailed activity exists", () => {
+	it("does not render orchestration UI even when activity exists", () => {
 		mockExtensionState = {
 			...mockExtensionState,
 			currentTaskItem: { id: "parent-1", childIds: ["child-1"] },
@@ -146,23 +148,6 @@ describe("KiloTaskHeader", () => {
 					summary: "Scanning files",
 					timestamp: 10,
 				},
-				{
-					kind: "subagent",
-					id: "sa-1",
-					taskId: "child-1",
-					sessionId: "session-1",
-					status: "running",
-					summary: "Background child running",
-					timestamp: 20,
-				},
-				{
-					kind: "taskControl",
-					id: "tc-1",
-					taskId: "parent-1",
-					control: "pause",
-					summary: "Paused parent",
-					timestamp: 30,
-				},
 			],
 		}
 
@@ -180,58 +165,12 @@ describe("KiloTaskHeader", () => {
 			/>,
 		)
 
-		expect(screen.getByTestId("task-orchestration-badge")).toBeInTheDocument()
-		fireEvent.click(screen.getAllByText("Parent task")[0])
-		expect(screen.getByTestId("activity-group-backgroundActions")).toBeInTheDocument()
-		expect(screen.getByTestId("activity-group-subagents")).toBeInTheDocument()
-		expect(screen.getByTestId("activity-group-timeline")).toBeInTheDocument()
-		expect(screen.queryByTestId("child-task-link-child-1")).not.toBeInTheDocument()
-	})
-
-	it("does not show header orchestration badge for relay-only activity", () => {
-		mockExtensionState = {
-			...mockExtensionState,
-			currentTaskActivity: [
-				{
-					kind: "relay",
-					id: "relay-1",
-					taskId: "root-1",
-					rootTaskId: "root-1",
-					status: "delivered",
-					envelope: {
-						kind: "parent",
-						fromTaskId: "child-1",
-						toTaskId: "root-1",
-						rootTaskId: "root-1",
-						content: "Need review",
-						requiresParentVisibility: true,
-						timestamp: 10,
-					},
-					summary: "Relay delivered from child-1 to parent root-1 (1 recipients).",
-					timestamp: 10,
-				},
-			],
-		} as any
-
-		render(
-			<KiloTaskHeader
-				task={{ type: "say", ts: Date.now(), text: "Root task", images: [] } as any}
-				tokensIn={0}
-				tokensOut={0}
-				totalCost={0}
-				contextTokens={0}
-				buttonsDisabled={false}
-				handleCondenseContext={vi.fn()}
-				onClose={vi.fn()}
-				groupedMessages={[]}
-			/>,
-		)
-
 		expect(screen.queryByTestId("task-orchestration-badge")).not.toBeInTheDocument()
-		fireEvent.click(screen.getAllByText("Root task")[0])
-		expect(screen.getByTestId("activity-group-timeline")).toBeInTheDocument()
+		expect(screen.queryByTestId("task-activity-panel")).not.toBeInTheDocument()
+		fireEvent.click(screen.getAllByText("Parent task")[0])
+		expect(screen.queryByTestId("task-activity-panel")).not.toBeInTheDocument()
+		expect(screen.queryByText("chat:orchestration.title")).not.toBeInTheDocument()
 	})
-
 	it("does not render unrelated active root tasks in the task hierarchy area", () => {
 		render(
 			<KiloTaskHeader
@@ -252,107 +191,35 @@ describe("KiloTaskHeader", () => {
 		expect(screen.queryByTestId("task-hierarchy-nav")).not.toBeInTheDocument()
 	})
 
-	it("shows orchestration badge from background child state before detailed activity arrives", () => {
-		mockExtensionState = {
-			...mockExtensionState,
-			currentTaskItem: { id: "parent-1", childIds: ["child-1"] },
-			taskHistory: [
-				{
-					id: "parent-1",
-					task: "Parent task",
-					number: 1,
-					ts: 1,
-					tokensIn: 0,
-					tokensOut: 0,
-					totalCost: 0,
-					childIds: ["child-1"],
-				},
-				{
-					id: "child-1",
-					task: "Background child task",
-					number: 2,
-					ts: 2,
-					tokensIn: 0,
-					tokensOut: 0,
-					totalCost: 0,
-					parentTaskId: "parent-1",
-					rootTaskId: "parent-1",
-					execution: "background",
-					status: "active",
-				},
-			],
-			currentTaskActivity: [],
-		}
+	// kilocode_change start - cover task close control
+	it("uses a pointer cursor and invokes onClose when the task close button is clicked", () => {
+		const onClose = vi.fn()
 
 		render(
 			<KiloTaskHeader
-				task={{ type: "say", ts: Date.now(), text: "Parent task", images: [] } as any}
+				task={{ type: "say", ts: Date.now(), text: "Current root", images: [] } as any}
 				tokensIn={0}
 				tokensOut={0}
 				totalCost={0}
 				contextTokens={0}
 				buttonsDisabled={false}
 				handleCondenseContext={vi.fn()}
-				onClose={vi.fn()}
+				onClose={onClose}
 				groupedMessages={[]}
 			/>,
 		)
 
-		expect(screen.getByTestId("task-orchestration-badge")).toBeInTheDocument()
-		expect(screen.queryByText("chat:orchestration.title")).not.toBeInTheDocument()
-		expect(screen.getByTestId("orchestration-summary-only")).toBeInTheDocument()
+		const closeButton = screen.getByLabelText("chat:task.closeAndStart")
+
+		expect(closeButton).toHaveClass("cursor-pointer")
+
+		fireEvent.click(closeButton)
+
+		expect(onClose).toHaveBeenCalledTimes(1)
 	})
+	// kilocode_change end
 
-	it("shows queued orchestration badge from background child state before detailed activity arrives", () => {
-		mockExtensionState = {
-			...mockExtensionState,
-			currentTaskItem: { id: "parent-1", childIds: ["child-1"] },
-			taskHistory: [
-				{
-					id: "parent-1",
-					task: "Parent task",
-					number: 1,
-					ts: 1,
-					tokensIn: 0,
-					tokensOut: 0,
-					totalCost: 0,
-					childIds: ["child-1"],
-				},
-				{
-					id: "child-1",
-					task: "Queued background child task",
-					number: 2,
-					ts: 2,
-					tokensIn: 0,
-					tokensOut: 0,
-					totalCost: 0,
-					parentTaskId: "parent-1",
-					rootTaskId: "parent-1",
-					execution: "background",
-				},
-			],
-			currentTaskActivity: [],
-		}
-
-		render(
-			<KiloTaskHeader
-				task={{ type: "say", ts: Date.now(), text: "Parent task", images: [] } as any}
-				tokensIn={0}
-				tokensOut={0}
-				totalCost={0}
-				contextTokens={0}
-				buttonsDisabled={false}
-				handleCondenseContext={vi.fn()}
-				onClose={vi.fn()}
-				groupedMessages={[]}
-			/>,
-		)
-
-		expect(screen.getByTestId("task-orchestration-badge")).toBeInTheDocument()
-		expect(screen.getAllByTestId("orchestration-status-badge-queued").length).toBeGreaterThan(0)
-	})
-
-	it("shows recoverable orchestration badge from paused streaming failure before detailed activity arrives", () => {
+	it("does not render orchestration UI from background child history", () => {
 		mockExtensionState = {
 			...mockExtensionState,
 			currentTaskItem: { id: "parent-1", childIds: ["child-1"] },
@@ -400,26 +267,12 @@ describe("KiloTaskHeader", () => {
 			/>,
 		)
 
-		expect(screen.getByTestId("task-orchestration-badge")).toBeInTheDocument()
-		expect(screen.getAllByTestId("orchestration-status-badge-recoverable").length).toBeGreaterThan(0)
+		expect(screen.queryByTestId("task-orchestration-badge")).not.toBeInTheDocument()
+		fireEvent.click(screen.getAllByText("Parent task")[0])
+		expect(screen.queryByTestId("task-activity-panel")).not.toBeInTheDocument()
+		expect(screen.queryByTestId("orchestration-summary-only")).not.toBeInTheDocument()
 	})
-
-	it("moves orchestration title into expanded activity panel instead of duplicating it in header", () => {
-		mockExtensionState = {
-			...mockExtensionState,
-			currentTaskActivity: [
-				{
-					kind: "subagent",
-					id: "sa-1",
-					taskId: "root-1",
-					sessionId: "session-1",
-					status: "running",
-					summary: "Running helper",
-					timestamp: 1,
-				},
-			],
-		}
-
+	it("hides zero delegation depth in the expanded header for root tasks", () => {
 		render(
 			<KiloTaskHeader
 				task={{ type: "say", ts: Date.now(), text: "Root One", images: [] } as any}
@@ -434,52 +287,23 @@ describe("KiloTaskHeader", () => {
 			/>,
 		)
 
-		expect(screen.getByTestId("task-orchestration-summary")).toBeInTheDocument()
-		expect(screen.queryByText("chat:orchestration.title")).not.toBeInTheDocument()
-
 		fireEvent.click(screen.getAllByText("Root One")[0])
 
-		expect(screen.queryByTestId("task-orchestration-summary")).not.toBeInTheDocument()
-		expect(screen.getByTestId("orchestration-summary")).toBeInTheDocument()
-		expect(screen.getByText("chat:orchestration.title")).toBeInTheDocument()
+		expect(screen.queryByText("chat:task.depth")).not.toBeInTheDocument()
 	})
 
-	it("shows completed orchestration badge from background child history after reload", () => {
+	it("shows delegation depth in the expanded header for delegated subtasks", () => {
 		mockExtensionState = {
 			...mockExtensionState,
-			currentTaskItem: { id: "parent-1", childIds: ["child-1"] },
+			currentTaskItem: { id: "child-1", delegationDepth: 2 },
 			taskHistory: [
-				{
-					id: "parent-1",
-					task: "Parent task",
-					number: 1,
-					ts: 1,
-					tokensIn: 0,
-					tokensOut: 0,
-					totalCost: 0,
-					childIds: ["child-1"],
-				},
-				{
-					id: "child-1",
-					task: "Background child task",
-					number: 2,
-					ts: 2,
-					tokensIn: 0,
-					tokensOut: 0,
-					totalCost: 0,
-					parentTaskId: "parent-1",
-					rootTaskId: "parent-1",
-					execution: "background",
-					status: "completed",
-					lifecycleState: "completed",
-				},
+				{ id: "child-1", task: "Child task", number: 1, ts: 1, tokensIn: 0, tokensOut: 0, totalCost: 0 },
 			],
-			currentTaskActivity: [],
-		}
+		} as any
 
 		render(
 			<KiloTaskHeader
-				task={{ type: "say", ts: Date.now(), text: "Parent task", images: [] } as any}
+				task={{ type: "say", ts: Date.now(), text: "Child task", images: [] } as any}
 				tokensIn={0}
 				tokensOut={0}
 				totalCost={0}
@@ -491,9 +315,45 @@ describe("KiloTaskHeader", () => {
 			/>,
 		)
 
-		expect(screen.getByTestId("task-orchestration-badge")).toBeInTheDocument()
-		expect(screen.getAllByTestId("orchestration-status-badge-completed").length).toBeGreaterThan(0)
-		expect(screen.getByTestId("orchestration-summary-only")).toBeInTheDocument()
+		fireEvent.click(screen.getAllByText("Child task")[0])
+
+		expect(screen.getByText("chat:task.depth")).toBeInTheDocument()
+		expect(screen.getByText("2")).toBeInTheDocument()
+	})
+
+	it("passes completed state to task actions after completion_result", () => {
+		mockExtensionState = {
+			...mockExtensionState,
+			clineMessages: [
+				{
+					type: "ask",
+					ask: "completion_result",
+					ts: Date.now(),
+					text: "Task completed!",
+				},
+			],
+		}
+
+		render(
+			<KiloTaskHeader
+				task={{ type: "say", ts: Date.now(), text: "Root One", images: [] } as any}
+				tokensIn={0}
+				tokensOut={0}
+				totalCost={1}
+				contextTokens={0}
+				buttonsDisabled={false}
+				handleCondenseContext={vi.fn()}
+				onClose={vi.fn()}
+				groupedMessages={[]}
+			/>,
+		)
+
+		fireEvent.click(screen.getAllByText("Root One")[0])
+
+		expect(taskActionsMock).toHaveBeenCalled()
+		expect(taskActionsMock).toHaveBeenLastCalledWith(
+			expect.objectContaining({ isTaskComplete: true, showTaskControls: false }),
+		)
 	})
 
 	it("renders parent and child task hierarchy and navigates to child task", () => {

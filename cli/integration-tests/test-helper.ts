@@ -5,7 +5,7 @@
 
 import { expect } from "vitest"
 import { execSync } from "node:child_process"
-import { mkdirSync, writeFileSync, readFileSync, existsSync, rmSync } from "node:fs"
+import { mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, statSync } from "node:fs"
 import { join, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { env, stdout as processStdout } from "node:process"
@@ -14,11 +14,18 @@ import stripAnsi from "strip-ansi"
 import { tmpdir } from "node:os"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+const extensionRootPath = join(__dirname, "..", "..", "src")
+const cliLogPath = join(env.USERPROFILE || env.HOME || tmpdir(), ".kilocode", "cli", "logs", "cli.txt")
 
 // Get timeout based on environment
 function getDefaultTimeout() {
 	if (env["CI"]) return 60000 // 1 minute in CI
 	return 15000 // 15s locally
+}
+
+function getStartupTimeout() {
+	if (env["CI"]) return 90000 // 90s in CI for cold extension startup
+	return 60000 // 60s locally because extension bootstrap is expensive in the test harness
 }
 
 /**
@@ -284,11 +291,15 @@ export class TestRig {
 		const ptyEnv = {
 			// Keep colors so we can see the logo properly
 			FORCE_COLOR: "1",
+			KILO_CLI_MODE: "true",
 			KILO_EPHEMERAL_MODE: "true",
 			KILO_DISABLE_SESSIONS: "true",
 			KILO_PROVIDER_TYPE: "kilocode",
 			KILOCODE_MODEL: "anthropic/claude-sonnet-4.5",
 			KILOCODE_TOKEN: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+			...(existsSync(join(extensionRootPath, "dist", "extension.js"))
+				? { KILOCODE_EXTENSION_PATH: extensionRootPath }
+				: {}),
 			...process.env,
 			...env,
 			...options.env,
@@ -307,7 +318,41 @@ export class TestRig {
 
 		const run = new InteractiveRun(ptyProcess)
 
-		await poll(() => run.getStrippedOutput().includes("/help for commands"), 10_000, 100)
+		const logOffset = existsSync(cliLogPath) ? statSync(cliLogPath).size : 0
+		const startupTimeout = getStartupTimeout()
+		const ready = await poll(
+			() => {
+				const output = run.getStrippedOutput()
+				const uiReady =
+					output.includes("Type a message to start chatting") ||
+					output.includes("/help to see available commands") ||
+					output.includes("Type your message to begin") ||
+					output.includes("/help to explore available commands") ||
+					output.includes("Type a message or /command...")
+
+				if (uiReady) {
+					return true
+				}
+
+				if (!existsSync(cliLogPath)) {
+					return false
+				}
+
+				try {
+					const logTail = readFileSync(cliLogPath, "utf8").slice(logOffset)
+					return logTail.includes("AlfaCode assistant CLI initialized successfully")
+				} catch {
+					return false
+				}
+			},
+			startupTimeout,
+			100,
+		)
+		if (!ready) {
+			throw new Error(
+				`CLI did not become ready within ${startupTimeout} ms.\nOutput:\n${run.getStrippedOutput()}`,
+			)
+		}
 
 		await new Promise((resolve) => setTimeout(resolve, 1_000))
 

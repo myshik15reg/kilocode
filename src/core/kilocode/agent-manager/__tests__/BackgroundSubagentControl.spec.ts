@@ -76,7 +76,7 @@ function createControl(options?: { historyItem?: HistoryItem | undefined; hasStd
 }
 
 describe("BackgroundSubagentControl", () => {
-	it("emits completion status and result for successful terminal background sessions", async () => {
+	it("emits completion status and result for successful terminal background sessions and consumes the binding immediately", async () => {
 		const { registry, control, persistBindings } = createControl({ summary: "Final summary" })
 		registry.createSession("child-1", "background task", Date.now(), {
 			taskId: "child-1",
@@ -111,8 +111,12 @@ describe("BackgroundSubagentControl", () => {
 		)
 		expect(control.bindings.has("child-1")).toBe(false)
 		expect(persistBindings).toHaveBeenCalledTimes(2)
-	})
 
+		await control.releaseSession("child-1")
+
+		expect(control.bindings.has("child-1")).toBe(false)
+		expect(persistBindings).toHaveBeenCalledTimes(2)
+	})
 	it("cancels non-running background sessions by stopping process and consuming binding", async () => {
 		const { registry, control, stopSession, writeToStdin, persistBindings } = createControl({ hasStdin: false })
 		registry.createSession("child-1", "background task", Date.now(), {

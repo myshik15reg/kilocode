@@ -56,6 +56,9 @@
 		},
 		"playwright": {
 			"cache": false
+		},
+		"alfa-code-assistant#test": {
+			"dependsOn": ["alfa-code-assistant#bundle", "^build"]
 		}
 	}
 }

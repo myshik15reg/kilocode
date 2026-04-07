@@ -8,6 +8,7 @@ import type {
 import { normalizeSubagentLaunchRequest } from "@roo-code/types"
 
 import type { AgentManagerProvider } from "../../kilocode/agent-manager/AgentManagerProvider"
+import { compactCompletionSummary } from "../compactCompletionSummary"
 import type { SubagentBridge } from "../subagents/types"
 
 type Listener<T> = (event: T) => void
@@ -52,6 +53,10 @@ export class AgentManagerBridge implements SubagentBridge {
 		await this.agentManager.resumeBackgroundSubagent(sessionId)
 	}
 
+	public async release(sessionId: string): Promise<void> {
+		await this.agentManager.releaseBackgroundSubagentBinding(sessionId)
+	}
+
 	public listBindings(): Array<{
 		request: SubagentLaunchRequest
 		parentTaskId: string
@@ -67,6 +72,7 @@ export class AgentManagerBridge implements SubagentBridge {
 			| "completed"
 			| "failed"
 			| "cancelled"
+			| "abstained"
 		updatedAt: number
 	}> {
 		return this.agentManager.listBackgroundSubagentBindings().map((binding) => ({
@@ -137,7 +143,7 @@ export class AgentManagerBridge implements SubagentBridge {
 			)
 
 		if (completion?.text?.trim()) {
-			return completion.text.trim()
+			return compactCompletionSummary(completion.text)
 		}
 
 		const fallback = messages
@@ -145,6 +151,6 @@ export class AgentManagerBridge implements SubagentBridge {
 			.reverse()
 			.find((message) => typeof message.text === "string" && message.text.trim().length > 0)
 
-		return fallback?.text?.trim() || "Background subagent completed."
+		return fallback?.text?.trim() ? compactCompletionSummary(fallback.text) : "Background subagent completed."
 	}
 }

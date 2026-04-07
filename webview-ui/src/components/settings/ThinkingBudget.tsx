@@ -165,7 +165,11 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 	// to the model info max tokens then we need to shrink it appropriately.
 	useEffect(() => {
 		if (isReasoningBudgetSupported && modelInfo?.maxTokens && customMaxOutputTokens > modelInfo.maxTokens) {
-			setApiConfigurationField("modelMaxTokens", modelInfo.maxTokens || DEFAULT_HYBRID_REASONING_MODEL_MAX_TOKENS)
+			setApiConfigurationField(
+				"modelMaxTokens",
+				modelInfo.maxTokens || DEFAULT_HYBRID_REASONING_MODEL_MAX_TOKENS,
+				false,
+			)
 		}
 	}, [isReasoningBudgetSupported, customMaxOutputTokens, modelInfo?.maxTokens, setApiConfigurationField])
 	// kilocode_change end

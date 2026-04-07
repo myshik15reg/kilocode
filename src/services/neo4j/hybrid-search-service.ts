@@ -178,14 +178,22 @@ export class HybridSearchService {
 		graphWeight: number,
 	): Promise<HybridSearchResult[]> {
 		const hybridResults: HybridSearchResult[] = []
+		const canonicalFilePaths = semanticResults.map((semanticResult) =>
+			canonicalizeNeo4jFilePath(semanticResult.filePath),
+		)
+		let entitiesByPath: Map<string, CodeEntity[]>
+
+		try {
+			entitiesByPath = await this.graphService.getEntitiesByFilePaths(canonicalFilePaths)
+		} catch (error) {
+			console.error(`[HybridSearchService] Error loading graph entities for batch:`, error)
+			entitiesByPath = new Map()
+		}
 
 		for (const semanticResult of semanticResults) {
 			try {
-				// Find entities in Neo4j for this file
-				// FIX: 2026-02-17-neo4j-index-fixes (TestAnalyzer)
-				// Root cause: Neo4j stored filePath could be canonicalized (workspace-relative, POSIX), while Qdrant payload may vary.
 				const canonicalFilePath = canonicalizeNeo4jFilePath(semanticResult.filePath)
-				const entities = await this.graphService.getEntitiesByFilePath(canonicalFilePath)
+				const entities = entitiesByPath.get(canonicalFilePath) ?? []
 
 				// Calculate graph score based on relevance
 				const graphScore = this.calculateGraphScore(entities, query, semanticResult)

@@ -2,6 +2,10 @@ import { render } from "@/utils/test-utils"
 
 import TranslationProvider, { useAppTranslation } from "../TranslationContext"
 import { hasCorruptedTranslations, resolveTranslationBundle } from "../setup"
+import enSettings from "../locales/en/settings.json"
+import ruSettings from "../locales/ru/settings.json"
+import enKiloCode from "../locales/en/kilocode.json"
+import ruKiloCode from "../locales/ru/kilocode.json"
 
 vi.mock("@/context/ExtensionStateContext", () => ({
 	useExtensionState: () => ({
@@ -53,6 +57,16 @@ vi.mock("../setup", async (importOriginal) => {
 		loadTranslations: vi.fn(),
 	}
 })
+
+const collectLeafPaths = (value: unknown, prefix = ""): string[] => {
+	if (value && typeof value === "object" && !Array.isArray(value)) {
+		return Object.entries(value as Record<string, unknown>).flatMap(([key, child]) =>
+			collectLeafPaths(child, prefix ? `${prefix}.${key}` : key),
+		)
+	}
+
+	return prefix ? [prefix] : []
+}
 
 const TestComponent = () => {
 	const { t } = useAppTranslation()
@@ -151,5 +165,57 @@ describe("translation bundle corruption guard", () => {
 		}
 
 		expect(resolveTranslationBundle("ru", "common", validRussianBundle, translations)).toBe(validRussianBundle)
+	})
+
+	it("keeps repaired Russian settings strings instead of falling back to English", () => {
+		const translations = {
+			en: { settings: enSettings },
+			ru: { settings: ruSettings },
+		}
+
+		const resolved = resolveTranslationBundle("ru", "settings", ruSettings, translations) as typeof ruSettings
+
+		expect(resolved.sections.alfaCode).toBe("AlfaCode")
+		expect(resolved.providers.apiKey).toBe("API-ключ")
+		expect(resolved.providers.openAiBaseUrl).toBe("Базовый URL")
+		expect(resolved.providers.reasoningEffort.label).toBe("Уровень рассуждений модели")
+		expect(resolved.modelInfo.enableStreaming).toBe("Включить потоковую передачу")
+		expect(resolved.modelPicker.label).toBe("Модель")
+		expect(resolved.thinkingBudget.maxThinkingTokens).toBe("Макс. token для рассуждений")
+		expect(resolved.providers.customModel.maxTokens.label).not.toBe(
+			enSettings.providers.customModel.maxTokens.label,
+		)
+		expect(resolved.providers.customModel.maxTokens.label).not.toContain("?")
+		expect(resolved.providers.customModel.contextWindow.label).not.toBe(
+			enSettings.providers.customModel.contextWindow.label,
+		)
+		expect(resolved.providers.customModel.contextWindow.label).not.toContain("?")
+		expect(resolved.providers.customModel.resetDefaults).not.toBe(enSettings.providers.customModel.resetDefaults)
+		expect(resolved.providers.customModel.resetDefaults).not.toContain("?")
+		expect(resolved.advancedSettings.title).not.toBe(enSettings.advancedSettings.title)
+		expect(resolved.advancedSettings.title).not.toContain("?")
+		expect(resolved.toolProtocol.label).not.toContain("?")
+		expect(resolved.promptCaching.label).not.toContain("?")
+		expect(resolved.ghost.showGutterAnimation.preview).not.toContain("?")
+		expect(resolved.serviceTier.label).not.toContain("?")
+		expect(resolved.includeMaxOutputTokens).toBe("Передавать максимум выходных token")
+	})
+
+	it("keeps repaired Russian kilocode strings instead of showing English section labels", () => {
+		const translations = {
+			en: { kilocode: enKiloCode },
+			ru: { kilocode: ruKiloCode },
+		}
+
+		const resolved = resolveTranslationBundle("ru", "kilocode", ruKiloCode, translations) as typeof ruKiloCode
+
+		expect(resolved.ghost.title).toBe("Автодополнение")
+	})
+	it("keeps Russian settings and kilocode bundles structurally in sync with English", () => {
+		const settingsLeaves = collectLeafPaths(ruSettings)
+		const kilocodeLeaves = collectLeafPaths(ruKiloCode)
+
+		expect(collectLeafPaths(enSettings).filter((key) => !settingsLeaves.includes(key))).toEqual([])
+		expect(collectLeafPaths(enKiloCode).filter((key) => !kilocodeLeaves.includes(key))).toEqual([])
 	})
 })

@@ -1,78 +1,121 @@
-﻿# Workflow: context-priming
+# Рабочий процесс: Контекст-прайминг (context-priming)
 
-## Goal
+## Назначение
 
-Prepare only the context needed for safe planning, delegation, or implementation.
-The workflow exists to improve autonomy without wasting tokens.
+Быстро и безопасно подготовить контекст перед планированием/протоколом/реализацией, включая конфигурацию запуска workflow, если она реально влияет на решение или verify, не раздувая чтение и не уходя в оверинжиниринг.
 
-## When to use
+Идея: **2 шага**
 
-- before any non-trivial task
-- before delegating through `new_task`
-- when the agent has lost the project picture
-- when task scope is broad but only part of the repo matters
+1. _Level 0:_ подтвердить общий контекст проекта через индекс Memory Bank.
+2. _Level 1/2:_ фокусно «нырнуть» ровно в ту подсистему/тему, которую затрагивает задача, и собрать краткую сводку (context capsule).
 
-## Process
+## Когда использовать
 
-### 1. Read the minimum startup corridor
+- Старт любой нетривиальной задачи (multi-file, изменение поведения, новая сущность, важные решения).
+- Перед делегированием в другой режим через `new_task`.
+- Когда агент «петляет», спорит сам с собой или теряет картину проекта.
+- Когда `Memory Bank` слишком общий или заметно отстаёт от реального состояния репозитория.
 
-1. Read [`../../AGENTS.md`](../../AGENTS.md:1).
-2. Read [`../QUICK.md`](../QUICK.md:1).
-3. Read [`../memory-bank/index.md`](../memory-bank/index.md:1).
-4. Confirm Memory Bank with `[MB: OK]`.
+## Шаг 1: Memory First (Level 0)
 
-### 2. Narrow the target
+1. Прочитай индекс Memory Bank: [`../memory-bank/index.md`](../memory-bank/index.md)
+2. Подтверди в чате: `[MB: OK]`
 
-Write down three things before reading more:
+Если файла/папки Memory Bank нет — см. «Fallback: mb-init-mini / C4» ниже.
 
-- `AREA` - subsystem or topic touched by the task
-- `CHANGE` - what behavior, text, or structure must change
-- `RISK` - what may break if the understanding is wrong
+## Шаг 2: Фокусная подготовка по теме (Level 1/2)
 
-### 3. Load context lazily
+Если уже на старте видно, что `Memory Bank` не даёт свежей картины репозитория, SHOULD сначала выполнить [`workspace-context-bootstrap.md`](workspace-context-bootstrap.md:1), а затем возвращаться к этому workflow.
 
-Read only what is needed:
+### 2.1 Сузь фокус (30 секунд)
 
-- `context.md` for current focus
-- `architecture.md` for durable structure
-- `tech.md` for tooling or script behavior
-- the smallest set of repo files that explains the task
+Зафиксируй 4 вещи:
 
-Prefer indexes, registries, and entrypoints before deep references.
+- **ТЕМА:** какая подсистема/часть пакета/модуля затрагивается?
+- **ИЗМЕНЕНИЕ:** что именно меняем (поведение/текст/структуру/правило)?
+- **РИСКИ:** что может сломаться (ссылки, навигация, правила процесса)?
+- **КОНФИГУРАЦИЯ ЗАПУСКА:** какие свойства окружения, раннера, CI, shell, devcontainer или проектных настроек могут существенно влиять на выполнение workflow или verify?
 
-### 4. Produce a compact capsule
+### 2.2 Прочитай минимально нужное (lazy loading)
 
-For complex work, create a short context capsule in the protocol or embed it into the handoff.
-Use [`../patterns/orchestration/context-capsule.md`](../patterns/orchestration/context-capsule.md:1).
+**Memory Bank (по необходимости):**
 
-Minimum capsule fields:
+- [`../memory-bank/context.md`](../memory-bank/context.md) — текущий фокус и next steps
+- [`../memory-bank/architecture.md`](../memory-bank/architecture.md) — если затрагиваются устойчивые правила/структура
+- [`../memory-bank/tech.md`](../memory-bank/tech.md) — если затрагиваются инструменты/скрипты
 
-- task goal
-- key files to inspect
-- constraints and boundaries
-- main risks
-- verification plan
+**Роутеры/индексы (почти всегда):**
 
-### 5. Move to a clean brief
+- [`index.md`](index.md) — каталог воркфлоу
+- [`overview.md`](overview.md) и/или [`quickref.md`](quickref.md) — входные точки
 
-After context is warm and focused:
+**Кодовая база (точечно):**
 
-1. rewrite the task into a clean `brief`
-2. remove chat noise and rejected ideas
-3. treat the rewritten brief as the next source of truth
+- Найди точку входа по ключевым словам через поиск по репозиторию.
+- Открой 3–7 файлов максимум, пока не станет понятна структура.
 
-Use [`brief-refinement.md`](brief-refinement.md:1).
+### 2.2.1 Deep dive конфигурации запуска — только если это целесообразно
 
-## Fallback if Memory Bank is missing
+Делай отдельное углубление в конфигурацию запуска workflow только когда хотя бы одно из условий истинно:
 
-1. Initialize or repair minimal Memory Bank files in the consuming workspace.
-2. Keep them concise and project-specific.
-3. Use [`init-memory-bank.md`](init-memory-bank.md:1) if the workspace Memory Bank needs setup guidance.
-4. Then resume the normal startup corridor and confirm `[MB: OK]`.
+- поведение зависит от ОС, shell, CI runner, devcontainer, секретов, переменных окружения или проектных конфигов;
+- без этого нельзя надёжно выбрать решение, оценить риски или собрать verify;
+- есть высокий шанс принять ложное допущение о том, где и как будет исполняться workflow.
 
-## Anti-waste rules
+Правила глубины:
 
-1. Do not recursively read the whole repo by default.
-2. Do not load domain references unless the task clearly needs them.
-3. Stop reading when the next safe action is clear.
-4. Prefer summaries and source-of-truth docs over duplicated narrative files.
+- исследуй только те параметры конфигурации, которые реально влияют на решение, verify или safety;
+- фиксируй найденные ограничения и допущения в context capsule или протоколе;
+- после deep dive выбирай минимально достаточную архитектуру и реализацию под подтверждённую конфигурацию;
+- не строй универсальные абстракции «на будущее», если их не требует текущая подтверждённая среда.
+
+### 2.3 Итог: Context Capsule (краткая сводка)
+
+Сохрани capsule в `.protocols/<task>/context-capsule.md` или вставь в `new_task`.
+
+Шаблон: [`../patterns/orchestration/context-capsule.md`](../patterns/orchestration/context-capsule.md)
+
+Минимум в capsule:
+
+- цель задачи (1 предложение)
+- ключевые файлы (3–7 ссылок)
+- ограничения (progressive disclosure, минимальный дифф, качество)
+- критичные допущения по конфигурации запуска, если они есть
+- риски + как проверять
+
+## Fallback: mb-init-mini / C4 (если Memory Bank отсутствует)
+
+### Вариант A (предпочтительно): корректно инициализировать проект
+
+- Запусти процесс: [`project-setup.md`](project-setup.md)
+
+### Вариант B: mb-init-mini (быстро, минимально)
+
+Создай минимальный Memory Bank и заполни очень кратко:
+
+1. `.kilocode/memory-bank/index.md` — индекс/роутер
+2. `.kilocode/memory-bank/context.md` — текущий фокус
+3. `.kilocode/memory-bank/brief.md` — цели/ограничения (1 экран)
+4. `.kilocode/memory-bank/tech.md` — стек/инструменты
+5. `.kilocode/memory-bank/architecture.md` — ключевые решения/структура
+
+После этого вернись к Шагу 1 и подтверди `[MB: OK]`.
+
+### Вариант C: C4 L1/L2 + deep dive подсистемы (если не можешь создать Memory Bank)
+
+1. C4 L1: что это за система/пакет и зачем (3–5 буллетов)
+2. C4 L2: основные «контейнеры» (папки/подсистемы/скрипты) и их роли
+3. Deep dive: 1 подсистема, которую реально трогаешь (файлы + как связаны)
+
+## Anti-overengineering checklist
+
+- Начинай с индексов/роутеров, не с тотального чтения: это базовый способ экономии токенов и отсечения нерелевантного контекста.
+- Если можно решить ссылкой/переиспользованием — не создавай новый слой/файл.
+- Держи изменения минимальными: один новый файл + точечные ссылки.
+- Любую «глубину» включай только по необходимости (см. [`../rules/context-tiers.md`](../rules/context-tiers.md)).
+- Если deep dive по конфигурации уже сделан, не компенсируй исследование лишними слоями, абстракциями или general-purpose архитектурой.
+
+## Дальше
+
+- Если нужен протокол: [`protocol-new.md`](protocol-new.md)
+- Если нужен выбор процесса/режима: [`quickref.md`](quickref.md)

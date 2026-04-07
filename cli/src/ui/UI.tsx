@@ -33,6 +33,7 @@ import { useTheme } from "../state/hooks/useTheme.js"
 import { AppOptions } from "./App.js"
 import { logs } from "../services/logs.js"
 import { createConfigErrorInstructions, createWelcomeMessage } from "./utils/welcomeMessage.js"
+import { generateMessage } from "./utils/messages.js"
 import { generateUpdateAvailableMessage, getAutoUpdateStatus } from "../utils/auto-update.js"
 import { generateNotificationMessage } from "../utils/notifications.js"
 import { notificationsAtom } from "../state/atoms/notifications.js"
@@ -300,26 +301,34 @@ export const UI: React.FC<UIAppProps> = ({ options, onExit }) => {
 
 	// Show welcome message as a CliMessage on first render
 	useEffect(() => {
-		// Skip if noSplash option is enabled
-		if (options.noSplash) {
+		if (welcomeShownRef.current) {
 			return
 		}
 
-		if (!welcomeShownRef.current) {
-			welcomeShownRef.current = true
-			addMessage(
-				createWelcomeMessage({
-					clearScreen: !options.ci && configValidation.valid,
-					showInstructions: !options.ci || !options.prompt,
-					instructions: createConfigErrorInstructions(configValidation),
-					...(options.parallel &&
-						options.worktreeBranch && {
-							worktreeBranch: options.worktreeBranch,
-							workspace: options.workspace,
-						}),
-				}),
-			)
+		welcomeShownRef.current = true
+
+		if (options.noSplash) {
+			// Force one message-state update so Ink paints the initial frame even without a welcome banner.
+			addMessage({
+				...generateMessage(),
+				type: "system",
+				content: "",
+			})
+			return
 		}
+
+		addMessage(
+			createWelcomeMessage({
+				clearScreen: !options.ci && configValidation.valid,
+				showInstructions: !options.ci || !options.prompt,
+				instructions: createConfigErrorInstructions(configValidation),
+				...(options.parallel &&
+					options.worktreeBranch && {
+						worktreeBranch: options.worktreeBranch,
+						workspace: options.workspace,
+					}),
+			}),
+		)
 	}, [
 		addMessage,
 		options.ci,

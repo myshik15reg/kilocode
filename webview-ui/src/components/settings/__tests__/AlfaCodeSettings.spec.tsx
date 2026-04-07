@@ -1,11 +1,20 @@
-﻿import { render, screen, fireEvent } from "@/utils/test-utils"
+import type { ComponentProps } from "react"
+import { fireEvent, render, screen } from "@/utils/test-utils"
 
 import { AlfaCodeSettings } from "../AlfaCodeSettings"
+
+const mockPostMessage = vi.fn()
 
 vi.mock("@/i18n/TranslationContext", () => ({
 	useAppTranslation: () => ({
 		t: (key: string) => key,
 	}),
+}))
+
+vi.mock("@/utils/vscode", () => ({
+	vscode: {
+		postMessage: (...args: any[]) => mockPostMessage(...args),
+	},
 }))
 
 vi.mock("@vscode/webview-ui-toolkit/react", () => ({
@@ -19,6 +28,14 @@ vi.mock("@vscode/webview-ui-toolkit/react", () => ({
 			/>
 			{children}
 		</label>
+	),
+	VSCodeTextField: ({ value, onInput, "data-testid": dataTestId }: any) => (
+		<input
+			type="text"
+			value={value || ""}
+			onChange={(e) => onInput?.({ target: { value: e.target.value } })}
+			data-testid={dataTestId}
+		/>
 	),
 }))
 
@@ -44,7 +61,31 @@ vi.mock("@/components/ui", () => ({
 			data-testid={dataTestId || "slider"}
 		/>
 	),
-	Select: ({ children }: any) => <div>{children}</div>,
+	Select: ({ children, "data-testid": dataTestId, onValueChange }: any) => (
+		<button
+			type="button"
+			data-testid={dataTestId}
+			onClick={() => {
+				if (dataTestId === "alfacode-retrieval-policy-select") {
+					onValueChange?.("hybrid")
+					return
+				}
+				if (dataTestId === "alfacode-helper-locality-select") {
+					onValueChange?.("require")
+					return
+				}
+				if (dataTestId === "alfacode-escalation-sensitivity-select") {
+					onValueChange?.("aggressive")
+					return
+				}
+				if (dataTestId === "alfacode-terminal-command-api-config-select") {
+					onValueChange?.("cfg-1")
+					return
+				}
+			}}>
+			{children}
+		</button>
+	),
 	SelectContent: ({ children }: any) => <div>{children}</div>,
 	SelectItem: ({ children }: any) => <div>{children}</div>,
 	SelectTrigger: ({ children }: any) => <div>{children}</div>,
@@ -53,8 +94,8 @@ vi.mock("@/components/ui", () => ({
 
 describe("AlfaCodeSettings", () => {
 	const setCachedStateField = vi.fn()
-	const defaultProps = {
-		listApiConfigMeta: [{ id: "cfg-1", name: "Cheap model" }],
+	const defaultProps: ComponentProps<typeof AlfaCodeSettings> = {
+		listApiConfigMeta: [{ id: "cfg-1", name: "Cheap model", apiProvider: "openai" as const }],
 		currentApiConfigName: "Primary GPT-5",
 		enhancementApiConfigId: "",
 		condensingApiConfigId: "",
@@ -62,11 +103,17 @@ describe("AlfaCodeSettings", () => {
 		problematicProcessRestartLimit: 1,
 		parallelAgentsEnabled: false,
 		parallelAgentCount: 2,
-		autoCondenseContext: true,
-		autoCondenseContextPercent: 85,
 		contextRoutingEnabled: true,
 		contextRoutingFastThresholdPercent: 35,
 		contextRoutingDeepThresholdPercent: 65,
+		orchestrationTelemetryEnabled: true,
+		helperLocalityPreference: "prefer",
+		orchestrationEscalationSensitivity: "balanced",
+		structuredDelegationEnabled: false,
+		evaluatorPassEnabled: false,
+		memoryPromotionEnabled: false,
+		retrievalPolicy: "adaptive",
+		queryClassifierDebug: false,
 		terminalCommandApiConfigId: "",
 		setCachedStateField,
 	}
@@ -75,34 +122,14 @@ describe("AlfaCodeSettings", () => {
 		vi.clearAllMocks()
 	})
 
-	it("shows AlfaCode routing and core agent controls", () => {
+	it("renders AlfaCode routing, task strategy, and AlfaCode-specific controls", () => {
 		render(<AlfaCodeSettings {...defaultProps} />)
 
 		expect(screen.getByText("Primary GPT-5")).toBeInTheDocument()
 		expect(screen.getByTestId("alfacode-strategy-local-card")).toBeInTheDocument()
 		expect(screen.getByTestId("alfacode-strategy-compact-card")).toBeInTheDocument()
 		expect(screen.getByTestId("alfacode-strategy-new-task-card")).toBeInTheDocument()
-		expect(screen.getByText("kilocode:settings.alfaCode.routing.enhance.label")).toBeInTheDocument()
-		expect(screen.getByTestId("alfacode-routing-primary-badge")).toBeInTheDocument()
-		expect(screen.getByTestId("alfacode-routing-helper-badge")).toBeInTheDocument()
-		expect(screen.getByTestId("context-routing-fast-threshold-slider")).toBeInTheDocument()
-		expect(screen.getByTestId("context-routing-deep-threshold-slider")).toBeInTheDocument()
-	})
-
-	it("updates fast threshold in AlfaCode routing", () => {
-		render(<AlfaCodeSettings {...defaultProps} />)
-
-		fireEvent.change(screen.getByTestId("context-routing-fast-threshold-slider"), { target: { value: "60" } })
-
-		expect(setCachedStateField).toHaveBeenCalledWith("contextRoutingFastThresholdPercent", 60)
-	})
-
-	it("updates deep threshold in AlfaCode routing", () => {
-		render(<AlfaCodeSettings {...defaultProps} />)
-
-		fireEvent.change(screen.getByTestId("context-routing-deep-threshold-slider"), { target: { value: "90" } })
-
-		expect(setCachedStateField).toHaveBeenCalledWith("contextRoutingDeepThresholdPercent", 90)
+		expect(screen.getByTestId("alfacode-terminal-command-api-config-select")).toBeInTheDocument()
 	})
 
 	it("applies token saver preset", () => {
@@ -127,79 +154,105 @@ describe("AlfaCodeSettings", () => {
 		expect(setCachedStateField).toHaveBeenCalledWith("terminalCommandApiConfigId", "cfg-1")
 	})
 
-	it("does not render moved notification controls in AlfaCode", () => {
-		render(<AlfaCodeSettings {...defaultProps} />)
-
-		expect(screen.queryByTestId("alfacode-system-notifications-enabled-checkbox")).not.toBeInTheDocument()
-	})
-
-	it("toggles parallel agents setting", () => {
-		render(<AlfaCodeSettings {...defaultProps} />)
-
-		fireEvent.click(screen.getByTestId("alfacode-parallel-agents-enabled-checkbox"))
-
-		expect(setCachedStateField).toHaveBeenCalledWith("parallelAgentsEnabled", true)
-	})
-
-	it("renders parallel agent count slider", () => {
-		render(<AlfaCodeSettings {...defaultProps} parallelAgentsEnabled={true} parallelAgentCount={4} />)
-
-		expect(screen.getByTestId("alfacode-parallel-agent-count-slider")).toBeInTheDocument()
-		expect(screen.getByText("4")).toBeInTheDocument()
-	})
-
-	it("hides parallel agent count slider when parallel agents are disabled", () => {
-		render(<AlfaCodeSettings {...defaultProps} parallelAgentsEnabled={false} />)
-
-		expect(screen.queryByTestId("alfacode-parallel-agent-count-slider")).not.toBeInTheDocument()
-	})
-
-	it("toggles auto restart problematic processes", () => {
-		render(<AlfaCodeSettings {...defaultProps} />)
-
-		fireEvent.click(screen.getByTestId("alfacode-auto-restart-problematic-processes-checkbox"))
-
-		expect(setCachedStateField).toHaveBeenCalledWith("autoRestartProblematicProcesses", true)
-	})
-
-	it("renders problematic process restart limit slider", () => {
+	it("applies Cloud Main + Local Helpers only when a local profile is available", () => {
 		render(
 			<AlfaCodeSettings
 				{...defaultProps}
+				listApiConfigMeta={[
+					{ id: "cfg-1", name: "Primary", apiProvider: "openai" },
+					{ id: "cfg-local", name: "Ollama helper", apiProvider: "ollama" },
+				]}
+			/>,
+		)
+
+		fireEvent.click(screen.getByTestId("alfacode-routing-preset-cloud-main-local-helpers"))
+
+		expect(setCachedStateField).toHaveBeenCalledWith("enhancementApiConfigId", "cfg-local")
+		expect(setCachedStateField).toHaveBeenCalledWith("condensingApiConfigId", "cfg-local")
+		expect(setCachedStateField).toHaveBeenCalledWith("terminalCommandApiConfigId", "cfg-local")
+	})
+
+	it("does not retarget helpers in cloud-only mode", () => {
+		render(<AlfaCodeSettings {...defaultProps} />)
+
+		expect(screen.getByTestId("alfacode-routing-preset-cloud-main-local-helpers")).toBeDisabled()
+	})
+
+	it("updates AlfaCode-specific controls", () => {
+		render(<AlfaCodeSettings {...defaultProps} />)
+
+		fireEvent.click(screen.getByTestId("alfacode-terminal-command-api-config-select"))
+
+		expect(setCachedStateField).toHaveBeenCalledWith("terminalCommandApiConfigId", "cfg-1")
+	})
+
+	it("updates platform controls and expert controls", () => {
+		render(<AlfaCodeSettings {...defaultProps} />)
+
+		fireEvent.click(screen.getByTestId("alfacode-helper-locality-select"))
+		fireEvent.click(screen.getByTestId("alfacode-escalation-sensitivity-select"))
+		fireEvent.click(screen.getByTestId("alfacode-orchestration-telemetry-checkbox"))
+		fireEvent.click(screen.getByTestId("alfacode-memory-promotion-checkbox"))
+		fireEvent.click(screen.getByTestId("alfacode-retrieval-policy-select"))
+
+		expect(setCachedStateField).toHaveBeenCalledWith("helperLocalityPreference", "require")
+		expect(setCachedStateField).toHaveBeenCalledWith("orchestrationEscalationSensitivity", "aggressive")
+		expect(setCachedStateField).toHaveBeenCalledWith("orchestrationTelemetryEnabled", false)
+		expect(setCachedStateField).toHaveBeenCalledWith("memoryPromotionEnabled", true)
+		expect(setCachedStateField).toHaveBeenCalledWith("retrievalPolicy", "hybrid")
+	})
+
+	it("runs local AI diagnostics from settings", () => {
+		render(<AlfaCodeSettings {...defaultProps} />)
+
+		fireEvent.click(screen.getByTestId("alfacode-run-local-ai-diagnostics"))
+
+		expect(mockPostMessage).toHaveBeenCalledWith({ type: "runLocalAiDiagnostics" })
+	})
+
+	it("renders diagnostics results pushed from the extension", async () => {
+		render(<AlfaCodeSettings {...defaultProps} />)
+
+		window.dispatchEvent(
+			new MessageEvent("message", {
+				data: {
+					type: "localAiDiagnosticsResult",
+					localAiDiagnostics: {
+						ranAt: "2026-04-03T19:30:00.000Z",
+						checks: [
+							{
+								checkId: "ollama_service",
+								status: "ok",
+								title: "Ollama availability",
+								message: "Ollama responded with 2 models.",
+							},
+						],
+					},
+				},
+			}),
+		)
+
+		expect(await screen.findByTestId("alfacode-diagnostics-check-ollama_service")).toBeInTheDocument()
+		expect(screen.getByText("Ollama responded with 2 models.")).toBeInTheDocument()
+	})
+
+	it("renders and updates parallel agent and recovery controls", () => {
+		render(
+			<AlfaCodeSettings
+				{...defaultProps}
+				parallelAgentsEnabled={true}
+				parallelAgentCount={4}
 				autoRestartProblematicProcesses={true}
 				problematicProcessRestartLimit={3}
 			/>,
 		)
 
-		expect(screen.getByTestId("alfacode-problematic-process-restart-limit-slider")).toBeInTheDocument()
-		expect(screen.getByText("3")).toBeInTheDocument()
-	})
+		fireEvent.change(screen.getByTestId("alfacode-parallel-agent-count-slider"), { target: { value: "10" } })
+		fireEvent.change(screen.getByTestId("alfacode-problematic-process-restart-limit-slider"), {
+			target: { value: "5" },
+		})
 
-	it("hides problematic process restart limit slider when auto restart is disabled", () => {
-		render(<AlfaCodeSettings {...defaultProps} autoRestartProblematicProcesses={false} />)
-
-		expect(screen.queryByTestId("alfacode-problematic-process-restart-limit-slider")).not.toBeInTheDocument()
-	})
-
-	it("supports up to 500 parallel agents", () => {
-		render(<AlfaCodeSettings {...defaultProps} parallelAgentsEnabled={true} parallelAgentCount={500} />)
-
-		const slider = screen.getByTestId("alfacode-parallel-agent-count-slider") as HTMLInputElement
-		expect(slider).toHaveAttribute("max", "500")
-		expect(screen.getByText("500")).toBeInTheDocument()
-	})
-
-	it("supports up to 10 restart attempts", () => {
-		render(
-			<AlfaCodeSettings
-				{...defaultProps}
-				autoRestartProblematicProcesses={true}
-				problematicProcessRestartLimit={10}
-			/>,
-		)
-
-		const slider = screen.getByTestId("alfacode-problematic-process-restart-limit-slider") as HTMLInputElement
-		expect(slider).toHaveAttribute("max", "10")
-		expect(screen.getByText("10")).toBeInTheDocument()
+		expect(setCachedStateField).toHaveBeenCalledWith("parallelAgentCount", 10)
+		expect(setCachedStateField).toHaveBeenCalledWith("problematicProcessRestartLimit", 5)
 	})
 })

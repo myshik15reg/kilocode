@@ -377,6 +377,16 @@ function getMissingMemoryBankGuidance(relPath: string, error: unknown): string |
 	].join("\n")
 }
 
+function isSuspiciousPartialToolPath(value: string): boolean {
+	return (
+		/[\u0000-\u001f]/.test(value) ||
+		/[<>{}"`]/.test(value) ||
+		/<\/?[a-z][^>]*>/i.test(value) ||
+		/\b[a-z0-9_-]*assistant\s+to=/i.test(value) ||
+		/\bto=functions?\./i.test(value)
+	)
+}
+
 export class ReadFileTool extends BaseTool<"read_file"> {
 	readonly name = "read_file" as const
 
@@ -442,6 +452,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 	async execute(params: { files: FileEntry[] }, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { handleError, pushToolResult, toolProtocol } = callbacks
 		const fileEntries = params.files
+		this.resetPartialState()
 		const modelInfo = task.api.getModel().info
 		// Use the task's locked protocol for consistent output formatting throughout the task
 		const protocol = resolveToolProtocol(task.apiConfiguration, modelInfo, task.taskToolProtocol)
@@ -1233,11 +1244,16 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			}
 		}
 
-		const fullPath = filePath ? path.resolve(task.cwd, filePath) : ""
+		filePath = filePath.trim()
+		if (!filePath || isSuspiciousPartialToolPath(filePath) || !this.hasPathStabilized(filePath)) {
+			return
+		}
+
+		const fullPath = path.resolve(task.cwd, filePath)
 		const sharedMessageProps: ClineSayTool = {
 			tool: "readFile",
 			path: getReadablePath(task.cwd, filePath),
-			isOutsideWorkspace: filePath ? isPathOutsideWorkspace(fullPath) : false,
+			isOutsideWorkspace: isPathOutsideWorkspace(fullPath),
 		}
 		const partialMessage = JSON.stringify({
 			...sharedMessageProps,

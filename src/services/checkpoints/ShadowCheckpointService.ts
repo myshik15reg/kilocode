@@ -47,18 +47,18 @@ function createSanitizedGit(baseDir: string): SimpleGit {
 	// that could interfere with checkpoint operations
 	const sanitizedEnv: Record<string, string> = {}
 	const removedVars: string[] = []
+	const removedGitEnvKeys = new Set([
+		"GIT_DIR",
+		"GIT_WORK_TREE",
+		"GIT_INDEX_FILE",
+		"GIT_OBJECT_DIRECTORY",
+		"GIT_ALTERNATE_OBJECT_DIRECTORIES",
+		"GIT_CEILING_DIRECTORIES",
+	])
 
 	// Copy all environment variables except git-specific ones
 	for (const [key, value] of Object.entries(process.env)) {
-		// Skip git environment variables that would override repository location
-		if (
-			key === "GIT_DIR" ||
-			key === "GIT_WORK_TREE" ||
-			key === "GIT_INDEX_FILE" ||
-			key === "GIT_OBJECT_DIRECTORY" ||
-			key === "GIT_ALTERNATE_OBJECT_DIRECTORIES" ||
-			key === "GIT_CEILING_DIRECTORIES"
-		) {
+		if (removedGitEnvKeys.has(key)) {
 			removedVars.push(`${key}=${value}`)
 			continue
 		}
@@ -365,8 +365,25 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			}
 
 			const start = Date.now()
-			await this.git.clean("f", ["-d", "-f"])
-			await this.git.reset(["--hard", commitHash])
+			await this.git.raw([
+				"--git-dir",
+				this.dotGitDir,
+				"--work-tree",
+				this.workspaceDir,
+				"clean",
+				"-f",
+				"-d",
+				"-f",
+			])
+			await this.git.raw([
+				"--git-dir",
+				this.dotGitDir,
+				"--work-tree",
+				this.workspaceDir,
+				"reset",
+				"--hard",
+				commitHash,
+			])
 
 			// Remove all checkpoints after the specified commitHash.
 			const checkpointIndex = this._checkpoints.indexOf(commitHash)

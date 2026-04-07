@@ -16,6 +16,7 @@ export class QdrantVectorStore implements IVectorStore {
 	// kilocode_change start
 	private static readonly COLLECTION_NAME_PATTERN = /^[a-zA-Z0-9_-]+$/
 	private static readonly MAX_COLLECTION_NAME_LENGTH = 255
+	private static readonly MAX_INDEXED_PATH_SEGMENTS = 16
 	// kilocode_change end
 
 	private client: QdrantClient
@@ -329,37 +330,27 @@ export class QdrantVectorStore implements IVectorStore {
 	 * Creates payload indexes for the collection, handling errors gracefully.
 	 */
 	private async _createPayloadIndexes(): Promise<void> {
-		// Create index for the 'type' field to enable metadata filtering
+		await this.createPayloadIndexSafely("type")
+		await this.createPayloadIndexSafely("filePath")
+
+		for (let i = 0; i < QdrantVectorStore.MAX_INDEXED_PATH_SEGMENTS; i++) {
+			await this.createPayloadIndexSafely(`pathSegments.${i}`)
+		}
+	}
+
+	private async createPayloadIndexSafely(fieldName: string): Promise<void> {
 		try {
 			await this.client.createPayloadIndex(this.collectionName, {
-				field_name: "type",
+				field_name: fieldName,
 				field_schema: "keyword",
 			})
 		} catch (indexError: any) {
 			const errorMessage = (indexError?.message || "").toLowerCase()
 			if (!errorMessage.includes("already exists")) {
 				console.warn(
-					`[QdrantVectorStore] Could not create payload index for type on ${this.collectionName}. Details:`,
+					`[QdrantVectorStore] Could not create payload index for ${fieldName} on ${this.collectionName}. Details:`,
 					indexError?.message || indexError,
 				)
-			}
-		}
-
-		// Create indexes for pathSegments fields
-		for (let i = 0; i <= 4; i++) {
-			try {
-				await this.client.createPayloadIndex(this.collectionName, {
-					field_name: `pathSegments.${i}`,
-					field_schema: "keyword",
-				})
-			} catch (indexError: any) {
-				const errorMessage = (indexError?.message || "").toLowerCase()
-				if (!errorMessage.includes("already exists")) {
-					console.warn(
-						`[QdrantVectorStore] Could not create payload index for pathSegments.${i} on ${this.collectionName}. Details:`,
-						indexError?.message || indexError,
-					)
-				}
 			}
 		}
 	}
@@ -378,7 +369,7 @@ export class QdrantVectorStore implements IVectorStore {
 		try {
 			const processedPoints = points.map((point) => {
 				if (point.payload?.filePath) {
-					const segments = point.payload.filePath.split(path.sep).filter(Boolean)
+					const segments = point.payload.filePath.split(/[\/]/).filter(Boolean)
 					const pathSegments = segments.reduce(
 						(acc: Record<string, string>, segment: string, index: number) => {
 							acc[index.toString()] = segment
@@ -405,6 +396,55 @@ export class QdrantVectorStore implements IVectorStore {
 			console.error("Failed to upsert points:", error)
 			throw error
 		}
+	}
+
+	async getPointsByFilePaths(
+		filePaths: string[],
+	): Promise<Array<{ id: string; vector: number[]; payload: Record<string, any> }>> {
+		if (filePaths.length === 0) {
+			return []
+		}
+
+		const collectionExists = await this.collectionExists()
+		if (!collectionExists) {
+			return []
+		}
+
+		const filter = this.buildFilePathFilter(filePaths)
+		const collected: Array<{ id: string; vector: number[]; payload: Record<string, any> }> = []
+		let offset: unknown
+
+		do {
+			const page = await (this.client as any).scroll(this.collectionName, {
+				filter,
+				limit: Math.max(64, filePaths.length * 16),
+				offset,
+				with_payload: true,
+				with_vector: true,
+			})
+
+			const pagePoints = Array.isArray(page?.points) ? page.points : []
+			for (const point of pagePoints) {
+				if (!this.isPayloadValid(point.payload)) {
+					continue
+				}
+
+				const vector = this.extractPointVector(point)
+				if (!vector) {
+					continue
+				}
+
+				collected.push({
+					id: String(point.id),
+					vector,
+					payload: point.payload as Payload,
+				})
+			}
+
+			offset = page?.next_page_offset
+		} while (offset !== undefined && offset !== null)
+
+		return collected
 	}
 
 	/**
@@ -455,14 +495,9 @@ export class QdrantVectorStore implements IVectorStore {
 					const cleanedPrefix = path.posix.normalize(
 						normalizedPrefix.startsWith("./") ? normalizedPrefix.slice(2) : normalizedPrefix,
 					)
-					const segments = cleanedPrefix.split("/").filter(Boolean)
-					if (segments.length > 0) {
-						filter = {
-							must: segments.map((segment, index) => ({
-								key: `pathSegments.${index}`,
-								match: { value: segment },
-							})),
-						}
+					const must = this.buildPathSegmentClauses(cleanedPrefix)
+					if (must.length > 0) {
+						filter = { must }
 					}
 				}
 			}
@@ -534,35 +569,8 @@ export class QdrantVectorStore implements IVectorStore {
 				return
 			}
 
-			const workspaceRoot = this.workspacePath
-
-			// Build filters using pathSegments to match the indexed fields
-			const filters = filePaths.map((filePath) => {
-				// IMPORTANT: Use the relative path to match what's stored in upsertPoints
-				// upsertPoints stores the relative filePath, not the absolute path
-				const relativePath = path.isAbsolute(filePath) ? path.relative(workspaceRoot, filePath) : filePath
-
-				// Normalize the relative path
-				const normalizedRelativePath = path.normalize(relativePath)
-
-				// Split the path into segments like we do in upsertPoints
-				const segments = normalizedRelativePath.split(path.sep).filter(Boolean)
-
-				// Create a filter that matches all segments of the path
-				// This ensures we only delete points that match the exact file path
-				const mustConditions = segments.map((segment, index) => ({
-					key: `pathSegments.${index}`,
-					match: { value: segment },
-				}))
-
-				return { must: mustConditions }
-			})
-
-			// Use 'should' to match any of the file paths (OR condition)
-			const filter = filters.length === 1 ? filters[0] : { should: filters }
-
 			await this.client.delete(this.collectionName, {
-				filter,
+				filter: this.buildFilePathFilter(filePaths),
 				wait: true,
 			})
 		} catch (error: any) {
@@ -582,6 +590,69 @@ export class QdrantVectorStore implements IVectorStore {
 			})
 		}
 	}
+
+	// kilocode_change start
+	private normalizeStoredFilePath(filePath: string): string {
+		if (!path.isAbsolute(filePath)) {
+			return path.normalize(filePath)
+		}
+
+		const workspaceRoot = path.resolve(this.workspacePath)
+		const absoluteFilePath = path.resolve(filePath)
+		const relativePath = path.relative(workspaceRoot, absoluteFilePath)
+		const isWithinWorkspace =
+			relativePath !== "" && !relativePath.startsWith("..") && !path.isAbsolute(relativePath)
+
+		if (relativePath === "" || isWithinWorkspace) {
+			return path.normalize(relativePath)
+		}
+
+		return path.normalize(filePath)
+	}
+
+	private buildFilePathFilter(filePaths: string[]) {
+		const filters = filePaths.map((filePath) => ({
+			must: [
+				{
+					key: "filePath",
+					match: { value: this.normalizeStoredFilePath(filePath) },
+				},
+			],
+		}))
+
+		return filters.length === 1 ? filters[0] : { should: filters }
+	}
+
+	private buildPathSegmentClauses(pathValue: string): Array<{ key: string; match: { value: string } }> {
+		return pathValue
+			.split("/")
+			.filter(Boolean)
+			.slice(0, QdrantVectorStore.MAX_INDEXED_PATH_SEGMENTS)
+			.map((segment, index) => ({
+				key: `pathSegments.${index}`,
+				match: { value: segment },
+			}))
+	}
+
+	private extractPointVector(point: any): number[] | undefined {
+		if (Array.isArray(point?.vector)) {
+			return point.vector
+		}
+
+		if (point?.vector && typeof point.vector === "object") {
+			const namedVector = Object.values(point.vector).find((candidate) => Array.isArray(candidate))
+			if (Array.isArray(namedVector)) {
+				return namedVector as number[]
+			}
+		}
+
+		return undefined
+	}
+
+	async dispose(): Promise<void> {
+		return Promise.resolve()
+	}
+	// kilocode_change end
 
 	/**
 	 * Deletes the entire collection.

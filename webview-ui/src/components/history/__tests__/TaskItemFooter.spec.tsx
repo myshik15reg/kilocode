@@ -123,6 +123,20 @@ describe("TaskItemFooter", () => {
 		expect(screen.getByLabelText("chat:resumeTask.title")).toBeInTheDocument()
 	})
 
+	it("shows resume control for stopped root items even when status is missing", () => {
+		render(<TaskItemFooter item={{ ...mockItem, status: undefined, lifecycleState: undefined }} variant="full" />)
+
+		expect(screen.queryByLabelText("chat:task.pause")).not.toBeInTheDocument()
+		expect(screen.getByLabelText("chat:resumeTask.title")).toBeInTheDocument()
+	})
+
+	it("prefers resume for stopped roots even when lifecycle state is stale", () => {
+		render(<TaskItemFooter item={{ ...mockItem, status: "active", lifecycleState: "running" }} variant="full" />)
+
+		expect(screen.queryByLabelText("chat:task.pause")).not.toBeInTheDocument()
+		expect(screen.getByLabelText("chat:resumeTask.title")).toBeInTheDocument()
+	})
+
 	it("hides pause and resume controls for completed history items", () => {
 		render(
 			<TaskItemFooter item={{ ...mockItem, status: "completed", lifecycleState: "completed" }} variant="full" />,

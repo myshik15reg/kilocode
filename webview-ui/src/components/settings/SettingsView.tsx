@@ -144,6 +144,52 @@ export interface SettingsViewRef {
 	checkUnsaveChanges: (then: () => void) => void
 }
 
+// kilocode_change start
+const SETTINGS_DIRTY_STATE_DEFAULTS: Partial<ExtensionStateContextType> = {
+	enhancementApiConfigId: "",
+	condensingApiConfigId: "",
+	terminalCommandApiConfigId: "",
+	autoRestartProblematicProcesses: false,
+	problematicProcessRestartLimit: 1,
+	parallelAgentsEnabled: false,
+	parallelAgentCount: 2,
+	orchestrationTelemetryEnabled: true,
+	helperLocalityPreference: "prefer",
+	orchestrationEscalationSensitivity: "balanced",
+	structuredDelegationEnabled: false,
+	evaluatorPassEnabled: false,
+	memoryPromotionEnabled: false,
+	retrievalPolicy: "adaptive",
+	queryClassifierDebug: false,
+	contextRoutingEnabled: false,
+	contextRoutingFastThresholdPercent: 35,
+	contextRoutingDeepThresholdPercent: 65,
+	maxConcurrentFileReads: 5,
+	includeTaskHistoryInEnhance: true,
+	reasoningBlockCollapsed: true,
+	enterBehavior: "send",
+	maxGitStatusFiles: 0,
+	alfaCodeChangeAuthor: "",
+}
+
+const normalizeSettingsDirtyState = (
+	state: Partial<ExtensionStateContextType> | ExtensionStateContextType,
+): ExtensionStateContextType => {
+	const normalizedState = { ...state } as ExtensionStateContextType
+
+	for (const [key, defaultValue] of Object.entries(SETTINGS_DIRTY_STATE_DEFAULTS) as [
+		keyof typeof SETTINGS_DIRTY_STATE_DEFAULTS,
+		NonNullable<(typeof SETTINGS_DIRTY_STATE_DEFAULTS)[keyof typeof SETTINGS_DIRTY_STATE_DEFAULTS]>,
+	][]) {
+		if (normalizedState[key] === undefined) {
+			;(normalizedState as any)[key] = defaultValue
+		}
+	}
+
+	return normalizedState
+}
+// kilocode_change end
+
 export const sectionNames = [
 	"providers",
 
@@ -247,7 +293,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 	] as const
 
 	const getRoundTripPendingSettings = (updatedSettings: Partial<ExtensionStateContextType>) => {
-		const pendingSettings = { ...updatedSettings }
+		const pendingSettings = { ...normalizeSettingsDirtyState(updatedSettings as ExtensionStateContextType) }
 
 		for (const key of OUT_OF_BAND_SAVE_KEYS) {
 			delete pendingSettings[key]
@@ -256,7 +302,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 		return Object.keys(pendingSettings).length > 0 ? pendingSettings : null
 	}
 
-	const [cachedState, setCachedState] = useState(() => extensionState)
+	const [cachedState, setCachedState] = useState(() => normalizeSettingsDirtyState(extensionState))
 
 	// kilocode_change begin
 
@@ -320,6 +366,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 		experiments,
 
 		morphApiKey, // kilocode_change
+		hasMorphApiKey, // kilocode_change
 
 		fastApplyModel, // kilocode_change: Fast Apply model selection
 
@@ -407,6 +454,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 
 		parallelAgentsEnabled,
 
+		orchestrationTelemetryEnabled,
+
+		helperLocalityPreference,
+
+		orchestrationEscalationSensitivity,
+
 		parallelAgentCount,
 
 		terminalCommandApiConfigId, // kilocode_change
@@ -458,10 +511,13 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 		imageGenerationProvider,
 
 		openRouterImageApiKey,
+		hasOpenRouterImageApiKey,
 
 		kiloCodeImageApiKey,
+		hasKiloCodeImageApiKey,
 
 		litellmImageApiKey,
+		hasLitellmImageApiKey,
 
 		litellmImageBaseUrl,
 
@@ -489,7 +545,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 			return
 		}
 
-		setCachedState((prevCachedState) => ({ ...prevCachedState, ...extensionState }))
+		setCachedState((prevCachedState) => ({ ...prevCachedState, ...normalizeSettingsDirtyState(extensionState) }))
 
 		prevApiConfigName.current = currentApiConfigName
 
@@ -583,6 +639,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 	}, [kilocodeToken, openRouterApiKey, glamaApiKey, requestyApiKey])
 
 	useEffect(() => {
+		const normalizedExtensionState = normalizeSettingsDirtyState(extensionState)
 		const extensionStateChanged = previousExtensionStateRef.current !== extensionState
 
 		previousExtensionStateRef.current = extensionState
@@ -604,7 +661,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 		if (pendingSavedStateRef.current) {
 			const pendingEntries = Object.entries(pendingSavedStateRef.current)
 			const pendingApplied = pendingEntries.every(([key, value]) =>
-				deepEqual((extensionState as any)[key], value),
+				deepEqual((normalizedExtensionState as any)[key], value),
 			)
 
 			if (!pendingApplied) {
@@ -625,7 +682,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 			if (editingApiConfigName !== currentApiConfigName) {
 				// Sync everything except apiConfiguration
 
-				const { apiConfiguration: _, ...restOfExtensionState } = extensionState
+				const { apiConfiguration: _, ...restOfExtensionState } = normalizedExtensionState
 
 				setCachedState((prevState) => ({
 					...prevState,
@@ -635,7 +692,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 			} else {
 				// When editing the active profile, sync everything including apiConfiguration
 
-				setCachedState(extensionState)
+				setCachedState(normalizeSettingsDirtyState(extensionState))
 			}
 		}
 	}, [extensionState, isChangeDetected, editingApiConfigName, currentApiConfigName])
@@ -646,7 +703,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 
 	useEffect(() => {
 		if (settingsImportedAt) {
-			setCachedState((prevCachedState) => ({ ...prevCachedState, ...extensionState }))
+			setCachedState((prevCachedState) => ({
+				...prevCachedState,
+				...normalizeSettingsDirtyState(extensionState),
+			}))
 
 			setChangeDetected(false)
 		}
@@ -894,6 +954,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 
 				parallelAgentCount: Math.min(Math.max(1, parallelAgentCount ?? 2), 500), // kilocode_change
 
+				orchestrationTelemetryEnabled: orchestrationTelemetryEnabled ?? true,
+
+				helperLocalityPreference: helperLocalityPreference ?? "prefer",
+
+				orchestrationEscalationSensitivity: orchestrationEscalationSensitivity ?? "balanced",
+
 				contextRoutingEnabled,
 
 				contextRoutingFastThresholdPercent,
@@ -996,11 +1062,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 
 				imageGenerationProvider,
 
-				openRouterImageApiKey,
-
 				openRouterImageGenerationSelectedModel,
-
-				litellmImageApiKey,
 
 				litellmImageBaseUrl,
 
@@ -1056,15 +1118,25 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 
 			vscode.postMessage({ type: "ghostServiceSettings", values: ghostServiceSettings }) // kilocode_change
 
-			vscode.postMessage({ type: "morphApiKey", text: morphApiKey }) // kilocode_change
+			if (morphApiKey) {
+				vscode.postMessage({ type: "morphApiKey", text: morphApiKey }) // kilocode_change
+			}
+
+			if (openRouterImageApiKey) {
+				vscode.postMessage({ type: "openRouterImageApiKey", text: openRouterImageApiKey })
+			}
 
 			vscode.postMessage({ type: "fastApplyModel", text: fastApplyModel }) // kilocode_change: Fast Apply model selection
 
 			vscode.postMessage({ type: "fastApplyApiProvider", text: fastApplyApiProvider }) // kilocode_change: Fast Apply model api base url
 
-			vscode.postMessage({ type: "kiloCodeImageApiKey", text: kiloCodeImageApiKey })
+			if (kiloCodeImageApiKey) {
+				vscode.postMessage({ type: "kiloCodeImageApiKey", text: kiloCodeImageApiKey })
+			}
 
-			vscode.postMessage({ type: "litellmImageApiKey", text: litellmImageApiKey })
+			if (litellmImageApiKey) {
+				vscode.postMessage({ type: "litellmImageApiKey", text: litellmImageApiKey })
+			}
 
 			vscode.postMessage({ type: "litellmImageBaseUrl", text: litellmImageBaseUrl })
 
@@ -1125,7 +1197,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 			if (confirm) {
 				// Discard changes: Reset state and flag
 
-				setCachedState(extensionState) // Revert to original state
+				setCachedState(normalizeSettingsDirtyState(extensionState)) // Revert to original state
 
 				setChangeDetected(false) // Reset change flag
 
@@ -1746,10 +1818,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 							<DisplaySettings
 								reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
 								showTaskTimeline={showTaskTimeline}
-								sendMessageOnEnter={sendMessageOnEnter}
-								showTimestamps={cachedState.showTimestamps} // kilocode_change
-								showDiffStats={cachedState.showDiffStats} // kilocode_change
+								sendMessageOnEnter={sendMessageOnEnter} // kilocode_change // kilocode_change
 								hideCostBelowThreshold={hideCostBelowThreshold}
+								hideAlfaCodeFields={false}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
@@ -1773,6 +1844,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 								soundVolume={soundVolume}
 								systemNotificationsEnabled={systemNotificationsEnabled}
 								areSettingsCommitted={!isChangeDetected}
+								hideAlfaCodeFields={false}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
@@ -1804,6 +1876,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 								includeCurrentTime={includeCurrentTime}
 								includeCurrentCost={includeCurrentCost}
 								maxGitStatusFiles={maxGitStatusFiles}
+								hideAlfaCodeFields={true}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
@@ -1824,6 +1897,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 								terminalZdotdir={terminalZdotdir}
 								terminalCompressProgressBar={terminalCompressProgressBar}
 								terminalCommandApiConfigId={terminalCommandApiConfigId} // kilocode_change
+								hideAlfaCodeFields={true}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
@@ -1842,8 +1916,13 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 							<PromptsSettings
 								customSupportPrompts={customSupportPrompts || {}}
 								setCustomSupportPrompts={setCustomSupportPromptsField}
+								includeTaskHistoryInEnhance={includeTaskHistoryInEnhance}
+								setIncludeTaskHistoryInEnhance={(value) =>
+									setCachedStateField("includeTaskHistoryInEnhance", value)
+								}
 								alfaCodeChangeAuthor={alfaCodeChangeAuthor}
 								setAlfaCodeChangeAuthor={(value) => setCachedStateField("alfaCodeChangeAuthor", value)}
+								hideAlfaCodeFields={false}
 							/>
 						)}
 
@@ -1867,6 +1946,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 
 								setCachedStateField={setCachedStateField}
 								morphApiKey={morphApiKey}
+								hasMorphApiKey={hasMorphApiKey}
 								fastApplyModel={fastApplyModel}
 								fastApplyApiProvider={fastApplyApiProvider}
 								// kilocode_change end
@@ -1875,8 +1955,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 								setApiConfigurationField={setApiConfigurationField}
 								imageGenerationProvider={imageGenerationProvider}
 								openRouterImageApiKey={openRouterImageApiKey as string | undefined}
+								hasOpenRouterImageApiKey={hasOpenRouterImageApiKey}
 								kiloCodeImageApiKey={kiloCodeImageApiKey}
+								hasKiloCodeImageApiKey={hasKiloCodeImageApiKey}
 								litellmImageApiKey={litellmImageApiKey}
+								hasLitellmImageApiKey={hasLitellmImageApiKey}
 								litellmImageBaseUrl={litellmImageBaseUrl}
 								openRouterImageGenerationSelectedModel={
 									openRouterImageGenerationSelectedModel as string | undefined
@@ -1903,8 +1986,14 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 								problematicProcessRestartLimit={cachedState.problematicProcessRestartLimit}
 								parallelAgentsEnabled={cachedState.parallelAgentsEnabled}
 								parallelAgentCount={cachedState.parallelAgentCount}
-								autoCondenseContext={cachedState.autoCondenseContext}
-								autoCondenseContextPercent={cachedState.autoCondenseContextPercent}
+								orchestrationTelemetryEnabled={cachedState.orchestrationTelemetryEnabled}
+								helperLocalityPreference={cachedState.helperLocalityPreference}
+								orchestrationEscalationSensitivity={cachedState.orchestrationEscalationSensitivity}
+								structuredDelegationEnabled={cachedState.structuredDelegationEnabled}
+								evaluatorPassEnabled={cachedState.evaluatorPassEnabled}
+								memoryPromotionEnabled={cachedState.memoryPromotionEnabled}
+								retrievalPolicy={cachedState.retrievalPolicy}
+								queryClassifierDebug={cachedState.queryClassifierDebug}
 								contextRoutingEnabled={cachedState.contextRoutingEnabled}
 								contextRoutingFastThresholdPercent={cachedState.contextRoutingFastThresholdPercent}
 								contextRoutingDeepThresholdPercent={cachedState.contextRoutingDeepThresholdPercent}

@@ -1,19 +1,17 @@
-﻿# Protocols Index
+# Протоколы
 
-This file is a template placeholder for repositories that want a lightweight index of active workspace protocols.
+Короткий индекс для навигации по **активным** протоколам.
 
-## Core boundary
+Правило: репозиторий держит `.protocols/` только как шаблоны (обычно коммитятся только этот индекс и [`README.md`](README.md)).
+Реальные папки протоколов (`.protocols/YYYY-MM-DD-name/`) обычно должны быть в `.gitignore`, чтобы не тащить историю задач между проектами.
 
-- Keep this file template-safe in the pack repository.
-- Real protocol folders should be created only in the current workspace.
-- Do not commit cross-project task history into the template pack.
-- If dated protocol folders exist here, treat them as legacy residue to remove from the template pack.
+---
 
-## Suggested workspace usage
+## Активные протоколы (template)
 
-When using protocols in a real project, track only active items such as:
+> Заполни, если ведёшь протокол прямо в этом репозитории.
 
-- protocol folder name
-- owner or mode
-- current step
-- next action
+- [ ] **2026-04-09-agent-runtime-upgrades — runtime improvements wave**
+    - Папка: `./2026-04-09-agent-runtime-upgrades/`
+    - Ответственный: `architect`
+    - Следующий шаг: pilot новых workflow на реальной длинной задаче consuming project

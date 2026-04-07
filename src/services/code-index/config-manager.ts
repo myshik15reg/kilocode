@@ -5,6 +5,7 @@ import { CodeIndexConfig, PreviousConfigSnapshot } from "./interfaces/config"
 import {
 	DEFAULT_SEARCH_MIN_SCORE,
 	DEFAULT_MAX_SEARCH_RESULTS,
+	CODEBASE_INDEX_DEFAULTS,
 	DEFAULT_RERANK_CANDIDATE_LIMIT,
 	DEFAULT_RERANK_TOP_K,
 	DEFAULT_RERANK_TIMEOUT_MS,
@@ -38,6 +39,9 @@ export class CodeIndexConfigManager {
 	private qdrantApiKey?: string
 	private searchMinScore?: number
 	private searchMaxResults?: number
+	private adaptiveRetrievalEnabled?: boolean
+	private adaptiveRetrievalMinConfidence?: number
+	private adaptiveRetrievalKneeSensitivity?: number
 	// kilocode_change start
 	private embeddingBatchSize?: number
 	private scannerMaxBatchRetries?: number
@@ -130,6 +134,9 @@ export class CodeIndexConfigManager {
 			codebaseIndexEmbedderModelId: "",
 			codebaseIndexSearchMinScore: undefined,
 			codebaseIndexSearchMaxResults: undefined,
+			codebaseIndexAdaptiveRetrievalEnabled: undefined,
+			codebaseIndexAdaptiveRetrievalMinConfidence: undefined,
+			codebaseIndexAdaptiveRetrievalKneeSensitivity: undefined,
 			// kilocode_change start
 			codebaseIndexRerankEnabled: undefined,
 			codebaseIndexRerankBaseUrl: undefined,
@@ -157,6 +164,9 @@ export class CodeIndexConfigManager {
 			codebaseIndexVectorStoreName, // kilocode_change
 			codebaseIndexSearchMinScore,
 			codebaseIndexSearchMaxResults,
+			codebaseIndexAdaptiveRetrievalEnabled,
+			codebaseIndexAdaptiveRetrievalMinConfidence,
+			codebaseIndexAdaptiveRetrievalKneeSensitivity,
 			// kilocode_change start
 			codebaseIndexRerankEnabled,
 			codebaseIndexRerankBaseUrl,
@@ -210,6 +220,9 @@ export class CodeIndexConfigManager {
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
+		this.adaptiveRetrievalEnabled = codebaseIndexAdaptiveRetrievalEnabled
+		this.adaptiveRetrievalMinConfidence = codebaseIndexAdaptiveRetrievalMinConfidence
+		this.adaptiveRetrievalKneeSensitivity = codebaseIndexAdaptiveRetrievalKneeSensitivity
 		// kilocode_change start
 		this.rerankEnabled = codebaseIndexRerankEnabled
 		this.rerankBaseUrl = codebaseIndexRerankBaseUrl
@@ -672,6 +685,9 @@ export class CodeIndexConfigManager {
 			qdrantApiKey: this.qdrantApiKey,
 			searchMinScore: this.currentSearchMinScore,
 			searchMaxResults: this.currentSearchMaxResults,
+			adaptiveRetrievalEnabled: this.isAdaptiveRetrievalEnabled,
+			adaptiveRetrievalMinConfidence: this.currentAdaptiveRetrievalMinConfidence,
+			adaptiveRetrievalKneeSensitivity: this.currentAdaptiveRetrievalKneeSensitivity,
 			// kilocode_change start
 			rerankEnabled: this.rerankEnabled,
 			rerankBaseUrl: this.rerankBaseUrl,
@@ -768,6 +784,22 @@ export class CodeIndexConfigManager {
 	public get currentSearchMaxResults(): number {
 		return this.searchMaxResults ?? DEFAULT_MAX_SEARCH_RESULTS
 	}
+
+	// kilocode_change start
+	public get isAdaptiveRetrievalEnabled(): boolean {
+		return this.adaptiveRetrievalEnabled ?? false
+	}
+
+	public get currentAdaptiveRetrievalMinConfidence(): number {
+		return this.adaptiveRetrievalMinConfidence ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_ADAPTIVE_RETRIEVAL_MIN_CONFIDENCE
+	}
+
+	public get currentAdaptiveRetrievalKneeSensitivity(): number {
+		return (
+			this.adaptiveRetrievalKneeSensitivity ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_ADAPTIVE_RETRIEVAL_KNEE_SENSITIVITY
+		)
+	}
+	// kilocode_change end
 
 	// kilocode_change start
 	public get currentRerankConfig(): {

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * github-url-utils.ts
  *
  * Portable utility functions for creating and opening GitHub issue URLs
@@ -13,10 +13,9 @@
  * fields containing special characters.
  */
 
-import * as vscode from "vscode"
-import * as cp from "child_process"
+import { execFile } from "child_process"
 import * as os from "os"
-import * as util from "util"
+import * as vscode from "vscode"
 
 /**
  * Creates a properly encoded GitHub issue URL.
@@ -37,7 +36,6 @@ import * as util from "util"
  * @returns The properly encoded full URL
  */
 export function createGitHubIssueUrl(baseUrl: string, params: Map<string, string>): string {
-	// Build query string manually with proper encoding
 	const queryParts: string[] = []
 
 	for (const [key, value] of params.entries()) {
@@ -46,12 +44,64 @@ export function createGitHubIssueUrl(baseUrl: string, params: Map<string, string
 		queryParts.push(`${encodedKey}=${encodedValue}`)
 	}
 
-	// Determine the proper separator (? or &) based on whether baseUrl already has parameters
 	const separator = baseUrl.includes("?") ? "&" : "?"
-
-	// Join all parts to create the final URL
 	const queryString = queryParts.join("&")
 	return `${baseUrl}${separator}${queryString}`
+}
+
+type BrowserCommand = {
+	command: string
+	args: string[]
+}
+
+function execFileAsync(command: string, args: string[]): Promise<void> {
+	return new Promise((resolve, reject) => {
+		execFile(command, args, (error) => {
+			if (error) {
+				reject(error)
+				return
+			}
+
+			resolve()
+		})
+	})
+}
+
+async function runBrowserCommands(commands: BrowserCommand[]): Promise<void> {
+	let lastError: unknown
+
+	for (const { command, args } of commands) {
+		try {
+			await execFileAsync(command, args)
+			console.log(`Opened URL with '${command}'`)
+			return
+		} catch (error) {
+			lastError = error
+			console.error(`Error with '${command}': ${error}`)
+		}
+	}
+
+	throw lastError ?? new Error("All OS commands failed")
+}
+
+function getBrowserCommands(platform: NodeJS.Platform, url: string): BrowserCommand[] {
+	if (platform === "win32") {
+		return [
+			{ command: "rundll32.exe", args: ["url.dll,FileProtocolHandler", url] },
+			{ command: "explorer.exe", args: [url] },
+		]
+	}
+
+	if (platform === "darwin") {
+		return [{ command: "open", args: [url] }]
+	}
+
+	return [
+		{ command: "xdg-open", args: [url] },
+		{ command: "gnome-open", args: [url] },
+		{ command: "kde-open", args: [url] },
+		{ command: "wslview", args: [url] },
+	]
 }
 
 /**
@@ -76,10 +126,8 @@ export function createGitHubIssueUrl(baseUrl: string, params: Map<string, string
  * @returns A promise that resolves when an attempt to open the URL has completed
  */
 export async function openUrlInBrowser(url: string): Promise<void> {
-	// For debugging
 	console.log(`Opening URL: ${url}`)
 
-	// Always copy to clipboard as a fallback
 	try {
 		await vscode.env.clipboard.writeText(url)
 		console.log("URL copied to clipboard as backup")
@@ -87,71 +135,21 @@ export async function openUrlInBrowser(url: string): Promise<void> {
 		console.error(`Failed to copy URL to clipboard: ${error}`)
 	}
 
-	// Try to open the URL using platform-specific commands
 	try {
 		const platform = os.platform()
 		console.log(`Detected platform: ${platform}`)
-
-		// Use promisify for better async error handling
-		const execPromise = util.promisify(cp.exec)
-
-		// Use platform-specific commands
-		if (platform === "win32") {
-			// Windows - try multiple approaches
-			try {
-				await execPromise(`start "" "${url}"`)
-				console.log("Opened URL with Windows 'start' command")
-				return
-			} catch (winError) {
-				console.error(`Error with Windows 'start' command: ${winError}`)
-
-				try {
-					await execPromise(`powershell.exe -Command "Start-Process '${url}'"`)
-					console.log("Opened URL with PowerShell command")
-					return
-				} catch (psError) {
-					console.error(`Error with PowerShell command: ${psError}`)
-					// Fall through to the fallbacks
-				}
-			}
-		} else if (platform === "darwin") {
-			// macOS
-			await execPromise(`open "${url}"`)
-			console.log("Opened URL with macOS 'open' command")
-			return
-		} else {
-			// Linux and others - try multiple commands
-			const linuxCommands = ["xdg-open", "gnome-open", "kde-open", "wslview"]
-
-			for (const cmd of linuxCommands) {
-				try {
-					await execPromise(`${cmd} "${url}"`)
-					console.log(`Opened URL with '${cmd}' command`)
-					return
-				} catch (cmdError) {
-					console.error(`Error with '${cmd}' command: ${cmdError}`)
-					// Try next command
-				}
-			}
-		}
-
-		// If we got here, none of the OS commands worked
-		throw new Error("All OS commands failed")
+		await runBrowserCommands(getBrowserCommands(platform, url))
+		return
 	} catch (error) {
 		console.error(`OS commands failed: ${error}`)
 
-		// First fallback: Try VS Code's openExternal
-		// Note: This will likely have encoding issues per https://github.com/microsoft/vscode/issues/85930
-		// but we include it as a fallback in case OS commands completely fail
 		try {
-			// The 'true' parameter might help preserve some encodings, but this is not guaranteed
 			await vscode.env.openExternal(vscode.Uri.parse(url, true))
 			console.log("Opened URL with vscode.env.openExternal (note: URL encoding may be affected)")
 			return
 		} catch (vscodeError) {
 			console.error(`Error with vscode.env.openExternal: ${vscodeError}`)
 
-			// Last fallback: Show a message with instructions
 			vscode.window
 				.showInformationMessage(
 					"Couldn't open the URL automatically. It has been copied to your clipboard.",
@@ -194,15 +192,12 @@ export async function createAndOpenGitHubIssue(
 	issueTemplate: string | null,
 	params: Map<string, string>,
 ): Promise<void> {
-	// Construct the base URL
 	let baseUrl = `https://github.com/${repoOwner}/${repoName}/issues/new`
 
-	// Add template parameter if provided
 	if (issueTemplate) {
 		params.set("template", issueTemplate)
 	}
 
-	// Create the URL and open it
 	const issueUrl = createGitHubIssueUrl(baseUrl, params)
 	await openUrlInBrowser(issueUrl)
 }

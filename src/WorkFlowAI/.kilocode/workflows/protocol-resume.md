@@ -1,29 +1,29 @@
-﻿# Workflow: protocol-resume
+# Рабочий процесс: Продолжение протокола (protocol-resume)
 
-## Goal
+## Назначение
 
-Resume work from an existing protocol without losing context or corrupting the plan.
+Возобновить работу по существующему протоколу и продолжить план.
 
-## Steps
+## Шаги
 
-1. Find the active protocol in `.protocols/`.
-2. Read `brief.md` and `plan.md` first.
-3. Read `execution.md` only if it exists and contains relevant decisions.
-4. Identify the current active step and the next safe action.
-5. Update `plan.md` if reality changed.
-6. Continue in small verified increments.
-7. Record notable non-obvious decisions in `execution.md` when useful.
-8. Mark completed work clearly before handing off or closing.
+1. Найди активный протокол в `.protocols/`.
+2. Если существует `checkpoint.md` или `state.json`, прочитай их первыми: они описывают последний execution frontier.
+3. Прочитай `brief.md`, `plan.md`, `execution.md` (и `context.md`, если есть).
+4. Определи текущий шаг и следующий подшаг.
+5. Если checkpoint отсутствует, но задача длинная или tool-heavy, SHOULD создать его через [`session-checkpoint.md`](session-checkpoint.md:1) перед следующей паузой/handoff.
+6. Обнови `plan.md`, если реальность изменилась.
+7. Выполняй задачи малыми итерациями, фиксируя прогресс.
+8. Нестандартные решения логируй в `execution.md`.
+9. По завершении шага - запусти тесты и обнови `plan.md`.
 
-## Checks
+## Контрольные вопросы
 
-- `brief.md` still matches the actual task goal.
-- `plan.md` reflects current reality.
-- blocked assumptions are explicit.
-- the next action is measurable and verifiable.
+- План соответствует текущему состоянию?
+- Есть ли зависимости, блокирующие следующий шаг?
+- Все ли файлы из плана используются?
 
-## References
+## Ссылки
 
-- Protocol creation: [`protocol-new.md`](protocol-new.md:1)
-- Repo hygiene: [`../rules/repo-hygiene.md`](../rules/repo-hygiene.md:1)
-- Context priming: [`context-priming.md`](context-priming.md:1)
+- [`overview.md`](overview.md)
+- [`repo-hygiene.md`](../rules/repo-hygiene.md)
+- [`session-checkpoint.md`](session-checkpoint.md)

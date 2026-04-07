@@ -78,6 +78,7 @@ const mockGetOrganizationId = vi.fn()
 const mockGetMode = vi.fn()
 const mockGetModel = vi.fn()
 const mockGetParentTaskId = vi.fn()
+const mockGetHistoryItem = vi.fn()
 const mockOnSessionCreated = vi.fn()
 const mockOnSessionSynced = vi.fn()
 
@@ -102,6 +103,7 @@ describe("SessionSyncService", () => {
 			getMode: mockGetMode,
 			getModel: mockGetModel,
 			getParentTaskId: mockGetParentTaskId,
+			getHistoryItem: mockGetHistoryItem,
 			onSessionCreated: mockOnSessionCreated,
 			onSessionSynced: mockOnSessionSynced,
 		})

@@ -28,11 +28,6 @@ export const test = base.extend<TestFixtures>({
 	vscodeVersion: ["stable", { option: true }],
 
 	workbox: async ({ createProject, createTempDir }, use) => {
-		// Fail early if OPENROUTER_API_KEY is not set
-		if (!process.env.OPENROUTER_API_KEY) {
-			throw new Error("OPENROUTER_API_KEY environment variable is required for Playwright tests")
-		}
-
 		const defaultCachePath = await createTempDir()
 		const userDataDir = path.join(defaultCachePath, "user-data")
 		seedUserSettings(userDataDir)
@@ -43,10 +38,13 @@ export const test = base.extend<TestFixtures>({
 			throw new Error("VSCODE_EXECUTABLE_PATH not found. Make sure global setup ran successfully.")
 		}
 
+		const launchEnv = { ...process.env }
+		delete launchEnv.ELECTRON_RUN_AS_NODE
+
 		const electronApp = await _electron.launch({
 			executablePath: vscodePath,
 			env: {
-				...process.env,
+				...launchEnv,
 				VSCODE_SKIP_GETTING_STARTED: "1",
 				VSCODE_DISABLE_WORKSPACE_TRUST: "1",
 				ELECTRON_DISABLE_SECURITY_WARNINGS: "1",
@@ -69,7 +67,7 @@ export const test = base.extend<TestFixtures>({
 				"--disable-crash-reporter",
 				"--enable-logging",
 				"--log-level=0",
-				"--disable-extensions-except=kilocode.alfa-code-assistant",
+				"--disable-extensions-except=alfacode.alfa-code-assistant",
 				"--disable-extension-recommendations",
 				"--disable-extension-update-check",
 				"--disable-default-apps",
@@ -79,7 +77,7 @@ export const test = base.extend<TestFixtures>({
 				`--extensionDevelopmentPath=${path.resolve(__dirname, "..", "..", "..", "src")}`,
 				`--extensions-dir=${path.join(defaultCachePath, "extensions")}`,
 				`--user-data-dir=${userDataDir}`,
-				"--enable-proposed-api=kilocode.alfa-code-assistant",
+				"--enable-proposed-api=alfacode.alfa-code-assistant",
 				await createProject(),
 			],
 		})
@@ -118,7 +116,7 @@ export const test = base.extend<TestFixtures>({
 		}
 
 		await workbox.waitForLoadState("domcontentloaded")
-		await workbox.waitForSelector(".monaco-workbench")
+		await workbox.locator(".monaco-workbench").waitFor({ state: "visible" })
 		console.log("✅ VS Code workbox ready for testing")
 
 		await use(workbox)
@@ -159,7 +157,7 @@ export const test = base.extend<TestFixtures>({
 
 		await use(async () => {
 			const testInfo = test.info()
-			const fileName = testInfo.file.split("/").pop()?.replace(".test.ts", "") || "unknown"
+			const fileName = getTestFileBaseName(testInfo.file)
 			const sanitizedTestName = camelCase(testInfo.title)
 
 			const dirName = `e2e-${fileName}-${sanitizedTestName}-${counter++}`
@@ -200,7 +198,7 @@ export const test = base.extend<TestFixtures>({
 
 			// Extract test suite from the test file name or use a default
 			const testInfo = test.info()
-			const fileName = testInfo.file.split("/").pop()?.replace(".test.ts", "") || "unknown"
+			const fileName = getTestFileBaseName(testInfo.file)
 			const testName = testInfo.title || "Unknown Test"
 			const testSuite = camelCase(fileName)
 
@@ -217,6 +215,10 @@ export const test = base.extend<TestFixtures>({
 		})
 	},
 })
+
+function getTestFileBaseName(testFilePath: string): string {
+	return path.basename(testFilePath).replace(/\.(test|spec)\.ts$/, "") || "unknown"
+}
 
 function seedUserSettings(userDataDir: string) {
 	const userDir = path.join(userDataDir, "User")

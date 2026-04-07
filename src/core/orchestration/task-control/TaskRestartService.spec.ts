@@ -1,4 +1,4 @@
-import type { HistoryItem } from "@roo-code/types"
+﻿import type { HistoryItem } from "@roo-code/types"
 
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -17,8 +17,12 @@ describe("TaskRestartService", () => {
 	let buildRecoveryPacket: ReturnType<typeof vi.fn>
 	let updateTaskHistory: ReturnType<typeof vi.fn>
 	let createTaskWithHistoryItem: ReturnType<typeof vi.fn>
+	let getCurrentTask: ReturnType<typeof vi.fn>
+	let removeClineFromStack: ReturnType<typeof vi.fn>
 	let log: ReturnType<typeof vi.fn>
 	let submitUserMessage: ReturnType<typeof vi.fn>
+	let abortTask: ReturnType<typeof vi.fn>
+	let restartedTask: any
 	let runtime: TaskRestartRuntime
 
 	beforeEach(() => {
@@ -47,7 +51,15 @@ describe("TaskRestartService", () => {
 		})
 		updateTaskHistory = vi.fn().mockResolvedValue([historyItem])
 		submitUserMessage = vi.fn().mockResolvedValue(undefined)
-		createTaskWithHistoryItem = vi.fn().mockResolvedValue({ submitUserMessage })
+		abortTask = vi.fn().mockResolvedValue(undefined)
+		restartedTask = {
+			instanceId: "restart-instance-1",
+			submitUserMessage,
+			abortTask,
+		}
+		createTaskWithHistoryItem = vi.fn().mockResolvedValue(restartedTask)
+		getCurrentTask = vi.fn(() => restartedTask)
+		removeClineFromStack = vi.fn().mockResolvedValue(undefined)
 		log = vi.fn()
 		runtime = {
 			getTaskWithId,
@@ -57,6 +69,8 @@ describe("TaskRestartService", () => {
 			buildRecoveryPacket,
 			updateTaskHistory,
 			createTaskWithHistoryItem,
+			getCurrentTask,
+			removeClineFromStack,
 			log,
 		}
 	})
@@ -166,14 +180,43 @@ describe("TaskRestartService", () => {
 		)
 	})
 
-	it("returns false when the replacement task cannot be created", async () => {
+	it("returns false and rolls back history when the replacement task cannot be created", async () => {
 		createTaskWithHistoryItem.mockResolvedValueOnce(undefined)
 		const service = new TaskRestartService(runtime)
 
 		await expect(service.restartTaskFromHistoryWithHandoff("task-1")).resolves.toBe(false)
 
-		expect(updateTaskHistory).toHaveBeenCalledTimes(1)
+		expect(updateTaskHistory).toHaveBeenCalledTimes(2)
+		expect(updateTaskHistory).toHaveBeenNthCalledWith(
+			1,
+			expect.objectContaining({ id: "task-1", status: "active", restartCount: 1 }),
+		)
+		expect(updateTaskHistory).toHaveBeenNthCalledWith(2, historyItem)
 		expect(submitUserMessage).not.toHaveBeenCalled()
+	})
+
+	it("removes the restarted runtime task before rolling back history when handoff submission fails", async () => {
+		submitUserMessage.mockRejectedValueOnce(new Error("handoff failed"))
+		const service = new TaskRestartService(runtime)
+
+		await expect(service.restartTaskFromHistoryWithHandoff("task-1")).resolves.toBe(false)
+
+		expect(createTaskWithHistoryItem).toHaveBeenCalledTimes(1)
+		expect(removeClineFromStack).toHaveBeenCalledTimes(1)
+		expect(abortTask).not.toHaveBeenCalled()
+		expect(updateTaskHistory).toHaveBeenCalledTimes(2)
+		expect(updateTaskHistory).toHaveBeenNthCalledWith(2, historyItem)
+	})
+
+	it("aborts the restarted task directly when it is no longer the focused runtime task", async () => {
+		submitUserMessage.mockRejectedValueOnce(new Error("handoff failed"))
+		getCurrentTask.mockReturnValue({ instanceId: "other-instance" })
+		const service = new TaskRestartService(runtime)
+
+		await expect(service.restartTaskFromHistoryWithHandoff("task-1")).resolves.toBe(false)
+
+		expect(removeClineFromStack).not.toHaveBeenCalled()
+		expect(abortTask).toHaveBeenCalledWith(true)
 	})
 
 	it("logs unexpected restart failures and returns false", async () => {

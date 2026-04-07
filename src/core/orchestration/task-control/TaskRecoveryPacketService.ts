@@ -2,8 +2,10 @@ import type { HistoryItem, ProviderSettings, ProviderSettingsEntry } from "@roo-
 
 import { buildApiHandler } from "../../../api"
 import type { ProviderSettingsManager } from "../../config/ProviderSettingsManager"
+import { HelperRoutingContextBuilder } from "../../helper-routing/HelperRoutingContextBuilder"
 import { HelperModelRouter } from "../../helper-routing/HelperModelRouter"
 import type { ApiMessage } from "../../task-persistence/apiMessages"
+import { ConversationWindowBuilder } from "../context/ConversationWindowBuilder"
 
 // kilocode_change - new file
 
@@ -20,6 +22,9 @@ export interface TaskRecoveryPacketRuntime {
 		apiConfiguration?: ProviderSettings
 		condensingApiConfigId?: string
 		listApiConfigMeta?: ProviderSettingsEntry[]
+		helperLocalityPreference?: "off" | "prefer" | "require"
+		orchestrationEscalationSensitivity?: "conservative" | "balanced" | "aggressive"
+		orchestrationTelemetryEnabled?: boolean
 	}>
 	providerSettingsManager: ProviderSettingsManager
 	log(message: string): void
@@ -27,6 +32,7 @@ export interface TaskRecoveryPacketRuntime {
 
 export class TaskRecoveryPacketService {
 	private readonly recoveryPacketCache = new Map<string, TaskRecoveryPacket>()
+	private readonly conversationWindowBuilder = new ConversationWindowBuilder()
 
 	constructor(private readonly runtime: TaskRecoveryPacketRuntime) {}
 
@@ -79,39 +85,23 @@ export class TaskRecoveryPacketService {
 		compactMode?: "standard" | "pressure"
 	}): string {
 		const { historyItem, apiConversationHistory = [], compactMode = "standard" } = params
-		const userWindow = compactMode === "pressure" ? 1 : 2
-		const assistantWindow = compactMode === "pressure" ? 1 : 2
-		const summaryLimit = compactMode === "pressure" ? 700 : 1200
-		const lastUserMessages = apiConversationHistory
-			.filter((message) => message.role === "user")
-			.slice(-userWindow)
-			.map((message) => {
-				const content = Array.isArray(message.content)
-					? message.content
-							.filter((block) => block.type === "text")
-							.map((block) => block.text)
-							.join(" ")
-					: ""
-				return content.replace(/\s+/g, " ").trim()
-			})
-			.filter(Boolean)
+		const window = this.conversationWindowBuilder.build({
+			summary: historyItem.lastStopSummary,
+			history: apiConversationHistory,
+			maxMessages: compactMode === "pressure" ? 2 : 4,
+			maxCharsPerMessage: compactMode === "pressure" ? 220 : 320,
+			maxTotalChars: compactMode === "pressure" ? 440 : 900,
+		})
 
-		const lastAssistantMessages = apiConversationHistory
+		const lastUserMessages = window.history
+			.filter((message) => message.role === "user")
+			.map((message) => message.text)
+		const lastAssistantMessages = window.history
 			.filter((message) => message.role === "assistant")
-			.slice(-assistantWindow)
-			.map((message) => {
-				const content = Array.isArray(message.content)
-					? message.content
-							.filter((block) => block.type === "text")
-							.map((block) => block.text)
-							.join(" ")
-					: ""
-				return content.replace(/\s+/g, " ").trim()
-			})
-			.filter(Boolean)
+			.map((message) => message.text)
 
 		const fragments = [
-			historyItem.lastStopSummary,
+			window.summary,
 			lastUserMessages.length > 0 ? `Recent user intent: ${lastUserMessages.join(" | ")}` : undefined,
 			lastAssistantMessages.length > 0
 				? `Recent assistant context: ${lastAssistantMessages.join(" | ")}`
@@ -123,6 +113,7 @@ export class TaskRecoveryPacketService {
 			.filter(Boolean)
 			.join("\n")
 
+		const summaryLimit = compactMode === "pressure" ? 700 : 1200
 		return fragments.slice(0, summaryLimit) || "The previous attempt stopped unexpectedly before completion."
 	}
 
@@ -143,30 +134,14 @@ export class TaskRecoveryPacketService {
 		apiConversationHistory: ApiMessage[] | undefined,
 		recoveryMode: "standard" | "pressure",
 	): string {
-		const maxMessages = recoveryMode === "pressure" ? 4 : 6
-		const maxChars = recoveryMode === "pressure" ? 220 : 360
-		const recentHistory = (apiConversationHistory ?? [])
-			.slice(-maxMessages)
-			.map((message) => {
-				const content = Array.isArray(message.content)
-					? message.content
-							.filter((block) => block.type === "text")
-							.map((block) => block.text)
-							.join(" ")
-					: ""
-				const compactContent = content.replace(/\s+/g, " ").trim().slice(0, maxChars)
-				return compactContent ? `${message.role}: ${compactContent}` : ""
-			})
-			.filter(Boolean)
+		const window = this.conversationWindowBuilder.build({
+			history: apiConversationHistory,
+			maxMessages: recoveryMode === "pressure" ? 4 : 6,
+			maxCharsPerMessage: recoveryMode === "pressure" ? 220 : 360,
+			maxTotalChars: recoveryMode === "pressure" ? 600 : 900,
+		})
 
-		const dedupedHistory: string[] = []
-		for (const entry of recentHistory) {
-			if (dedupedHistory[dedupedHistory.length - 1] !== entry) {
-				dedupedHistory.push(entry)
-			}
-		}
-
-		return dedupedHistory.join(" | ").slice(0, recoveryMode === "pressure" ? 600 : 900)
+		return this.conversationWindowBuilder.renderHistoryEntries(window).join(" | ")
 	}
 
 	private async maybeBuildCheapRestartSummary(params: {
@@ -183,15 +158,24 @@ export class TaskRecoveryPacketService {
 
 		try {
 			const state = await this.runtime.getState()
-			const route = await HelperModelRouter.selectConfig({
-				job: "relay_compact",
-				state: {
-					apiConfiguration: state.apiConfiguration as ProviderSettings,
-					condensingApiConfigId: state.condensingApiConfigId,
-					listApiConfigMeta: state.listApiConfigMeta,
-				},
-				providerSettingsManager: this.runtime.providerSettingsManager,
-			})
+			const route = await HelperModelRouter.selectConfig(
+				HelperRoutingContextBuilder.build({
+					job: "relay_compact",
+					state: {
+						apiConfiguration: state.apiConfiguration as ProviderSettings,
+						condensingApiConfigId: state.condensingApiConfigId,
+						listApiConfigMeta: state.listApiConfigMeta,
+						helperLocalityPreference: state.helperLocalityPreference,
+						orchestrationEscalationSensitivity: state.orchestrationEscalationSensitivity,
+						orchestrationTelemetryEnabled: state.orchestrationTelemetryEnabled,
+					},
+					providerSettingsManager: this.runtime.providerSettingsManager,
+					decisionContext: {
+						taskId: params.historyItem.id,
+						retryCount: params.historyItem.restartCount ?? 0,
+					},
+				}),
+			)
 
 			if (!route.config?.apiProvider) {
 				return fallbackSummary
@@ -201,19 +185,25 @@ export class TaskRecoveryPacketService {
 			const recentHistory = this.buildRecoveryHistorySummary(params.apiConversationHistory, recoveryMode)
 
 			const requestMessages = [
-				{ role: "user", content: `Task: ${params.historyItem.task}` },
-				{ role: "user", content: `Stop reason: ${params.historyItem.lastStopReason ?? "unknown"}` },
-				{ role: "user", content: `Restart count: ${params.historyItem.restartCount ?? 0}` },
-				{ role: "user", content: `Recovery mode: ${recoveryMode}` },
-				{ role: "user", content: `Existing summary: ${fallbackSummary}` },
-				{ role: "user", content: `Recent history: ${recentHistory}` },
-			] as const
+				{ role: "user", content: [{ type: "text", text: `Task: ${params.historyItem.task}` }] },
+				{
+					role: "user",
+					content: [{ type: "text", text: `Stop reason: ${params.historyItem.lastStopReason ?? "unknown"}` }],
+				},
+				{
+					role: "user",
+					content: [{ type: "text", text: `Restart count: ${params.historyItem.restartCount ?? 0}` }],
+				},
+				{ role: "user", content: [{ type: "text", text: `Recovery mode: ${recoveryMode}` }] },
+				{ role: "user", content: [{ type: "text", text: `Existing summary: ${fallbackSummary}` }] },
+				{ role: "user", content: [{ type: "text", text: `Recent history: ${recentHistory}` }] },
+			] satisfies ApiMessage[]
 
 			const stream = handler.createMessage(
 				recoveryMode === "pressure"
 					? "Create an ultra-compact restart handoff summary for a repeatedly failing coding task. Keep only current goal, failing path, and safest next step. Keep it under 400 characters. Plain text only."
 					: "Create a compact restart handoff summary for a failed coding task. Preserve only actionable intent, failed path, and current status. Keep it under 700 characters. Plain text only.",
-				requestMessages as any,
+				requestMessages,
 			)
 
 			let result = ""
@@ -239,20 +229,10 @@ export class TaskRecoveryPacketService {
 		apiConversationHistory?: ApiMessage[]
 		recoveryMode: "standard" | "pressure"
 	}): string {
-		const recentHistorySignature = (params.apiConversationHistory ?? [])
-			.slice(-4)
-			.map((message) => {
-				const content = Array.isArray(message.content)
-					? message.content
-							.filter((block) => block.type === "text")
-							.map((block) => block.text)
-							.join(" ")
-					: ""
-				return `${message.role}:${content.replace(/\s+/g, " ").trim()}`
-			})
-			.filter(Boolean)
-			.join("|")
-			.slice(0, 400)
+		const recentHistorySignature = this.buildRecoveryHistorySummary(
+			params.apiConversationHistory,
+			params.recoveryMode,
+		).slice(0, 400)
 
 		return [
 			params.historyItem.id,

@@ -78,9 +78,15 @@ export class CLI {
 
 			// Set terminal title - use process.cwd() in parallel mode to show original directory
 			const titleWorkspace = this.options.parallel ? process.cwd() : this.options.workspace || process.cwd()
-			const folderName = `${basename(titleWorkspace)}${(await isGitWorktree(this.options.workspace || "")) ? " ⎇" : ""}`
+			const baseTitle = `AlfaCode assistant - ${basename(titleWorkspace)}`
 			if (supportsTitleSetting()) {
-				process.stdout.write(`\x1b]0;AlfaCode assistant - ${folderName}\x07`)
+				process.stdout.write(`\x1b]0;${baseTitle}\x07`)
+
+				void isGitWorktree(this.options.workspace || "").then((isWorktree) => {
+					if (isWorktree) {
+						process.stdout.write(`\x1b]0;${baseTitle} [worktree]\x07`)
+					}
+				})
 			}
 
 			// Create Jotai store
@@ -214,6 +220,54 @@ export class CLI {
 						const result = getSelectedModelId(provider || "unknown", state?.apiConfiguration)
 
 						logs.debug(`Resolved model: "${result}"`, "SessionManager")
+
+						return result
+					},
+					getHistoryItem: async (taskId: string) => {
+						const result = await (async () => {
+							try {
+								const currentTask = this.store?.get(currentTaskAtom)
+
+								if (currentTask?.id === taskId) {
+									return currentTask
+								}
+
+								const requestId = randomUUID()
+								const responsePromise = new Promise<TaskHistoryData>((resolve, reject) => {
+									const timeout = setTimeout(() => {
+										reject(new Error("Task history request timed out"))
+									}, 5000)
+
+									this.store?.set(addPendingRequestAtom, {
+										requestId,
+										resolve,
+										reject,
+										timeout,
+									})
+								})
+
+								await this.store?.set(sendWebviewMessageAtom, {
+									type: "taskHistoryRequest",
+									payload: {
+										requestId,
+										workspace: "current",
+										sort: "newest",
+										favoritesOnly: false,
+										pageIndex: 0,
+									},
+								})
+
+								const taskHistoryData = await responsePromise
+								return taskHistoryData.historyItems.find((item) => item.id === taskId)
+							} catch {
+								return undefined
+							}
+						})()
+
+						logs.debug(
+							`Resolved history item for task ${taskId}: ${result ? "found" : "missing"}`,
+							"SessionManager",
+						)
 
 						return result
 					},

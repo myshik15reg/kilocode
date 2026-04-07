@@ -5,8 +5,9 @@
 	"scripts": {
 		"lint": "eslint src --ext=ts,tsx --max-warnings=0",
 		"check-types": "tsc",
-		"pretest": "turbo run alfa-code-assistant#bundle --cwd ..",
+		"pretest": "node ./scripts/pretest.mjs",
 		"test": "vitest run",
+		"test:coverage": "vitest run --coverage",
 		"format": "prettier --write src",
 		"dev": "vite",
 		"build": "tsc -b && vite build",
@@ -117,6 +118,7 @@
 		"storybook": "^8.6.15",
 		"ts-jest": "^29.2.5",
 		"vite": "6.3.6",
-		"vitest": "^3.2.3"
+		"vitest": "^3.2.3",
+		"@vitest/coverage-v8": "^3.2.3"
 	}
 }

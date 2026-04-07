@@ -69,12 +69,14 @@ describe("TelemetryService", () => {
 		})
 	})
 
-	it("captures delegation lifecycle completion and resume events", () => {
+	it("captures delegation lifecycle completion, resume, and handoff events", () => {
 		const client = createClient()
 		const service = new TelemetryService([client])
 
 		service.captureDelegationCompleted("parent-1", "child-1")
 		service.captureDelegationResumed("parent-1", "child-1")
+		service.captureDelegationHandoffUsed("parent-1", "child-1", "sequential", true)
+		service.captureDelegationAbstained("parent-1", "child-1", "insufficient_context")
 
 		expect(client.capture).toHaveBeenNthCalledWith(1, {
 			event: TelemetryEventName.DELEGATION_COMPLETED,
@@ -88,6 +90,23 @@ describe("TelemetryService", () => {
 			properties: {
 				taskId: "parent-1",
 				childTaskId: "child-1",
+			},
+		})
+		expect(client.capture).toHaveBeenNthCalledWith(3, {
+			event: TelemetryEventName.DELEGATION_HANDOFF_USED,
+			properties: {
+				taskId: "parent-1",
+				childTaskId: "child-1",
+				handoffStrategy: "sequential",
+				canAbstain: true,
+			},
+		})
+		expect(client.capture).toHaveBeenNthCalledWith(4, {
+			event: TelemetryEventName.DELEGATION_ABSTAINED,
+			properties: {
+				taskId: "parent-1",
+				childTaskId: "child-1",
+				reason: "insufficient_context",
 			},
 		})
 	})

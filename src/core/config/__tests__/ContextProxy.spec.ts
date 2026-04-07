@@ -76,8 +76,8 @@ describe("ContextProxy", () => {
 
 	describe("constructor", () => {
 		it("should initialize state cache with all global state keys", () => {
-			// +1 for the migration check of old nested settings
-			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 1)
+			// +1 for the nested image generation migration check and +1 for legacy global secret migration
+			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 2)
 			for (const key of GLOBAL_STATE_KEYS) {
 				expect(mockGlobalState.get).toHaveBeenCalledWith(key)
 			}
@@ -105,8 +105,8 @@ describe("ContextProxy", () => {
 			const result = proxy.getGlobalState("apiProvider")
 			expect(result).toBe("deepseek")
 
-			// Original context should be called once during updateGlobalState (+1 for migration check)
-			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 1) // From initialization + migration check
+			// Initialization now includes nested image settings and legacy global secret migration reads
+			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 2)
 		})
 
 		it("should handle default values correctly", async () => {
@@ -528,6 +528,25 @@ describe("ContextProxy", () => {
 
 			// Should reinitialize caches
 			expect(initializeSpy).toHaveBeenCalledTimes(1)
+		})
+	})
+
+	describe("legacy global secret migration", () => {
+		it("migrates plaintext morphApiKey from globalState into secret storage", async () => {
+			vi.clearAllMocks()
+			mockGlobalState.get.mockImplementation((key: string) => {
+				if (key === "morphApiKey") {
+					return "legacy-morph-secret"
+				}
+				return undefined
+			})
+
+			const proxyWithLegacySecret = new ContextProxy(mockContext)
+			await proxyWithLegacySecret.initialize()
+
+			expect(mockSecrets.store).toHaveBeenCalledWith("morphApiKey", "legacy-morph-secret")
+			expect(mockGlobalState.update).toHaveBeenCalledWith("morphApiKey", undefined)
+			expect(proxyWithLegacySecret.getSecret("morphApiKey")).toBe("legacy-morph-secret")
 		})
 	})
 

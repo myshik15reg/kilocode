@@ -176,6 +176,26 @@ describe("TaskHeader", () => {
 		expect(within(subtasksRow!).getByText("2")).toBeInTheDocument()
 	})
 
+	it("should hide pause controls after completion_result even when currentTaskItem has no lifecycle fields", () => {
+		mockExtensionState = {
+			...mockExtensionState,
+			currentTaskItem: { id: "test-task-id" },
+			clineMessages: [
+				{
+					type: "ask",
+					ask: "completion_result",
+					ts: Date.now(),
+					text: "Task completed!",
+				},
+			],
+		}
+
+		renderTaskHeader()
+		fireEvent.click(screen.getByText("Test task"))
+
+		expect(screen.queryByLabelText("Pause task")).not.toBeInTheDocument()
+		expect(screen.queryByLabelText("Resume task")).not.toBeInTheDocument()
+	})
 	it("should disable the condense context button when buttonsDisabled is true", () => {
 		const handleCondenseContext = vi.fn()
 		renderTaskHeader({ buttonsDisabled: true, handleCondenseContext })

@@ -1,11 +1,15 @@
-"use server"
+﻿"use server"
 
 import { revalidatePath } from "next/cache"
 
-import { getTasks as _getTasks } from "@roo-code/evals"
+import { getTasks as loadTasks } from "@roo-code/evals"
+
+import { parseRunId, requireWebEvalsAuthorization } from "@/lib/server/auth"
 
 export async function getTasks(runId: number) {
-	const tasks = await _getTasks(runId)
-	revalidatePath(`/runs/${runId}`)
+	await requireWebEvalsAuthorization()
+	const parsedRunId = parseRunId(runId)
+	const tasks = await loadTasks(parsedRunId)
+	revalidatePath(`/runs/${parsedRunId}`)
 	return tasks
 }

@@ -1,4 +1,4 @@
-﻿// npx vitest src/core/tools/__tests__/readFileTool.spec.ts
+// npx vitest src/core/tools/__tests__/readFileTool.spec.ts
 
 import * as path from "path"
 
@@ -2163,5 +2163,49 @@ describe("read_file tool concurrent file reads limit", () => {
 		// Should use default limit of 5 and reject 6 files
 		expect(toolResult).toContain("Error: Too many files requested")
 		expect(toolResult).toContain("but the concurrent file reads limit is 5")
+	})
+})
+
+describe("readFileTool partial path stability", () => {
+	beforeEach(() => {
+		readFileTool.resetPartialState()
+	})
+
+	it("shows a partial read path only after it stabilizes", async () => {
+		const ask = vi.fn().mockResolvedValue(undefined)
+		const task = { cwd: "c:/repo", ask } as any
+		const block: ReadFileToolUse = {
+			type: "tool_use",
+			name: "read_file",
+			partial: true,
+			params: { path: ".kilocode/skills/test-skill/SKILL.md" },
+		}
+
+		await readFileTool.handlePartial(task, block)
+		expect(ask).not.toHaveBeenCalled()
+
+		await readFileTool.handlePartial(task, block)
+		expect(ask).toHaveBeenCalledTimes(1)
+		const payload = JSON.parse(ask.mock.calls[0][1])
+		expect(payload.path).toContain(".kilocode")
+		expect(payload.path).toContain("SKILL.md")
+	})
+
+	it("ignores suspicious partial read paths with streamed garbage", async () => {
+		const ask = vi.fn().mockResolvedValue(undefined)
+		const task = { cwd: "c:/repo", ask } as any
+		const block: ReadFileToolUse = {
+			type: "tool_use",
+			name: "read_file",
+			partial: true,
+			params: {
+				path: ".kilocode/skills/test-skill/SKILL.md'}} qnhassistant to=functions.read_file",
+			},
+		}
+
+		await readFileTool.handlePartial(task, block)
+		await readFileTool.handlePartial(task, block)
+
+		expect(ask).not.toHaveBeenCalled()
 	})
 })

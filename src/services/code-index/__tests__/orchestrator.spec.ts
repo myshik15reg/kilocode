@@ -310,7 +310,7 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 			expect(initializeMock.mock.invocationCallOrder[0]).toBeLessThan(isReadyMock.mock.invocationCallOrder[0])
 		})
 
-		it("does not leave state in Indexing when Neo4j connection fails", async () => {
+		it("restores the previous state when optional Neo4j connection fails", async () => {
 			connectMock.mockRejectedValue(new Error("ECONNREFUSED"))
 
 			const orchestrator = new CodeIndexOrchestrator(
@@ -327,13 +327,12 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 
 			expect(isReadyMock).not.toHaveBeenCalled()
 			expect(indexFileMock).not.toHaveBeenCalled()
-			expect(stateManager.state).not.toBe("Indexing")
+			expect(stateManager.state).toBe("Standby")
 			expect(stateManager.setSystemState).toHaveBeenCalledWith(
-				"Error",
-				expect.stringContaining("Neo4j connection failed"),
+				"Standby",
+				expect.stringContaining("connection failed; relationship indexing skipped: ECONNREFUSED"),
 			)
 		})
-
 		it("indexes supported files using resolved language ids", async () => {
 			const orchestrator = new CodeIndexOrchestrator(
 				configManager,
@@ -418,7 +417,7 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 				deletedPaths: ["/test/workspace/removed.ts"],
 			}
 
-			await (orchestrator as any).handleNeo4jBatchSummary(summary)
+			await (orchestrator as any).enqueueNeo4jBatchSummary(summary)
 
 			expect(indexFileMock).toHaveBeenCalledWith("app.ts", expect.any(String), expect.any(Object), "typescript")
 			expect(deleteFilesMock).toHaveBeenCalledWith(["removed.ts"])

@@ -1,4 +1,4 @@
-import { EventEmitter } from "events"
+﻿import { EventEmitter } from "events"
 import fs from "fs/promises"
 import * as path from "path"
 import * as os from "os"
@@ -68,7 +68,9 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 			ipc.on(IpcMessageType.TaskCommand, async (_clientId, { commandName, data }) => {
 				switch (commandName) {
 					case TaskCommandName.StartNewTask:
-						this.log(`[API] StartNewTask -> ${data.text}, ${JSON.stringify(data.configuration)}`)
+						this.log(
+							`[API] StartNewTask -> textLength=${data.text?.length ?? 0}, images=${data.images?.length ?? 0}, hasConfiguration=${Boolean(data.configuration)}, newTab=${Boolean(data.newTab)}`,
+						)
 						await this.startNewTask(data)
 						break
 					case TaskCommandName.CancelTask:
@@ -92,7 +94,9 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 						}
 						break
 					case TaskCommandName.SendMessage:
-						this.log(`[API] SendMessage -> ${data.text}`)
+						this.log(
+							`[API] SendMessage -> textLength=${data.text?.length ?? 0}, images=${data.images?.length ?? 0}`,
+						)
 						await this.sendMessage(data.text, data.images)
 						break
 				}
@@ -287,10 +291,21 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 				this.emit(RooCodeEventName.Message, { taskId: task.taskId, ...message })
 
 				if (message.message.partial !== true) {
-					await this.fileLog(`[${new Date().toISOString()}] ${JSON.stringify(message.message, null, 2)}\n`)
+					const payload = message.message as Record<string, unknown>
+					const summary = {
+						type: payload.type,
+						say: payload.say,
+						ask: payload.ask,
+						tool: payload.tool,
+						partial: payload.partial === true,
+						messageId: payload.messageId,
+						ts: payload.ts,
+						textLength: typeof payload.text === "string" ? payload.text.length : 0,
+						imageCount: Array.isArray(payload.images) ? payload.images.length : 0,
+					}
+					await this.fileLog(`[${new Date().toISOString()}] ${JSON.stringify(summary)}\n`)
 				}
 			})
-
 			task.on(RooCodeEventName.TaskModeSwitched, (taskId, mode) => {
 				this.emit(RooCodeEventName.TaskModeSwitched, taskId, mode)
 			})

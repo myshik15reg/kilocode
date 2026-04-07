@@ -235,6 +235,7 @@ describe("reload/recovery harness", () => {
 			childTaskId: "child-paused",
 			completionResultSummary: "Recovered child finished",
 			preserveParentFocus: true,
+			outcomeStatus: "completed",
 		})
 		expect(coordinator.getBindingForTask("child-paused")).toBeUndefined()
 		expect(provider.listBackgroundSubagentBindings()).toEqual([])

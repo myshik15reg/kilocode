@@ -1,3 +1,14 @@
+import { TelemetryService } from "@roo-code/telemetry"
+import { vi } from "vitest"
+
+vi.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: {
+			captureHelperModelRouted: vi.fn(),
+		},
+	},
+}))
+
 import { HelperModelRouter } from "../HelperModelRouter"
 
 vi.mock("../../../api/providers/fetchers/modelCache", () => ({
@@ -134,5 +145,65 @@ describe("HelperModelRouter", () => {
 
 		expect(route.source).toBe("primary")
 		expect(route.provider).toBe("anthropic")
+	})
+	it("marks low-confidence search assist routes as escalated and records telemetry", async () => {
+		const getProfile = vi.fn().mockResolvedValue({ apiProvider: "openai", openAiModelId: "gpt-4.1-mini" })
+
+		const route = await HelperModelRouter.selectConfig({
+			job: "search_assist",
+			state: {
+				apiConfiguration: { apiProvider: "anthropic", apiModelId: "claude-sonnet" } as any,
+				enhancementApiConfigId: "helper-1",
+				listApiConfigMeta: [{ id: "helper-1", name: "Remote helper" }],
+				helperLocalityPreference: "off",
+				orchestrationEscalationSensitivity: "aggressive",
+				orchestrationTelemetryEnabled: true,
+			},
+			providerSettingsManager: { getProfile } as any,
+			decisionContext: { taskId: "task-1", retrievalConfidence: 0.2 },
+		})
+
+		expect(route.source).toBe("configured_helper")
+		expect(route.capabilityClass).toBe("retrieval_assist")
+		expect(route.escalated).toBe(true)
+		expect(TelemetryService.instance.captureHelperModelRouted).toHaveBeenCalledWith(
+			expect.objectContaining({
+				taskId: "task-1",
+				helperJob: "search_assist",
+				helperSource: "configured_helper",
+				escalated: true,
+				selectedProvider: "openai",
+			}),
+		)
+	})
+
+	it("prefers discovered local helpers when locality is required", async () => {
+		vi.mocked(getModels).mockResolvedValue({ "qwen2.5": {} } as any)
+		const getProfile = vi.fn().mockImplementation(async ({ id }: { id: string }) => {
+			if (id === "remote-1") {
+				return { apiProvider: "openai", openAiModelId: "gpt-4.1-mini" }
+			}
+			if (id === "local-1") {
+				return { apiProvider: "ollama", ollamaModelId: "qwen2.5" }
+			}
+			return undefined
+		})
+
+		const route = await HelperModelRouter.selectConfig({
+			job: "search_assist",
+			state: {
+				apiConfiguration: { apiProvider: "anthropic", apiModelId: "claude-sonnet" } as any,
+				enhancementApiConfigId: "remote-1",
+				listApiConfigMeta: [
+					{ id: "remote-1", name: "Remote helper" },
+					{ id: "local-1", name: "Local helper" },
+				],
+				helperLocalityPreference: "require",
+			},
+			providerSettingsManager: { getProfile } as any,
+		})
+
+		expect(route.source).toBe("local_profile")
+		expect(route.provider).toBe("ollama")
 	})
 })

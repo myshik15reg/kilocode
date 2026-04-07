@@ -1,5 +1,5 @@
 // kilocode_change - new file
-import { setupTestEnvironment } from "../helpers"
+import { setupTestEnvironment, verifyExtensionInstalled } from "../helpers"
 import { test, expect, type TestFixtures } from "./playwright-base-test"
 
 test.describe("Sanity Tests", () => {
@@ -10,6 +10,12 @@ test.describe("Sanity Tests", () => {
 		await expect(page.locator(".activitybar")).toBeVisible()
 		console.log("✅ Activity bar visible")
 
-		await setupTestEnvironment(page)
+		await verifyExtensionInstalled(page)
+
+		if (process.env.OPENROUTER_API_KEY) {
+			await setupTestEnvironment(page)
+		} else {
+			console.log("Skipping API-backed Playwright setup because OPENROUTER_API_KEY is not set")
+		}
 	})
 })

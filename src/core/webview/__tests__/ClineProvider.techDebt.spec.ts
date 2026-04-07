@@ -71,15 +71,20 @@ describe("ClineProvider tech debt", () => {
 			recentContext: "There may be follow-up tests needed",
 		})
 
-		expect(HelperModelRouter.selectConfig).toHaveBeenCalledWith({
-			job: "tech_debt_extract",
-			state: {
-				apiConfiguration: { apiProvider: "anthropic", apiModelId: "claude-sonnet" },
-				condensingApiConfigId: "helper-1",
-				listApiConfigMeta: [{ id: "helper-1", name: "Cheap helper" }],
-			},
-			providerSettingsManager: (provider as any).providerSettingsManager,
-		})
+		expect(HelperModelRouter.selectConfig).toHaveBeenCalledWith(
+			expect.objectContaining({
+				job: "tech_debt_extract",
+				state: expect.objectContaining({
+					apiConfiguration: { apiProvider: "anthropic", apiModelId: "claude-sonnet" },
+					condensingApiConfigId: "helper-1",
+					listApiConfigMeta: [{ id: "helper-1", name: "Cheap helper" }],
+				}),
+				providerSettingsManager: (provider as any).providerSettingsManager,
+				decisionContext: expect.objectContaining({
+					taskId: "task-1",
+				}),
+			}),
+		)
 		expect(TechDebtService.extractItems).toHaveBeenCalledWith({
 			sourceTaskId: "task-1",
 			rootTaskId: "task-1",

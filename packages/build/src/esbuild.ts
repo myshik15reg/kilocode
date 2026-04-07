@@ -58,6 +58,27 @@ function copyFileWithRetrySync(srcPath: string, dstPath: string, maxRetries: num
 }
 // kilocode_change end
 
+function isRetryableRemoveError(error: unknown): error is NodeJS.ErrnoException {
+	return (
+		error instanceof Error &&
+		"code" in error &&
+		(error.code === "ENOTEMPTY" || error.code === "EBUSY" || error.code === "EPERM" || error.code === "EACCES")
+	)
+}
+
+function moveDirOutOfTheWay(dirPath: string): string | undefined {
+	if (!fs.existsSync(dirPath)) {
+		return undefined
+	}
+
+	const renamedPath = path.join(
+		path.dirname(dirPath),
+		`${path.basename(dirPath)}.__stale__${process.pid}_${Date.now()}`,
+	)
+	fs.renameSync(dirPath, renamedPath)
+	return renamedPath
+}
+
 function rmDir(dirPath: string, maxRetries: number = 5): void {
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
 		try {
@@ -65,14 +86,6 @@ function rmDir(dirPath: string, maxRetries: number = 5): void {
 			return
 		} catch (error) {
 			const isLastAttempt = attempt === maxRetries
-
-			const isRetryableError =
-				error instanceof Error &&
-				"code" in error &&
-				(error.code === "ENOTEMPTY" ||
-					error.code === "EBUSY" ||
-					error.code === "EPERM" ||
-					error.code === "EACCES")
 
 			if (isLastAttempt) {
 				// On the last attempt, try alternative cleanup methods.
@@ -90,12 +103,37 @@ function rmDir(dirPath: string, maxRetries: number = 5): void {
 					fs.rmSync(dirPath, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
 					return
 				} catch (finalError) {
+					if (process.platform === "win32") {
+						try {
+							const movedPath = moveDirOutOfTheWay(dirPath)
+							if (movedPath) {
+								console.warn(`[rmDir] Deferred cleanup for ${dirPath} via ${movedPath}`)
+								try {
+									fs.rmSync(movedPath, {
+										recursive: true,
+										force: true,
+										maxRetries: 3,
+										retryDelay: 100,
+									})
+								} catch (deferredError) {
+									console.warn(
+										`[rmDir] Deferred cleanup still failed for ${movedPath}:`,
+										deferredError,
+									)
+								}
+								return
+							}
+						} catch (renameError) {
+							console.warn(`[rmDir] Failed to defer cleanup for ${dirPath}:`, renameError)
+						}
+					}
+
 					console.error(`[rmDir] Failed to remove ${dirPath} after ${maxRetries} attempts:`, finalError)
 					throw finalError
 				}
 			}
 
-			if (!isRetryableError) {
+			if (!isRetryableRemoveError(error)) {
 				throw error // Re-throw if it's not a retryable error.
 			}
 

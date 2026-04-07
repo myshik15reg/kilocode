@@ -1,4 +1,4 @@
-import { z } from "zod"
+﻿import { z } from "zod"
 
 import type { GlobalSettings, RooCodeSettings, GlobalState } from "./global-settings.js"
 import type { ProviderSettings, ProviderSettingsEntry } from "./provider-settings.js"
@@ -250,6 +250,7 @@ export interface ExtensionMessage {
 		| "taskMetadataSaved" // kilocode_change: File save event for task metadata
 		| "managedIndexerState" // kilocode_change
 		| "singleCompletionResult" // kilocode_change
+		| "localAiDiagnosticsResult" // kilocode_change
 		| "deviceAuthStarted" // kilocode_change: Device auth initiated
 		| "deviceAuthPolling" // kilocode_change: Device auth polling update
 		| "deviceAuthComplete" // kilocode_change: Device auth successful
@@ -268,6 +269,7 @@ export interface ExtensionMessage {
 	completionRequestId?: string // Correlation ID from request
 	completionText?: string // The completed text
 	completionError?: string // Error message if failed
+	localAiDiagnostics?: LocalAiDiagnosticsResultPayload // kilocode_change
 	payload?:
 		| ProfileDataResponsePayload
 		| BalanceDataResponsePayload
@@ -479,6 +481,23 @@ export interface ExtensionMessage {
 	// kilocode_change end: Review mode
 }
 
+// kilocode_change start
+export type LocalAiDiagnosticsStatus = "ok" | "warning" | "failed"
+
+export interface LocalAiDiagnosticsCheckResult {
+	checkId: string
+	status: LocalAiDiagnosticsStatus
+	title: string
+	message: string
+	details?: string[]
+}
+
+export interface LocalAiDiagnosticsResultPayload {
+	ranAt: string
+	checks: LocalAiDiagnosticsCheckResult[]
+}
+// kilocode_change end
+
 export interface OpenAiCodexRateLimitsMessage {
 	type: "openAiCodexRateLimits"
 	values?: OpenAiCodexRateLimitInfo
@@ -530,6 +549,14 @@ export type ExtensionState = Pick<
 	| "problematicProcessRestartLimit" // kilocode_change
 	| "parallelAgentsEnabled" // kilocode_change
 	| "parallelAgentCount" // kilocode_change
+	| "orchestrationTelemetryEnabled" // kilocode_change
+	| "helperLocalityPreference" // kilocode_change
+	| "orchestrationEscalationSensitivity" // kilocode_change
+	| "structuredDelegationEnabled"
+	| "evaluatorPassEnabled"
+	| "memoryPromotionEnabled"
+	| "retrievalPolicy"
+	| "queryClassifierDebug"
 	| "contextRoutingEnabled" // kilocode_change
 	| "contextRoutingFastThresholdPercent" // kilocode_change
 	| "contextRoutingDeepThresholdPercent" // kilocode_change
@@ -667,10 +694,14 @@ export type ExtensionState = Pick<
 	marketplaceInstalledMetadata?: { project: Record<string, any>; global: Record<string, any> }
 	profileThresholds: Record<string, number>
 	hasOpenedModeSelector: boolean
+	hasMorphApiKey?: boolean
 	openRouterImageApiKey?: string
+	hasOpenRouterImageApiKey?: boolean
 	kiloCodeImageApiKey?: string
+	hasKiloCodeImageApiKey?: boolean
 	// kilocode_change start: LiteLLM image generation settings
 	litellmImageApiKey?: string
+	hasLitellmImageApiKey?: boolean
 	litellmImageBaseUrl?: string
 	// kilocode_change end
 	openRouterUseMiddleOutTransform?: boolean
@@ -958,6 +989,7 @@ export interface WebviewMessage {
 		| "insertTextIntoTextarea"
 		| "showMdmAuthRequiredNotification"
 		| "imageGenerationSettings"
+		| "openRouterImageApiKey" // kilocode_change
 		| "kiloCodeImageApiKey" // kilocode_change
 		| "litellmImageApiKey" // kilocode_change
 		| "litellmImageBaseUrl" // kilocode_change
@@ -984,6 +1016,7 @@ export interface WebviewMessage {
 		| "sessionShow" // kilocode_change
 		| "sessionSelect" // kilocode_change
 		| "singleCompletion" // kilocode_change
+		| "runLocalAiDiagnostics" // kilocode_change
 		| "acceptTechDebt"
 		| "dismissTechDebt"
 		| "convertTechDebtToTask"
@@ -1119,6 +1152,9 @@ export interface WebviewMessage {
 		codebaseIndexSearchMaxResults?: number
 		codebaseIndexSearchMinScore?: number
 		// kilocode_change start
+		codebaseIndexAdaptiveRetrievalEnabled?: boolean
+		codebaseIndexAdaptiveRetrievalMinConfidence?: number
+		codebaseIndexAdaptiveRetrievalKneeSensitivity?: number
 		codebaseIndexRerankEnabled?: boolean
 		codebaseIndexRerankBaseUrl?: string
 		codebaseIndexRerankModelId?: string

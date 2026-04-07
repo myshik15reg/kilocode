@@ -105,24 +105,18 @@ describe("API - SendMessage Command", () => {
 		})
 	})
 
-	it("should log SendMessage command when processed via IPC", async () => {
-		// This test verifies the logging behavior when the command comes through IPC
-		// We need to simulate the IPC handler directly since we can't easily test the full IPC flow
-
+	it("should log SendMessage command without raw payload when processed via IPC", async () => {
 		const messageText = "Test message from IPC"
 		const commandData = {
 			text: messageText,
 			images: undefined,
 		}
 
-		// Simulate the IPC command handler calling sendMessage
-		mockLog(`[API] SendMessage -> ${commandData.text}`)
+		mockLog(`[API] SendMessage -> textLength=${commandData.text.length}, images=0`)
 		await api.sendMessage(commandData.text, commandData.images)
 
-		// Assert that logging occurred
-		expect(mockLog).toHaveBeenCalledWith(`[API] SendMessage -> ${messageText}`)
-
-		// Assert that the message was sent
+		expect(mockLog).toHaveBeenCalledWith(`[API] SendMessage -> textLength=${messageText.length}, images=0`)
+		expect(mockLog).not.toHaveBeenCalledWith(expect.stringContaining(messageText))
 		expect(mockPostMessageToWebview).toHaveBeenCalledWith({
 			type: "invoke",
 			invoke: "sendMessage",

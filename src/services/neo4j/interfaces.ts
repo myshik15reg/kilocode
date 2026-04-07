@@ -15,15 +15,7 @@ export interface CodeEntity {
 /**
  * Type of code entity
  */
-export type CodeEntityType =
-	| 'file'
-	| 'function'
-	| 'class'
-	| 'interface'
-	| 'variable'
-	| 'import'
-	| 'module'
-	| 'type'
+export type CodeEntityType = "file" | "function" | "class" | "interface" | "variable" | "import" | "module" | "type"
 
 /**
  * Represents a relationship between code entities
@@ -42,15 +34,15 @@ export interface CodeRelationship {
  * Type of relationship between entities
  */
 export type RelationshipType =
-	| 'imports'
-	| 'calls'
-	| 'inherits'
-	| 'implements'
-	| 'references'
-	| 'defines'
-	| 'contains'
-	| 'uses'
-	| 'exports'
+	| "imports"
+	| "calls"
+	| "inherits"
+	| "implements"
+	| "references"
+	| "defines"
+	| "contains"
+	| "uses"
+	| "exports"
 
 /**
  * Result of extraction process
@@ -125,6 +117,15 @@ export interface HybridSearchResult {
 	}
 	id?: string | number
 	payload?: any
+	// kilocode_change start
+	retrievalPath?: string[]
+	vectorScore?: number
+	lexicalScore?: number
+	rerankScore?: number
+	sources?: import("../code-index/interfaces").RetrievalSource[]
+	warnings?: string[]
+	postprocessUsed?: boolean
+	// kilocode_change end
 }
 
 /**
@@ -138,7 +139,7 @@ export interface ImpactAnalysis {
 	breakingChanges: Array<{
 		entity: CodeEntity
 		reason: string
-		severity: 'low' | 'medium' | 'high'
+		severity: "low" | "medium" | "high"
 	}>
 	recommendations: string[]
 }

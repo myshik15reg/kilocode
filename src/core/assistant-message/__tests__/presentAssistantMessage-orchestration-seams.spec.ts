@@ -165,7 +165,7 @@ describe("presentAssistantMessage - orchestration seams", () => {
 				type: "tool_use",
 				id: "tool-read-1",
 				name: "read_file",
-				params: { files: [{ path: "src/a.ts" }] },
+				params: {},
 				nativeArgs: { files: [{ path: "src/a.ts" }] },
 				partial: false,
 			},
@@ -220,6 +220,46 @@ describe("presentAssistantMessage - orchestration seams", () => {
 		)
 		expect(task.didAlreadyUseTool).toBe(true)
 		expect(task.userMessageContentReady).toBe(true)
+	})
+
+	it("validates native read_file arguments from nativeArgs when orchestration falls back to local execution", async () => {
+		const { task } = createMockTask()
+		task.assistantMessageContent = [
+			{
+				type: "tool_use",
+				id: "tool-read-local-1",
+				name: "read_file",
+				params: {},
+				nativeArgs: { files: [{ path: "src/local.ts" }] },
+				partial: false,
+			},
+		]
+		task.dispatchOrchestrationExecution.mockResolvedValue({ handled: false })
+		mocks.readFileHandle.mockImplementation(async (_cline: any, _block: any, callbacks: any) => {
+			callbacks.pushToolResult("local file content")
+		})
+
+		await presentAssistantMessage(task)
+
+		expect(mocks.validateToolUse).toHaveBeenCalledWith(
+			"read_file",
+			"code",
+			[],
+			{ apply_diff: false },
+			{ files: [{ path: "src/local.ts" }] },
+			{},
+			["read_file"],
+		)
+		expect(mocks.readFileHandle).toHaveBeenCalledTimes(1)
+		expect(task.userMessageContent).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					type: "tool_result",
+					tool_use_id: "tool-read-local-1",
+					content: "local file content",
+				}),
+			]),
+		)
 	})
 
 	it("returns the default placeholder when a batched tool produces no text result", async () => {

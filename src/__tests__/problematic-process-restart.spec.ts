@@ -34,6 +34,8 @@ describe("problematic process restart foundation", () => {
 			updateTaskHistory: (item: any) => provider.updateTaskHistory(item),
 			createTaskWithHistoryItem: (historyItem: any, options?: { startTask?: boolean }) =>
 				provider.createTaskWithHistoryItem(historyItem, options),
+			getCurrentTask: () => provider.getCurrentTask?.(),
+			removeClineFromStack: () => provider.removeClineFromStack?.() ?? Promise.resolve(),
 			log: logSpy,
 		})
 		provider.restartTaskFromHistoryWithHandoff = ClineProvider.prototype["restartTaskFromHistoryWithHandoff"]

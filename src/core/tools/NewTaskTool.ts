@@ -1,15 +1,14 @@
 import * as vscode from "vscode"
 
-import { TodoItem } from "@roo-code/types"
+import { RetrievalMode, TodoItem } from "@roo-code/types"
 
 import { Task } from "../task/Task"
 import { getModeBySlug } from "../../shared/modes"
 import { formatResponse } from "../prompts/responses"
-import { t } from "../../i18n"
 import { parseMarkdownChecklist } from "./UpdateTodoListTool"
 import { Package } from "../../shared/package"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
-import type { ToolUse } from "../../shared/tools"
+import type { NativeToolArgs, ToolUse } from "../../shared/tools"
 import {
 	adaptiveRoutingAdvisor,
 	buildAdaptiveRoutingProfilePalette,
@@ -19,16 +18,15 @@ import {
 	sanitizeTaskArchetype,
 } from "../orchestration/pattern-memory/OrchestrationPatternMemoryService"
 import { ProviderPatternMemoryRuntime } from "../orchestration/pattern-memory/ProviderPatternMemoryRuntime"
+import {
+	buildStructuredDelegationMessage,
+	defaultRoleForTaskIntent,
+	getStructuredDelegationBackgroundRequirements,
+	hasStructuredDelegationContent,
+	normalizeStructuredDelegation,
+} from "../orchestration/structuredDelegation"
 
-interface NewTaskParams {
-	mode: string
-	message: string
-	todos?: string
-	execution?: "auto" | "foreground" | "background"
-	isolation?: "auto" | "shared" | "worktree"
-	branchFromTaskId?: string
-	branchStrategy?: "full" | "summary"
-}
+type NewTaskParams = NativeToolArgs["new_task"]
 
 export class NewTaskTool extends BaseTool<"new_task"> {
 	readonly name = "new_task" as const
@@ -42,15 +40,43 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			isolation: (params.isolation as NewTaskParams["isolation"]) || undefined,
 			branchFromTaskId: params.branchFromTaskId,
 			branchStrategy: (params.branchStrategy as NewTaskParams["branchStrategy"]) || undefined,
+			deliverable: params.deliverable,
+			constraints: params.constraints,
+			acceptanceCriteria: params.acceptanceCriteria,
+			inputs: params.inputs,
+			evidenceNeeded: params.evidenceNeeded,
+			expectedArtifact: params.expectedArtifact,
+			role: params.role,
+			permissions: params.permissions,
+			retryBudget: params.retryBudget,
+			retrievalPackId: params.retrievalPackId,
 		}
 	}
 
 	async execute(params: NewTaskParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { mode, message, todos, execution, isolation, branchFromTaskId, branchStrategy } = params
-		const { askApproval, handleError, pushToolResult, toolProtocol, toolCallId } = callbacks
+		const {
+			mode,
+			message,
+			todos,
+			execution,
+			isolation,
+			branchFromTaskId,
+			branchStrategy,
+			deliverable,
+			constraints,
+			acceptanceCriteria,
+			inputs,
+			evidenceNeeded,
+			expectedArtifact,
+			role,
+			permissions,
+			retryBudget,
+			retrievalPackId,
+		} = params
+		const { askApproval, handleError, pushToolResult } = callbacks
+		const normalizedTodos = todos ?? undefined
 
 		try {
-			// Validate required parameters.
 			if (!mode) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("new_task")
@@ -67,9 +93,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				return
 			}
 
-			// Get the VSCode setting for requiring todos.
 			const provider = task.providerRef.deref()
-
 			if (!provider) {
 				pushToolResult(formatResponse.toolError("Provider reference lost"))
 				return
@@ -79,14 +103,10 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			const normalizedExplicitExecution =
 				execution === "foreground" || execution === "background" ? execution : undefined
 
-			// Use Package.name (dynamic at build time) as the VSCode configuration namespace.
-			// Supports multiple extension variants (e.g., stable/nightly) without hardcoded strings.
 			const requireTodos = vscode.workspace
 				.getConfiguration(Package.name)
 				.get<boolean>("newTaskRequireTodos", false)
 
-			// Check if todos are required based on VSCode setting.
-			// Note: `undefined` means not provided, empty string is valid.
 			if (requireTodos && todos === undefined) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("new_task")
@@ -95,12 +115,11 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				return
 			}
 
-			// Parse todos if provided, otherwise use empty array
 			let todoItems: TodoItem[] = []
 			if (todos) {
 				try {
 					todoItems = parseMarkdownChecklist(todos)
-				} catch (error) {
+				} catch {
 					task.consecutiveMistakeCount++
 					task.recordToolError("new_task")
 					task.didToolFailInCurrentTurn = true
@@ -110,18 +129,43 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			}
 
 			task.consecutiveMistakeCount = 0
-
-			// Un-escape one level of backslashes before '@' for hierarchical subtasks
-			// Un-escape one level: \\@ -> \@ (removes one backslash for hierarchical subtasks)
 			const unescapedMessage = message.replace(/\\\\@/g, "\\@")
-
-			// Verify the mode exists
 			const targetMode = getModeBySlug(mode, state?.customModes)
-
 			if (!targetMode) {
 				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode}`))
 				return
 			}
+
+			const structuredDelegation = normalizeStructuredDelegation({
+				message: unescapedMessage,
+				deliverable,
+				constraints,
+				acceptanceCriteria,
+				inputs,
+				evidenceNeeded,
+				expectedArtifact,
+				role,
+				permissions,
+				retryBudget,
+				retrievalPackId,
+			})
+			const structuredDelegationEnabled = state?.structuredDelegationEnabled === true
+			const structuredContentProvided = hasStructuredDelegationContent(structuredDelegation)
+			const shouldUseStructuredDelegation = structuredDelegationEnabled || structuredContentProvided
+			const effectiveRole = shouldUseStructuredDelegation
+				? (structuredDelegation.role ?? defaultRoleForTaskIntent(structuredDelegation.taskIntent))
+				: structuredDelegation.role
+			const structuredPayload = shouldUseStructuredDelegation
+				? { ...structuredDelegation, ...(effectiveRole ? { role: effectiveRole } : {}) }
+				: structuredDelegation
+			const renderedMessage = shouldUseStructuredDelegation
+				? buildStructuredDelegationMessage(structuredPayload)
+				: unescapedMessage
+			const backgroundRequirements = structuredDelegationEnabled
+				? getStructuredDelegationBackgroundRequirements(structuredDelegation)
+				: []
+			const retrievalMode = ((state?.retrievalPolicy as RetrievalMode | undefined) ??
+				"adaptive") satisfies RetrievalMode
 
 			const patternMemoryService = new OrchestrationPatternMemoryService(
 				new ProviderPatternMemoryRuntime(provider as any),
@@ -131,7 +175,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				message: unescapedMessage,
 				branchFromTaskId,
 				branchStrategy,
-				todos,
+				todos: normalizedTodos,
 			})
 			const patternRecommendation = patternMemoryService.getRecommendation({
 				taskArchetype: patternTaskArchetype,
@@ -145,7 +189,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				explicitMode: mode,
 				explicitExecution: normalizedExplicitExecution ?? recommendedExecution,
 				message: unescapedMessage,
-				todos,
+				todos: normalizedTodos,
 				branchFromTaskId,
 				currentMode: state?.mode,
 				currentProfileName: state?.currentApiConfigName,
@@ -159,12 +203,15 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 					balancedProfileId: state?.enhancementApiConfigId ?? state?.terminalCommandApiConfigId,
 				}),
 			})
-			const effectiveExecution =
-				normalizedExplicitExecution ??
-				(routingRecommendation.execution.source === "recommended" &&
+			const recommendedBackgroundExecution =
+				routingRecommendation.execution.source === "recommended" &&
 				routingRecommendation.execution.value === "background"
 					? "background"
-					: undefined)
+					: undefined
+			const requestedExecution = normalizedExplicitExecution ?? recommendedBackgroundExecution
+			const backgroundBlockedByStructuredDelegation =
+				structuredDelegationEnabled && requestedExecution === "background" && backgroundRequirements.length > 0
+			const effectiveExecution = backgroundBlockedByStructuredDelegation ? undefined : requestedExecution
 			const recommendedProfileClass =
 				patternRecommendation?.suggestion.executionType === "background"
 					? patternRecommendation.suggestion.profileClass
@@ -175,17 +222,33 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				routingRecommendation.profile.helperProfile !== state?.currentApiConfigName
 					? routingRecommendation.profile.helperProfile
 					: undefined
-
 			const toolMessage = JSON.stringify({
 				tool: "newTask",
 				mode: targetMode.name,
 				content: message,
+				renderedContent: renderedMessage,
 				todos: todoItems,
 				execution: effectiveExecution,
 				isolation,
 				helperProfile: effectiveHelperProfile,
 				routingRecommendation,
 				patternRecommendation,
+				structuredDelegation: shouldUseStructuredDelegation
+					? {
+							goal: structuredDelegation.message,
+							role: effectiveRole,
+							deliverable: structuredDelegation.deliverable,
+							constraints: structuredDelegation.constraints,
+							acceptanceCriteria: structuredDelegation.acceptanceCriteria,
+							inputs: structuredDelegation.inputs,
+							evidenceNeeded: structuredDelegation.evidenceNeeded,
+							expectedArtifact: structuredDelegation.expectedArtifact,
+							permissions: structuredDelegation.permissions,
+							retryBudget: structuredDelegation.retryBudget,
+							retrievalPackId: structuredDelegation.retrievalPackId,
+							backgroundRequirements,
+						}
+					: undefined,
 				explainability: {
 					mode: {
 						value: routingRecommendation.mode.value,
@@ -200,8 +263,9 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 					execution: {
 						value: effectiveExecution ?? "foreground",
 						source: normalizedExplicitExecution ? "explicit" : routingRecommendation.execution.source,
-						reasonCode:
-							normalizedExplicitExecution === "background"
+						reasonCode: backgroundBlockedByStructuredDelegation
+							? "structured_delegation_required"
+							: normalizedExplicitExecution === "background"
 								? "execution_explicit_background"
 								: normalizedExplicitExecution === "foreground"
 									? "execution_explicit_foreground"
@@ -220,27 +284,32 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 									? "helper_profile_selected"
 									: "helper_profile_runtime_default",
 					},
+					taskIntent: structuredDelegation.taskIntent,
+					retrievalMode,
+					structuredDelegation: shouldUseStructuredDelegation,
+					validatorPolicy: structuredDelegationEnabled
+						? backgroundBlockedByStructuredDelegation
+							? `background_requires:${backgroundRequirements.join(",")}`
+							: "structured_background_enabled"
+						: undefined,
 				},
 				branchFromTaskId,
 				branchStrategy,
 			})
 
 			const didApprove = await askApproval("tool", toolMessage)
-
 			if (!didApprove) {
 				return
 			}
-
-			// Provider is guaranteed to be defined here due to earlier check.
 
 			if (task.enableCheckpoints) {
 				task.checkpointSave(true)
 			}
 
-			// Delegate parent and open child as sole active task
 			const child = await (provider as any).delegateParentAndOpenChild({
 				parentTaskId: task.taskId,
-				message: unescapedMessage,
+				parentTask: task,
+				message: renderedMessage,
 				initialTodos: todoItems,
 				mode,
 				execution: effectiveExecution,
@@ -251,17 +320,32 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				recommendationReasonCode: patternRecommendation?.reasonCode,
 				branchFromTaskId,
 				branchStrategy,
+				goal: structuredDelegation.message,
+				doneWhen: structuredDelegation.acceptanceCriteria?.length
+					? `Meet all acceptance criteria:\n- ${structuredDelegation.acceptanceCriteria.join("\n- ")}`
+					: undefined,
+				constraints: structuredDelegation.constraints,
+				deliverable: structuredDelegation.deliverable,
+				acceptanceCriteria: structuredDelegation.acceptanceCriteria,
+				inputs: structuredDelegation.inputs,
+				evidenceNeeded: structuredDelegation.evidenceNeeded,
+				expectedArtifact: structuredDelegation.expectedArtifact,
+				role: effectiveRole,
+				permissions: structuredDelegation.permissions,
+				retryBudget: structuredDelegation.retryBudget,
+				retrievalPackId: structuredDelegation.retrievalPackId,
+				taskIntent: structuredDelegation.taskIntent,
+				retrievalMode,
+				structuredDelegation: shouldUseStructuredDelegation,
 			})
 
-			// Reflect delegation in tool result (no pause/unpause, no wait)
 			pushToolResult(`Delegated to child task ${child.taskId}`)
 			return
 		} catch (error) {
-			await handleError("creating new task", error)
+			await handleError("creating new task", error as Error)
 			return
 		}
 	}
-
 	override async handlePartial(task: Task, block: ToolUse<"new_task">): Promise<void> {
 		const mode: string | undefined = block.params.mode
 		const message: string | undefined = block.params.message

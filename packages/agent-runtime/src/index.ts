@@ -63,6 +63,11 @@ export type {
 	ExtensionMessage,
 	WebviewMessage,
 	ExtensionState,
+	AgentBudgetGuardrails,
+	AgentExecutionGuardrails,
+	AgentVerificationMode,
+	AgentStepStatus,
+	AgentDegradedToolHandling,
 	// Provider/Model types
 	ProviderSettings,
 	ProviderSettingsEntry,

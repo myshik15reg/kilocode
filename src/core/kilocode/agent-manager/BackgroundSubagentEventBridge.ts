@@ -3,7 +3,7 @@ import type { SubagentResultEvent, SubagentStatusEvent } from "@roo-code/types"
 
 export interface BackgroundSubagentCompletionOutcome {
 	isSuccess: boolean
-	terminalStatus: "completed" | "cancelled" | "failed"
+	terminalStatus: "completed" | "cancelled" | "failed" | "abstained"
 }
 
 export interface BackgroundSubagentEventBridgeDependencies {

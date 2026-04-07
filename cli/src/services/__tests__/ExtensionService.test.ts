@@ -2,6 +2,25 @@ import { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll } 
 import { ExtensionService, createExtensionService } from "../extension.js"
 import type { WebviewMessage } from "../../types/messages.js"
 import * as path from "path"
+vi.mock("../logs.js", () => ({
+	logs: {
+		debug: vi.fn(),
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+	},
+}))
+
+vi.mock("../telemetry/TelemetryService.js", () => ({
+	TelemetryService: {
+		getInstance: () => ({
+			trackExtensionMessageReceived: vi.fn(),
+			trackExtensionMessageSent: vi.fn(),
+		}),
+	},
+}))
+
+const EXTENSION_SERVICE_HOOK_TIMEOUT_MS = 30000
 
 // Mock the extension-paths module
 vi.mock("../../utils/extension-paths.js", () => ({
@@ -105,7 +124,10 @@ describe("ExtensionService", () => {
 					const mockProvider = {
 						handleCLIMessage: vi.fn(async () => {}),
 					}
-					globalWithHost.__extensionHost.registerWebviewProvider("alfa-code-assistant.SidebarProvider", mockProvider)
+					globalWithHost.__extensionHost.registerWebviewProvider(
+						"alfa-code-assistant.SidebarProvider",
+						mockProvider,
+					)
 				}
 
 				// Return a mock API
@@ -253,7 +275,7 @@ describe("ExtensionService", () => {
 				extensionBundlePath: "/mock/extension/dist/extension.js",
 				extensionRootPath: "/mock/extension",
 			})
-		})
+		}, EXTENSION_SERVICE_HOOK_TIMEOUT_MS)
 
 		it("should emit ready event on initialization", async () => {
 			const readyHandler = vi.fn()
@@ -346,7 +368,7 @@ describe("ExtensionService", () => {
 				extensionRootPath: "/mock/extension",
 			})
 			await service.initialize()
-		})
+		}, EXTENSION_SERVICE_HOOK_TIMEOUT_MS)
 
 		it("should send webview messages", async () => {
 			const message: WebviewMessage = {
@@ -387,7 +409,7 @@ describe("ExtensionService", () => {
 				extensionRootPath: "/mock/extension",
 			})
 			await service.initialize()
-		})
+		}, EXTENSION_SERVICE_HOOK_TIMEOUT_MS)
 
 		it("should return null state before initialization", () => {
 			const uninitializedService = new ExtensionService({
@@ -413,7 +435,7 @@ describe("ExtensionService", () => {
 				extensionRootPath: "/mock/extension",
 			})
 			await service.initialize()
-		})
+		}, EXTENSION_SERVICE_HOOK_TIMEOUT_MS)
 
 		it("should provide access to message bridge", () => {
 			const bridge = service.getMessageBridge()
@@ -453,7 +475,7 @@ describe("ExtensionService", () => {
 				extensionRootPath: "/mock/extension",
 			})
 			await service.initialize()
-		})
+		}, EXTENSION_SERVICE_HOOK_TIMEOUT_MS)
 
 		it("should dispose successfully", async () => {
 			// Note: The disposed event is emitted after removeAllListeners() is called,

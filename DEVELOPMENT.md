@@ -198,21 +198,38 @@ Replace `[version]` with the current version number.
 
 ## Testing
 
-AlfaCode assistant uses several types of tests to ensure quality:
+AlfaCode assistant uses several test contours across the monorepo: unit, integration/E2E, load/performance, and targeted mutation testing.
+
+### Testing Matrix
+
+See [docs/testing-matrix.md](docs/testing-matrix.md) for the current command matrix, the latest verified audit results, coverage details, and the current integration smoke status.
 
 ### Unit Tests
 
-Run unit tests with:
+Run the monorepo unit pipeline with:
 
 ```bash
 pnpm test
 ```
 
-This runs both extension and webview tests.
+For targeted package runs, prefer the package-local commands documented in the testing matrix.
 
 ### End-to-End Tests
 
-For more details on E2E tests, see [apps/vscode-e2e](apps/vscode-e2e/).
+The repository currently includes multiple end-to-end and integration entry points, including:
+
+- `pnpm --dir cli test:integration`
+- `pnpm --dir apps/vscode-e2e test:run`
+- `pnpm --dir apps/playwright-e2e playwright`
+
+### Coverage and Mutation
+
+The `@kilocode/agent-runtime` package now includes reproducible scripts for targeted coverage and mutation checks:
+
+```bash
+pnpm --dir packages/agent-runtime test:coverage
+pnpm --dir packages/agent-runtime test:mutation
+```
 
 ## Linting and Type Checking
 

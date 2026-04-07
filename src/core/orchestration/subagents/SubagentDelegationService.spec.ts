@@ -13,6 +13,7 @@ vi.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureTaskOutcomeDelegated: vi.fn(),
+			captureDelegationHandoffUsed: vi.fn(),
 		},
 	},
 }))
@@ -34,6 +35,7 @@ describe("SubagentDelegationService", () => {
 			delegationDepth: 1,
 			rootTaskId: "parent-root",
 			rootTask: { taskId: "parent-root" },
+			apiConversationHistory: [],
 			flushPendingToolResultsToHistory: vi.fn().mockResolvedValue(undefined),
 			emit: vi.fn(),
 		}
@@ -70,6 +72,9 @@ describe("SubagentDelegationService", () => {
 			hasBackgroundRootTaskStack: vi.fn((rootTaskId) => backgroundStacks.has(rootTaskId)),
 			setBackgroundRootTaskStack: vi.fn((rootTaskId, stack) => {
 				backgroundStacks.set(rootTaskId, [...stack])
+			}),
+			deleteBackgroundRootTaskStack: vi.fn((rootTaskId) => {
+				backgroundStacks.delete(rootTaskId)
 			}),
 			setFocusedRootTaskId: vi.fn(),
 			restoreBackgroundStack: vi.fn((rootTaskId) => {
@@ -114,6 +119,7 @@ describe("SubagentDelegationService", () => {
 			mode: "code",
 			execution: "foreground",
 			isolation: "shared",
+			goal: "Investigate logs",
 		})
 
 		expect(result).toBe(childTask)
@@ -145,7 +151,11 @@ describe("SubagentDelegationService", () => {
 		)
 		expect(runtime.publishActivity).toHaveBeenCalledWith(
 			"parent-1",
-			expect.objectContaining({ status: "running", taskId: "child-1" }),
+			expect.objectContaining({
+				status: "running",
+				taskId: "child-1",
+				explainability: expect.objectContaining({ strategy: "sequential", canAbstain: true }),
+			}),
 		)
 		expect(runtime.emitTaskDelegated).toHaveBeenCalledWith("parent-1", "child-1")
 		expect(TelemetryService.instance.captureTaskOutcomeDelegated).toHaveBeenCalledWith("parent-1", {
@@ -154,6 +164,59 @@ describe("SubagentDelegationService", () => {
 			delegationDepth: 2,
 			isBackground: false,
 		})
+		expect(TelemetryService.instance.captureDelegationHandoffUsed).toHaveBeenCalledWith(
+			"parent-1",
+			"child-1",
+			"sequential",
+			true,
+		)
+	})
+
+	it("falls back to the explicit parent task when foreground delegation loses current stack state", async () => {
+		currentStack = []
+		const service = new SubagentDelegationService(runtime)
+
+		const result = await service.delegateParentAndOpenChild({
+			parentTaskId: "parent-1",
+			parentTask,
+			message: "Research",
+			initialTodos: [{ id: "todo-1", content: "Check logs", status: "pending" } as any],
+			mode: "code",
+			execution: "foreground",
+		})
+
+		expect(result).toBe(childTask)
+		expect(runtime.createTask).toHaveBeenCalledWith(
+			"Research",
+			undefined,
+			parentTask,
+			expect.objectContaining({ execution: "foreground" }),
+		)
+		expect(runtime.restoreBackgroundStack).toHaveBeenCalledWith("parent-root")
+	})
+
+	it("falls back to the explicit parent task when background launch has no current task", async () => {
+		currentStack = []
+		const service = new SubagentDelegationService(runtime)
+
+		const result = await service.launchBackgroundSubagent({
+			parentTaskId: "parent-1",
+			parentTask,
+			message: "Research",
+			initialTodos: [{ id: "todo-1", content: "Check logs", status: "pending" } as any],
+			mode: "code",
+			isolation: "shared",
+		})
+
+		expect(result).toBe(childTask)
+		expect(coordinator.launch).toHaveBeenCalledWith(
+			expect.objectContaining({
+				parentTaskId: "parent-1",
+				rootTaskId: "parent-root",
+				mode: "code",
+				execution: "background",
+			}),
+		)
 	})
 
 	it("preflights background capacity before creating child tasks and falls back cleanly", async () => {
@@ -177,6 +240,7 @@ describe("SubagentDelegationService", () => {
 				execution: "background",
 				isolation: "shared",
 				relayPolicy: "parent_only",
+				handoff: expect.objectContaining({ strategy: "sequential", canAbstain: true }),
 			}),
 		)
 		expect(runtime.createTask).not.toHaveBeenCalled()
@@ -192,6 +256,10 @@ describe("SubagentDelegationService", () => {
 			initialTodos: [{ id: "todo-1", content: "Check logs", status: "pending" } as any],
 			mode: "code",
 			isolation: "shared",
+			goal: "Check logs thoroughly",
+			doneWhen: "Return root cause summary",
+			constraints: ["No file edits"],
+			budget: { maxSteps: 3 },
 		})
 
 		expect(result).toBe(childTask)
@@ -218,10 +286,15 @@ describe("SubagentDelegationService", () => {
 				execution: "background",
 				isolation: "shared",
 				relayPolicy: "parent_only",
-				handoff: {
+				handoff: expect.objectContaining({
 					summary: "Research",
-					context: ["- Check logs"],
-				},
+					goal: "Check logs thoroughly",
+					doneWhen: "Return root cause summary",
+					constraints: ["No file edits"],
+					budget: { maxSteps: 3 },
+					strategy: "sequential",
+					canAbstain: true,
+				}),
 			}),
 		)
 		expect(runtime.updateTaskHistory).toHaveBeenCalledWith(
@@ -237,6 +310,12 @@ describe("SubagentDelegationService", () => {
 			delegationDepth: 2,
 			isBackground: true,
 		})
+		expect(TelemetryService.instance.captureDelegationHandoffUsed).toHaveBeenCalledWith(
+			"parent-1",
+			"child-1",
+			"sequential",
+			true,
+		)
 	})
 
 	it("passes helper profile metadata into background launch requests", async () => {
@@ -253,6 +332,165 @@ describe("SubagentDelegationService", () => {
 
 		expect(coordinator.hasCapacity).toHaveBeenCalledWith(expect.objectContaining({ helperProfile: "Cheap helper" }))
 		expect(coordinator.launch).toHaveBeenCalledWith(expect.objectContaining({ helperProfile: "Cheap helper" }))
+	})
+
+	it("includes trimmed recent history in background handoff context", async () => {
+		parentTask.apiConversationHistory = [
+			{ role: "user", content: [{ type: "text", text: "Investigate the stalled worker" }] },
+			{ role: "assistant", content: [{ type: "text", text: "Worker is waiting on the queue drain" }] },
+		]
+		const service = new SubagentDelegationService(runtime)
+
+		await service.launchBackgroundSubagent({
+			parentTaskId: "parent-1",
+			message: "Research",
+			initialTodos: [{ id: "todo-1", content: "Check logs", status: "pending" } as any],
+			mode: "code",
+			isolation: "shared",
+		})
+
+		expect(coordinator.launch).toHaveBeenCalledWith(
+			expect.objectContaining({
+				handoff: expect.objectContaining({
+					summary: "Research",
+					context: [
+						"Recent context: user: Investigate the stalled worker",
+						"Recent context: assistant: Worker is waiting on the queue drain",
+						"- Check logs",
+					],
+				}),
+			}),
+		)
+	})
+
+	it("propagates structured delegation metadata into background launch and activity logs", async () => {
+		const service = new SubagentDelegationService(runtime)
+
+		await service.launchBackgroundSubagent({
+			parentTaskId: "parent-1",
+			message: "Research",
+			initialTodos: [{ id: "todo-1", content: "Check logs", status: "pending" } as any],
+			mode: "code",
+			isolation: "shared",
+			role: "investigator",
+			expectedArtifact: "incident-summary.md",
+			retryBudget: 2,
+			retrievalPackId: "pack-1",
+			taskIntent: "research",
+			retrievalMode: "hybrid",
+			structuredDelegation: true,
+		})
+
+		expect(coordinator.launch).toHaveBeenCalledWith(
+			expect.objectContaining({
+				role: "investigator",
+				expectedArtifact: "incident-summary.md",
+				retryBudget: 2,
+				retrievalPackId: "pack-1",
+				taskIntent: "research",
+				retrievalMode: "hybrid",
+				structuredDelegation: true,
+			}),
+		)
+		expect(runtime.publishActivity).toHaveBeenCalledWith(
+			"parent-1",
+			expect.objectContaining({
+				explainability: expect.objectContaining({
+					taskIntent: "research",
+					retrievalMode: "hybrid",
+					structuredDelegation: true,
+				}),
+			}),
+		)
+	})
+
+	it("restores the parent stack when foreground child creation fails after the parent was removed", async () => {
+		;(runtime.createTask as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("create failed"))
+		const service = new SubagentDelegationService(runtime)
+
+		await expect(
+			service.delegateParentAndOpenChild({
+				parentTaskId: "parent-1",
+				message: "Research",
+				initialTodos: [{ id: "todo-1", content: "Check logs", status: "pending" } as any],
+				mode: "code",
+				execution: "foreground",
+			}),
+		).rejects.toThrow("create failed")
+
+		expect(runtime.removeClineFromStack).toHaveBeenCalledTimes(1)
+		expect(runtime.restoreBackgroundStack).toHaveBeenCalledWith("parent-root")
+		expect(currentStack).toEqual([parentTask])
+	})
+
+	it("rolls back background launch state when coordinator launch throws", async () => {
+		const childHistoryItem = {
+			...historyItem,
+			id: "child-1",
+			task: "Child",
+			status: "active",
+		}
+		;(runtime.getTaskWithId as ReturnType<typeof vi.fn>).mockImplementation(async (taskId: string) => ({
+			historyItem: taskId === "child-1" ? childHistoryItem : historyItem,
+		}))
+		coordinator.launch.mockRejectedValueOnce(new Error("launch failed"))
+		const service = new SubagentDelegationService(runtime)
+
+		const result = await service.launchBackgroundSubagent({
+			parentTaskId: "parent-1",
+			message: "Research",
+			initialTodos: [{ id: "todo-1", content: "Check logs", status: "pending" } as any],
+			mode: "code",
+			isolation: "shared",
+		})
+
+		expect(result).toBeUndefined()
+		expect(runtime.deleteBackgroundRootTaskStack).toHaveBeenCalledWith("child-root")
+		expect(runtime.updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "child-1",
+				status: "aborted",
+				lifecycleState: "cancelled",
+				lastStopSummary: "Background delegation launch failed: launch failed",
+			}),
+		)
+		expect(currentStack).toEqual([parentTask])
+		expect(runtime.setFocusedRootTaskId).toHaveBeenCalledWith("parent-root")
+	})
+
+	it("rolls back background launch state when the coordinator falls back to foreground", async () => {
+		const childHistoryItem = {
+			...historyItem,
+			id: "child-1",
+			task: "Child",
+			status: "active",
+		}
+		;(runtime.getTaskWithId as ReturnType<typeof vi.fn>).mockImplementation(async (taskId: string) => ({
+			historyItem: taskId === "child-1" ? childHistoryItem : historyItem,
+		}))
+		coordinator.launch.mockResolvedValueOnce({ mode: "foreground", childTaskId: "child-1" })
+		const service = new SubagentDelegationService(runtime)
+
+		const result = await service.launchBackgroundSubagent({
+			parentTaskId: "parent-1",
+			message: "Research",
+			initialTodos: [{ id: "todo-1", content: "Check logs", status: "pending" } as any],
+			mode: "code",
+			isolation: "shared",
+		})
+
+		expect(result).toBeUndefined()
+		expect(runtime.deleteBackgroundRootTaskStack).toHaveBeenCalledWith("child-root")
+		expect(runtime.updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "child-1",
+				status: "aborted",
+				lifecycleState: "cancelled",
+				lastStopSummary:
+					"Background delegation launch failed: coordinator returned foreground fallback after background preflight",
+			}),
+		)
+		expect(currentStack).toEqual([parentTask])
 	})
 
 	it("enforces the delegation depth limit consistently", async () => {

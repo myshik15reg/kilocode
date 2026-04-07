@@ -41,6 +41,8 @@ export class FileWatcher implements IFileWatcher {
 	private readonly FILE_PROCESSING_CONCURRENCY_LIMIT = 10
 	private batchSegmentThreshold: number // kilocode_change
 	private maxBatchRetries: number // kilocode_change
+	private batchProcessingPromise: Promise<void> | null = null
+	private batchProcessingRequested = false
 
 	private readonly _onDidStartBatchProcessing = new vscode.EventEmitter<string[]>()
 	private readonly _onBatchProgressUpdate = new vscode.EventEmitter<{
@@ -192,13 +194,33 @@ export class FileWatcher implements IFileWatcher {
 			return
 		}
 
-		const eventsToProcess = new Map(this.accumulatedEvents)
-		this.accumulatedEvents.clear()
+		if (this.batchProcessingPromise) {
+			this.batchProcessingRequested = true
+			return this.batchProcessingPromise
+		}
 
-		const filePathsInBatch = Array.from(eventsToProcess.keys())
-		this._onDidStartBatchProcessing.fire(filePathsInBatch)
+		this.batchProcessingRequested = false
+		this.batchProcessingPromise = this.processPendingBatches().finally(() => {
+			this.batchProcessingPromise = null
+		})
+		return this.batchProcessingPromise
+	}
 
-		await this.processBatch(eventsToProcess)
+	private async processPendingBatches(): Promise<void> {
+		do {
+			this.batchProcessingRequested = false
+			if (this.accumulatedEvents.size === 0) {
+				return
+			}
+
+			const eventsToProcess = new Map(this.accumulatedEvents)
+			this.accumulatedEvents.clear()
+
+			const filePathsInBatch = Array.from(eventsToProcess.keys())
+			this._onDidStartBatchProcessing.fire(filePathsInBatch)
+
+			await this.processBatch(eventsToProcess)
+		} while (this.batchProcessingRequested || this.accumulatedEvents.size > 0)
 	}
 
 	/**
@@ -211,18 +233,44 @@ export class FileWatcher implements IFileWatcher {
 		totalFilesInBatch: number,
 		pathsToExplicitlyDelete: string[],
 		filesToUpsertDetails: Array<{ path: string; uri: vscode.Uri; originalType: "create" | "change" }>,
-	): Promise<{ overallBatchError?: Error; clearedPaths: Set<string>; processedCount: number }> {
+	): Promise<{
+		overallBatchError?: Error
+		clearedPaths: Set<string>
+		processedCount: number
+		changedPaths: string[]
+		changedFileBackups: Map<string, PointStruct[]>
+	}> {
 		let overallBatchError: Error | undefined
 		const allPathsToClearFromDB = new Set<string>(pathsToExplicitlyDelete)
+		const changedPaths = filesToUpsertDetails
+			.filter((fileDetail) => fileDetail.originalType === "change")
+			.map((fileDetail) => fileDetail.path)
+		const changedFileBackups = new Map<string, PointStruct[]>()
 
-		for (const fileDetail of filesToUpsertDetails) {
-			if (fileDetail.originalType === "change") {
-				allPathsToClearFromDB.add(fileDetail.path)
-			}
+		for (const path of changedPaths) {
+			allPathsToClearFromDB.add(path)
+			changedFileBackups.set(path, [])
 		}
 
 		if (allPathsToClearFromDB.size > 0 && this.vectorStore) {
 			try {
+				if (changedPaths.length > 0) {
+					const relativeToAbsolutePath = new Map(
+						changedPaths.map((filePath) => [
+							generateRelativeFilePath(filePath, this.workspacePath),
+							filePath,
+						]),
+					)
+					const backupPoints = await this.vectorStore.getPointsByFilePaths(changedPaths)
+					for (const point of backupPoints) {
+						const restoredPath = relativeToAbsolutePath.get(String(point.payload?.filePath ?? ""))
+						if (!restoredPath) {
+							continue
+						}
+						changedFileBackups.get(restoredPath)?.push(point)
+					}
+				}
+
 				await this.vectorStore.deletePointsByMultipleFilePaths(Array.from(allPathsToClearFromDB))
 
 				for (const path of pathsToExplicitlyDelete) {
@@ -239,7 +287,6 @@ export class FileWatcher implements IFileWatcher {
 				const errorStatus = error?.status || error?.response?.status || error?.statusCode
 				const errorMessage = error instanceof Error ? error.message : String(error)
 
-				// Log telemetry for deletion error
 				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
 					error: sanitizeErrorMessage(errorMessage),
 					location: "deletePointsByMultipleFilePaths",
@@ -247,7 +294,6 @@ export class FileWatcher implements IFileWatcher {
 					errorStatus: errorStatus,
 				})
 
-				// Mark all paths as error
 				overallBatchError = error as Error
 				for (const path of pathsToExplicitlyDelete) {
 					batchResults.push({ path, status: "error", error: error as Error })
@@ -261,9 +307,14 @@ export class FileWatcher implements IFileWatcher {
 			}
 		}
 
-		return { overallBatchError, clearedPaths: allPathsToClearFromDB, processedCount: processedCountInBatch }
+		return {
+			overallBatchError,
+			clearedPaths: allPathsToClearFromDB,
+			processedCount: processedCountInBatch,
+			changedPaths,
+			changedFileBackups,
+		}
 	}
-
 	private async _processFilesAndPrepareUpserts(
 		filesToUpsertDetails: Array<{ path: string; uri: vscode.Uri; originalType: "create" | "change" }>,
 		batchResults: FileProcessingResult[],
@@ -364,12 +415,31 @@ export class FileWatcher implements IFileWatcher {
 		}
 	}
 
+	private async _restoreChangedFileBackups(
+		paths: string[],
+		changedFileBackups: Map<string, PointStruct[]>,
+	): Promise<void> {
+		if (!this.vectorStore || paths.length === 0) {
+			return
+		}
+
+		const backupPoints = paths.flatMap((path) => changedFileBackups.get(path) ?? [])
+		await this.vectorStore.deletePointsByMultipleFilePaths(paths)
+		if (backupPoints.length > 0) {
+			await this.vectorStore.upsertPoints(backupPoints)
+		}
+	}
 	private async _executeBatchUpsertOperations(
 		pointsForBatchUpsert: PointStruct[],
 		successfullyProcessedForUpsert: Array<{ path: string; newHash?: string }>,
 		batchResults: FileProcessingResult[],
+		changedFileBackups: Map<string, PointStruct[]>,
 		overallBatchError?: Error,
 	): Promise<Error | undefined> {
+		const changedPathsToRestore = successfullyProcessedForUpsert
+			.map(({ path }) => path)
+			.filter((path) => changedFileBackups.has(path))
+
 		if (pointsForBatchUpsert.length > 0 && this.vectorStore && !overallBatchError) {
 			try {
 				for (let i = 0; i < pointsForBatchUpsert.length; i += this.batchSegmentThreshold) {
@@ -377,23 +447,22 @@ export class FileWatcher implements IFileWatcher {
 					let retryCount = 0
 					let upsertError: Error | undefined
 
-					while (retryCount < this.maxBatchRetries /* kilocode_change */) {
+					while (retryCount < this.maxBatchRetries) {
 						try {
 							await this.vectorStore.upsertPoints(batch)
 							break
 						} catch (error) {
 							upsertError = error as Error
 							retryCount++
-							if (retryCount === this.maxBatchRetries /* kilocode_change */) {
-								// Log telemetry for upsert failure
+							if (retryCount === this.maxBatchRetries) {
 								TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
 									error: sanitizeErrorMessage(upsertError.message),
 									location: "upsertPoints",
 									errorType: "upsert_retry_exhausted",
-									retryCount: this.maxBatchRetries, // kilocode_change
+									retryCount: this.maxBatchRetries,
 								})
 								throw new Error(
-									`Failed to upsert batch after ${this.maxBatchRetries} retries: ${upsertError.message}`, // kilocode_change
+									`Failed to upsert batch after ${this.maxBatchRetries} retries: ${upsertError.message}`,
 								)
 							}
 							await new Promise((resolve) =>
@@ -405,14 +474,13 @@ export class FileWatcher implements IFileWatcher {
 
 				for (const { path, newHash } of successfullyProcessedForUpsert) {
 					if (newHash) {
-						this.cacheManager.updateHash(path, newHash)
+						await this.cacheManager.updateHash(path, newHash)
 					}
 					batchResults.push({ path, status: "success" })
 				}
 			} catch (error) {
 				const err = error as Error
 				overallBatchError = overallBatchError || err
-				// Log telemetry for batch upsert error
 				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
 					error: sanitizeErrorMessage(err.message),
 					location: "executeBatchUpsertOperations",
@@ -422,16 +490,45 @@ export class FileWatcher implements IFileWatcher {
 				for (const { path } of successfullyProcessedForUpsert) {
 					batchResults.push({ path, status: "error", error: err })
 				}
+
+				if (changedPathsToRestore.length > 0) {
+					try {
+						await this._restoreChangedFileBackups(changedPathsToRestore, changedFileBackups)
+					} catch (restoreError) {
+						TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
+							error: sanitizeErrorMessage(
+								restoreError instanceof Error ? restoreError.message : String(restoreError),
+							),
+							location: "executeBatchUpsertOperations:restoreChangedBackups",
+							errorType: "restore_after_upsert_error",
+							affectedFiles: changedPathsToRestore.length,
+						})
+					}
+				}
 			}
 		} else if (overallBatchError && pointsForBatchUpsert.length > 0) {
 			for (const { path } of successfullyProcessedForUpsert) {
 				batchResults.push({ path, status: "error", error: overallBatchError })
 			}
+
+			if (changedPathsToRestore.length > 0) {
+				try {
+					await this._restoreChangedFileBackups(changedPathsToRestore, changedFileBackups)
+				} catch (restoreError) {
+					TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
+						error: sanitizeErrorMessage(
+							restoreError instanceof Error ? restoreError.message : String(restoreError),
+						),
+						location: "executeBatchUpsertOperations:restoreChangedBackups",
+						errorType: "restore_after_batch_error",
+						affectedFiles: changedPathsToRestore.length,
+					})
+				}
+			}
 		}
 
 		return overallBatchError
 	}
-
 	private async processBatch(
 		eventsToProcess: Map<string, { uri: vscode.Uri; type: "create" | "change" | "delete" }>,
 	): Promise<void> {
@@ -440,14 +537,12 @@ export class FileWatcher implements IFileWatcher {
 		const totalFilesInBatch = eventsToProcess.size
 		let overallBatchError: Error | undefined
 
-		// Initial progress update
 		this._onBatchProgressUpdate.fire({
 			processedInBatch: 0,
 			totalInBatch: totalFilesInBatch,
 			currentFile: undefined,
 		})
 
-		// Categorize events
 		const pathsToExplicitlyDelete: string[] = []
 		const filesToUpsertDetails: Array<{ path: string; uri: vscode.Uri; originalType: "create" | "change" }> = []
 
@@ -463,8 +558,12 @@ export class FileWatcher implements IFileWatcher {
 			}
 		}
 
-		// Phase 1: Handle deletions
-		const { overallBatchError: deletionError, processedCount: deletionCount } = await this._handleBatchDeletions(
+		const {
+			overallBatchError: deletionError,
+			processedCount: deletionCount,
+			changedPaths,
+			changedFileBackups,
+		} = await this._handleBatchDeletions(
 			batchResults,
 			processedCountInBatch,
 			totalFilesInBatch,
@@ -474,7 +573,6 @@ export class FileWatcher implements IFileWatcher {
 		overallBatchError = deletionError
 		processedCountInBatch = deletionCount
 
-		// Phase 2: Process files and prepare upserts
 		const {
 			pointsForBatchUpsert,
 			successfullyProcessedForUpsert,
@@ -488,15 +586,31 @@ export class FileWatcher implements IFileWatcher {
 		)
 		processedCountInBatch = upsertCount
 
-		// Phase 3: Execute batch upsert
+		const successfullyProcessedPaths = new Set(successfullyProcessedForUpsert.map((item) => item.path))
+		const changedPathsNeedingRestore = changedPaths.filter((path) => !successfullyProcessedPaths.has(path))
+		if (changedPathsNeedingRestore.length > 0) {
+			try {
+				await this._restoreChangedFileBackups(changedPathsNeedingRestore, changedFileBackups)
+			} catch (restoreError) {
+				const err = restoreError as Error
+				overallBatchError = overallBatchError || err
+				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
+					error: sanitizeErrorMessage(err.message),
+					location: "processBatch:restoreChangedBackups",
+					errorType: "restore_after_processing_error",
+					affectedFiles: changedPathsNeedingRestore.length,
+				})
+			}
+		}
+
 		overallBatchError = await this._executeBatchUpsertOperations(
 			pointsForBatchUpsert,
 			successfullyProcessedForUpsert,
 			batchResults,
+			changedFileBackups,
 			overallBatchError,
 		)
 
-		// Finalize
 		this._onDidFinishBatchProcessing.fire({
 			processedFiles: batchResults,
 			batchError: overallBatchError,
@@ -522,7 +636,6 @@ export class FileWatcher implements IFileWatcher {
 			})
 		}
 	}
-
 	/**
 	 * Processes a file
 	 * @param filePath Path to the file to process

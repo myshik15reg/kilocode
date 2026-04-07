@@ -1,0 +1,24 @@
+{
+	"file": "ERP/CommonModules/al_Integration/Ext/Module.bsl",
+	"beforeLineNumber": 1313,
+	"beforeLineText": "// AdditionalParameters - structure with business-process data",
+	"line": 1314,
+	"lineText": "Procedure GenerateReturnCertificate(Result, AdditionalParameters) Export",
+	"afterLineNumber": 1315,
+	"afterLineText": "",
+	"severity": "info",
+	"category": "standards_violation",
+	"title": "Код размещён вне ожидаемой области модуля",
+	"description": "Экспортная процедура объявлена вне поддерживаемой области модуля. Модуль стоит организовать по стандартным областям, чтобы структура оставалась предсказуемой для сопровождения.",
+	"suggestion": "Перенесите процедуру в подходящую область для этого типа модуля и выровняйте имена областей с принятой структурой модулей 1С.",
+	"standard_ref": "1C ITS v8std: структура модулей; BSL Language Server CodeOutOfRegion",
+	"rule_id": "bsl-language-server:CodeOutOfRegion",
+	"confidence": "high",
+	"evidence_refs": [
+		"sources/tooling/bsl-language-server/codeoutofregion.md",
+		"sources/tooling/bsl-language-server/configuration.md",
+		"sources/v8std/v8std-455.md",
+		"CodeOutOfRegion.checkUnknownModuleType=false"
+	],
+	"certainty_note": ""
+}

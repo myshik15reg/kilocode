@@ -868,7 +868,7 @@ describe("AgentManagerProvider IPC paths", () => {
 	})
 
 	// kilocode_change start
-	it("emits successful background completion through provider seam and posts completion state event", () => {
+	it("emits successful background completion through provider seam, consumes the binding immediately, and posts completion state event", async () => {
 		registry.createSession("child-success", "background task", Date.now(), {
 			taskId: "child-success",
 			rootTaskId: "root-success",
@@ -932,8 +932,15 @@ describe("AgentManagerProvider IPC paths", () => {
 				eventType: "ask_completion_result",
 			}),
 		)
+
+		await provider.releaseBackgroundSubagentBinding("child-success")
+
+		expect((provider as any).backgroundSessionBindings.has("child-success")).toBe(false)
+		expect((provider as any).context.workspaceState.update).toHaveBeenLastCalledWith(
+			"kilocode.agentManager.recoveryState",
+			{ backgroundBindings: [] },
+		)
 	})
-	// kilocode_change end
 
 	it("marks failed background exit as failed and does not emit completion result", () => {
 		registry.createSession("child-failed", "background task", Date.now(), {

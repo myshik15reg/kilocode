@@ -1,4 +1,4 @@
-import { ExtensionContext } from "vscode"
+﻿import { ExtensionContext } from "vscode"
 import { ProviderProfiles } from "../ProviderSettingsManager"
 
 export async function migrateMorphApiKey(context: ExtensionContext, providerProfiles: ProviderProfiles) {
@@ -14,18 +14,22 @@ export async function migrateMorphApiKey(context: ExtensionContext, providerProf
 				morphApiKeyToMigrate = configAny.morphApiKey
 				// Clear it from the provider config
 				delete configAny.morphApiKey
+				isDirty = true
 				break // Use the first one found
 			}
 		}
 
-		// If we found a morphApiKey, migrate it to global settings
+		// If we found a morphApiKey, migrate it to secret storage
 		if (morphApiKeyToMigrate) {
 			try {
-				await context.globalState.update("morphApiKey", morphApiKeyToMigrate)
-				isDirty = true
-				console.log("[MigrateMorphApiKey] Successfully migrated morphApiKey to global settings")
+				const existingSecret = await context.secrets.get("morphApiKey")
+				if (!existingSecret) {
+					await context.secrets.store("morphApiKey", morphApiKeyToMigrate)
+				}
+				await context.globalState.update("morphApiKey", undefined)
+				console.log("[MigrateMorphApiKey] Successfully migrated morphApiKey to secret storage")
 			} catch (error) {
-				console.error("[MigrateMorphApiKey] Error setting global morphApiKey:", error)
+				console.error("[MigrateMorphApiKey] Error setting secret morphApiKey:", error)
 			}
 		}
 	} catch (error) {

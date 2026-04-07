@@ -166,12 +166,12 @@ def ensure_backlog() -> list[str]:
 
     readme = BACKLOG_DIR / "README.md"
     if not readme.exists():
-        readme.write_text(README_CONTENT)
+        readme.write_text(README_CONTENT, encoding="utf-8")
         created.append(str(readme))
 
     template = TEMPLATES_DIR / "item.md"
     if not template.exists():
-        template.write_text(TEMPLATE_CONTENT)
+        template.write_text(TEMPLATE_CONTENT, encoding="utf-8")
         created.append(str(template))
 
     return created
@@ -232,7 +232,7 @@ created: {date.today().isoformat()}
 
 <!-- What "done" looks like — optional, fill when scheduling -->
 """
-    item_path.write_text(content)
+    item_path.write_text(content, encoding="utf-8")
 
     result = {
         "action": "create",
@@ -261,10 +261,10 @@ def cmd_close(args):
     if not ARCHIVE_DIR.exists():
         ARCHIVE_DIR.mkdir(parents=True)
 
-    text = source.read_text()
+    text = source.read_text(encoding="utf-8")
     text = re.sub(r"^status:\s*\w+", "status: closed", text, count=1, flags=re.MULTILINE)
     target = ARCHIVE_DIR / f"{slug}.md"
-    target.write_text(text)
+    target.write_text(text, encoding="utf-8")
     source.unlink()
 
     output({
@@ -298,7 +298,7 @@ def load_items() -> list[dict]:
         return []
     items = []
     for f in sorted(ITEMS_DIR.glob("*.md")):
-        meta = parse_frontmatter(f.read_text())
+        meta = parse_frontmatter(f.read_text(encoding="utf-8"))
         meta["slug"] = f.stem
         items.append(meta)
     return items
@@ -455,7 +455,7 @@ def cmd_view(args):
     if args.output:
         out_path = Path(args.output)
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(md)
+        out_path.write_text(md, encoding="utf-8")
         output({
             "action": "view",
             "group_by": group_by,
@@ -492,7 +492,7 @@ def cmd_link_finding(args):
     rel_path = os.path.relpath(backlog_path, step_file.parent).replace(os.sep, "/")
     defer_line = f"-   [DEFER] {args.title} → [{rel_path}]({rel_path})"
 
-    text = step_file.read_text()
+    text = step_file.read_text(encoding="utf-8")
 
     findings_match = re.search(r"^## Findings\s*$", text, re.MULTILINE)
     if findings_match:
@@ -503,7 +503,7 @@ def cmd_link_finding(args):
     else:
         text = text.rstrip() + "\n\n## Findings\n\n" + defer_line + "\n"
 
-    step_file.write_text(text)
+    step_file.write_text(text, encoding="utf-8")
 
     output({
         "action": "link_finding",

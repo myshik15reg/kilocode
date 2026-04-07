@@ -37,6 +37,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	includeCurrentTime?: boolean
 	includeCurrentCost?: boolean
 	maxGitStatusFiles?: number
+	hideAlfaCodeFields?: boolean
 	setCachedStateField: SetCachedStateField<
 		| "autoCondenseContext"
 		| "autoCondenseContextPercent"
@@ -88,6 +89,7 @@ export const ContextManagementSettings = ({
 	includeCurrentTime,
 	includeCurrentCost,
 	maxGitStatusFiles,
+	hideAlfaCodeFields = false,
 	className,
 	...props
 }: ContextManagementSettingsProps) => {
@@ -500,41 +502,45 @@ export const ContextManagementSettings = ({
 				{autoCondenseContext && (
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
 						{/* kilocode_change start */}
-						<SearchableSetting
-							settingId="context-condensing-api-configuration"
-							section="contextManagement"
-							label={t("settings:contextManagement.condensingApiConfiguration.label")}>
-							<span className="block font-medium mb-1">
-								{t("settings:contextManagement.condensingApiConfiguration.label")}
-							</span>
-							<Select
-								value={condensingApiConfigId || "-"}
-								onValueChange={(value) =>
-									setCachedStateField("condensingApiConfigId", value === "-" ? "" : value)
-								}
-								data-testid="condensing-api-config-select">
-								<SelectTrigger className="w-full">
-									<SelectValue
-										placeholder={t(
-											"settings:contextManagement.condensingApiConfiguration.useCurrentConfig",
-										)}
-									/>
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="-">
-										{t("settings:contextManagement.condensingApiConfiguration.useCurrentConfig")}
-									</SelectItem>
-									{(listApiConfigMeta || []).map((config) => (
-										<SelectItem key={config.id} value={config.id}>
-											{config.name}
+						{!hideAlfaCodeFields && (
+							<SearchableSetting
+								settingId="context-condensing-api-configuration"
+								section="contextManagement"
+								label={t("settings:contextManagement.condensingApiConfiguration.label")}>
+								<span className="block font-medium mb-1">
+									{t("settings:contextManagement.condensingApiConfiguration.label")}
+								</span>
+								<Select
+									value={condensingApiConfigId || "-"}
+									onValueChange={(value) =>
+										setCachedStateField("condensingApiConfigId", value === "-" ? "" : value)
+									}
+									data-testid="condensing-api-config-select">
+									<SelectTrigger className="w-full">
+										<SelectValue
+											placeholder={t(
+												"settings:contextManagement.condensingApiConfiguration.useCurrentConfig",
+											)}
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="-">
+											{t(
+												"settings:contextManagement.condensingApiConfiguration.useCurrentConfig",
+											)}
 										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-							<div className="text-vscode-descriptionForeground text-sm mt-1">
-								{t("settings:contextManagement.condensingApiConfiguration.description")}
-							</div>
-						</SearchableSetting>
+										{(listApiConfigMeta || []).map((config) => (
+											<SelectItem key={config.id} value={config.id}>
+												{config.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<div className="text-vscode-descriptionForeground text-sm mt-1">
+									{t("settings:contextManagement.condensingApiConfiguration.description")}
+								</div>
+							</SearchableSetting>
+						)}
 						{/* kilocode_change end */}
 						<div className="flex items-center gap-4 font-bold">
 							<FoldVertical size={16} />

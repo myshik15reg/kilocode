@@ -1,4 +1,4 @@
-import type { HistoryItem } from "@roo-code/types"
+﻿import type { HistoryItem } from "@roo-code/types"
 
 import type { Task } from "../../task/Task"
 import type { ApiMessage } from "../../task-persistence/apiMessages"
@@ -40,6 +40,8 @@ export interface TaskRestartRuntime {
 		historyItem: RestartedHistoryItem,
 		options?: { startTask?: boolean },
 	): Promise<Task | undefined>
+	getCurrentTask(): Task | undefined
+	removeClineFromStack(): Promise<void>
 	log(message: string): void
 }
 
@@ -56,6 +58,7 @@ export class TaskRestartService {
 				return false
 			}
 
+			const originalHistoryItem = { ...historyItem }
 			const { autoRestartProblematicProcesses, problematicProcessRestartLimit } = await this.runtime.getState()
 			const currentRestartCount = historyItem.restartCount ?? 0
 			const restartLimit = problematicProcessRestartLimit ?? 1
@@ -97,16 +100,58 @@ export class TaskRestartService {
 			await this.runtime.updateTaskHistory(restartedHistoryItem)
 			const task = await this.runtime.createTaskWithHistoryItem(restartedHistoryItem)
 			if (!task) {
+				await this.rollbackRestartHistory(
+					taskId,
+					originalHistoryItem,
+					"createTaskWithHistoryItem returned undefined",
+				)
 				return false
 			}
 
-			await task.submitUserMessage(recoveryPacket.handoff)
+			try {
+				await task.submitUserMessage(recoveryPacket.handoff)
+			} catch (error) {
+				await this.cleanupRestartedTask(task, taskId)
+				await this.rollbackRestartHistory(
+					taskId,
+					originalHistoryItem,
+					`submitUserMessage failed: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				return false
+			}
+
 			return true
 		} catch (error) {
 			this.runtime.log(
 				`[restartTaskFromHistoryWithHandoff] Failed to restart task ${taskId}: ${error instanceof Error ? error.message : String(error)}`,
 			)
 			return false
+		}
+	}
+
+	private async cleanupRestartedTask(task: Task, taskId: string): Promise<void> {
+		try {
+			const currentTask = this.runtime.getCurrentTask()
+			if (currentTask?.instanceId === task.instanceId) {
+				await this.runtime.removeClineFromStack()
+				return
+			}
+
+			await task.abortTask(true)
+		} catch (error) {
+			this.runtime.log(
+				`[restartTaskFromHistoryWithHandoff] Failed to cleanup restarted task ${taskId}: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
+
+	private async rollbackRestartHistory(taskId: string, historyItem: HistoryItem, reason: string): Promise<void> {
+		try {
+			await this.runtime.updateTaskHistory(historyItem)
+		} catch (error) {
+			this.runtime.log(
+				`[restartTaskFromHistoryWithHandoff] Failed to rollback task ${taskId} after ${reason}: ${error instanceof Error ? error.message : String(error)}`,
+			)
 		}
 	}
 }

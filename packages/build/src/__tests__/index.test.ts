@@ -269,4 +269,66 @@ describe("copyPaths", () => {
 			fs.rmSync(tempRoot, { recursive: true, force: true })
 		}
 	})
+	it("continues copying after Windows cleanup falls back to deferred directory removal", async () => {
+		const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "roo-build-rmdir-"))
+		const srcDir = path.join(tempRoot, "src")
+		const dstDir = path.join(tempRoot, "dst")
+		const srcIconsDir = path.join(srcDir, "generated")
+		const dstIconsDir = path.join(dstDir, "assets")
+		const staleFile = path.join(dstIconsDir, "stale.txt")
+		const freshFile = path.join(srcIconsDir, "fresh.txt")
+
+		fs.mkdirSync(srcIconsDir, { recursive: true })
+		fs.mkdirSync(dstIconsDir, { recursive: true })
+		fs.writeFileSync(staleFile, "stale")
+		fs.writeFileSync(freshFile, "fresh")
+
+		const originalFs = await vi.importActual<typeof import("fs")>("fs")
+		const originalPlatform = Object.getOwnPropertyDescriptor(process, "platform")
+		let rmAttempts = 0
+		let renamedPath: string | undefined
+
+		Object.defineProperty(process, "platform", {
+			configurable: true,
+			value: "win32",
+		})
+
+		vi.resetModules()
+		vi.doMock("fs", () => ({
+			...originalFs,
+			rmSync: ((target: fs.PathLike, options?: fs.RmOptions) => {
+				if (String(target) === dstIconsDir) {
+					rmAttempts += 1
+					const error = new Error("directory not empty") as NodeJS.ErrnoException
+					error.code = "ENOTEMPTY"
+					throw error
+				}
+
+				return originalFs.rmSync(target, options)
+			}) as typeof fs.rmSync,
+			renameSync: ((oldPath: fs.PathLike, newPath: fs.PathLike) => {
+				if (String(oldPath) === dstIconsDir) {
+					renamedPath = String(newPath)
+				}
+
+				return originalFs.renameSync(oldPath, newPath)
+			}) as typeof fs.renameSync,
+		}))
+
+		try {
+			const { copyPaths } = await import("../esbuild.js")
+			copyPaths([["generated", "assets"]], srcDir, dstDir)
+
+			expect(fs.readFileSync(path.join(dstIconsDir, "fresh.txt"), "utf8")).toBe("fresh")
+			expect(renamedPath).toContain("assets.__stale__")
+			expect(rmAttempts).toBeGreaterThanOrEqual(6)
+		} finally {
+			vi.doUnmock("fs")
+			vi.resetModules()
+			if (originalPlatform) {
+				Object.defineProperty(process, "platform", originalPlatform)
+			}
+			fs.rmSync(tempRoot, { recursive: true, force: true })
+		}
+	})
 })

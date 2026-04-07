@@ -1,3 +1,5 @@
+﻿import type { HistoryItem } from "@roo-code/types"
+
 /**
  * Interface for providing access to task data needed for session management.
  * Implementations should provide methods to retrieve task information including
@@ -10,8 +12,10 @@ export interface ITaskDataProvider {
 	 * @returns An object containing the task's history item and file paths for conversation data
 	 */
 	getTaskWithId(taskId: string): Promise<{
-		historyItem: { task?: string }
+		historyItem: Pick<HistoryItem, "task"> & Partial<HistoryItem>
 		apiConversationHistoryFilePath: string
 		uiMessagesFilePath: string
+		taskDirPath?: string
+		taskMetadataFilePath?: string
 	}>
 }

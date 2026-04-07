@@ -25,6 +25,11 @@ vi.mock("vscode", () => ({
 	commands: {
 		executeCommand: vi.fn().mockResolvedValue(undefined),
 	},
+	ConfigurationTarget: {
+		Global: 1,
+		Workspace: 2,
+		WorkspaceFolder: 3,
+	},
 	window: {
 		showInformationMessage: vi.fn(),
 		showWarningMessage: vi.fn(),
@@ -34,7 +39,11 @@ vi.mock("vscode", () => ({
 	},
 	workspace: {
 		getConfiguration: vi.fn().mockReturnValue({
-			get: vi.fn().mockReturnValue([]),
+			get: vi
+				.fn()
+				.mockImplementation((key: string, fallback?: any) =>
+					key === "colorTheme" ? "Default Dark Modern" : (fallback ?? []),
+				),
 			update: vi.fn(),
 		}),
 		onDidChangeConfiguration: vi.fn().mockImplementation(() => ({
@@ -44,6 +53,15 @@ vi.mock("vscode", () => ({
 		onDidChangeTextDocument: vi.fn(() => ({ dispose: vi.fn() })),
 		onDidOpenTextDocument: vi.fn(() => ({ dispose: vi.fn() })),
 		onDidCloseTextDocument: vi.fn(() => ({ dispose: vi.fn() })),
+		workspaceFolders: [],
+	},
+	extensions: {
+		all: [],
+		getExtension: vi.fn().mockReturnValue({
+			extensionPath: "/test/extension",
+			extensionUri: { fsPath: "/test/extension" },
+			packageJSON: {},
+		}),
 	},
 	env: {
 		uriScheme: "vscode",
@@ -113,14 +131,32 @@ vi.mock("../../diff/strategies/multi-search-replace", () => ({
 }))
 
 vi.mock("@roo-code/cloud", () => ({
-	CloudService: {
-		hasInstance: vi.fn().mockReturnValue(true),
-		get instance() {
-			return {
-				isAuthenticated: vi.fn().mockReturnValue(false),
-			}
-		},
-	},
+	CloudService: (() => {
+		const instance = {
+			isAuthenticated: vi.fn().mockReturnValue(false),
+			on: vi.fn(),
+			off: vi.fn(),
+			getUserSettings: vi.fn().mockReturnValue(undefined),
+			getAllowList: vi.fn().mockResolvedValue(undefined),
+			getUserInfo: vi.fn().mockReturnValue(null),
+			canShareTask: vi.fn().mockResolvedValue(false),
+			canSharePublicly: vi.fn().mockResolvedValue(false),
+			getOrganizationSettings: vi.fn().mockReturnValue(undefined),
+			isTaskSyncEnabled: vi.fn().mockReturnValue(false),
+			getOrganizationMemberships: vi.fn().mockResolvedValue([]),
+			isCloudAgent: false,
+			cloudAPI: {
+				bridgeConfig: vi.fn().mockResolvedValue(undefined),
+			},
+		}
+
+		return {
+			hasInstance: vi.fn().mockReturnValue(true),
+			get instance() {
+				return instance
+			},
+		}
+	})(),
 	BridgeOrchestrator: {
 		isEnabled: vi.fn().mockReturnValue(false),
 	},
@@ -169,13 +205,30 @@ vi.mock("p-wait-for", () => ({
 	default: vi.fn().mockImplementation(async () => Promise.resolve()),
 }))
 
-vi.mock("fs/promises", () => ({
-	mkdir: vi.fn().mockResolvedValue(undefined),
-	writeFile: vi.fn().mockResolvedValue(undefined),
-	readFile: vi.fn().mockResolvedValue(""),
-	unlink: vi.fn().mockResolvedValue(undefined),
-	rmdir: vi.fn().mockResolvedValue(undefined),
-}))
+vi.mock("fs/promises", () => {
+	const mockFs = {
+		mkdir: vi.fn().mockResolvedValue(undefined),
+		writeFile: vi.fn().mockResolvedValue(undefined),
+		readFile: vi.fn().mockResolvedValue(""),
+		unlink: vi.fn().mockResolvedValue(undefined),
+		rmdir: vi.fn().mockResolvedValue(undefined),
+		rm: vi.fn().mockResolvedValue(undefined),
+		readdir: vi.fn().mockResolvedValue([]),
+		realpath: vi.fn().mockImplementation(async (value: string) => value),
+		stat: vi.fn().mockResolvedValue({
+			isDirectory: () => false,
+		}),
+		access: vi.fn().mockResolvedValue(undefined),
+		existsSync: vi.fn().mockReturnValue(false),
+		readFileSync: vi.fn().mockReturnValue(""),
+	}
+
+	return {
+		__esModule: true,
+		default: mockFs,
+		...mockFs,
+	}
+})
 
 vi.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {
@@ -484,6 +537,62 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 			await provider.createTaskWithHistoryItem(historyItem)
 
 			// Verify provider profile was restored via activateProviderProfile (restore-only: don't persist mode config)
+			expect(activateProviderProfileSpy).toHaveBeenCalledWith(
+				{ name: "saved-profile" },
+				{ persistModeConfig: false, persistTaskHistory: false },
+			)
+		})
+
+		it("should restore provider profile even when the task is reopened from a background root stack", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+
+			const activeTask = {
+				taskId: "active-task",
+				emit: vi.fn(),
+				abortTask: vi.fn(),
+				updateApiConfiguration: vi.fn(),
+				setTaskApiConfigName: vi.fn(),
+				clineMessages: [],
+				apiConversationHistory: [],
+			}
+			const backgroundTask = {
+				taskId: "bg-root",
+				emit: vi.fn(),
+				abortTask: vi.fn(),
+				updateApiConfiguration: vi.fn(),
+				setTaskApiConfigName: vi.fn(),
+				clineMessages: [],
+				apiConversationHistory: [],
+			}
+
+			await provider.addClineToStack(activeTask as any)
+			;(provider as any).backgroundRootTaskStacks = new Map([["bg-root", [backgroundTask]]])
+
+			const historyItem: HistoryItem = {
+				id: "bg-root",
+				number: 1,
+				ts: Date.now(),
+				task: "Background task",
+				tokensIn: 100,
+				tokensOut: 200,
+				cacheWrites: 0,
+				cacheReads: 0,
+				totalCost: 0.001,
+				mode: "code",
+				apiConfigName: "saved-profile",
+			}
+
+			const activateProviderProfileSpy = vi
+				.spyOn(provider, "activateProviderProfile")
+				.mockResolvedValue(undefined)
+			vi.spyOn(provider.providerSettingsManager, "listConfig").mockResolvedValue([
+				{ name: "saved-profile", id: "saved-profile-id", apiProvider: "anthropic" },
+			])
+
+			const reopenedTask = await provider.createTaskWithHistoryItem(historyItem)
+
+			expect(reopenedTask).toBe(backgroundTask)
+			expect(provider.getCurrentTask()).toBe(backgroundTask)
 			expect(activateProviderProfileSpy).toHaveBeenCalledWith(
 				{ name: "saved-profile" },
 				{ persistModeConfig: false, persistTaskHistory: false },

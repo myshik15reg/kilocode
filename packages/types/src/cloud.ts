@@ -470,7 +470,40 @@ export enum ExtensionBridgeEventName {
 	HeartbeatUpdated = "heartbeat_updated",
 }
 
-export const extensionBridgeEventSchema = z.discriminatedUnion("type", [
+export type ExtensionBridgeEvent =
+	| { type: ExtensionBridgeEventName.TaskCreated; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskStarted; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskCompleted; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskAborted; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskFocused; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskUnfocused; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskActive; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskInteractive; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskResumable; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskIdle; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskPaused; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskUnpaused; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskSpawned; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskDelegated; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskDelegationCompleted; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskDelegationResumed; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskUserMessage; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.TaskTokenUsageUpdated; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.ModeChanged; instance: ExtensionInstance; mode: string; timestamp: number }
+	| {
+			type: ExtensionBridgeEventName.ProviderProfileChanged
+			instance: ExtensionInstance
+			providerProfile: {
+				name: string
+				provider?: string | undefined
+			}
+			timestamp: number
+	  }
+	| { type: ExtensionBridgeEventName.InstanceRegistered; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.InstanceUnregistered; instance: ExtensionInstance; timestamp: number }
+	| { type: ExtensionBridgeEventName.HeartbeatUpdated; instance: ExtensionInstance; timestamp: number }
+
+export const extensionBridgeEventSchema: z.ZodType<ExtensionBridgeEvent> = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskCreated),
 		instance: extensionInstanceSchema,
@@ -521,7 +554,6 @@ export const extensionBridgeEventSchema = z.discriminatedUnion("type", [
 		instance: extensionInstanceSchema,
 		timestamp: z.number(),
 	}),
-
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskPaused),
 		instance: extensionInstanceSchema,
@@ -552,19 +584,16 @@ export const extensionBridgeEventSchema = z.discriminatedUnion("type", [
 		instance: extensionInstanceSchema,
 		timestamp: z.number(),
 	}),
-
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskUserMessage),
 		instance: extensionInstanceSchema,
 		timestamp: z.number(),
 	}),
-
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskTokenUsageUpdated),
 		instance: extensionInstanceSchema,
 		timestamp: z.number(),
 	}),
-
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.ModeChanged),
 		instance: extensionInstanceSchema,
@@ -577,7 +606,6 @@ export const extensionBridgeEventSchema = z.discriminatedUnion("type", [
 		providerProfile: z.object({ name: z.string(), provider: z.string().optional() }),
 		timestamp: z.number(),
 	}),
-
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.InstanceRegistered),
 		instance: extensionInstanceSchema,
@@ -594,8 +622,6 @@ export const extensionBridgeEventSchema = z.discriminatedUnion("type", [
 		timestamp: z.number(),
 	}),
 ])
-
-export type ExtensionBridgeEvent = z.infer<typeof extensionBridgeEventSchema>
 
 /**
  * ExtensionBridgeCommand

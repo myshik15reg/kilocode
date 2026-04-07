@@ -11,11 +11,12 @@ import {
 	retryFailedMessageAtom,
 } from "../state/atoms/messageQueue"
 import type { QueuedMessage } from "../state/atoms/messageQueue"
-import type { ClineMessage, SuggestionItem, FollowUpData } from "@roo-code/types"
+import type { ClineMessage, SuggestionItem, FollowUpData, RequestUserInputData } from "@roo-code/types"
 import { safeJsonParse } from "@roo/safeJsonParse"
 import { combineCommandSequences } from "@roo/combineCommandSequences"
 import { SimpleMarkdown } from "./SimpleMarkdown"
 import { FollowUpSuggestions } from "./FollowUpSuggestions"
+import { StructuredUserInputCard } from "./StructuredUserInputCard"
 import { CommandExecutionBlock } from "./CommandExecutionBlock"
 import { ProgressIndicator } from "./ProgressIndicator"
 import { ReasoningBlock } from "./ReasoningBlock"
@@ -118,6 +119,17 @@ export function MessageList({ sessionId }: MessageListProps) {
 		[sessionId],
 	)
 
+	const handleStructuredSubmit = useCallback(
+		(content: string) => {
+			vscode.postMessage({
+				type: "agentManager.sendMessage",
+				sessionId,
+				content,
+			})
+		},
+		[sessionId],
+	)
+
 	const handleCopyToInput = useCallback(
 		(suggestion: SuggestionItem) => {
 			setInputValue((current) => (current !== "" ? `${current} \n${suggestion.answer}` : suggestion.answer))
@@ -173,6 +185,7 @@ export function MessageList({ sessionId }: MessageListProps) {
 					commandExecutionByTs={commandExecutionByTs}
 					onSuggestionClick={handleSuggestionClick}
 					onCopyToInput={handleCopyToInput}
+					onStructuredSubmit={handleStructuredSubmit}
 				/>
 			)
 		},
@@ -181,6 +194,7 @@ export function MessageList({ sessionId }: MessageListProps) {
 			commandExecutionByTs,
 			handleSuggestionClick,
 			handleCopyToInput,
+			handleStructuredSubmit,
 			sendingMessageId,
 			handleRetryMessage,
 			handleDiscardMessage,
@@ -213,18 +227,21 @@ export function MessageList({ sessionId }: MessageListProps) {
 interface FollowUpMetadata {
 	question?: string
 	suggest?: SuggestionItem[]
+	requestUserInput?: RequestUserInputData
 }
 
-function extractFollowUpData(message: ClineMessage): { question: string; suggestions?: SuggestionItem[] } | null {
+function extractFollowUpData(
+	message: ClineMessage,
+): { question?: string; suggestions?: SuggestionItem[]; requestUserInput?: RequestUserInputData } | null {
 	const messageText = message.text || (message as { content?: string }).content || ""
 	const metadata = (message.metadata as FollowUpMetadata | undefined) ?? {}
 	const parsedData = safeJsonParse<FollowUpData>(messageText)
-
-	const question = metadata.question || parsedData?.question || messageText
+	const requestUserInput = metadata.requestUserInput || parsedData?.requestUserInput
+	const question = metadata.question || parsedData?.question || (requestUserInput ? undefined : messageText)
 	const suggestions = metadata.suggest || parsedData?.suggest
 
-	if (!question) return null
-	return { question, suggestions }
+	if (!question && !suggestions && !requestUserInput) return null
+	return { question, suggestions, requestUserInput }
 }
 
 interface MessageItemProps {
@@ -233,9 +250,17 @@ interface MessageItemProps {
 	commandExecutionByTs: Map<number, { exitCode?: number; status?: string; isRunning?: boolean }>
 	onSuggestionClick?: (suggestion: SuggestionItem) => void
 	onCopyToInput?: (suggestion: SuggestionItem) => void
+	onStructuredSubmit?: (content: string) => void
 }
 
-function MessageItem({ message, isLast, commandExecutionByTs, onSuggestionClick, onCopyToInput }: MessageItemProps) {
+function MessageItem({
+	message,
+	isLast,
+	commandExecutionByTs,
+	onSuggestionClick,
+	onCopyToInput,
+	onStructuredSubmit,
+}: MessageItemProps) {
 	const { t } = useTranslation("agentManager")
 
 	// --- 1. Determine Message Style & Content ---
@@ -327,7 +352,15 @@ function MessageItem({ message, isLast, commandExecutionByTs, onSuggestionClick,
 				title = t("messages.question")
 				const followUpData = extractFollowUpData(message)
 				suggestions = followUpData?.suggestions
-				content = (
+				content = followUpData?.requestUserInput ? (
+					<div className="am-followup-structured">
+						{followUpData.question && <SimpleMarkdown content={followUpData.question} />}
+						<StructuredUserInputCard
+							data={followUpData.requestUserInput}
+							onSubmit={(content) => onStructuredSubmit?.(content)}
+						/>
+					</div>
+				) : (
 					<div>
 						<SimpleMarkdown content={followUpData?.question || messageText} />
 					</div>

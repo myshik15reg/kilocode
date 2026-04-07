@@ -54,6 +54,34 @@ describe("RetryQueue", () => {
 			const stats = retryQueue.getStats()
 			expect(stats.totalQueued).toBe(3) // Should only have 3 items (oldest was evicted)
 		})
+
+		it("uses bounded retries by default", async () => {
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+			;(global as typeof globalThis & { fetch?: unknown }).fetch = vi
+				.fn()
+				.mockRejectedValue(new Error("Network error"))
+
+			for (let attempt = 0; attempt < 5; attempt++) {
+				await retryQueue.retryAll()
+			}
+
+			expect(retryQueue.getStats().totalQueued).toBe(0)
+		})
+
+		it("skips oversized persisted payloads", async () => {
+			const log = vi.fn()
+			retryQueue = new RetryQueue(mockContext, undefined, log)
+			await retryQueue.enqueue(
+				"https://api.example.com/test",
+				{ method: "POST", body: "x".repeat(70 * 1024) },
+				"telemetry",
+			)
+
+			expect(retryQueue.getStats().totalQueued).toBe(0)
+			expect(log).toHaveBeenCalledWith(
+				expect.stringContaining("Skipping queue for request with unsupported or oversized payload"),
+			)
+		})
 	})
 
 	describe("persistence", () => {
@@ -452,7 +480,7 @@ describe("RetryQueue", () => {
 				expect.objectContaining({
 					headers: expect.objectContaining({
 						Authorization: "Bearer fresh-token",
-						"Content-Type": "application/json",
+						"content-type": "application/json",
 						"X-Retry-Queue": "true",
 					}),
 				}),

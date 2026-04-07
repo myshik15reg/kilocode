@@ -75,6 +75,12 @@ describe("AgentManagerCompletionFollowUp", () => {
 		expect(telemetry.captureAgentManagerSessionError).not.toHaveBeenCalled()
 	})
 
+	it("temporarily saturates repeatedly problematic groups", () => {
+		queueKeyPressure.set("group-1", 2)
+
+		expect(followUp.getEffectiveQueueKeyCap("group-1")).toBe(0)
+	})
+
 	it("records failed completion without posting completion state event", () => {
 		const session = {
 			sessionId: "session-failed",

@@ -10,32 +10,31 @@ import { describe, it, expect, vi } from "vitest"
 import { createStore } from "jotai"
 import { render } from "ink-testing-library"
 import { Provider } from "jotai"
+import { useCommandContext } from "../useCommandContext.js"
+import { useCommandHandler } from "../useCommandHandler.js"
+import { useMessageHandler } from "../useMessageHandler.js"
+import * as hooks from "../index.js"
 
 describe("Command Hook Exports", () => {
 	describe("Hook Exports", () => {
-		it("should export useCommandContext", async () => {
-			const { useCommandContext } = await import("../useCommandContext.js")
+		it("should export useCommandContext", () => {
 			expect(useCommandContext).toBeDefined()
 			expect(typeof useCommandContext).toBe("function")
 		})
 
-		it("should export useCommandHandler", async () => {
-			const { useCommandHandler } = await import("../useCommandHandler.js")
+		it("should export useCommandHandler", () => {
 			expect(useCommandHandler).toBeDefined()
 			expect(typeof useCommandHandler).toBe("function")
 		})
 
-		it("should export useMessageHandler", async () => {
-			const { useMessageHandler } = await import("../useMessageHandler.js")
+		it("should export useMessageHandler", () => {
 			expect(useMessageHandler).toBeDefined()
 			expect(typeof useMessageHandler).toBe("function")
 		})
 	})
 
 	describe("Hook Integration in index.ts", () => {
-		it("should export all new command hooks from index", async () => {
-			const hooks = await import("../index.js")
-
+		it("should export all new command hooks from index", () => {
 			// Check new hooks are exported
 			expect(hooks.useCommandContext).toBeDefined()
 			expect(hooks.useCommandHandler).toBeDefined()
@@ -50,9 +49,7 @@ describe("Command Hook Exports", () => {
 			expect(hooks.useCommandInput).toBeDefined()
 		})
 
-		it("should export hook types", async () => {
-			const hooks = await import("../index.js")
-
+		it("should export hook types", () => {
 			// Verify functions are exported
 			expect(typeof hooks.useCommandContext).toBe("function")
 			expect(typeof hooks.useCommandHandler).toBe("function")
@@ -92,7 +89,6 @@ describe("Command Executor Service", () => {
 describe("useCommandHandler", () => {
 	it("should reset isExecuting to false after command execution", async () => {
 		const store = createStore()
-		const { useCommandHandler } = await import("../useCommandHandler.js")
 
 		let hookResult: ReturnType<typeof useCommandHandler> | undefined
 
@@ -124,7 +120,6 @@ describe("useCommandHandler", () => {
 
 	it("should reset isExecuting to false even when command fails", async () => {
 		const store = createStore()
-		const { useCommandHandler } = await import("../useCommandHandler.js")
 
 		let hookResult: ReturnType<typeof useCommandHandler> | undefined
 

@@ -69,15 +69,21 @@ describe("ClineProvider relay_compact", () => {
 			],
 		})
 
-		expect(HelperModelRouter.selectConfig).toHaveBeenCalledWith({
-			job: "relay_compact",
-			state: {
-				apiConfiguration: { apiProvider: "anthropic", apiModelId: "claude-sonnet" },
-				condensingApiConfigId: "helper-1",
-				listApiConfigMeta: [{ id: "helper-1", name: "Cheap helper" }],
-			},
-			providerSettingsManager: provider.providerSettingsManager,
-		})
+		expect(HelperModelRouter.selectConfig).toHaveBeenCalledWith(
+			expect.objectContaining({
+				job: "relay_compact",
+				state: expect.objectContaining({
+					apiConfiguration: { apiProvider: "anthropic", apiModelId: "claude-sonnet" },
+					condensingApiConfigId: "helper-1",
+					listApiConfigMeta: [{ id: "helper-1", name: "Cheap helper" }],
+				}),
+				providerSettingsManager: provider.providerSettingsManager,
+				decisionContext: expect.objectContaining({
+					taskId: "task-1",
+					retryCount: 1,
+				}),
+			}),
+		)
 		expect(buildApiHandler).toHaveBeenCalledWith(helperConfig)
 		expect(result).toBe("Helper restart summary")
 	})

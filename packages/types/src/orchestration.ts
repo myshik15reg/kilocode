@@ -1,4 +1,4 @@
-import { z } from "zod"
+﻿import { z } from "zod"
 
 import { normalizedTaskControlSchema } from "./task-control.js"
 
@@ -12,7 +12,22 @@ export const branchStrategySchema = z.enum(["full", "summary"])
 export const taskLifecycleStateSchema = z.enum(["running", "paused", "completed", "cancelled"])
 export const routingProfileClassSchema = z.enum(["strong", "balanced", "cheap", "none"])
 export const orchestrationExplainabilityStageSchema = z.enum(["delegation", "status", "outcome"])
-export const orchestrationExplainabilitySourceSchema = z.enum(["explicit", "recommended", "default", "status"])
+export const orchestrationExplainabilitySourceSchema = z.enum([
+	"explicit",
+	"recommended",
+	"default",
+	"status",
+	"result",
+])
+export const subagentHandoffStrategySchema = z.enum(["direct", "sequential"])
+export const taskIntentSchema = z.enum(["research", "debug", "implementation", "review", "general"])
+export const retrievalModeSchema = z.enum(["adaptive", "semantic_only", "hybrid", "rerank_heavy"])
+export const evaluatorVerdictSchema = z.enum(["pass", "retry", "clarify", "conflict"])
+export const subagentInputKindSchema = z.enum(["file", "task", "search", "doc", "workflow", "artifact", "other"])
+export const subagentInputReferenceSchema = z.object({
+	kind: subagentInputKindSchema,
+	ref: z.string().min(1),
+})
 
 export const toolCallCandidateSchema = z.object({
 	callId: z.string().optional(),
@@ -75,9 +90,26 @@ export const toolBatchResultSchema = z.object({
 	summary: z.string(),
 })
 
+export const subagentBudgetSchema = z.object({
+	maxTokens: z.number().int().positive().optional(),
+	maxSteps: z.number().int().positive().optional(),
+	maxCostUsd: z.number().positive().optional(),
+})
+
 export const subagentHandoffSchema = z.object({
 	summary: z.string(),
 	context: z.array(z.string()).optional(),
+	goal: z.string().optional(),
+	doneWhen: z.string().optional(),
+	constraints: z.array(z.string()).optional(),
+	deliverable: z.string().optional(),
+	acceptanceCriteria: z.array(z.string()).optional(),
+	inputs: z.array(subagentInputReferenceSchema).optional(),
+	evidenceNeeded: z.boolean().optional(),
+	budget: subagentBudgetSchema.optional(),
+	canAbstain: z.boolean().optional(),
+	priorResultSummary: z.string().optional(),
+	strategy: subagentHandoffStrategySchema.optional(),
 })
 
 export const subagentLaunchRequestSchema = z.object({
@@ -94,6 +126,14 @@ export const subagentLaunchRequestSchema = z.object({
 	routingSource: orchestrationExplainabilitySourceSchema.optional(),
 	routingReasonCode: z.string().min(1).optional(),
 	recommendationReasonCode: z.string().min(1).optional(),
+	role: z.string().min(1).optional(),
+	permissions: z.array(z.string().min(1)).optional(),
+	expectedArtifact: z.string().min(1).optional(),
+	retryBudget: z.number().int().nonnegative().optional(),
+	retrievalPackId: z.string().min(1).optional(),
+	taskIntent: taskIntentSchema.optional(),
+	retrievalMode: retrievalModeSchema.optional(),
+	structuredDelegation: z.boolean().optional(),
 })
 
 export function normalizeSubagentLaunchRequest(
@@ -128,6 +168,7 @@ export const subagentStatusEventSchema = z.object({
 		"completed",
 		"failed",
 		"cancelled",
+		"abstained",
 	]),
 	message: z.string().optional(),
 	timestamp: z.number(),
@@ -136,7 +177,7 @@ export const subagentStatusEventSchema = z.object({
 export const subagentResultEventSchema = z.object({
 	taskId: z.string(),
 	sessionId: z.string(),
-	status: z.enum(["completed", "failed", "cancelled"]),
+	status: z.enum(["completed", "failed", "cancelled", "abstained"]),
 	output: z.string(),
 	summary: z.string().optional(),
 	timestamp: z.number(),
@@ -209,6 +250,16 @@ export const orchestrationExplainabilitySchema = z.object({
 	helperProfile: z.string().min(1).optional(),
 	recommendationReasonCode: z.string().min(1).optional(),
 	outcomeSummary: z.string().min(1).optional(),
+	strategy: subagentHandoffStrategySchema.optional(),
+	canAbstain: z.boolean().optional(),
+	budgetSummary: z.string().min(1).optional(),
+	taskIntent: taskIntentSchema.optional(),
+	retrievalMode: retrievalModeSchema.optional(),
+	retrievalConfidence: z.number().min(0).max(1).optional(),
+	queuePressure: z.string().min(1).optional(),
+	lastSubagentOutcome: evaluatorVerdictSchema.optional(),
+	structuredDelegation: z.boolean().optional(),
+	validatorPolicy: z.string().min(1).optional(),
 })
 
 export const activityItemSchema = z.discriminatedUnion("kind", [
@@ -226,7 +277,7 @@ export const activityItemSchema = z.discriminatedUnion("kind", [
 		id: z.string(),
 		taskId: z.string(),
 		sessionId: z.string().optional(),
-		status: z.enum(["queued", "running", "paused", "completed", "failed", "cancelled"]),
+		status: z.enum(["queued", "running", "paused", "completed", "failed", "cancelled", "abstained"]),
 		summary: z.string(),
 		explainability: orchestrationExplainabilitySchema.optional(),
 		timestamp: z.number(),
@@ -274,6 +325,12 @@ export type TaskLifecycleState = z.infer<typeof taskLifecycleStateSchema>
 export type RoutingProfileClass = z.infer<typeof routingProfileClassSchema>
 export type OrchestrationExplainabilityStage = z.infer<typeof orchestrationExplainabilityStageSchema>
 export type OrchestrationExplainabilitySource = z.infer<typeof orchestrationExplainabilitySourceSchema>
+export type SubagentHandoffStrategy = z.infer<typeof subagentHandoffStrategySchema>
+export type TaskIntent = z.infer<typeof taskIntentSchema>
+export type RetrievalMode = z.infer<typeof retrievalModeSchema>
+export type EvaluatorVerdict = z.infer<typeof evaluatorVerdictSchema>
+export type SubagentInputKind = z.infer<typeof subagentInputKindSchema>
+export type SubagentInputReference = z.infer<typeof subagentInputReferenceSchema>
 export type ToolCallCandidate = z.infer<typeof toolCallCandidateSchema>
 export type PlannedToolCall = z.infer<typeof plannedToolCallSchema>
 export type RejectedToolCall = z.infer<typeof rejectedToolCallSchema>
@@ -282,6 +339,7 @@ export type ToolCallError = z.infer<typeof toolCallErrorSchema>
 export type ToolBatchRequest = z.infer<typeof toolBatchRequestSchema>
 export type ToolBatchPlan = z.infer<typeof toolBatchPlanSchema>
 export type ToolBatchResult = z.infer<typeof toolBatchResultSchema>
+export type SubagentBudget = z.infer<typeof subagentBudgetSchema>
 export type SubagentHandoff = z.infer<typeof subagentHandoffSchema>
 export type SubagentLaunchRequest = z.infer<typeof subagentLaunchRequestSchema>
 export type ExecutionDecision = z.infer<typeof executionDecisionSchema>

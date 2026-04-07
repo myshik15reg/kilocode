@@ -1,13 +1,16 @@
-﻿# Brief
+# Brief
 
 ## Goal
-1-3 sentences describing the project goal.
+
+(1–3 предложения)
 
 ## Requirements
+
 - [ ] R1 ...
 - [ ] R2 ...
 
 ## Definition of Done
-- [ ] Requirements are satisfied
-- [ ] Tests are updated
-- [ ] Documentation is updated
+
+- [ ] Требования выполнены
+- [ ] Тесты обновлены
+- [ ] Документация обновлена

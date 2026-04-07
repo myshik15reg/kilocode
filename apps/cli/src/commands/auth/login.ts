@@ -1,7 +1,7 @@
-import http from "http"
+﻿import http from "http"
 import { randomBytes } from "crypto"
 import net from "net"
-import { exec } from "child_process"
+import { execFile } from "child_process"
 
 import { AUTH_BASE_URL } from "@/types/index.js"
 import { saveToken } from "@/lib/storage/index.js"
@@ -120,11 +120,11 @@ export async function login({ timeout = 5 * 60 * 1000, verbose = false }: LoginO
 	try {
 		const { token } = await tokenPromise
 		await saveToken(token)
-		console.log("✓ Successfully authenticated!")
+		console.log("вњ“ Successfully authenticated!")
 		return { success: true }
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error)
-		console.error(`✗ Authentication failed: ${message}`)
+		console.error(`вњ— Authentication failed: ${message}`)
 		return { success: false, error: message }
 	}
 }
@@ -157,30 +157,50 @@ async function getAvailablePort(startPort = 49152, endPort = 65535): Promise<num
 	})
 }
 
-function openBrowser(url: string): Promise<void> {
+type BrowserCommand = {
+	command: string
+	args: string[]
+}
+
+function execFileAsync(command: string, args: string[]): Promise<void> {
 	return new Promise((resolve, reject) => {
-		const platform = process.platform
-		let command: string
-
-		switch (platform) {
-			case "darwin":
-				command = `open "${url}"`
-				break
-			case "win32":
-				command = `start "" "${url}"`
-				break
-			default:
-				// Linux and other Unix-like systems.
-				command = `xdg-open "${url}"`
-				break
-		}
-
-		exec(command, (error) => {
+		execFile(command, args, (error) => {
 			if (error) {
 				reject(error)
-			} else {
-				resolve()
+				return
 			}
+
+			resolve()
 		})
 	})
+}
+
+async function runBrowserCommands(commands: BrowserCommand[]): Promise<void> {
+	let lastError: unknown
+
+	for (const { command, args } of commands) {
+		try {
+			await execFileAsync(command, args)
+			return
+		} catch (error) {
+			lastError = error
+		}
+	}
+
+	throw lastError ?? new Error("Failed to open browser")
+}
+
+function openBrowser(url: string): Promise<void> {
+	if (process.platform === "darwin") {
+		return runBrowserCommands([{ command: "open", args: [url] }])
+	}
+
+	if (process.platform === "win32") {
+		return runBrowserCommands([
+			{ command: "rundll32.exe", args: ["url.dll,FileProtocolHandler", url] },
+			{ command: "explorer.exe", args: [url] },
+		])
+	}
+
+	return runBrowserCommands([{ command: "xdg-open", args: [url] }])
 }

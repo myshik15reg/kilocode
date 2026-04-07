@@ -1,4 +1,4 @@
-// kilocode_change - new file
+﻿// kilocode_change - new file
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import * as vscode from "vscode"
 import { ManagedIndexer } from "../ManagedIndexer"
@@ -761,6 +761,83 @@ describe("ManagedIndexer", () => {
 		})
 	})
 
+	it("should enter cooldown instead of disposing after repeated upsert failures", async () => {
+		vi.mocked(vscode.workspace).workspaceFolders = [mockWorkspaceFolder]
+		await indexer.start()
+
+		const state = indexer.workspaceFolderState[0]
+		const mockWatcher = state.watcher!
+		const fs = await import("fs")
+		vi.mocked(fs.promises.readFile).mockResolvedValue(Buffer.from("file content"))
+		vi.mocked(fs.promises.stat).mockResolvedValue({ size: 1000 } as any)
+		vi.mocked(apiClient.upsertFile).mockRejectedValue(new Error("temporary outage"))
+		const disposeSpy = vi.spyOn(indexer, "dispose")
+
+		const mockFiles = async function* (): AsyncIterable<GitWatcherFile> {
+			yield { type: "file", filePath: "file1.ts", fileHash: "hash1" }
+			yield { type: "file", filePath: "file2.ts", fileHash: "hash2" }
+			yield { type: "file", filePath: "file3.ts", fileHash: "hash3" }
+		}
+
+		await indexer.onEvent({
+			type: "commit",
+			previousCommit: "abc",
+			newCommit: "def",
+			branch: "main",
+			isBaseBranch: true,
+			watcher: mockWatcher,
+			files: mockFiles(),
+		})
+
+		await new Promise((resolve) => setTimeout(resolve, 50))
+
+		expect(disposeSpy).not.toHaveBeenCalled()
+		expect(state.cooldownUntil).not.toBeNull()
+		expect(state.error?.message).toContain("temporarily paused")
+	})
+
+	it("should skip processing while cooldown is active and recover after cooldown expires", async () => {
+		vi.mocked(vscode.workspace).workspaceFolders = [mockWorkspaceFolder]
+		await indexer.start()
+
+		const state = indexer.workspaceFolderState[0]
+		const mockWatcher = state.watcher!
+		const fs = await import("fs")
+		vi.mocked(fs.promises.readFile).mockResolvedValue(Buffer.from("file content"))
+		vi.mocked(fs.promises.stat).mockResolvedValue({ size: 1000 } as any)
+		vi.mocked(apiClient.upsertFile).mockResolvedValue(undefined)
+
+		const buildEvent = (): GitWatcherEvent => ({
+			type: "commit",
+			previousCommit: "abc",
+			newCommit: "def",
+			branch: "main",
+			isBaseBranch: true,
+			watcher: mockWatcher,
+			files: (async function* (): AsyncIterable<GitWatcherFile> {
+				yield { type: "file", filePath: "test.ts", fileHash: "abc123" }
+			})(),
+		})
+
+		state.cooldownUntil = Date.now() + 60_000
+		state.upsertFailureCount = 3
+
+		await indexer.onEvent(buildEvent())
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		expect(apiClient.upsertFile).not.toHaveBeenCalled()
+		expect(state.error?.message).toContain("temporarily paused")
+
+		state.cooldownUntil = Date.now() - 1
+		state.upsertFailureCount = 3
+
+		await indexer.onEvent(buildEvent())
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		expect(apiClient.upsertFile).toHaveBeenCalledTimes(1)
+		expect(state.cooldownUntil).toBeNull()
+		expect(state.upsertFailureCount).toBe(0)
+	})
 	describe("onDidChangeWorkspaceFolders", () => {
 		it("should dispose and restart", async () => {
 			vi.mocked(vscode.workspace).workspaceFolders = [mockWorkspaceFolder]
@@ -787,7 +864,7 @@ describe("ManagedIndexer", () => {
 			await indexer.start()
 
 			const state = indexer.workspaceFolderState[0]
-			const mockWatcher = state.watcher
+			const mockWatcher = state.watcher!
 
 			const fs = await import("fs")
 			vi.mocked(fs.promises.readFile).mockResolvedValue(Buffer.from("file content"))
@@ -848,7 +925,7 @@ describe("ManagedIndexer", () => {
 			await indexer.start()
 
 			const state = indexer.workspaceFolderState[0]
-			const mockWatcher = state.watcher
+			const mockWatcher = state.watcher!
 
 			const fs = await import("fs")
 			vi.mocked(fs.promises.readFile).mockResolvedValue(Buffer.from("file content"))
@@ -889,7 +966,7 @@ describe("ManagedIndexer", () => {
 			await indexer.start()
 
 			const state = indexer.workspaceFolderState[0]
-			const mockWatcher = state.watcher
+			const mockWatcher = state.watcher!
 
 			const fs = await import("fs")
 			vi.mocked(fs.promises.readFile).mockResolvedValue(Buffer.from("file content"))
@@ -929,7 +1006,7 @@ describe("ManagedIndexer", () => {
 			await indexer.start()
 
 			const state = indexer.workspaceFolderState[0]
-			const mockWatcher = state.watcher
+			const mockWatcher = state.watcher!
 
 			const fs = await import("fs")
 			vi.mocked(fs.promises.readFile).mockResolvedValue(Buffer.from("file content"))
@@ -986,7 +1063,7 @@ describe("ManagedIndexer", () => {
 			await indexer.start()
 
 			const state = indexer.workspaceFolderState[0]
-			const mockWatcher = state.watcher
+			const mockWatcher = state.watcher!
 
 			const fs = await import("fs")
 			vi.mocked(fs.promises.readFile).mockResolvedValue(Buffer.from("file content"))

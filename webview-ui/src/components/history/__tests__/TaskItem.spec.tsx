@@ -308,6 +308,32 @@ describe("TaskItem", () => {
 		expect(screen.queryByText("history:statusStopped")).not.toBeInTheDocument()
 	})
 
+	it("prefers done badge over self pause timeline activity for completed roots", () => {
+		render(
+			<TaskItem
+				item={{
+					...mockTask,
+					id: "done-with-pause-activity",
+					status: "completed",
+					activity: [
+						{
+							kind: "taskControl",
+							id: "tc-1",
+							taskId: "done-with-pause-activity",
+							control: "pause",
+							summary: "Paused earlier",
+							timestamp: 1,
+						},
+					],
+				}}
+				variant="compact"
+			/>,
+		)
+
+		expect(screen.getByTestId("task-item-badges-done-with-pause-activity")).toHaveTextContent("history:statusDone")
+		expect(screen.queryByTestId("task-item-orchestration-done-with-pause-activity")).not.toBeInTheDocument()
+		expect(screen.queryByTestId("orchestration-status-badge-paused")).not.toBeInTheDocument()
+	})
 	it("renders orchestration status badge from background child history when activity has not arrived yet", () => {
 		render(
 			<TaskItem

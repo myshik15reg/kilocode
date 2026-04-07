@@ -16,6 +16,7 @@ const statusToneClasses: Record<OrchestrationStatus, string> = {
 	recoverable: "border-blue-500/30 bg-blue-500/8 text-blue-200/80",
 	completed: "border-green-500/35 bg-green-500/8 text-green-200/85",
 	cancelled: "border-orange-500/30 bg-orange-500/8 text-orange-200/85",
+	abstained: "border-amber-500/35 bg-amber-500/8 text-amber-200/90",
 	failed: "border-red-500/35 bg-red-500/8 text-red-200/90",
 }
 

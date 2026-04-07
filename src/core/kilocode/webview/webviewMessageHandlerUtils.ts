@@ -8,6 +8,7 @@ import axios from "axios"
 import { getKiloUrlFromToken } from "@roo-code/types"
 import { buildApiHandler } from "../../../api"
 import { ContextProxy } from "../../config/ContextProxy"
+import { openTrustedExternalUrl } from "../../webview/externalUrlPolicy"
 
 const shownNativeNotificationIds = new Set<string>()
 
@@ -105,7 +106,10 @@ export async function displayNativeNotifications(
 				if (notification.action?.actionURL) {
 					// Replace vscode:// protocol with the appropriate protocol for the current IDE
 					const actionUrl = replaceVscodeProtocol(notification.action.actionURL)
-					await vscode.env.openExternal(vscode.Uri.parse(actionUrl))
+					const opened = await openTrustedExternalUrl(actionUrl)
+					if (!opened) {
+						log?.(`[Security] Rejected notification action URL with unsupported scheme: ${actionUrl}`)
+					}
 				}
 			}
 

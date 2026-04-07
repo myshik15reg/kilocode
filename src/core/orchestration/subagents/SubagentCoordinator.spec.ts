@@ -1,14 +1,24 @@
+import * as fs from "fs/promises"
+import * as os from "os"
+import * as path from "path"
+
 import type { ActivityItem } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { compareActivityItems, getActivityProjection, mergeActivityItems } from "../events/projections"
 import { orchestrationEventStore } from "../events/store"
+import { MemoryPromotionService } from "../../../services/alfa-code"
 import { SubagentCoordinator } from "./SubagentCoordinator"
 
 // kilocode_change - new file
 describe("SubagentCoordinator", () => {
 	beforeEach(() => {
+		if (!TelemetryService.hasInstance()) {
+			TelemetryService.createInstance([])
+		}
+
 		for (const taskId of [
 			"parent-1",
 			"parent-2",
@@ -88,12 +98,83 @@ describe("SubagentCoordinator", () => {
 			timestamp: 200,
 		})
 
+		await vi.waitFor(() => {
+			expect(reopenParentFromDelegation).toHaveBeenCalledWith({
+				parentTaskId: "parent-1",
+				childTaskId: "child-1",
+				completionResultSummary: "Done",
+				preserveParentFocus: true,
+				outcomeStatus: "completed",
+			})
+			expect(coordinator.getBindingForTask("child-1")).toBeUndefined()
+			expect(coordinator.getTaskRelayRegistration("child-1")).toBeUndefined()
+		})
+	})
+
+	it("treats abstained outcomes as terminal and resumes the parent with an abstain summary", async () => {
+		let statusListener: ((event: any) => void | Promise<void>) | undefined
+		const reopenParentFromDelegation = vi.fn().mockResolvedValue(undefined)
+		const recordTaskActivity = vi.fn().mockResolvedValue(undefined)
+		const abstainedSpy = vi.spyOn(TelemetryService.instance, "captureDelegationAbstained")
+
+		const bridge = {
+			hasCapacity: vi.fn(() => true),
+			launch: vi.fn(),
+			cancel: vi.fn(),
+			pause: vi.fn(),
+			resume: vi.fn(),
+			listBindings: vi.fn(() => [
+				{
+					request: {
+						parentTaskId: "parent-1",
+						rootTaskId: "root-1",
+						targetTaskId: "child-1",
+						mode: "code",
+						handoff: { summary: "Do work", canAbstain: true },
+						execution: "background",
+						isolation: "shared",
+						relayPolicy: "parent_only",
+					},
+					parentTaskId: "parent-1",
+					childTaskId: "child-1",
+					sessionId: "child-1",
+					status: "running",
+					updatedAt: 100,
+				},
+			]),
+			onStatus: vi.fn((listener) => {
+				statusListener = listener
+				return () => undefined
+			}),
+			onResult: vi.fn(() => () => undefined),
+			relay: vi.fn().mockResolvedValue(undefined),
+		}
+
+		const coordinator = new SubagentCoordinator(
+			{ reopenParentFromDelegation, recordTaskActivity } as any,
+			bridge as any,
+		)
+
+		await statusListener?.({
+			taskId: "child-1",
+			sessionId: "child-1",
+			state: "abstained",
+			message: "Need parent clarification",
+			timestamp: 200,
+		})
+
 		expect(reopenParentFromDelegation).toHaveBeenCalledWith({
 			parentTaskId: "parent-1",
 			childTaskId: "child-1",
-			completionResultSummary: "Done",
+			completionResultSummary: "Need parent clarification",
 			preserveParentFocus: true,
+			outcomeStatus: "abstained",
 		})
+		expect(abstainedSpy).toHaveBeenCalledWith("parent-1", "child-1", "Need parent clarification")
+		expect(recordTaskActivity).toHaveBeenCalledWith(
+			"parent-1",
+			expect.objectContaining({ kind: "subagent", status: "abstained", summary: "Need parent clarification" }),
+		)
 		expect(coordinator.getBindingForTask("child-1")).toBeUndefined()
 		expect(coordinator.getTaskRelayRegistration("child-1")).toBeUndefined()
 	})
@@ -190,13 +271,16 @@ describe("SubagentCoordinator", () => {
 			timestamp: 400,
 		})
 
-		expect(reopenParentFromDelegation).toHaveBeenCalledWith({
-			parentTaskId: "parent-2",
-			childTaskId: "child-2",
-			completionResultSummary: "Done after recovery",
-			preserveParentFocus: true,
+		await vi.waitFor(() => {
+			expect(reopenParentFromDelegation).toHaveBeenCalledWith({
+				parentTaskId: "parent-2",
+				childTaskId: "child-2",
+				completionResultSummary: "Done after recovery",
+				preserveParentFocus: true,
+				outcomeStatus: "completed",
+			})
+			expect(recoveredCoordinator.getBindingForTask("child-2")).toBeUndefined()
 		})
-		expect(recoveredCoordinator.getBindingForTask("child-2")).toBeUndefined()
 	})
 
 	it("ignores duplicate completion events after recovery rebind", async () => {
@@ -643,18 +727,442 @@ describe("SubagentCoordinator", () => {
 			explainability: {
 				stage: "outcome",
 				reasonCode: "subagent_completed",
-				source: "status",
+				source: "result",
 				mode: "code",
 				execution: "background",
 				outcomeSummary: "Background subagent completed",
 			},
 		})
-		expect(reopenParentFromDelegation).toHaveBeenCalledTimes(1)
+		await vi.waitFor(() => {
+			expect(reopenParentFromDelegation).toHaveBeenCalledTimes(1)
+			expect(reopenParentFromDelegation).toHaveBeenCalledWith({
+				parentTaskId: "parent-1",
+				childTaskId: "child-1",
+				completionResultSummary: "Done",
+				preserveParentFocus: true,
+				outcomeStatus: "completed",
+			})
+		})
+	})
+
+	it("releases background bindings after completed results are finalized", async () => {
+		let resultListener: ((event: any) => void | Promise<void>) | undefined
+		const release = vi.fn().mockResolvedValue(undefined)
+		const bridge = {
+			hasCapacity: vi.fn(() => true),
+			launch: vi.fn(),
+			cancel: vi.fn(),
+			release,
+			onStatus: vi.fn(() => () => undefined),
+			onResult: vi.fn((listener) => {
+				resultListener = listener
+				return () => undefined
+			}),
+			listBindings: vi.fn(() => [
+				{
+					request: {
+						parentTaskId: "parent-1",
+						rootTaskId: "root-1",
+						targetTaskId: "child-1",
+						mode: "code",
+						handoff: { summary: "Do work" },
+						execution: "background",
+						isolation: "shared",
+						relayPolicy: "parent_only",
+					},
+					parentTaskId: "parent-1",
+					childTaskId: "child-1",
+					sessionId: "child-1",
+					status: "running",
+					updatedAt: 100,
+				},
+			]),
+		}
+		const coordinator = new SubagentCoordinator(
+			{ reopenParentFromDelegation: vi.fn().mockResolvedValue(undefined) } as any,
+			bridge as any,
+		)
+
+		await resultListener?.({
+			taskId: "child-1",
+			sessionId: "child-1",
+			status: "completed",
+			output: "Done",
+			summary: "Done",
+			timestamp: 200,
+		})
+
+		await vi.waitFor(() => expect(release).toHaveBeenCalledWith("child-1"))
+		expect(coordinator.getBindingForTask("child-1")).toBeUndefined()
+		expect(coordinator.getTaskRelayRegistration("child-1")).toBeUndefined()
+	})
+
+	it("falls back to a synthesized completion summary when no result payload arrives", async () => {
+		vi.useFakeTimers()
+		try {
+			let statusListener: ((event: any) => void | Promise<void>) | undefined
+			const release = vi.fn().mockResolvedValue(undefined)
+			const reopenParentFromDelegation = vi.fn().mockResolvedValue(undefined)
+			const bridge = {
+				hasCapacity: vi.fn(() => true),
+				launch: vi.fn(),
+				cancel: vi.fn(),
+				release,
+				onStatus: vi.fn((listener) => {
+					statusListener = listener
+					return () => undefined
+				}),
+				onResult: vi.fn(() => () => undefined),
+				listBindings: vi.fn(() => [
+					{
+						request: {
+							parentTaskId: "parent-1",
+							rootTaskId: "root-1",
+							targetTaskId: "child-1",
+							mode: "code",
+							handoff: { summary: "Do work" },
+							execution: "background",
+							isolation: "shared",
+							relayPolicy: "parent_only",
+						},
+						parentTaskId: "parent-1",
+						childTaskId: "child-1",
+						sessionId: "child-1",
+						status: "running",
+						updatedAt: 100,
+					},
+				]),
+			}
+			const coordinator = new SubagentCoordinator({ reopenParentFromDelegation } as any, bridge as any)
+
+			await statusListener?.({
+				taskId: "child-1",
+				sessionId: "child-1",
+				state: "completed",
+				message: "Background subagent completed",
+				timestamp: 200,
+			})
+			await vi.advanceTimersByTimeAsync(1600)
+
+			await vi.waitFor(() => {
+				expect(reopenParentFromDelegation).toHaveBeenCalledWith({
+					parentTaskId: "parent-1",
+					childTaskId: "child-1",
+					completionResultSummary: expect.stringContaining("Explicit result payload was not received"),
+					preserveParentFocus: true,
+					outcomeStatus: "completed",
+				})
+			})
+			expect(release).toHaveBeenCalledWith("child-1")
+			expect(coordinator.getBindingForTask("child-1")).toBeUndefined()
+		} finally {
+			vi.useRealTimers()
+		}
+	})
+
+	it("cleans up bindings and releases them even if parent reopen fails", async () => {
+		let resultListener: ((event: any) => void | Promise<void>) | undefined
+		const release = vi.fn().mockResolvedValue(undefined)
+		const log = vi.fn()
+		const bridge = {
+			hasCapacity: vi.fn(() => true),
+			launch: vi.fn(),
+			cancel: vi.fn(),
+			release,
+			onStatus: vi.fn(() => () => undefined),
+			onResult: vi.fn((listener) => {
+				resultListener = listener
+				return () => undefined
+			}),
+			listBindings: vi.fn(() => [
+				{
+					request: {
+						parentTaskId: "parent-1",
+						rootTaskId: "root-1",
+						targetTaskId: "child-1",
+						mode: "code",
+						handoff: { summary: "Do work" },
+						execution: "background",
+						isolation: "shared",
+						relayPolicy: "parent_only",
+					},
+					parentTaskId: "parent-1",
+					childTaskId: "child-1",
+					sessionId: "child-1",
+					status: "running",
+					updatedAt: 100,
+				},
+			]),
+		}
+		const coordinator = new SubagentCoordinator(
+			{
+				reopenParentFromDelegation: vi.fn().mockRejectedValue(new Error("reopen failed")),
+				log,
+			} as any,
+			bridge as any,
+		)
+
+		await resultListener?.({
+			taskId: "child-1",
+			sessionId: "child-1",
+			status: "completed",
+			output: "Done",
+			summary: "Done",
+			timestamp: 200,
+		})
+
+		await vi.waitFor(() => expect(log).toHaveBeenCalled())
+		expect(log).toHaveBeenCalledWith(
+			"[SubagentCoordinator] Failed to reconcile terminal subagent child-1 (completed): reopen failed",
+		)
+		expect(release).toHaveBeenCalledWith("child-1")
+		expect(coordinator.getBindingForTask("child-1")).toBeUndefined()
+		expect(coordinator.getTaskRelayRegistration("child-1")).toBeUndefined()
+	})
+
+	it("promotes curated memory after completed background structured delegation when enabled", async () => {
+		let resultListener: ((event: any) => void | Promise<void>) | undefined
+		const workspacePath = await fs.mkdtemp(path.join(os.tmpdir(), "subagent-memory-"))
+		await fs.mkdir(path.join(workspacePath, ".kilocode", "memory-bank"), { recursive: true })
+		await fs.writeFile(
+			path.join(workspacePath, ".kilocode", "memory-bank", "context.md"),
+			"# Context\n\n## What changed\n",
+			"utf8",
+		)
+
+		try {
+			const reopenParentFromDelegation = vi.fn().mockResolvedValue(undefined)
+			const bridge = {
+				hasCapacity: vi.fn(() => true),
+				launch: vi.fn(),
+				cancel: vi.fn(),
+				pause: vi.fn(),
+				resume: vi.fn(),
+				listBindings: vi.fn(() => [
+					{
+						request: {
+							parentTaskId: "parent-4",
+							rootTaskId: "root-4",
+							targetTaskId: "child-4",
+							mode: "code",
+							handoff: {
+								summary: "Do structured work",
+								acceptanceCriteria: ["record evaluator verdict", "cite files"],
+								inputs: [{ kind: "workflow", ref: ".kilocode/workflows/agent-orchestration.md" }],
+								evidenceNeeded: true,
+							},
+							execution: "background",
+							isolation: "shared",
+							relayPolicy: "parent_only",
+							structuredDelegation: true,
+							retrievalMode: "hybrid",
+							taskIntent: "implementation",
+						},
+						parentTaskId: "parent-4",
+						childTaskId: "child-4",
+						sessionId: "child-4",
+						status: "running",
+						updatedAt: 100,
+					},
+				]),
+				onStatus: vi.fn(() => () => undefined),
+				onResult: vi.fn((listener) => {
+					resultListener = listener
+					return () => undefined
+				}),
+				relay: vi.fn().mockResolvedValue(undefined),
+			}
+
+			const coordinator = new SubagentCoordinator(
+				{
+					cwd: workspacePath,
+					getState: vi.fn().mockResolvedValue({ evaluatorPassEnabled: true, memoryPromotionEnabled: true }),
+					getTaskWithId: vi.fn().mockResolvedValue({ historyItem: { workspace: workspacePath } }),
+					reopenParentFromDelegation,
+					log: vi.fn(),
+				} as any,
+				bridge as any,
+				{
+					memoryPromotionService: new MemoryPromotionService({
+						now: () => new Date("2026-04-09T10:00:00.000Z"),
+					}),
+				},
+			)
+
+			await resultListener?.({
+				taskId: "child-4",
+				sessionId: "child-4",
+				status: "completed",
+				output: "Done",
+				summary:
+					"- Updated `src/core/orchestration/subagents/SubagentCoordinator.ts` to record evaluator verdict.\n- Added `src/core/orchestration/subagents/SubagentCoordinator.spec.ts` to cite files in coverage.",
+				timestamp: 200,
+			})
+
+			await vi.waitFor(async () => {
+				expect(reopenParentFromDelegation).toHaveBeenCalledWith({
+					parentTaskId: "parent-4",
+					childTaskId: "child-4",
+					completionResultSummary: expect.stringContaining("Evaluator verdict: pass"),
+					preserveParentFocus: true,
+					outcomeStatus: "completed",
+					evaluatorVerdict: "pass",
+				})
+
+				const context = await fs.readFile(
+					path.join(workspacePath, ".kilocode", "memory-bank", "context.md"),
+					"utf8",
+				)
+				expect(context).toContain("AUTO_PROMOTED_MEMORY:child-4")
+				expect(context).toContain(".kilocode/evidence/2026-04-09-memory-promotion/task-child-4.md")
+			})
+			coordinator.dispose()
+		} finally {
+			await fs.rm(workspacePath, { recursive: true, force: true })
+		}
+	})
+
+	it("skips memory promotion when the feature flag is disabled", async () => {
+		let resultListener: ((event: any) => void | Promise<void>) | undefined
+		const workspacePath = await fs.mkdtemp(path.join(os.tmpdir(), "subagent-memory-disabled-"))
+		await fs.mkdir(path.join(workspacePath, ".kilocode", "memory-bank"), { recursive: true })
+		await fs.writeFile(
+			path.join(workspacePath, ".kilocode", "memory-bank", "context.md"),
+			"# Context\n\n## What changed\n",
+			"utf8",
+		)
+
+		try {
+			const bridge = {
+				hasCapacity: vi.fn(() => true),
+				launch: vi.fn(),
+				cancel: vi.fn(),
+				pause: vi.fn(),
+				resume: vi.fn(),
+				listBindings: vi.fn(() => [
+					{
+						request: {
+							parentTaskId: "parent-5",
+							rootTaskId: "root-5",
+							targetTaskId: "child-5",
+							mode: "code",
+							handoff: {
+								summary: "Do structured work",
+								acceptanceCriteria: ["cite files"],
+								inputs: [{ kind: "workflow", ref: ".kilocode/workflows/agent-orchestration.md" }],
+								evidenceNeeded: true,
+							},
+							execution: "background",
+							isolation: "shared",
+							relayPolicy: "parent_only",
+							structuredDelegation: true,
+						},
+						parentTaskId: "parent-5",
+						childTaskId: "child-5",
+						sessionId: "child-5",
+						status: "running",
+						updatedAt: 100,
+					},
+				]),
+				onStatus: vi.fn(() => () => undefined),
+				onResult: vi.fn((listener) => {
+					resultListener = listener
+					return () => undefined
+				}),
+				relay: vi.fn().mockResolvedValue(undefined),
+			}
+
+			await new SubagentCoordinator(
+				{
+					cwd: workspacePath,
+					getState: vi.fn().mockResolvedValue({ evaluatorPassEnabled: true, memoryPromotionEnabled: false }),
+					getTaskWithId: vi.fn().mockResolvedValue({ historyItem: { workspace: workspacePath } }),
+					reopenParentFromDelegation: vi.fn().mockResolvedValue(undefined),
+					log: vi.fn(),
+				} as any,
+				bridge as any,
+				{
+					memoryPromotionService: new MemoryPromotionService({
+						now: () => new Date("2026-04-09T10:00:00.000Z"),
+					}),
+				},
+			)
+
+			await resultListener?.({
+				taskId: "child-5",
+				sessionId: "child-5",
+				status: "completed",
+				output: "Done",
+				summary:
+					"Updated `src/core/orchestration/subagents/SubagentCoordinator.ts` and cited `src/core/orchestration/subagents/SubagentCoordinator.spec.ts`.",
+				timestamp: 200,
+			})
+
+			await vi.waitFor(async () => {
+				const context = await fs.readFile(
+					path.join(workspacePath, ".kilocode", "memory-bank", "context.md"),
+					"utf8",
+				)
+				expect(context).not.toContain("AUTO_PROMOTED_MEMORY:child-5")
+			})
+		} finally {
+			await fs.rm(workspacePath, { recursive: true, force: true })
+		}
+	})
+	it("reopens and cleans up the parent when a child fails", async () => {
+		let statusListener: ((event: any) => void | Promise<void>) | undefined
+		const reopenParentFromDelegation = vi.fn().mockResolvedValue(undefined)
+		const release = vi.fn().mockResolvedValue(undefined)
+		const bridge = {
+			hasCapacity: vi.fn(() => true),
+			launch: vi.fn(),
+			cancel: vi.fn(),
+			release,
+			onStatus: vi.fn((listener) => {
+				statusListener = listener
+				return () => undefined
+			}),
+			onResult: vi.fn(() => () => undefined),
+			listBindings: vi.fn(() => [
+				{
+					request: {
+						parentTaskId: "parent-1",
+						rootTaskId: "root-1",
+						targetTaskId: "child-1",
+						mode: "code",
+						handoff: { summary: "Do work" },
+						execution: "background",
+						isolation: "shared",
+						relayPolicy: "parent_only",
+					},
+					parentTaskId: "parent-1",
+					childTaskId: "child-1",
+					sessionId: "child-1",
+					status: "running",
+					updatedAt: 100,
+				},
+			]),
+			relay: vi.fn().mockResolvedValue(undefined),
+		}
+
+		const coordinator = new SubagentCoordinator({ reopenParentFromDelegation } as any, bridge as any)
+
+		await statusListener?.({
+			taskId: "child-1",
+			sessionId: "child-1",
+			state: "failed",
+			message: "Subagent failed validation",
+			timestamp: 200,
+		})
+
 		expect(reopenParentFromDelegation).toHaveBeenCalledWith({
 			parentTaskId: "parent-1",
 			childTaskId: "child-1",
-			completionResultSummary: "Done",
+			completionResultSummary: "Subagent failed validation",
 			preserveParentFocus: true,
+			outcomeStatus: "failed",
 		})
+		expect(release).toHaveBeenCalledWith("child-1")
+		expect(coordinator.getBindingForTask("child-1")).toBeUndefined()
 	})
 })

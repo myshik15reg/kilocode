@@ -4,14 +4,24 @@ import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 
-// import { useTaskSearch } from "./useTaskSearch" // kilocode_change
 import TaskItem from "./TaskItem"
 import HistoryTreeGutter from "./HistoryTreeGutter"
 import { buildTaskTreeRows, getAutoExpandedTaskIds, getRootTaskDescendantSummaryMap } from "./taskTree"
 import { useTaskHistory } from "@/kilocode/hooks/useTaskHistory"
 
+const pruneTaskIdSet = (taskIds: Set<string>, visibleTaskIds: Set<string>): Set<string> => {
+	const next = new Set<string>()
+
+	for (const taskId of taskIds) {
+		if (visibleTaskIds.has(taskId)) {
+			next.add(taskId)
+		}
+	}
+
+	return next
+}
+
 const HistoryPreview = ({ taskHistoryVersion }: { taskHistoryVersion: number } /*kilocode_change*/) => {
-	// kilocode_change start
 	const { data } = useTaskHistory(
 		{
 			workspace: "current",
@@ -22,11 +32,17 @@ const HistoryPreview = ({ taskHistoryVersion }: { taskHistoryVersion: number } /
 		taskHistoryVersion,
 	)
 	const tasks = useMemo(() => data?.historyItems ?? [], [data?.historyItems])
-	// kilocode_change end
 	const { t } = useAppTranslation()
 	const { activeRootTaskIds = [], runningRootTaskIds = [], focusedRootTaskId, taskHistory = [] } = useExtensionState()
 	const historyRootItems = useMemo(() => (taskHistory.length > 0 ? taskHistory : tasks), [taskHistory, tasks])
 	const [expandedTaskIds, setExpandedTaskIds] = useState<Set<string>>(() => new Set())
+	const [manuallyCollapsedTaskIds, setManuallyCollapsedTaskIds] = useState<Set<string>>(() => new Set())
+
+	useEffect(() => {
+		const visibleTaskIds = new Set(historyRootItems.map((item) => item.id))
+		setExpandedTaskIds((prev) => pruneTaskIdSet(prev, visibleTaskIds))
+		setManuallyCollapsedTaskIds((prev) => pruneTaskIdSet(prev, visibleTaskIds))
+	}, [historyRootItems])
 
 	useEffect(() => {
 		const nextExpandedIds = getAutoExpandedTaskIds(historyRootItems, {
@@ -34,24 +50,53 @@ const HistoryPreview = ({ taskHistoryVersion }: { taskHistoryVersion: number } /
 			activeRootTaskIds,
 		})
 
-		if (nextExpandedIds.size > 0) {
-			setExpandedTaskIds((prev) => new Set([...prev, ...nextExpandedIds]))
+		if (nextExpandedIds.size === 0) {
+			return
 		}
-	}, [historyRootItems, activeRootTaskIds, focusedRootTaskId])
 
-	const rootTaskSummaryMap = useMemo(() => getRootTaskDescendantSummaryMap(historyRootItems), [historyRootItems]) // kilocode_change
+		setExpandedTaskIds((prev) => {
+			let changed = false
+			const next = new Set(prev)
+
+			for (const taskId of nextExpandedIds) {
+				if (manuallyCollapsedTaskIds.has(taskId) || next.has(taskId)) {
+					continue
+				}
+
+				next.add(taskId)
+				changed = true
+			}
+
+			return changed ? next : prev
+		})
+	}, [historyRootItems, activeRootTaskIds, focusedRootTaskId, manuallyCollapsedTaskIds])
+
+	const rootTaskSummaryMap = useMemo(() => getRootTaskDescendantSummaryMap(historyRootItems), [historyRootItems])
 	const visibleTaskItems = tasks.length > 0 ? tasks : historyRootItems
 	const previewRows = useMemo(
-		() => buildTaskTreeRows(visibleTaskItems, expandedTaskIds, historyRootItems).slice(0, 4),
+		() => buildTaskTreeRows(visibleTaskItems, expandedTaskIds, historyRootItems),
 		[visibleTaskItems, expandedTaskIds, historyRootItems],
 	)
+
 	const toggleTaskExpansion = (taskId: string) => {
+		const isExpanded = expandedTaskIds.has(taskId)
+
 		setExpandedTaskIds((prev) => {
 			const next = new Set(prev)
-			if (next.has(taskId)) {
+			if (isExpanded) {
 				next.delete(taskId)
 			} else {
 				next.add(taskId)
+			}
+			return next
+		})
+
+		setManuallyCollapsedTaskIds((prev) => {
+			const next = new Set(prev)
+			if (isExpanded) {
+				next.add(taskId)
+			} else {
+				next.delete(taskId)
 			}
 			return next
 		})
@@ -62,18 +107,18 @@ const HistoryPreview = ({ taskHistoryVersion }: { taskHistoryVersion: number } /
 	}
 
 	return (
-		<div className="flex flex-col gap-1">
-			<div className="flex flex-wrap items-center justify-between mt-4 mb-2">
-				<h2 className="font-semibold text-lg grow m-0">{t("history:recentTasks")}</h2>
+		<div className="flex min-h-0 flex-1 flex-col gap-3">
+			<div className="flex flex-wrap items-center justify-between gap-2">
+				<h2 className="m-0 grow text-lg font-semibold">{t("history:recentTasks")}</h2>
 				<button
 					onClick={handleViewAllHistory}
-					className="text-base text-vscode-descriptionForeground hover:text-vscode-textLink-foreground transition-colors cursor-pointer"
+					className="cursor-pointer text-base text-vscode-descriptionForeground transition-colors hover:text-vscode-textLink-foreground"
 					aria-label={t("history:viewAllHistory")}>
 					{t("history:viewAllHistory")}
 				</button>
 			</div>
 			{previewRows.length !== 0 && (
-				<>
+				<div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
 					{previewRows.map((row) => (
 						<div key={row.item.id} className="flex items-stretch gap-2">
 							<HistoryTreeGutter
@@ -103,7 +148,7 @@ const HistoryPreview = ({ taskHistoryVersion }: { taskHistoryVersion: number } /
 							/>
 						</div>
 					))}
-				</>
+				</div>
 			)}
 		</div>
 	)

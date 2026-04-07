@@ -5,14 +5,12 @@ import { vscode } from "@/utils/vscode"
 
 import { ErrorRow } from "../ErrorRow"
 
-// Mock vscode webview messaging
 vi.mock("@/utils/vscode", () => ({
 	vscode: {
 		postMessage: vi.fn(),
 	},
 }))
 
-// Mock ExtensionState context
 vi.mock("@/context/ExtensionStateContext", () => ({
 	useExtensionState: () => ({
 		version: "1.0.0",
@@ -20,7 +18,6 @@ vi.mock("@/context/ExtensionStateContext", () => ({
 	}),
 }))
 
-// Mock selected model hook
 vi.mock("@/components/ui/hooks/useSelectedModel", () => ({
 	useSelectedModel: () => ({
 		provider: "test-provider",
@@ -28,7 +25,6 @@ vi.mock("@/components/ui/hooks/useSelectedModel", () => ({
 	}),
 }))
 
-// Mock i18n
 vi.mock("react-i18next", () => ({
 	useTranslation: () => ({
 		t: (key: string) => {
@@ -54,11 +50,9 @@ describe("ErrorRow diagnostics download", () => {
 
 		render(<ErrorRow type="error" message="Something went wrong" errorDetails="Detailed error body" />)
 
-		// Open the Error Details dialog via the info button
 		const infoButton = screen.getByRole("button", { name: "Error Details" })
 		fireEvent.click(infoButton)
 
-		// Click the diagnostics button
 		const downloadButton = screen.getByRole("button", { name: "Get detailed error info" })
 		fireEvent.click(downloadButton)
 
@@ -76,7 +70,22 @@ describe("ErrorRow diagnostics download", () => {
 			provider: "test-provider",
 			model: "test-model",
 		})
-		// Timestamp is generated at runtime, but should be a string
 		expect(typeof payload.values.timestamp).toBe("string")
+	})
+
+	it("uses a responsive layout for error details actions", () => {
+		render(<ErrorRow type="error" message="Something went wrong" errorDetails="Detailed error body" />)
+
+		const infoButton = screen.getByRole("button", { name: "Error Details" })
+		fireEvent.click(infoButton)
+
+		const copyButton = screen.getByRole("button", { name: "Copy to Clipboard" })
+		const downloadButton = screen.getByRole("button", { name: "Get detailed error info" })
+		const footer = copyButton.parentElement
+
+		expect(footer).not.toBeNull()
+		expect(footer).toHaveClass("!grid", "!grid-cols-1", "sm:!grid-cols-2")
+		expect(copyButton).toHaveClass("w-full", "min-w-0", "!whitespace-normal")
+		expect(downloadButton).toHaveClass("w-full", "min-w-0", "!whitespace-normal")
 	})
 })

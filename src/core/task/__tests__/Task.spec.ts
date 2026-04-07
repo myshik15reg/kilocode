@@ -1840,6 +1840,164 @@ describe("Cline", () => {
 			})
 		})
 
+		describe("Automatic retry budget", () => {
+			it("stops first-chunk auto retries after the retry budget is exhausted", async () => {
+				Task.resetGlobalApiRequestTime()
+				const task = new Task({
+					provider: mockProvider,
+					apiConfiguration: mockApiConfig,
+					task: "test task",
+					startTask: false,
+					context: mockExtensionContext,
+				})
+
+				mockProvider.getState = vi.fn().mockResolvedValue({
+					autoApprovalEnabled: true,
+					apiConfiguration: mockApiConfig,
+				})
+
+				const maxRetries = (Task as any).MAX_AUTOMATIC_REQUEST_RETRIES
+				const firstChunkError = new Error("first chunk failure")
+				const createMessageSpy = vi.spyOn(task.api, "createMessage").mockImplementation(
+					() =>
+						// eslint-disable-next-line require-yield
+						(async function* () {
+							throw firstChunkError
+						})() as any,
+				)
+				const backoffSpy = vi.spyOn(task as any, "backoffAndAnnounce").mockResolvedValue(undefined)
+				const saySpy = vi.spyOn(task, "say")
+
+				const consume = async () => {
+					for await (const _chunk of task.attemptApiRequest(0)) {
+						// Exhaust the generator to surface the terminal retry error.
+					}
+				}
+
+				await expect(consume()).rejects.toThrow("Automatic retry budget exhausted")
+				expect(createMessageSpy).toHaveBeenCalledTimes(maxRetries + 1)
+				expect(backoffSpy).toHaveBeenCalledTimes(maxRetries)
+				expect(
+					saySpy.mock.calls.some(
+						(call) => call[0] === "error" && String(call[1]).includes("Automatic retry budget exhausted"),
+					),
+				).toBe(true)
+			})
+
+			it("fails through api_req_failed when the first chunk never arrives", async () => {
+				Task.resetGlobalApiRequestTime()
+				const task = new Task({
+					provider: mockProvider,
+					apiConfiguration: mockApiConfig,
+					task: "test task",
+					startTask: false,
+					context: mockExtensionContext,
+				})
+
+				mockProvider.getState = vi.fn().mockResolvedValue({
+					autoApprovalEnabled: false,
+					apiConfiguration: mockApiConfig,
+				})
+
+				const askSpy = vi.spyOn(task, "ask").mockResolvedValue({
+					response: "noButtonClicked",
+					text: undefined,
+					images: undefined,
+				} as any)
+				vi.spyOn(task as any, "getFirstChunkTimeoutMs").mockReturnValue(5)
+
+				const neverResolvingStream = {
+					async next() {
+						return await new Promise<any>(() => {})
+					},
+					async return() {
+						return { done: true, value: undefined }
+					},
+					async throw(error: any) {
+						throw error
+					},
+					[Symbol.asyncIterator]() {
+						return this
+					},
+					async [Symbol.asyncDispose]() {
+						// Cleanup
+					},
+				} as AsyncGenerator<ApiStreamChunk>
+
+				vi.spyOn(task.api, "createMessage").mockReturnValue(neverResolvingStream as any)
+
+				const consume = async () => {
+					for await (const _chunk of task.attemptApiRequest(0)) {
+						// Exhaust the generator to surface the first-chunk timeout path.
+					}
+				}
+
+				await expect(consume()).rejects.toThrow("API request failed")
+				expect(askSpy).toHaveBeenCalledWith(
+					"api_req_failed",
+					expect.stringContaining("Timed out waiting for the first response chunk"),
+				)
+			})
+
+			it("emits a terminal mid-stream retry exhaustion error", async () => {
+				Task.resetGlobalApiRequestTime()
+				const task = new Task({
+					provider: mockProvider,
+					apiConfiguration: mockApiConfig,
+					task: "test task",
+					startTask: false,
+					context: mockExtensionContext,
+				})
+
+				const maxRetries = (Task as any).MAX_AUTOMATIC_REQUEST_RETRIES
+				const saySpy = vi.spyOn(task, "say")
+
+				await expect(
+					(task as any).failAutomaticRetryBudget("mid_stream", maxRetries, new Error("mid-stream failure")),
+				).rejects.toThrow("Automatic retry budget exhausted")
+				expect(
+					saySpy.mock.calls.some(
+						(call) => call[0] === "error" && String(call[1]).includes("provider interrupted streaming"),
+					),
+				).toBe(true)
+			})
+
+			it("records failure state when empty-response retry budget is exhausted", async () => {
+				Task.resetGlobalApiRequestTime()
+				const task = new Task({
+					provider: mockProvider,
+					apiConfiguration: mockApiConfig,
+					task: "test task",
+					startTask: false,
+					context: mockExtensionContext,
+				})
+
+				const maxRetries = (Task as any).MAX_AUTOMATIC_REQUEST_RETRIES
+				const saySpy = vi.spyOn(task, "say")
+
+				await expect(
+					(task as any).failAutomaticRetryBudget(
+						"empty_response",
+						maxRetries,
+						new Error("no assistant message"),
+						{
+							restoreUserMessageContent: [{ type: "text", text: "hello" }],
+							appendFailureAssistant: true,
+						},
+					),
+				).rejects.toThrow("Automatic retry budget exhausted")
+				expect(task.apiConversationHistory.slice(-2)).toEqual([
+					expect.objectContaining({ role: "user" }),
+					expect.objectContaining({ role: "assistant" }),
+				])
+				expect(
+					saySpy.mock.calls.some(
+						(call) => call[0] === "error" && String(call[1]).includes("no assistant messages"),
+					),
+				).toBe(true)
+			})
+		})
+
 		describe("cancelCurrentRequest", () => {
 			it("should cancel the current HTTP request via AbortController", () => {
 				const task = new Task({
@@ -2079,15 +2237,21 @@ describe("Queued message processing after condense", () => {
 
 		await task.condenseContext()
 
-		expect(HelperModelRouter.selectConfig).toHaveBeenCalledWith({
-			job: "condense",
-			state: {
-				apiConfiguration: apiConfig,
-				condensingApiConfigId: "helper-1",
-				listApiConfigMeta: [{ id: "helper-1", name: "Cheap helper" }],
-			},
-			providerSettingsManager: provider.providerSettingsManager,
-		})
+		expect(HelperModelRouter.selectConfig).toHaveBeenCalledWith(
+			expect.objectContaining({
+				job: "condense",
+				state: expect.objectContaining({
+					apiConfiguration: apiConfig,
+					condensingApiConfigId: "helper-1",
+					listApiConfigMeta: [{ id: "helper-1", name: "Cheap helper" }],
+				}),
+				providerSettingsManager: provider.providerSettingsManager,
+				decisionContext: expect.objectContaining({
+					taskId: "00000000-0000-7000-8000-000000000000",
+					contextWindowSize: 0,
+				}),
+			}),
+		)
 		expect(vi.mocked(summarizeConversation).mock.calls.at(-1)?.[7]).toBeUndefined()
 	})
 

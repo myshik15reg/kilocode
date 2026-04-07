@@ -230,6 +230,39 @@ describe("LocalVectorStore", () => {
 		})
 	})
 
+	describe("getPointsByFilePaths", () => {
+		it("returns stored points for requested file paths", async () => {
+			mockTable.query.mockReturnValue(mockTable)
+			mockTable.where.mockReturnValue(mockTable)
+			mockTable.toArray.mockResolvedValue([
+				{
+					id: "point-1",
+					vector: [0.1, 0.2, 0.3],
+					filePath: "src/file.ts",
+					codeChunk: "const value = true",
+					startLine: 1,
+					endLine: 2,
+				},
+			])
+
+			const points = await store.getPointsByFilePaths([path.join(workspacePath, "src", "file.ts")])
+
+			expect(mockTable.where).toHaveBeenCalledWith("`filePath` IN ('mock\\workspace\\src\\file.ts')")
+			expect(points).toEqual([
+				{
+					id: "point-1",
+					vector: [0.1, 0.2, 0.3],
+					payload: {
+						filePath: "src/file.ts",
+						codeChunk: "const value = true",
+						startLine: 1,
+						endLine: 2,
+					},
+				},
+			])
+		})
+	})
+
 	describe("deletePointsByFilePath", () => {
 		it("should call deletePointsByMultipleFilePaths", async () => {
 			const spy = vi.spyOn(store, "deletePointsByMultipleFilePaths").mockResolvedValue(undefined)
@@ -528,8 +561,10 @@ describe("LocalVectorStore", () => {
 
 			await store.deletePointsByFilePath(windowsPath)
 
-			// Backslashes should be preserved, only quotes escaped
-			expect(mockTable.delete).toHaveBeenCalledWith(`\`filePath\` IN ('C:\\Users\\test\\file.ts')`)
+			const normalizedPath = path.normalize(windowsPath)
+
+			// Backslashes should be preserved for absolute paths outside the workspace
+			expect(mockTable.delete).toHaveBeenCalledWith(`\`filePath\` IN ('${normalizedPath}')`)
 		})
 	})
 })

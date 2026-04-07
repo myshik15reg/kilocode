@@ -1,6 +1,6 @@
-import { readFileSync, writeFileSync, mkdirSync } from "fs"
+﻿import { readFileSync, writeFileSync, mkdirSync } from "fs"
 import path from "path"
-import type { ClineMessage, HistoryItem } from "@roo-code/types"
+import type { HistoryItem } from "@roo-code/types"
 import type { IPathProvider } from "../types/IPathProvider.js"
 import type { ILogger } from "../types/ILogger.js"
 import type { IExtensionMessenger } from "../types/IExtensionMessenger.js"
@@ -13,6 +13,41 @@ import type { SessionTitleService } from "./SessionTitleService.js"
 import type { GitStateService, GitRestoreState } from "./GitStateService.js"
 import { fetchSignedBlob } from "../utils/fetchBlobFromSignedUrl.js"
 import { LOG_SOURCES } from "../config.js"
+
+type RestorableHistorySnapshot = Partial<
+	Pick<
+		HistoryItem,
+		| "number"
+		| "ts"
+		| "tokensIn"
+		| "tokensOut"
+		| "cacheWrites"
+		| "cacheReads"
+		| "totalCost"
+		| "size"
+		| "workspace"
+		| "mode"
+		| "toolProtocol"
+		| "apiConfigName"
+		| "status"
+		| "delegationDepth"
+		| "completionResultSummary"
+		| "lastStopReason"
+		| "lastStopSummary"
+		| "restartCount"
+		| "statusUpdatedAt"
+		| "execution"
+		| "isolation"
+		| "lifecycleState"
+		| "pauseReason"
+		| "pausedAt"
+		| "resumeContextSummary"
+		| "branchFromMessageTs"
+		| "branchSummary"
+		| "branchStrategy"
+		| "patternContext"
+	>
+>
 
 /**
  * Dependencies required by SessionLifecycleService.
@@ -178,6 +213,8 @@ export class SessionLifecycleService {
 				})
 
 			const results = await Promise.allSettled(fetchPromises)
+			const failedBlobs: string[] = []
+			let restoredTaskMetadata: unknown
 
 			for (const result of results) {
 				if (result.status === "fulfilled") {
@@ -195,9 +232,13 @@ export class SessionLifecycleService {
 						}
 
 						if (filename === "ui_messages") {
-							fileContent = (fileContent as ClineMessage[]).filter(
+							fileContent = (fileContent as Array<{ say?: string }>).filter(
 								(message) => message.say !== "checkpoint_saved",
 							)
+						}
+
+						if (filename === "task_metadata") {
+							restoredTaskMetadata = fileContent
 						}
 
 						const fullPath = path.join(sessionDirectoryPath, `${filename}.json`)
@@ -206,12 +247,23 @@ export class SessionLifecycleService {
 
 						this.logger.debug(`Wrote blob to file`, LOG_SOURCES.SESSION_LIFECYCLE, { fullPath })
 					} else {
+						failedBlobs.push(filename)
 						this.logger.error(`Failed to process blob`, LOG_SOURCES.SESSION_LIFECYCLE, {
 							filename,
 							error: fetchResult.error,
 						})
 					}
+					continue
 				}
+
+				failedBlobs.push("unknown")
+				this.logger.error("Failed to resolve blob promise", LOG_SOURCES.SESSION_LIFECYCLE, {
+					error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+				})
+			}
+
+			if (failedBlobs.length > 0) {
+				throw new Error(`Failed to restore required session blobs: ${failedBlobs.join(", ")}`)
 			}
 
 			// Ensure required JSON files exist even if no blob URLs were provided.
@@ -236,19 +288,85 @@ export class SessionLifecycleService {
 				)
 			}
 
+			const restoredSnapshot = this.extractHistorySnapshotFromTaskMetadata(restoredTaskMetadata)
+			const rootTaskId = await this.resolveRootSessionId(session)
 			const historyItem: HistoryItem = {
 				id: sessionId,
-				number: 1,
+				number: restoredSnapshot.number ?? 1,
 				task: session.title,
-				ts: new Date(session.created_at).getTime(),
-				tokensIn: 0,
-				tokensOut: 0,
-				totalCost: 0,
+				ts: restoredSnapshot.ts ?? new Date(session.created_at).getTime(),
+				tokensIn: restoredSnapshot.tokensIn ?? 0,
+				tokensOut: restoredSnapshot.tokensOut ?? 0,
+				totalCost: restoredSnapshot.totalCost ?? 0,
+				...(typeof restoredSnapshot.cacheWrites === "number"
+					? { cacheWrites: restoredSnapshot.cacheWrites }
+					: {}),
+				...(typeof restoredSnapshot.cacheReads === "number" ? { cacheReads: restoredSnapshot.cacheReads } : {}),
+				...(typeof restoredSnapshot.size === "number" ? { size: restoredSnapshot.size } : {}),
+				...(typeof restoredSnapshot.workspace === "string" ? { workspace: restoredSnapshot.workspace } : {}),
+				...(typeof rootTaskId === "string" ? { rootTaskId } : {}),
+				...(typeof session.parent_session_id === "string" ? { parentTaskId: session.parent_session_id } : {}),
+				...(typeof (session.last_mode ?? restoredSnapshot.mode) === "string"
+					? { mode: (session.last_mode ?? restoredSnapshot.mode) as string }
+					: {}),
+				...(typeof restoredSnapshot.toolProtocol === "string"
+					? { toolProtocol: restoredSnapshot.toolProtocol }
+					: {}),
+				...(typeof restoredSnapshot.apiConfigName === "string"
+					? { apiConfigName: restoredSnapshot.apiConfigName }
+					: {}),
+				...(typeof restoredSnapshot.status === "string" ? { status: restoredSnapshot.status } : {}),
+				...(typeof restoredSnapshot.delegationDepth === "number"
+					? { delegationDepth: restoredSnapshot.delegationDepth }
+					: {}),
+				...(typeof restoredSnapshot.completionResultSummary === "string"
+					? { completionResultSummary: restoredSnapshot.completionResultSummary }
+					: {}),
+				...(typeof restoredSnapshot.lastStopReason === "string"
+					? { lastStopReason: restoredSnapshot.lastStopReason }
+					: {}),
+				...(typeof restoredSnapshot.lastStopSummary === "string"
+					? { lastStopSummary: restoredSnapshot.lastStopSummary }
+					: {}),
+				...(typeof restoredSnapshot.restartCount === "number"
+					? { restartCount: restoredSnapshot.restartCount }
+					: {}),
+				...(typeof restoredSnapshot.statusUpdatedAt === "number"
+					? { statusUpdatedAt: restoredSnapshot.statusUpdatedAt }
+					: {}),
+				...(typeof restoredSnapshot.execution === "string" ? { execution: restoredSnapshot.execution } : {}),
+				...(typeof restoredSnapshot.isolation === "string" ? { isolation: restoredSnapshot.isolation } : {}),
+				...(typeof restoredSnapshot.lifecycleState === "string"
+					? { lifecycleState: restoredSnapshot.lifecycleState }
+					: {}),
+				...(typeof restoredSnapshot.pauseReason === "string"
+					? { pauseReason: restoredSnapshot.pauseReason }
+					: {}),
+				...(typeof restoredSnapshot.pausedAt === "number" ? { pausedAt: restoredSnapshot.pausedAt } : {}),
+				...(typeof restoredSnapshot.resumeContextSummary === "string"
+					? { resumeContextSummary: restoredSnapshot.resumeContextSummary }
+					: {}),
+				...(typeof restoredSnapshot.branchFromMessageTs === "number"
+					? { branchFromMessageTs: restoredSnapshot.branchFromMessageTs }
+					: {}),
+				...(typeof restoredSnapshot.branchSummary === "string"
+					? { branchSummary: restoredSnapshot.branchSummary }
+					: {}),
+				...(typeof restoredSnapshot.branchStrategy === "string"
+					? { branchStrategy: restoredSnapshot.branchStrategy }
+					: {}),
+				...(restoredSnapshot.patternContext ? { patternContext: restoredSnapshot.patternContext } : {}),
 			}
 
 			this.persistenceManager.setSessionForTask(historyItem.id, sessionId)
 			this.stateManager.setActiveSessionId(sessionId)
 			this.stateManager.markSessionVerified(sessionId)
+			if (session.last_mode) {
+				this.stateManager.setMode(sessionId, session.last_mode)
+			}
+			if (session.last_model) {
+				this.stateManager.setModel(sessionId, session.last_model)
+			}
 
 			await this.extensionMessenger.sendWebviewMessage({
 				type: "addTaskToHistory",
@@ -410,8 +528,8 @@ export class SessionLifecycleService {
 					taskId,
 				})
 
-				const { historyItem, apiConversationHistoryFilePath, uiMessagesFilePath } =
-					await provider.getTaskWithId(taskId)
+				const taskData = await provider.getTaskWithId(taskId)
+				const { historyItem, apiConversationHistoryFilePath, uiMessagesFilePath } = taskData
 
 				const apiConversationHistory = JSON.parse(readFileSync(apiConversationHistoryFilePath, "utf8"))
 				const uiMessages = JSON.parse(readFileSync(uiMessagesFilePath, "utf8"))
@@ -447,6 +565,11 @@ export class SessionLifecycleService {
 
 				await this.sessionClient.uploadBlob(sessionId, "api_conversation_history", apiConversationHistory)
 				await this.sessionClient.uploadBlob(sessionId, "ui_messages", uiMessages)
+				await this.sessionClient.uploadBlob(
+					sessionId,
+					"task_metadata",
+					this.buildTaskMetadataUploadPayload(taskData),
+				)
 
 				this.logger.debug("Uploaded conversation blobs to session", LOG_SOURCES.SESSION_LIFECYCLE, {
 					sessionId,
@@ -470,6 +593,129 @@ export class SessionLifecycleService {
 			})
 			throw error
 		}
+	}
+
+	private buildTaskMetadataUploadPayload(
+		taskData: Awaited<ReturnType<ITaskDataProvider["getTaskWithId"]>>,
+	): Record<string, unknown> {
+		const taskMetadataPath =
+			taskData.taskMetadataFilePath ??
+			(taskData.taskDirPath ? path.join(taskData.taskDirPath, "task_metadata.json") : undefined)
+
+		let taskMetadataPayload: unknown = { files_in_context: [] }
+		if (taskMetadataPath) {
+			try {
+				taskMetadataPayload = JSON.parse(readFileSync(taskMetadataPath, "utf8"))
+			} catch {
+				taskMetadataPayload = { files_in_context: [] }
+			}
+		}
+
+		return this.normalizeTaskMetadataPayload(taskMetadataPayload, taskData.historyItem as HistoryItem)
+	}
+
+	private normalizeTaskMetadataPayload(
+		taskMetadataPayload: unknown,
+		historyItem: HistoryItem,
+	): Record<string, unknown> {
+		const base = this.isObjectRecord(taskMetadataPayload) ? { ...taskMetadataPayload } : { files_in_context: [] }
+		return {
+			...base,
+			historyItem: this.buildSessionHistorySnapshot(historyItem),
+		}
+	}
+
+	private buildSessionHistorySnapshot(historyItem: HistoryItem): RestorableHistorySnapshot {
+		const {
+			number,
+			ts,
+			tokensIn,
+			tokensOut,
+			cacheWrites,
+			cacheReads,
+			totalCost,
+			size,
+			workspace,
+			mode,
+			toolProtocol,
+			apiConfigName,
+			status,
+			delegationDepth,
+			completionResultSummary,
+			lastStopReason,
+			lastStopSummary,
+			restartCount,
+			statusUpdatedAt,
+			execution,
+			isolation,
+			lifecycleState,
+			pauseReason,
+			pausedAt,
+			resumeContextSummary,
+			branchFromMessageTs,
+			branchSummary,
+			branchStrategy,
+			patternContext,
+		} = historyItem
+
+		return {
+			number,
+			ts,
+			tokensIn,
+			tokensOut,
+			cacheWrites,
+			cacheReads,
+			totalCost,
+			size,
+			workspace,
+			mode,
+			toolProtocol,
+			apiConfigName,
+			status,
+			delegationDepth,
+			completionResultSummary,
+			lastStopReason,
+			lastStopSummary,
+			restartCount,
+			statusUpdatedAt,
+			execution,
+			isolation,
+			lifecycleState,
+			pauseReason,
+			pausedAt,
+			resumeContextSummary,
+			branchFromMessageTs,
+			branchSummary,
+			branchStrategy,
+			patternContext,
+		}
+	}
+
+	private extractHistorySnapshotFromTaskMetadata(taskMetadataPayload: unknown): RestorableHistorySnapshot {
+		if (!this.isObjectRecord(taskMetadataPayload) || !this.isObjectRecord(taskMetadataPayload.historyItem)) {
+			return {}
+		}
+		return taskMetadataPayload.historyItem as RestorableHistorySnapshot
+	}
+
+	private async resolveRootSessionId(session: SessionWithSignedUrls): Promise<string | undefined> {
+		let currentSessionId: string | null = session.session_id
+		let parentSessionId: string | null = session.parent_session_id
+
+		while (parentSessionId) {
+			currentSessionId = parentSessionId
+			const parentSession = (await this.sessionClient.get({
+				session_id: parentSessionId,
+				include_blob_urls: false,
+			})) as { parent_session_id: string | null } | undefined
+			parentSessionId = parentSession?.parent_session_id ?? null
+		}
+
+		return currentSessionId ?? undefined
+	}
+
+	private isObjectRecord(value: unknown): value is Record<string, unknown> {
+		return typeof value === "object" && value !== null && !Array.isArray(value)
 	}
 
 	/**

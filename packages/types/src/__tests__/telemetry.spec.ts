@@ -48,5 +48,25 @@ describe("telemetry contracts", () => {
 			type: TelemetryEventName.DELEGATION_RESUMED,
 			properties: expect.objectContaining({ taskId: "parent-1", childTaskId: "child-1" }),
 		})
+
+		expect(
+			rooCodeTelemetryEventSchema.parse({
+				type: TelemetryEventName.DELEGATION_HANDOFF_USED,
+				properties: {
+					...baseProperties,
+					taskId: "parent-1",
+					childTaskId: "child-1",
+					handoffStrategy: "sequential",
+					canAbstain: true,
+					verificationMode: "standard",
+					shadowMode: false,
+					stepStatus: "running",
+					budgetMaxTokens: 4096,
+				},
+			}),
+		).toMatchObject({
+			type: TelemetryEventName.DELEGATION_HANDOFF_USED,
+			properties: expect.objectContaining({ handoffStrategy: "sequential", canAbstain: true }),
+		})
 	})
 })

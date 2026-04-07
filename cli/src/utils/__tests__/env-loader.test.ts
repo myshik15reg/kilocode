@@ -7,7 +7,8 @@ import { existsSync } from "fs"
 import { config } from "dotenv"
 
 // Mock fs and dotenv modules
-vi.mock("fs", () => ({
+vi.mock("fs", async (importOriginal) => ({
+	...(await importOriginal<typeof import("fs")>()),
 	existsSync: vi.fn(),
 }))
 

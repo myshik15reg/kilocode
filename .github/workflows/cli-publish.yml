@@ -5,7 +5,7 @@ on:
     workflow_dispatch:
 
 env:
-    GIT_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+    GIT_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.merge_commit_sha || 'main' }}
     TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
     TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     NODE_VERSION: 20.20.0
@@ -73,13 +73,12 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-turbo-
             - name: Install dependencies
-              run: pnpm install
-            - name: Create .env file
-              working-directory: cli
-              run: echo "KILOCODE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}" >> .env
+              run: pnpm install --frozen-lockfile
             - name: Build CLI
               shell: bash
               run: pnpm run cli:bundle
+              env:
+                  KILOCODE_INCLUDE_RUNTIME_ENV: "false"
             - name: Run integration tests
               shell: bash
               run: pnpm --filter @kilocode/cli test:integration
@@ -123,9 +122,9 @@ jobs:
             - name: Publish to NPM
               working-directory: cli/dist
               run: |
-                version=${{ needs.check-version.outputs.version }}
-                npm publish --access public --provenance kilocode-cli-${version}.tgz
-    
+                  version=${{ needs.check-version.outputs.version }}
+                  npm publish --access public --provenance kilocode-cli-${version}.tgz
+
     publish-docker-debian:
         needs: [check-version, build-and-test]
         runs-on: ubuntu-latest
@@ -222,7 +221,7 @@ jobs:
             - name: Configure Git
               run: |
                   git config user.name "github-actions[bot]"
-                  git config user.email "github-actions[bot]@users.noreply.github.com"            
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
             - name: Create and Push Git Tag
               run: |
                   version=${{ needs.check-version.outputs.version }}
@@ -240,11 +239,11 @@ jobs:
                   version=${{ needs.check-version.outputs.version }}
                   if gh release view "cli-v${version}" >/dev/null 2>&1; then
                     exit 0
-                  fi                  
-                  changelog_content=$(sed -E -n "/^## \\[?v?${version}\\]?/,/^## /p" cli/CHANGELOG.md | sed '$d')                  
+                  fi
+                  changelog_content=$(sed -E -n "/^## \[?v?${version}\]?/,/^## /p" cli/CHANGELOG.md | sed '$d')
                   gh release create "cli-v${version}" \
                     --title "Release CLI - v${version}" \
                     --notes "$changelog_content" \
-                    --target main \
-                    cli/dist/kilocode-cli-${version}.tgz                  
+                    --target ${{ env.GIT_REF }} \
+                    cli/dist/kilocode-cli-${version}.tgz
                   echo "Successfully created CLI GitHub Release v${version}"

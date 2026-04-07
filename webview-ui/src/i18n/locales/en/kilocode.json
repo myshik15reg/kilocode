@@ -48,9 +48,10 @@
 		"freeModelsLink": "Discover free and budget model options"
 	},
 	"notifications": {
-		"toolRequest": "Tool request waiting for approval",
-		"browserAction": "Browser action waiting for approval",
-		"command": "Command waiting for approval"
+		"tryModel": "Try model",
+		"dismiss": "Dismiss notification",
+		"previous": "Previous notification",
+		"next": "Next notification"
 	},
 	"imageWarnings": {
 		"modelNoImageSupport": "Images are not supported by the current model.",
@@ -133,7 +134,8 @@
 				"badges": {
 					"cheapest": "Cheapest",
 					"recommendedLongContext": "Best for long context",
-					"onlyWhenNeeded": "Only when needed"
+					"onlyWhenNeeded": "Only when needed",
+					"bestIsolation": "Best isolation"
 				},
 				"local": {
 					"title": "Local follow-up",
@@ -177,7 +179,9 @@
 					"description": "Apply a one-click routing strategy for helper subtasks without changing your main chat profile.",
 					"strongMainCheapHelpers": "Strong Main + Cheap Helpers",
 					"balanced": "Balanced",
-					"maximumSaving": "Maximum Saving"
+					"maximumSaving": "Maximum Saving",
+					"cloudMainLocalHelpers": "Cloud Main + Local Helpers",
+					"localProfileUnavailable": "No local Ollama or LM Studio helper profile is available yet."
 				}
 			},
 			"parallelAgents": {
@@ -203,6 +207,68 @@
 					"title": "Large file safety",
 					"label": "Allow very large reads",
 					"description": "Disable the oversized/minified-file guard and allow full reads for very large files when you explicitly need them. This can increase token usage and risk context overflow."
+				}
+			},
+			"diagnostics": {
+				"title": "Local AI diagnostics",
+				"description": "Run a deterministic health check for Ollama, LiteLLM, local helper routing, and local retrieval components when configured.",
+				"run": "Run Local AI Diagnostics",
+				"running": "Running diagnostics..."
+			},
+			"expert": {
+				"title": "Expert controls",
+				"description": "Tune structured delegation, evaluator usage, and retrieval behavior for advanced AlfaCode workflows.",
+				"structuredDelegation": {
+					"label": "Structured delegation",
+					"description": "Require explicit goal and acceptance criteria for delegated tasks, with safer fallback to direct execution when the handoff is incomplete."
+				},
+				"evaluatorPass": {
+					"label": "Evaluator pass",
+					"description": "Allow an additional evaluator step for expensive, low-confidence, or conflicting helper results before synthesis."
+				},
+				"retrievalPolicy": {
+					"label": "Retrieval policy",
+					"description": "Choose how aggressively AlfaCode combines semantic search, hybrid search, and reranking for repository retrieval.",
+					"options": {
+						"adaptive": "Adaptive",
+						"semanticOnly": "Semantic only",
+						"hybrid": "Hybrid",
+						"rerankHeavy": "Rerank heavy"
+					}
+				},
+				"queryClassifierDebug": {
+					"label": "Query classifier debug",
+					"description": "Expose internal retrieval intent classification in advanced flows to inspect how repository search strategy was selected."
+				}
+			},
+			"timeline": {
+				"label": "Show task timeline",
+				"description": "Display grouped task progress in chat so it is easier to follow long-running work."
+			},
+			"platformControls": {
+				"title": "Platform controls",
+				"orchestrationTelemetry": {
+					"title": "Orchestration telemetry",
+					"label": "Enable routing telemetry",
+					"description": "Store privacy-safe routing metadata for helper and subagent decisions."
+				},
+				"helperLocality": {
+					"title": "Local helper preference",
+					"description": "Control whether helper tasks should stay local whenever possible.",
+					"options": {
+						"prefer": "Prefer local helpers",
+						"require": "Require local helpers",
+						"off": "Allow remote helpers first"
+					}
+				},
+				"escalationSensitivity": {
+					"title": "Escalation sensitivity",
+					"description": "Control when cheaper helper flows should escalate back to the stronger main model.",
+					"options": {
+						"conservative": "Conservative",
+						"balanced": "Balanced",
+						"aggressive": "Aggressive"
+					}
 				}
 			}
 		},
@@ -337,12 +403,6 @@
 			"idea6": "Generate cards that reveal dynamic content beautifully when hovered over",
 			"idea7": "Create a calming interactive starfield that moves with mouse gestures"
 		}
-	},
-	"notifications": {
-		"tryModel": "Try model",
-		"dismiss": "Dismiss notification",
-		"previous": "Previous notification",
-		"next": "Next notification"
 	},
 	"toolCallStyle": {
 		"title": "Tool Call Style",

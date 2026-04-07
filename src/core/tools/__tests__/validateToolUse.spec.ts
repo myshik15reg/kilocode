@@ -191,6 +191,9 @@ describe("mode-validator", () => {
 			expect(() => validateToolUse("web_search" as any, codeMode, [], undefined, { query: "   " })).toThrow(
 				/Invalid arguments for web_search: missing or empty required parameter "query"/,
 			)
+			expect(() =>
+				validateToolUse("web_search" as any, codeMode, [], undefined, { query: "docs", provider: "   " }),
+			).toThrow(/Invalid arguments for web_search: optional parameter "provider" must be a non-empty string/)
 		})
 
 		it("throws error for read_file when neither legacy path nor valid files are provided", () => {
@@ -369,6 +372,37 @@ describe("mode-validator", () => {
 				validateToolUse("ask_followup_question" as any, codeMode, [], undefined, {
 					question: "Need more info",
 					follow_up: [{ text: "Yes", mode: null }],
+				}),
+			).not.toThrow()
+		})
+
+		it("throws error for request_user_input when questions are invalid", () => {
+			expect(() => validateToolUse("request_user_input" as any, codeMode, [], undefined, {})).toThrow(
+				/Invalid arguments for request_user_input: provide a valid "questions" array/,
+			)
+			expect(() =>
+				validateToolUse("request_user_input" as any, codeMode, [], undefined, {
+					questions: [
+						{
+							header: "Scope",
+							question: "Which slice?",
+							options: [{ label: "Search", description: "Only one option is invalid." }],
+						},
+					],
+				}),
+			).toThrow(/Invalid arguments for request_user_input: provide a valid "questions" array/)
+			expect(() =>
+				validateToolUse("request_user_input" as any, codeMode, [], undefined, {
+					questions: [
+						{
+							header: "Scope",
+							question: "Which slice?",
+							options: [
+								{ label: "Search", description: "Start with provider-aware search." },
+								{ label: "UI", description: "Start with the structured input UI." },
+							],
+						},
+					],
 				}),
 			).not.toThrow()
 		})
@@ -581,5 +615,23 @@ describe("mode-validator", () => {
 				validateToolUse("apply_diff", codeMode, [], undefined, { path: "src/file.ts", diff: "@@ -1 +1 @@" }),
 			).not.toThrow()
 		})
+	})
+})
+
+describe("read_file malformed path validation", () => {
+	it("rejects legacy read_file paths that contain streamed tool-call garbage", () => {
+		expect(() =>
+			validateToolUse("read_file" as any, codeMode, [], undefined, {
+				path: ".kilocode/skills/test-skill/SKILL.md'}} qnhassistant to=functions.read_file",
+			}),
+		).toThrow(/contains non-path stream content/)
+	})
+
+	it("rejects native read_file files[].path values that contain streamed tool-call garbage", () => {
+		expect(() =>
+			validateToolUse("read_file" as any, codeMode, [], undefined, {
+				files: [{ path: ".kilocode/skills/test-skill/SKILL.md'}} qnhassistant to=functions.read_file" }],
+			}),
+		).toThrow(/files\[\]\.path|files\[\]\.path values contain non-path stream content/)
 	})
 })

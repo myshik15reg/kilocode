@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from "react"
+﻿import React, { useMemo, useEffect } from "react"
 import { VSCodeCheckbox, VSCodeTextField, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import { IMAGE_GENERATION_MODELS, type ImageGenerationProvider, getImageGenerationProvider } from "@roo-code/types"
 import { useAppTranslation } from "@/i18n/TranslationContext"
@@ -9,15 +9,18 @@ interface ImageGenerationSettingsProps {
 	onChange: (enabled: boolean) => void
 	imageGenerationProvider?: ImageGenerationProvider
 	openRouterImageApiKey?: string
+	hasOpenRouterImageApiKey?: boolean
 	openRouterImageGenerationSelectedModel?: string
 	setImageGenerationProvider: (provider: ImageGenerationProvider) => void
 	setOpenRouterImageApiKey: (apiKey: string) => void
 	setImageGenerationSelectedModel: (model: string) => void
 	// kilocode_change start
 	kiloCodeImageApiKey?: string
+	hasKiloCodeImageApiKey?: boolean
 	setKiloCodeImageApiKey: (apiKey: string) => void
 	currentProfileKilocodeToken?: string
 	litellmImageApiKey?: string
+	hasLitellmImageApiKey?: boolean
 	setLitellmImageApiKey: (apiKey: string) => void
 	litellmImageBaseUrl?: string
 	setLitellmImageBaseUrl: (baseUrl: string) => void
@@ -29,15 +32,18 @@ export const ImageGenerationSettings = ({
 	onChange,
 	imageGenerationProvider,
 	openRouterImageApiKey,
+	hasOpenRouterImageApiKey,
 	openRouterImageGenerationSelectedModel,
 	setImageGenerationProvider,
 	setOpenRouterImageApiKey,
 	setImageGenerationSelectedModel,
 	// kilocode_change start
 	kiloCodeImageApiKey,
+	hasKiloCodeImageApiKey,
 	setKiloCodeImageApiKey,
 	currentProfileKilocodeToken,
 	litellmImageApiKey,
+	hasLitellmImageApiKey,
 	setLitellmImageApiKey,
 	litellmImageBaseUrl,
 	setLitellmImageBaseUrl,
@@ -160,10 +166,10 @@ export const ImageGenerationSettings = ({
 
 	const isConfigured =
 		currentProvider === "openrouter"
-			? openRouterImageApiKey
+			? openRouterImageApiKey || hasOpenRouterImageApiKey
 			: currentProvider === "litellm"
-				? litellmImageApiKey && litellmImageBaseUrl
-				: kiloCodeImageApiKey // kilocode_change
+				? (litellmImageApiKey || hasLitellmImageApiKey) && litellmImageBaseUrl
+				: kiloCodeImageApiKey || hasKiloCodeImageApiKey // kilocode_change
 
 	return (
 		<div className="space-y-4">
@@ -203,30 +209,6 @@ export const ImageGenerationSettings = ({
 							{t("settings:experimental.IMAGE_GENERATION.providerDescription")}
 						</p>
 					</div>
-
-					{/* {
-						// kilocode_change start
-						<div>
-							<label className="block font-medium mb-1">
-								{t("settings:experimental.IMAGE_GENERATION.apiProvider")}
-							</label>
-							<VSCodeDropdown
-								value={isUsingOpenRouter ? "openrouter" : "kilocode"}
-								onChange={(e: any) => {
-									console.log("onChange", Boolean(e.target.value))
-									setIsUsingOpenRouter(e.target.value === "openrouter")
-								}}
-								className="w-full">
-								<VSCodeOption className="py-2 px-3" value="kilocode">
-									AlfaCode
-								</VSCodeOption>
-								<VSCodeOption className="py-2 px-3" value="openrouter">
-									OpenRouter
-								</VSCodeOption>
-							</VSCodeDropdown>
-						</div>
-						// kilocode_change end
-					} */}
 
 					{
 						// kilocode_change start

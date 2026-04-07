@@ -1,7 +1,8 @@
-// kilocode_change - new file
+﻿// kilocode_change - new file
 // AlfaCode Services
 // WorkFlowAI integration services for improved agent quality
 
 export { MemoryBankService } from "./MemoryBankService"
 export { ensureMemoryBankInitialized } from "./MemoryBankService" // kilocode_change
+export { MemoryPromotionService } from "./MemoryPromotionService"
 export { ensureWorkflowAiAssetsInstalled, syncWorkflowAiAssets } from "./WorkflowAssetsInstaller"

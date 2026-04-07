@@ -854,20 +854,165 @@ describe("newTaskTool delegation flow", () => {
 		)
 
 		expect(mockHandleError).not.toHaveBeenCalled()
-		expect(providerSpy.delegateParentAndOpenChild).toHaveBeenCalledWith({
-			parentTaskId: "mock-parent-task-id",
-			message: "Legacy follow-up task",
-			initialTodos: [{ id: "todo-0", content: "Preserve compatibility", status: "pending" }],
-			mode: "code",
-			execution: undefined,
-			isolation: undefined,
-			helperProfile: undefined,
-			profileClass: "strong",
-			routingSource: "default",
-			recommendationReasonCode: undefined,
-			branchFromTaskId: undefined,
-			branchStrategy: undefined,
-		})
+		expect(providerSpy.delegateParentAndOpenChild).toHaveBeenCalledWith(
+			expect.objectContaining({
+				parentTaskId: "mock-parent-task-id",
+				message: "Legacy follow-up task",
+				initialTodos: [{ id: "todo-0", content: "Preserve compatibility", status: "pending" }],
+				mode: "code",
+				execution: undefined,
+				isolation: undefined,
+				helperProfile: undefined,
+				profileClass: "strong",
+				routingSource: "default",
+				recommendationReasonCode: undefined,
+				branchFromTaskId: undefined,
+				branchStrategy: undefined,
+				goal: "Legacy follow-up task",
+				taskIntent: "general",
+				retrievalMode: "adaptive",
+				structuredDelegation: false,
+			}),
+		)
 	})
 	// kilocode_change end
+	it("normalizes structured delegation fields and forwards the structured contract", async () => {
+		const providerSpy = {
+			getState: vi
+				.fn()
+				.mockResolvedValue({ mode: "ask", retrievalPolicy: "rerank_heavy", structuredDelegationEnabled: true }),
+			getValue: vi.fn(() => undefined),
+			setValue: vi.fn().mockResolvedValue(undefined),
+			handleModeSwitch: vi.fn(),
+			delegateParentAndOpenChild: vi.fn().mockResolvedValue({ taskId: "child-structured" }),
+		} as any
+
+		const localCline = {
+			...mockCline,
+			taskId: "mock-parent-task-id",
+			providerRef: { deref: vi.fn(() => providerSpy) },
+		} as any
+
+		const block: ToolUse = {
+			type: "tool_use",
+			name: "new_task",
+			params: {
+				mode: "code",
+				message: "Investigate delegation regressions",
+				deliverable: "incident report",
+				constraints: `- no writes\n- no installs`,
+				acceptanceCriteria: `- identify root cause\n- cite affected files`,
+				inputs: `file: src/core/tools/NewTaskTool.ts\nworkflow: .kilocode/workflows/index.md`,
+				evidenceNeeded: "required",
+				permissions: `read\nsearch`,
+				retryBudget: "2",
+				retrievalPackId: "pack-42",
+			},
+			partial: false,
+		}
+
+		await newTaskTool.handle(
+			localCline,
+			block as ToolUse<"new_task">,
+			{
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			} as any,
+		)
+
+		const toolPayload = JSON.parse(mockAskApproval.mock.calls.at(-1)?.[1] ?? "{}")
+		expect(toolPayload.structuredDelegation).toEqual(
+			expect.objectContaining({
+				goal: "Investigate delegation regressions",
+				role: "researcher",
+				deliverable: "incident report",
+				constraints: ["no writes", "no installs"],
+				acceptanceCriteria: ["identify root cause", "cite affected files"],
+				evidenceNeeded: true,
+				permissions: ["read", "search"],
+				retryBudget: 2,
+				retrievalPackId: "pack-42",
+			}),
+		)
+		expect(toolPayload.explainability).toEqual(
+			expect.objectContaining({
+				taskIntent: "research",
+				retrievalMode: "rerank_heavy",
+				structuredDelegation: true,
+				validatorPolicy: "structured_background_enabled",
+			}),
+		)
+
+		expect(providerSpy.delegateParentAndOpenChild).toHaveBeenCalledWith(
+			expect.objectContaining({
+				message: expect.stringContaining("<delegation_contract>"),
+				goal: "Investigate delegation regressions",
+				role: "researcher",
+				constraints: ["no writes", "no installs"],
+				acceptanceCriteria: ["identify root cause", "cite affected files"],
+				inputs: [
+					{ kind: "file", ref: "src/core/tools/NewTaskTool.ts" },
+					{ kind: "workflow", ref: ".kilocode/workflows/index.md" },
+				],
+				evidenceNeeded: true,
+				permissions: ["read", "search"],
+				retryBudget: 2,
+				retrievalPackId: "pack-42",
+				retrievalMode: "rerank_heavy",
+				structuredDelegation: true,
+			}),
+		)
+	})
+
+	it("degrades background delegation when structured acceptance criteria are missing", async () => {
+		const providerSpy = {
+			getState: vi
+				.fn()
+				.mockResolvedValue({ mode: "ask", retrievalPolicy: "hybrid", structuredDelegationEnabled: true }),
+			getValue: vi.fn(() => undefined),
+			setValue: vi.fn().mockResolvedValue(undefined),
+			handleModeSwitch: vi.fn(),
+			delegateParentAndOpenChild: vi.fn().mockResolvedValue({ taskId: "child-gated" }),
+		} as any
+
+		const localCline = {
+			...mockCline,
+			taskId: "mock-parent-task-id",
+			providerRef: { deref: vi.fn(() => providerSpy) },
+		} as any
+
+		const block: ToolUse = {
+			type: "tool_use",
+			name: "new_task",
+			params: {
+				mode: "code",
+				message: "Investigate helper routing",
+				execution: "background",
+				deliverable: "brief note",
+			},
+			partial: false,
+		}
+
+		await newTaskTool.handle(
+			localCline,
+			block as ToolUse<"new_task">,
+			{
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			} as any,
+		)
+
+		const toolPayload = JSON.parse(mockAskApproval.mock.calls.at(-1)?.[1] ?? "{}")
+		expect(toolPayload.explainability.execution.reasonCode).toBe("structured_delegation_required")
+		expect(toolPayload.explainability.validatorPolicy).toBe("background_requires:acceptanceCriteria")
+		expect(providerSpy.delegateParentAndOpenChild).toHaveBeenCalledWith(
+			expect.objectContaining({ execution: undefined, retrievalMode: "hybrid", structuredDelegation: true }),
+		)
+	})
 })

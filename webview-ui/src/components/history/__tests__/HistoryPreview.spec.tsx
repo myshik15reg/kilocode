@@ -141,12 +141,11 @@ describe("HistoryPreview", () => {
 
 		const { container } = render(<HistoryPreview taskHistoryVersion={mockKiloCodeTaskHistoryVersion} />)
 
-		// Should render the container but no task items
-		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-1")
+		expect(container.firstChild).toHaveClass("flex", "min-h-0", "flex-1", "flex-col", "gap-3")
 		expect(screen.queryByTestId(/task-item-/)).not.toBeInTheDocument()
 	})
 
-	it("renders up to 4 tasks when tasks are available", () => {
+	it("renders all available tasks on the welcome screen", () => {
 		kiloCodeSetUpUseTaskHistoryMock({
 			tasks: mockTasks,
 			searchQuery: "",
@@ -161,13 +160,12 @@ describe("HistoryPreview", () => {
 
 		render(<HistoryPreview taskHistoryVersion={mockKiloCodeTaskHistoryVersion} />)
 
-		// Should render only the first 4 tasks
 		expect(screen.getByTestId("task-item-task-1")).toBeInTheDocument()
 		expect(screen.getByTestId("task-item-task-2")).toBeInTheDocument()
 		expect(screen.getByTestId("task-item-task-3")).toBeInTheDocument()
 		expect(screen.getByTestId("task-item-task-4")).toBeInTheDocument()
-		expect(screen.queryByTestId("task-item-task-5")).not.toBeInTheDocument()
-		expect(screen.queryByTestId("task-item-task-6")).not.toBeInTheDocument()
+		expect(screen.getByTestId("task-item-task-5")).toBeInTheDocument()
+		expect(screen.getByTestId("task-item-task-6")).toBeInTheDocument()
 	})
 
 	it("renders all tasks when there are 4 or fewer", () => {
@@ -191,7 +189,6 @@ describe("HistoryPreview", () => {
 		expect(screen.getByTestId("task-item-task-3")).toBeInTheDocument()
 		expect(screen.getByTestId("task-item-task-4")).toBeInTheDocument()
 		expect(screen.queryByTestId("task-item-task-5")).not.toBeInTheDocument()
-		expect(screen.queryByTestId("task-item-task-6")).not.toBeInTheDocument()
 	})
 
 	it("renders only 1 task when there is only 1 task", () => {
@@ -374,7 +371,6 @@ describe("HistoryPreview", () => {
 
 		render(<HistoryPreview taskHistoryVersion={mockKiloCodeTaskHistoryVersion} />)
 
-		// Verify TaskItem was called with correct props for first 3 tasks
 		expect(mockTaskItem).toHaveBeenCalledWith(
 			expect.objectContaining({
 				item: mockTasks[0],
@@ -462,6 +458,54 @@ describe("HistoryPreview", () => {
 		expect(screen.queryByTestId("task-item-child")).not.toBeInTheDocument()
 	})
 
+	it("keeps a manually collapsed branch collapsed after history refresh", async () => {
+		const parentTask = {
+			id: "parent",
+			number: 1,
+			task: "Parent task",
+			ts: Date.now(),
+			tokensIn: 1,
+			tokensOut: 1,
+			totalCost: 0,
+			childIds: ["child"],
+		}
+		const childTask = {
+			id: "child",
+			number: 2,
+			task: "Child task",
+			ts: Date.now() - 1,
+			tokensIn: 1,
+			tokensOut: 1,
+			totalCost: 0,
+			parentTaskId: "parent",
+			rootTaskId: "parent",
+			status: "active",
+		}
+
+		extensionStateMock.state = {
+			activeRootTaskIds: ["parent"],
+			runningRootTaskIds: ["parent"],
+			focusedRootTaskId: "parent",
+			taskHistory: [parentTask, childTask],
+		}
+		kiloCodeSetUpUseTaskHistoryMock({ tasks: [parentTask] })
+
+		const { rerender } = render(<HistoryPreview taskHistoryVersion={mockKiloCodeTaskHistoryVersion} />)
+
+		expect(screen.getByTestId("task-item-child")).toBeInTheDocument()
+		await screen.getByTestId("history-preview-toggle-parent").click()
+		expect(screen.queryByTestId("task-item-child")).not.toBeInTheDocument()
+
+		extensionStateMock.state = {
+			...extensionStateMock.state,
+			taskHistory: [{ ...parentTask }, { ...childTask }],
+		}
+		kiloCodeSetUpUseTaskHistoryMock({ tasks: [{ ...parentTask }] })
+		rerender(<HistoryPreview taskHistoryVersion={mockKiloCodeTaskHistoryVersion + 1} />)
+
+		expect(screen.queryByTestId("task-item-child")).not.toBeInTheDocument()
+	})
+
 	it("renders with correct container classes", () => {
 		kiloCodeSetUpUseTaskHistoryMock({
 			tasks: mockTasks.slice(0, 1),
@@ -477,6 +521,6 @@ describe("HistoryPreview", () => {
 
 		const { container } = render(<HistoryPreview taskHistoryVersion={mockKiloCodeTaskHistoryVersion} />)
 
-		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-1")
+		expect(container.firstChild).toHaveClass("flex", "min-h-0", "flex-1", "flex-col", "gap-3")
 	})
 })

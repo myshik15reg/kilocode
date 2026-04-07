@@ -64,6 +64,9 @@ export enum TelemetryEventName {
 	TASK_OUTCOME_ERROR = "Task Outcome Error",
 	DELEGATION_COMPLETED = "Delegation Completed",
 	DELEGATION_RESUMED = "Delegation Resumed",
+	DELEGATION_HANDOFF_USED = "Delegation Handoff Used",
+	DELEGATION_ABSTAINED = "Delegation Abstained",
+	HELPER_MODEL_ROUTED = "Helper Model Routed",
 	// kilocode_change end
 
 	TASK_CREATED = "Task Created",
@@ -205,6 +208,32 @@ export const taskPropertiesSchema = z.object({
 	patternExecutionType: z.enum(["foreground", "background"]).optional(),
 	patternProfileClass: z.enum(["strong", "balanced", "cheap", "none"]).optional(),
 	patternReasonCode: orchestrationPatternReasonCodeSchema.optional(),
+	verificationMode: z.enum(["none", "standard", "strict"]).optional(),
+	shadowMode: z.boolean().optional(),
+	stepStatus: z.enum(["idle", "running", "verifying", "degraded", "completed", "failed"]).optional(),
+	budgetMaxTokens: z.number().optional(),
+	budgetMaxCostUsd: z.number().optional(),
+	handoffStrategy: z.enum(["direct", "sequential"]).optional(),
+	canAbstain: z.boolean().optional(),
+	helperJob: z.string().optional(),
+	helperSource: z.string().optional(),
+	helperProfile: z.string().optional(),
+	helperLocalityPreference: z.enum(["off", "prefer", "require"]).optional(),
+	orchestrationEscalationSensitivity: z.enum(["conservative", "balanced", "aggressive"]).optional(),
+	complexity: z.enum(["low", "medium", "high"]).optional(),
+	contextWindowSize: z.number().optional(),
+	routingLatencyMs: z.number().optional(),
+	retrievalConfidence: z.number().optional(),
+	retryCount: z.number().optional(),
+	toolDenialCount: z.number().optional(),
+	selectedProvider: z.string().optional(),
+	selectedModelId: z.string().optional(),
+	capabilityClass: z.string().optional(),
+	routingDecision: z.string().optional(),
+	routingDecisionSource: z.string().optional(),
+	fallbackUsed: z.boolean().optional(),
+	isLocalProvider: z.boolean().optional(),
+	escalated: z.boolean().optional(),
 	// kilocode_change end
 })
 
@@ -271,6 +300,9 @@ export const rooCodeTelemetryEventSchema = z.discriminatedUnion("type", [
 			TelemetryEventName.TASK_OUTCOME_ERROR, // kilocode_change
 			TelemetryEventName.DELEGATION_COMPLETED, // kilocode_change
 			TelemetryEventName.DELEGATION_RESUMED, // kilocode_change
+			TelemetryEventName.DELEGATION_HANDOFF_USED, // kilocode_change
+			TelemetryEventName.DELEGATION_ABSTAINED, // kilocode_change
+			TelemetryEventName.HELPER_MODEL_ROUTED, // kilocode_change
 			// kilocode_change end
 
 			TelemetryEventName.TASK_CREATED,

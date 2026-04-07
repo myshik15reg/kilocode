@@ -2,6 +2,7 @@ import type { KilocodeStreamEvent, KilocodePayload } from "./CliOutputParser"
 import type { ClineMessage } from "@roo-code/types"
 import { RuntimeProcessHandler } from "./RuntimeProcessHandler"
 import { AgentRegistry } from "./AgentRegistry"
+import { readDelegationOutcomeStatus } from "../../orchestration/subagents/delegationOutcome"
 
 /**
  * State event payload sent to webview for state machine transitions.
@@ -107,14 +108,7 @@ export class KilocodeEventProcessor {
 
 		// Handle ask:completion_result early - it has no text but needs to trigger state event
 		if (payload.type === "ask" && payload.ask === "completion_result") {
-			this.registry.updateSession(sessionId, {
-				lifecycleStatus: "completed",
-				activityState: "idle",
-				needsAttention: false,
-				recoveryState: undefined,
-				pendingReaction: undefined,
-				lastEventAt: Date.now(),
-			})
+			this.applyCompletionLifecycle(sessionId, payload)
 			this.postStateEvent(sessionId, { eventType: "ask_completion_result" })
 			return
 		}
@@ -224,6 +218,7 @@ export class KilocodeEventProcessor {
 
 		// Completion result (say:completion_result) → completed state
 		if (payload.say === "completion_result" && !partial) {
+			this.applyCompletionLifecycle(sessionId, payload)
 			this.postStateEvent(sessionId, { eventType: "ask_completion_result" })
 			return
 		}
@@ -259,6 +254,23 @@ export class KilocodeEventProcessor {
 					break
 			}
 		}
+	}
+
+	private applyCompletionLifecycle(sessionId: string, payload: KilocodePayload): void {
+		const terminalStatus = this.getCompletionLifecycleStatus(payload)
+		this.registry.updateSession(sessionId, {
+			lifecycleStatus: terminalStatus,
+			activityState: "idle",
+			needsAttention: false,
+			recoveryState: undefined,
+			pendingReaction: undefined,
+			lastEventAt: Date.now(),
+		})
+	}
+
+	private getCompletionLifecycleStatus(payload: KilocodePayload): "completed" | "abstained" {
+		const metadata = payload.metadata as Record<string, unknown> | undefined
+		return readDelegationOutcomeStatus(metadata) ?? "completed"
 	}
 
 	private deriveMessageText(payload: KilocodePayload, checkpoint?: Record<string, unknown>): string {

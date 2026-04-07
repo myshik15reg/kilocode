@@ -1,4 +1,4 @@
-import { defaultModeSlug } from "@roo/modes"
+﻿import { defaultModeSlug } from "@roo/modes"
 
 import { render, screen } from "@src/utils/test-utils"
 import { useExtensionState } from "@src/context/ExtensionStateContext"

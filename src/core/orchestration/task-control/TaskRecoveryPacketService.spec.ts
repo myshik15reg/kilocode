@@ -231,6 +231,40 @@ describe("TaskRecoveryPacketService", () => {
 		expect(result).toBe("First chunk second chunk")
 	})
 
+	it("passes shared helper routing settings and retry context into relay compaction", async () => {
+		getState.mockResolvedValue({
+			apiConfiguration: { apiProvider: "anthropic", apiModelId: "claude-sonnet" },
+			condensingApiConfigId: "helper-1",
+			listApiConfigMeta: [{ id: "helper-1", name: "Cheap helper", apiProvider: "openai" }],
+			helperLocalityPreference: "prefer",
+			orchestrationEscalationSensitivity: "balanced",
+			orchestrationTelemetryEnabled: true,
+		})
+		vi.mocked(HelperModelRouter.selectConfig).mockResolvedValue({
+			job: "relay_compact",
+			config: {},
+			source: "primary",
+			provider: "anthropic",
+		} as any)
+		const service = new TaskRecoveryPacketService(runtime)
+
+		await (service as any).maybeBuildCheapRestartSummary({
+			historyItem: createHistoryItem({ id: "task-7", restartCount: 2 }),
+		})
+
+		expect(HelperModelRouter.selectConfig).toHaveBeenCalledWith(
+			expect.objectContaining({
+				job: "relay_compact",
+				state: expect.objectContaining({
+					helperLocalityPreference: "prefer",
+					orchestrationEscalationSensitivity: "balanced",
+					orchestrationTelemetryEnabled: true,
+				}),
+				decisionContext: { taskId: "task-7", retryCount: 2 },
+			}),
+		)
+	})
+
 	it("logs and falls back when helper summary generation throws", async () => {
 		vi.mocked(HelperModelRouter.selectConfig).mockResolvedValue({
 			job: "relay_compact",
@@ -278,7 +312,7 @@ describe("TaskRecoveryPacketService", () => {
 			createHistoryItem({ restartCount: 2, lastStopSummary: "Summary" }),
 		)
 
-		expect(cacheKey).toContain("task-1::1::streaming_failed:: Summary ::standard::user:Keep going|assistant:")
+		expect(cacheKey).toContain("task-1::1::streaming_failed:: Summary ::standard::user: Keep going")
 		expect(standardHandoff).toContain("Stop reason: streaming_failed.")
 		expect(standardHandoff).toContain("Recovery mode: standard.")
 		expect(pressureHandoff).toContain("Recovery mode: pressure.")

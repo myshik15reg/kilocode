@@ -30,6 +30,25 @@ export interface IdentityInfo {
 	cliUserId?: string
 }
 
+export interface AgentBudgetGuardrails {
+	maxInputTokens?: number
+	maxOutputTokens?: number
+	maxTotalCostUsd?: number
+	maxSteps?: number
+}
+
+export type AgentVerificationMode = "none" | "standard" | "strict"
+export type AgentStepStatus = "idle" | "running" | "verifying" | "degraded" | "completed" | "failed"
+export type AgentDegradedToolHandling = "warn" | "fallback" | "fail"
+
+export interface AgentExecutionGuardrails {
+	budget?: AgentBudgetGuardrails
+	shadowMode?: boolean
+	verificationMode?: AgentVerificationMode
+	stepStatus?: AgentStepStatus
+	degradedToolHandling?: AgentDegradedToolHandling
+}
+
 // MCP types (inline since they come from src/shared which isn't a package)
 export interface McpErrorEntry {
 	message: string
@@ -149,6 +168,7 @@ export interface ExtensionState {
 	routerModels?: RouterModels
 	appendSystemPrompt?: string
 	experiments?: Record<string, boolean>
+	agentGuardrails?: AgentExecutionGuardrails
 	// Auto-approval settings
 	autoApprovalEnabled?: boolean
 	alwaysAllowReadOnly?: boolean

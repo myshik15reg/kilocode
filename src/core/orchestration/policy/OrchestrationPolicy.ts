@@ -1,6 +1,18 @@
-// kilocode_change - new file
-import type { ExecutionDecision, SubagentLaunchRequest, ToolBatchRequest, ToolCallCandidate } from "@roo-code/types"
+﻿// kilocode_change - new file
+import type {
+	ExecutionDecision,
+	RetrievalMode,
+	SubagentLaunchRequest,
+	ToolBatchRequest,
+	ToolCallCandidate,
+} from "@roo-code/types"
 
+import {
+	defaultRoleForTaskIntent,
+	getStructuredDelegationBackgroundRequirements,
+	hasStructuredDelegationContent,
+	normalizeStructuredDelegation,
+} from "../structuredDelegation"
 import { enrichToolCallCandidate, isSafeReadOnlyBatchCandidate } from "./toolMetadata"
 
 export interface OrchestrationPolicyInput {
@@ -10,7 +22,15 @@ export interface OrchestrationPolicyInput {
 	candidateToolCalls: ToolCallCandidate[]
 	hasBackgroundCapacity: boolean
 	hasHelperRouting: boolean
+	requireStructuredDelegation?: boolean
 }
+
+type SubagentLaunchOutcome = {
+	request?: SubagentLaunchRequest
+	missingRequirements?: string[]
+}
+
+const RETRIEVAL_MODES = new Set<RetrievalMode>(["adaptive", "semantic_only", "hybrid", "rerank_heavy"])
 
 function looksLikeIndependentSubgoal(userIntent: string): boolean {
 	return /(independent|independently|separately|delegate|background|parallel|subtask|subagent|research)/i.test(
@@ -34,7 +54,6 @@ function buildToolBatchRequest(
 	}
 }
 
-// kilocode_change start
 function normalizeChecklistContext(rawTodos: unknown): string[] | undefined {
 	if (typeof rawTodos !== "string") {
 		return undefined
@@ -48,17 +67,24 @@ function normalizeChecklistContext(rawTodos: unknown): string[] | undefined {
 	return context.length > 0 ? context : undefined
 }
 
+function normalizeRetrievalMode(value: unknown): RetrievalMode | undefined {
+	if (typeof value !== "string") {
+		return undefined
+	}
+	return RETRIEVAL_MODES.has(value as RetrievalMode) ? (value as RetrievalMode) : undefined
+}
+
 function buildSubagentLaunchRequest(
 	input: OrchestrationPolicyInput,
 	calls: ToolCallCandidate[],
-): SubagentLaunchRequest | undefined {
+): SubagentLaunchOutcome {
 	if (!input.taskId || calls.length !== 1) {
-		return undefined
+		return {}
 	}
 
 	const [candidate] = calls
 	if (candidate.tool !== "new_task") {
-		return undefined
+		return {}
 	}
 
 	const argumentsRecord = candidate.arguments ?? {}
@@ -77,24 +103,74 @@ function buildSubagentLaunchRequest(
 			: undefined
 
 	if (!mode || !message || execution !== "background") {
-		return undefined
+		return {}
 	}
 
+	const structuredDelegation = normalizeStructuredDelegation({
+		message,
+		deliverable: argumentsRecord.deliverable as string | undefined,
+		constraints: argumentsRecord.constraints as string | string[] | undefined,
+		acceptanceCriteria: argumentsRecord.acceptanceCriteria as string | string[] | undefined,
+		inputs: argumentsRecord.inputs as string | Array<{ kind?: string; ref?: string } | string> | undefined,
+		evidenceNeeded: argumentsRecord.evidenceNeeded as boolean | string | undefined,
+		expectedArtifact: argumentsRecord.expectedArtifact as string | undefined,
+		role: argumentsRecord.role as string | undefined,
+		retryBudget: argumentsRecord.retryBudget as number | string | undefined,
+		retrievalPackId: argumentsRecord.retrievalPackId as string | undefined,
+		taskIntent: argumentsRecord.taskIntent as string | undefined,
+		permissions: argumentsRecord.permissions as string[] | string | undefined,
+	})
+	const missingRequirements = input.requireStructuredDelegation
+		? getStructuredDelegationBackgroundRequirements(structuredDelegation)
+		: []
+	if (input.requireStructuredDelegation && missingRequirements.length > 0) {
+		return { missingRequirements }
+	}
+
+	const role = structuredDelegation.role ?? defaultRoleForTaskIntent(structuredDelegation.taskIntent)
+	const structuredDelegationUsed =
+		input.requireStructuredDelegation || hasStructuredDelegationContent(structuredDelegation)
+
 	return {
-		parentTaskId: input.taskId,
-		rootTaskId: input.rootTaskId ?? input.taskId,
-		mode,
-		handoff: {
-			summary: message,
-			context: normalizeChecklistContext(argumentsRecord.todos),
+		request: {
+			parentTaskId: input.taskId,
+			rootTaskId: input.rootTaskId ?? input.taskId,
+			mode,
+			handoff: {
+				summary: structuredDelegation.message,
+				context: normalizeChecklistContext(argumentsRecord.todos),
+				goal: structuredDelegation.message,
+				...(structuredDelegation.deliverable ? { deliverable: structuredDelegation.deliverable } : {}),
+				...(structuredDelegation.constraints ? { constraints: structuredDelegation.constraints } : {}),
+				...(structuredDelegation.acceptanceCriteria
+					? { acceptanceCriteria: structuredDelegation.acceptanceCriteria }
+					: {}),
+				...(structuredDelegation.inputs ? { inputs: structuredDelegation.inputs } : {}),
+				...(structuredDelegation.evidenceNeeded !== undefined
+					? { evidenceNeeded: structuredDelegation.evidenceNeeded }
+					: {}),
+			},
+			execution,
+			isolation,
+			relayPolicy: "parent_only",
+			...(helperProfile ? { helperProfile } : {}),
+			...(role ? { role } : {}),
+			...(structuredDelegation.permissions ? { permissions: structuredDelegation.permissions } : {}),
+			...(structuredDelegation.expectedArtifact
+				? { expectedArtifact: structuredDelegation.expectedArtifact }
+				: {}),
+			...(structuredDelegation.retryBudget !== undefined
+				? { retryBudget: structuredDelegation.retryBudget }
+				: {}),
+			...(structuredDelegation.retrievalPackId ? { retrievalPackId: structuredDelegation.retrievalPackId } : {}),
+			taskIntent: structuredDelegation.taskIntent,
+			...(normalizeRetrievalMode(argumentsRecord.retrievalMode)
+				? { retrievalMode: normalizeRetrievalMode(argumentsRecord.retrievalMode) }
+				: {}),
+			...(structuredDelegationUsed ? { structuredDelegation: true } : {}),
 		},
-		execution,
-		isolation,
-		relayPolicy: "parent_only",
-		...(helperProfile ? { helperProfile } : {}),
 	}
 }
-// kilocode_change end
 
 export class OrchestrationPolicy {
 	decide(input: OrchestrationPolicyInput): ExecutionDecision {
@@ -103,10 +179,12 @@ export class OrchestrationPolicy {
 		const hasExplicitSubagentCall = candidates.some((candidate) => candidate.tool === "new_task")
 		const independentSubgoal = hasExplicitSubagentCall || looksLikeIndependentSubgoal(input.userIntent)
 		const safeReadOnlyBatch = candidateCount > 1 && candidates.every(isSafeReadOnlyBatchCandidate)
-		const subagentPayload =
+		const subagentOutcome =
 			independentSubgoal && input.hasBackgroundCapacity
 				? buildSubagentLaunchRequest(input, candidates)
 				: undefined
+		const subagentPayload = subagentOutcome?.request
+		const missingStructuredRequirements = subagentOutcome?.missingRequirements ?? []
 
 		if (safeReadOnlyBatch) {
 			return {
@@ -123,6 +201,14 @@ export class OrchestrationPolicy {
 				reason: "Background new_task delegation can run through the subagent path.",
 				confidence: "high",
 				payload: subagentPayload,
+			}
+		}
+
+		if (hasExplicitSubagentCall && input.requireStructuredDelegation && missingStructuredRequirements.length > 0) {
+			return {
+				kind: "direct",
+				reason: `Background subagent routing requires structured delegation fields: ${missingStructuredRequirements.join(", ")}.`,
+				confidence: "high",
 			}
 		}
 

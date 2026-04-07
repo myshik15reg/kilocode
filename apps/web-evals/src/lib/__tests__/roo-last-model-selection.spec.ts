@@ -74,5 +74,25 @@ describe("roo-last-model-selection", () => {
 
 		expect(() => loadRooLastModelSelection()).not.toThrow()
 		expect(() => saveRooLastModelSelection(["roo/model-a"])).not.toThrow()
+		expect(() => saveRooLastModelSelection([])).not.toThrow()
+	})
+
+	it("returns defaults when localStorage is unavailable", () => {
+		Reflect.deleteProperty(globalThis, "localStorage")
+
+		expect(loadRooLastModelSelection()).toEqual([])
+		expect(() => saveRooLastModelSelection(["roo/model-a"])).not.toThrow()
+	})
+
+	it("treats a throwing localStorage getter as unavailable", () => {
+		Object.defineProperty(globalThis, "localStorage", {
+			get() {
+				throw new Error("no storage")
+			},
+			configurable: true,
+		})
+
+		expect(loadRooLastModelSelection()).toEqual([])
+		expect(() => saveRooLastModelSelection(["roo/model-a"])).not.toThrow()
 	})
 })

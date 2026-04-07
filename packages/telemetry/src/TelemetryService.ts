@@ -111,9 +111,37 @@ export class TelemetryService {
 			execution: "foreground" | "background"
 			delegationDepth?: number
 			isBackground: boolean
+			source?: string
+			reason?: string
+			helperProfile?: string
+			profileClass?: "strong" | "balanced" | "cheap" | "none"
 		},
 	): void {
 		this.captureEvent(TelemetryEventName.TASK_OUTCOME_DELEGATED, { taskId, ...properties })
+	}
+
+	public captureHelperModelRouted(properties: {
+		taskId?: string
+		helperJob: string
+		helperSource: string
+		helperLocalityPreference?: "off" | "prefer" | "require"
+		orchestrationEscalationSensitivity?: "conservative" | "balanced" | "aggressive"
+		complexity?: "low" | "medium" | "high"
+		contextWindowSize?: number
+		routingLatencyMs?: number
+		retrievalConfidence?: number
+		retryCount?: number
+		toolDenialCount?: number
+		selectedProvider: string
+		selectedModelId?: string
+		capabilityClass?: string
+		routingDecision?: string
+		routingDecisionSource?: string
+		fallbackUsed?: boolean
+		isLocalProvider: boolean
+		escalated?: boolean
+	}): void {
+		this.captureEvent(TelemetryEventName.HELPER_MODEL_ROUTED, properties)
 	}
 
 	public captureDelegationCompleted(taskId: string, childTaskId: string): void {
@@ -122,6 +150,28 @@ export class TelemetryService {
 
 	public captureDelegationResumed(taskId: string, childTaskId: string): void {
 		this.captureEvent(TelemetryEventName.DELEGATION_RESUMED, { taskId, childTaskId })
+	}
+
+	public captureDelegationHandoffUsed(
+		taskId: string,
+		childTaskId: string,
+		strategy: "direct" | "sequential",
+		canAbstain: boolean,
+	): void {
+		this.captureEvent(TelemetryEventName.DELEGATION_HANDOFF_USED, {
+			taskId,
+			childTaskId,
+			handoffStrategy: strategy,
+			canAbstain,
+		})
+	}
+
+	public captureDelegationAbstained(taskId: string, childTaskId: string, reason?: string): void {
+		this.captureEvent(TelemetryEventName.DELEGATION_ABSTAINED, {
+			taskId,
+			childTaskId,
+			...(reason ? { reason } : {}),
+		})
 	}
 
 	public captureTaskOutcomeError(

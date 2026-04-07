@@ -4,19 +4,29 @@ import { getParserForFile } from "../../util/treeSitter"
 
 export type AstPath = SyntaxNode[]
 
+const waitForParserRetry = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
 export async function getAst(filepath: string, fileContents: string): Promise<Tree | undefined> {
-	const parser = await getParserForFile(filepath)
+	for (let attempt = 0; attempt < 2; attempt++) {
+		const parser = await getParserForFile(filepath)
 
-	if (!parser) {
-		return undefined
+		if (parser) {
+			try {
+				const ast = parser.parse(fileContents)
+				if (ast) {
+					return ast
+				}
+			} catch {
+				// Retry once below to tolerate transient parser/WASM initialization races in tests.
+			}
+		}
+
+		if (attempt === 0) {
+			await waitForParserRetry(50)
+		}
 	}
 
-	try {
-		const ast = parser.parse(fileContents)
-		return ast || undefined
-	} catch {
-		return undefined
-	}
+	return undefined
 }
 
 export async function getTreePathAtCursor(ast: Tree, cursorIndex: number): Promise<AstPath> {

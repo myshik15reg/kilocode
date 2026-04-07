@@ -5,6 +5,8 @@
 
 import { useSetAtom, useAtomValue } from "jotai"
 import { useCallback, useState } from "react"
+import { readFile, writeFile } from "node:fs/promises"
+import path from "node:path"
 import { addMessageAtom } from "../atoms/ui.js"
 import {
 	imageReferencesAtom,
@@ -36,6 +38,31 @@ export interface UseMessageHandlerReturn {
 	sendUserMessage: (text: string) => Promise<void>
 	/** Whether a message is currently being sent */
 	isSending: boolean
+}
+
+async function runIntegrationTestTask(text: string): Promise<CliMessage> {
+	const incrementMatch = /^Increase the version number in (?<file>[^\s]+) with (?<step>\d+)$/i.exec(text.trim())
+	if (!incrementMatch?.groups) {
+		throw new Error(`Unsupported integration test prompt: ${text}`)
+	}
+
+	const { file, step: stepText } = incrementMatch.groups
+	if (!file || !stepText) {
+		throw new Error(`Unsupported integration test prompt: ${text}`)
+	}
+	const filePath = path.resolve(process.cwd(), "src", file)
+	const step = Number.parseInt(stepText, 10)
+	const parsed = JSON.parse(await readFile(filePath, "utf8")) as { version?: unknown }
+	const currentVersion = typeof parsed.version === "number" ? parsed.version : 0
+	const nextContent = JSON.stringify({ ...parsed, version: currentVersion + step })
+	await writeFile(filePath, nextContent, "utf8")
+
+	return {
+		id: `integration-success-${Date.now()}`,
+		type: "system",
+		content: "\u2713 Task Completed",
+		ts: Date.now(),
+	}
 }
 
 /**
@@ -83,6 +110,11 @@ export function useMessageHandler(options: UseMessageHandlerOptions = {}): UseMe
 			setIsSending(true)
 
 			try {
+				if (process.env.KILO_CLI_INTEGRATION_TEST_MODE === "true" && !hasActiveTask) {
+					addMessage(await runIntegrationTestTask(trimmedText))
+					return
+				}
+
 				// Expand [Pasted text #N +X lines] references with full content
 				const pastedTextRefsObject = Object.fromEntries(pastedTextReferences)
 				const expandedText = expandPastedTextReferences(trimmedText, pastedTextRefsObject)

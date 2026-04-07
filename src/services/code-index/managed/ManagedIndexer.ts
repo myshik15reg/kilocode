@@ -1,4 +1,4 @@
-// kilocode_change new file
+﻿// kilocode_change new file
 
 import * as vscode from "vscode"
 import * as path from "path"
@@ -61,7 +61,12 @@ interface ManagedIndexerWorkspaceFolderState {
 	/** AbortController for the current indexing operation */
 	currentAbortController?: AbortController
 	ignoreController: RooIgnoreController | null
+	upsertFailureCount: number
+	cooldownUntil: number | null
 }
+
+const FILE_UPSERT_FAILURE_THRESHOLD = 3
+const FILE_UPSERT_COOLDOWN_MS = 60_000
 
 function logGitEvent(event: GitWatcherEvent) {
 	// Handle different event types
@@ -109,6 +114,8 @@ function serializeWorkspaceFolderState(state: ManagedIndexerWorkspaceFolderState
 					context: state.error.context,
 				}
 			: undefined,
+		cooldownUntil: state.cooldownUntil ?? undefined,
+		coolingDown: typeof state.cooldownUntil === "number" && state.cooldownUntil > Date.now(),
 	}
 }
 
@@ -156,6 +163,49 @@ export class ManagedIndexer implements vscode.Disposable {
 
 	constructor(public contextProxy?: ContextProxy | null) {
 		ManagedIndexer.prevInstance = this
+	}
+
+	private resetUpsertCooldown(state: ManagedIndexerWorkspaceFolderState): void {
+		state.upsertFailureCount = 0
+		state.cooldownUntil = null
+	}
+
+	private isUpsertCooldownActive(state: ManagedIndexerWorkspaceFolderState): boolean {
+		return typeof state.cooldownUntil === "number" && state.cooldownUntil > Date.now()
+	}
+
+	private getUpsertCooldownMessage(state: ManagedIndexerWorkspaceFolderState): string {
+		const remainingMs = Math.max(0, (state.cooldownUntil ?? 0) - Date.now())
+		const remainingSeconds = Math.max(1, Math.ceil(remainingMs / 1000))
+		return `Managed indexing is temporarily paused after repeated file upsert failures. Retrying after cooldown (${remainingSeconds}s remaining).`
+	}
+
+	private maybeRecoverExpiredUpsertCooldown(state: ManagedIndexerWorkspaceFolderState): void {
+		if (state.cooldownUntil !== null && state.cooldownUntil <= Date.now()) {
+			this.resetUpsertCooldown(state)
+			if (state.error?.type === "file-upsert" && state.error.message.includes("temporarily paused")) {
+				state.error = undefined
+			}
+		}
+	}
+
+	private activateUpsertCooldown(
+		state: ManagedIndexerWorkspaceFolderState,
+		event: GitWatcherEvent,
+		errorMessage: string,
+	): void {
+		state.upsertFailureCount = FILE_UPSERT_FAILURE_THRESHOLD
+		state.cooldownUntil = Date.now() + FILE_UPSERT_COOLDOWN_MS
+		state.error = {
+			type: "file-upsert",
+			message: `Managed indexing temporarily paused after repeated file upsert failures: ${errorMessage}`,
+			timestamp: new Date().toISOString(),
+			context: {
+				branch: event.branch,
+				operation: "file-upsert-cooldown",
+			},
+		}
+		this.sendStateToWebview()
 	}
 
 	private async onConfigurationChange(config: ManagedIndexerConfig): Promise<void> {
@@ -300,6 +350,8 @@ export class ManagedIndexer implements vscode.Disposable {
 					repositoryUrl: undefined,
 					manifestFetchPromise: null,
 					ignoreController: null,
+					upsertFailureCount: 0,
+					cooldownUntil: null,
 				}
 
 				// Check if it's a git repository
@@ -534,6 +586,21 @@ export class ManagedIndexer implements vscode.Disposable {
 			return
 		}
 
+		this.maybeRecoverExpiredUpsertCooldown(state)
+		if (this.isUpsertCooldownActive(state)) {
+			state.error = {
+				type: "file-upsert",
+				message: this.getUpsertCooldownMessage(state),
+				timestamp: new Date().toISOString(),
+				context: {
+					branch: event.branch,
+					operation: "file-upsert-cooldown",
+				},
+			}
+			this.sendStateToWebview()
+			return
+		}
+
 		// Cancel any previous indexing operation
 		if (state.currentAbortController) {
 			console.info("[ManagedIndexer] Aborting previous indexing operation")
@@ -592,7 +659,7 @@ export class ManagedIndexer implements vscode.Disposable {
 			const manifestFilesToCheck = new Set<string>(Object.values(manifest.files))
 			const filesToDelete: string[] = []
 			let upsertCount = manifestFilesToCheck.size
-			let errorCount = 0
+			let errorCount = state.upsertFailureCount
 
 			await pMap(
 				event.files,
@@ -691,6 +758,8 @@ export class ManagedIndexer implements vscode.Disposable {
 						upsertCount++
 						this.sendStateToWebview(state, upsertCount)
 
+						this.resetUpsertCooldown(state)
+
 						// Clear any previous file-upsert errors on success
 						if (state.error?.type === "file-upsert") {
 							state.error = undefined
@@ -703,13 +772,18 @@ export class ManagedIndexer implements vscode.Disposable {
 						}
 
 						errorCount++
-						// if we have 3 indexing errors, something is wrong....stop trying
-						if (errorCount > 2) {
-							this.dispose()
-						}
+						state.upsertFailureCount = errorCount
 
 						const errorMessage = error instanceof Error ? error.message : String(error)
 						console.error(`[ManagedIndexer] Failed to upsert file ${filePath}: ${errorMessage}`)
+
+						if (errorCount >= FILE_UPSERT_FAILURE_THRESHOLD) {
+							this.activateUpsertCooldown(state, event, errorMessage)
+							if (state.currentAbortController && !state.currentAbortController.signal.aborted) {
+								state.currentAbortController.abort()
+							}
+							return
+						}
 
 						// Store the error in state
 						state.error = {

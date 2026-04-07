@@ -4,7 +4,8 @@ import { isAbsolute, join, resolve } from "path" // kilocode_change
 import type { CLIOptions } from "../types/cli.js"
 
 // Mock fs module
-vi.mock("fs", () => ({
+vi.mock("fs", async (importOriginal) => ({
+	...(await importOriginal<typeof import("fs")>()),
 	existsSync: vi.fn(),
 	readFileSync: vi.fn(),
 }))

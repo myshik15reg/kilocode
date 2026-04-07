@@ -31,6 +31,7 @@ import { executeCommandTool } from "../tools/ExecuteCommandTool"
 import { useMcpToolTool } from "../tools/UseMcpToolTool"
 import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
 import { askFollowupQuestionTool } from "../tools/AskFollowupQuestionTool"
+import { requestUserInputTool } from "../tools/RequestUserInputTool"
 import { switchModeTool } from "../tools/SwitchModeTool"
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/AttemptCompletionTool"
 import { newTaskTool } from "../tools/NewTaskTool"
@@ -43,6 +44,7 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 import { webSearchTool } from "../tools/WebSearchTool"
 
 import { formatResponse } from "../prompts/responses"
+import { resolveToolAlias } from "../prompts/tools/filter-tools-for-mode"
 
 import { yieldPromise } from "../kilocode"
 import { evaluateGatekeeperApproval } from "./kilocode/gatekeeper"
@@ -89,7 +91,6 @@ async function tryExecuteOrchestratedCandidates(
 	const customModes = providerState?.customModes ?? []
 	const mode = providerState?.mode ?? defaultModeSlug
 	const rawIncludedTools = cline.api.getModel()?.info?.includedTools
-	const { resolveToolAlias } = await import("../prompts/tools/filter-tools-for-mode")
 	const includedTools = rawIncludedTools?.map((tool) => resolveToolAlias(tool))
 
 	for (const candidate of candidateBlocks) {
@@ -98,7 +99,8 @@ async function tryExecuteOrchestratedCandidates(
 			mode,
 			customModes,
 			{ apply_diff: cline.diffEnabled },
-			candidate.params,
+			((candidate.nativeArgs as Record<string, unknown> | undefined) ??
+				(candidate.params as Record<string, unknown>)) as any,
 			providerState?.experiments,
 			includedTools,
 		)
@@ -674,6 +676,12 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.server_name}']`
 					case "ask_followup_question":
 						return `[${block.name} for '${block.params.question}']`
+					case "request_user_input": {
+						const firstQuestion = Array.isArray(block.nativeArgs?.questions)
+							? block.nativeArgs.questions[0]?.question
+							: undefined
+						return firstQuestion ? `[${block.name} for '${firstQuestion}']` : `[${block.name}]`
+					}
 					case "attempt_completion":
 						return `[${block.name}]`
 					case "switch_mode":
@@ -1055,7 +1063,8 @@ export async function presentAssistantMessage(cline: Task) {
 						mode ?? defaultModeSlug,
 						customModes ?? [],
 						{ apply_diff: cline.diffEnabled },
-						block.params,
+						((block.nativeArgs as Record<string, unknown> | undefined) ??
+							(block.params as Record<string, unknown>)) as any,
 						stateExperiments,
 						includedTools,
 					)
@@ -1359,6 +1368,15 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "ask_followup_question":
 					await askFollowupQuestionTool.handle(cline, block as ToolUse<"ask_followup_question">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+						toolProtocol,
+					})
+					break
+				case "request_user_input":
+					await requestUserInputTool.handle(cline, block as ToolUse<"request_user_input">, {
 						askApproval,
 						handleError,
 						pushToolResult,

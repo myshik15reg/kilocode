@@ -276,6 +276,36 @@ export class LanceDBVectorStore implements IVectorStore {
 		}
 	}
 
+	async getPointsByFilePaths(
+		filePaths: string[],
+	): Promise<Array<{ id: string; vector: number[]; payload: Record<string, any> }>> {
+		if (filePaths.length === 0) {
+			return []
+		}
+
+		try {
+			const table = await this.getTable()
+			const normalizedPaths = filePaths.map((filePath) => this.normalizeStoredFilePath(filePath))
+			const escapedPaths = normalizedPaths.map((fp) => `'${this.escapeSqlString(fp)}'`).join(", ")
+			const filterCondition = `\`filePath\` IN (${escapedPaths})`
+			const rows = await table.query().where(filterCondition).toArray()
+
+			return rows.map((row: any) => ({
+				id: String(row.id),
+				vector: Array.isArray(row.vector) ? row.vector : [],
+				payload: {
+					filePath: row.filePath,
+					codeChunk: row.codeChunk,
+					startLine: row.startLine,
+					endLine: row.endLine,
+				},
+			}))
+		} catch (error) {
+			console.error("Failed to get points by file paths:", error)
+			throw error
+		}
+	}
+
 	// Temporary till lancedb implements parameter support
 	// https://github.com/lance-format/lance/issues/2160
 	private escapeSqlString(value: string): string {
@@ -343,7 +373,7 @@ export class LanceDBVectorStore implements IVectorStore {
 				startLine: result.startLine,
 				endLine: result.endLine,
 			}))
-	
+
 			return results
 		} catch (error) {
 			console.error("Failed to search points:", error)
@@ -362,10 +392,9 @@ export class LanceDBVectorStore implements IVectorStore {
 
 		try {
 			const table = await this.getTable()
-			const workspaceRoot = this.workspacePath
-			const normalizedPaths = filePaths.map((fp) =>
-				path.normalize(path.isAbsolute(fp) ? path.relative(workspaceRoot, fp) : fp),
-			)
+			// kilocode_change start
+			const normalizedPaths = filePaths.map((filePath) => this.normalizeStoredFilePath(filePath))
+			// kilocode_change end
 
 			// Create filter condition for multiple file paths
 			const escapedPaths = normalizedPaths.map((fp) => `'${this.escapeSqlString(fp)}'`).join(", ")
@@ -377,6 +406,25 @@ export class LanceDBVectorStore implements IVectorStore {
 		}
 	}
 
+	// kilocode_change start
+	private normalizeStoredFilePath(filePath: string): string {
+		if (!path.isAbsolute(filePath)) {
+			return path.normalize(filePath)
+		}
+
+		const workspaceRoot = path.resolve(this.workspacePath)
+		const absoluteFilePath = path.resolve(filePath)
+		const relativePath = path.relative(workspaceRoot, absoluteFilePath)
+		const isWithinWorkspace =
+			relativePath !== "" && !relativePath.startsWith("..") && !path.isAbsolute(relativePath)
+
+		if (relativePath === "" || isWithinWorkspace) {
+			return path.normalize(relativePath)
+		}
+
+		return path.normalize(filePath)
+	}
+	// kilocode_change end
 	async deleteCollection(): Promise<void> {
 		await this.closeConnect()
 		try {
@@ -441,6 +489,10 @@ export class LanceDBVectorStore implements IVectorStore {
 			await this.db.close()
 			this.db = null
 		}
+	}
+
+	async dispose(): Promise<void> {
+		await this.closeConnect()
 	}
 
 	/**

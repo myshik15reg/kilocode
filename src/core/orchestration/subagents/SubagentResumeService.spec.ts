@@ -58,6 +58,7 @@ describe("SubagentResumeService", () => {
 	let updateTaskHistory: ReturnType<typeof vi.fn>
 	let runtime: SubagentResumeRuntime
 	let parentInstance: {
+		taskId: string
 		overwriteClineMessages: ReturnType<typeof vi.fn>
 		overwriteApiConversationHistory: ReturnType<typeof vi.fn>
 		resumeAfterDelegation: ReturnType<typeof vi.fn>
@@ -103,6 +104,7 @@ describe("SubagentResumeService", () => {
 		focusedRootTaskId = undefined
 		currentTask = { taskId: "child-1" }
 		parentInstance = {
+			taskId: "parent-1",
 			overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 			overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
@@ -194,15 +196,45 @@ describe("SubagentResumeService", () => {
 			expect.objectContaining({ id: "parent-1", status: "active", completedByChildId: "child-1" }),
 			{ startTask: false },
 		)
-		expect(parentInstance.overwriteClineMessages).toHaveBeenCalledWith(
-			expect.arrayContaining([expect.objectContaining({ type: "say", say: "subtask_result", text: "Done" })]),
-		)
+		expect(parentInstance.overwriteClineMessages).toHaveBeenCalled()
 		expect(parentInstance.overwriteApiConversationHistory).toHaveBeenCalled()
 		expect(parentInstance.resumeAfterDelegation).toHaveBeenCalledTimes(1)
 		expect(TelemetryService.instance.captureDelegationCompleted).toHaveBeenCalledWith("parent-1", "child-1")
 		expect(runtime.emitTaskDelegationCompleted).toHaveBeenCalledWith("parent-1", "child-1", "Done")
 		expect(TelemetryService.instance.captureDelegationResumed).toHaveBeenCalledWith("parent-1", "child-1")
 		expect(runtime.emitTaskDelegationResumed).toHaveBeenCalledWith("parent-1", "child-1")
+	})
+
+	it("falls back to empty API history when parent api history file is transiently missing", async () => {
+		const uiMessages: ClineMessage[] = [{ type: "ask", ask: "tool", text: "old", ts: 10 } as any]
+		vi.mocked(readTaskMessages).mockResolvedValue(uiMessages)
+		vi.mocked(readApiMessages).mockRejectedValueOnce(new Error("ENOENT: api_conversation_history.json"))
+
+		const service = new SubagentResumeService(runtime)
+		await service.reopenParentFromDelegation(reopenParams)
+
+		expect(saveApiMessages).toHaveBeenCalledWith(
+			expect.objectContaining({
+				taskId: "parent-1",
+				globalStoragePath: "/tmp",
+				messages: [
+					expect.objectContaining({
+						role: "user",
+						content: [
+							expect.objectContaining({
+								type: "text",
+								text: expect.stringContaining("Subtask child-1 completed"),
+							}),
+						],
+					}),
+				],
+			}),
+		)
+		expect(runtime.createTaskWithHistoryItem).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "parent-1", status: "active", completedByChildId: "child-1" }),
+			{ startTask: false },
+		)
+		expect(parentInstance.resumeAfterDelegation).toHaveBeenCalledTimes(1)
 	})
 
 	it("updates existing trailing tool_result instead of appending another tool_result message", async () => {
@@ -238,19 +270,76 @@ describe("SubagentResumeService", () => {
 		})
 	})
 
-	it("restores preserved parent focus without reopening a new instance", async () => {
+	it("restores preserved parent focus and hydrates the live parent instance", async () => {
 		focusedRootTaskId = "parent-1"
+		currentTask = parentInstance as any
 		;(runtime.restoreBackgroundStack as ReturnType<typeof vi.fn>).mockReturnValue(true)
 		const service = new SubagentResumeService(runtime)
 
 		await service.reopenParentFromDelegation({ ...reopenParams, preserveParentFocus: true })
 
 		expect(runtime.restoreBackgroundStack).toHaveBeenCalledWith("parent-1")
+		expect(parentInstance.overwriteClineMessages).toHaveBeenCalledTimes(1)
+		expect(parentInstance.overwriteApiConversationHistory).toHaveBeenCalledTimes(1)
+		expect(parentInstance.resumeAfterDelegation).toHaveBeenCalledTimes(1)
 		expect(runtime.postStateToWebview).toHaveBeenCalledTimes(1)
 		expect(runtime.createTaskWithHistoryItem).not.toHaveBeenCalled()
 		expect(TelemetryService.instance.captureDelegationCompleted).toHaveBeenCalledWith("parent-1", "child-1")
 		expect(TelemetryService.instance.captureDelegationResumed).toHaveBeenCalledWith("parent-1", "child-1")
 		expect(runtime.emitTaskDelegationResumed).toHaveBeenCalledWith("parent-1", "child-1")
+	})
+
+	it("persists abstained delegation outcome for child history and skips completed telemetry", async () => {
+		vi.mocked(readTaskMessages).mockResolvedValue([])
+		vi.mocked(readApiMessages).mockResolvedValue([] as any)
+		const service = new SubagentResumeService(runtime)
+
+		await service.reopenParentFromDelegation({
+			...reopenParams,
+			completionResultSummary: "Need parent clarification",
+			outcomeStatus: "abstained",
+		})
+
+		expect(updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "child-1",
+				status: "aborted",
+				lifecycleState: "completed",
+				delegationOutcomeStatus: "abstained",
+			}),
+		)
+		expect(TelemetryService.instance.captureDelegationCompleted).not.toHaveBeenCalled()
+		expect(runtime.emitTaskDelegationCompleted).not.toHaveBeenCalled()
+	})
+
+	it("reopens the parent after a cancelled child without marking it as completedByChild", async () => {
+		vi.mocked(readTaskMessages).mockResolvedValue([])
+		vi.mocked(readApiMessages).mockResolvedValue([] as any)
+		const service = new SubagentResumeService(runtime)
+
+		await service.reopenParentFromDelegation({
+			...reopenParams,
+			completionResultSummary: "Child task was cancelled by the runtime",
+			outcomeStatus: "cancelled",
+		})
+
+		expect(updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "child-1",
+				status: "aborted",
+				lifecycleState: "cancelled",
+			}),
+		)
+		expect(updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "parent-1",
+				status: "active",
+				lifecycleState: "running",
+				completedByChildId: undefined,
+				awaitingChildId: undefined,
+			}),
+		)
+		expect(TelemetryService.instance.captureDelegationCompleted).not.toHaveBeenCalled()
 	})
 
 	it("logs and continues when child completion persistence fails", async () => {
@@ -268,5 +357,61 @@ describe("SubagentResumeService", () => {
 			expect.stringContaining("Failed to persist child completed status for child-1"),
 		)
 		expect(runtime.createTaskWithHistoryItem).toHaveBeenCalledTimes(1)
+	})
+	it("compacts long completion summaries before injecting them into parent-facing histories", async () => {
+		vi.mocked(readTaskMessages).mockResolvedValue([])
+		vi.mocked(readApiMessages).mockResolvedValue([] as any)
+
+		const longSummary = [
+			"Completed implementation and verification.",
+			"Files changed:",
+			"- src/core/orchestration/subagents/SubagentResumeService.ts",
+			"- src/core/orchestration/bridge/AgentManagerBridge.ts",
+			"",
+			"B".repeat(1_600),
+			"",
+			"Evidence: src/core/orchestration/subagents/SubagentResumeService.ts:57",
+		].join("\n")
+
+		const service = new SubagentResumeService(runtime)
+		await service.reopenParentFromDelegation({
+			...reopenParams,
+			completionResultSummary: longSummary,
+		})
+
+		const savedTaskMessages = vi.mocked(saveTaskMessages).mock.calls[0][0].messages
+		const injectedUiMessage = savedTaskMessages[savedTaskMessages.length - 1]
+		expect(injectedUiMessage).toMatchObject({
+			type: "say",
+			say: "subtask_result",
+		})
+		expect((injectedUiMessage as any).text).toContain(
+			"[NOTE] Child completion summary truncated for parent context.",
+		)
+		expect((injectedUiMessage as any).text.length).toBeLessThan(longSummary.length)
+		expect((injectedUiMessage as any).text).toContain(
+			"Evidence: src/core/orchestration/subagents/SubagentResumeService.ts:57",
+		)
+
+		const savedApiMessages = vi.mocked(saveApiMessages).mock.calls[0][0].messages
+		const injectedApiMessage = savedApiMessages[savedApiMessages.length - 1]
+		expect(injectedApiMessage.role).toBe("user")
+		expect((injectedApiMessage.content[0] as any).text ?? (injectedApiMessage.content[0] as any).content).toContain(
+			"[NOTE] Child completion summary truncated for parent context.",
+		)
+
+		expect(updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "parent-1",
+				completionResultSummary: expect.stringContaining(
+					"[NOTE] Child completion summary truncated for parent context.",
+				),
+			}),
+		)
+		expect(runtime.emitTaskDelegationCompleted).toHaveBeenCalledWith(
+			"parent-1",
+			"child-1",
+			expect.stringContaining("[NOTE] Child completion summary truncated for parent context."),
+		)
 	})
 })

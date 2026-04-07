@@ -63,6 +63,8 @@ describe("TaskRestartService coverage pass", () => {
 			buildRecoveryPacket,
 			updateTaskHistory,
 			createTaskWithHistoryItem,
+			getCurrentTask: vi.fn(),
+			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
 			log,
 		}
 	})

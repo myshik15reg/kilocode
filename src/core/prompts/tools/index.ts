@@ -17,6 +17,7 @@ import { getSearchFilesDescription } from "./search-files"
 import { getListFilesDescription } from "./list-files"
 import { getBrowserActionDescription } from "./browser-action"
 import { getAskFollowupQuestionDescription } from "./ask-followup-question"
+import { getRequestUserInputDescription } from "./request-user-input"
 import { getAttemptCompletionDescription } from "./attempt-completion"
 import { getUseMcpToolDescription } from "./use-mcp-tool"
 import { getAccessMcpResourceDescription } from "./access-mcp-resource"
@@ -46,6 +47,7 @@ const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined>
 	list_files: (args) => getListFilesDescription(args),
 	browser_action: (args) => getBrowserActionDescription(args),
 	ask_followup_question: () => getAskFollowupQuestionDescription(),
+	request_user_input: () => getRequestUserInputDescription(),
 	attempt_completion: (args) => getAttemptCompletionDescription(args),
 	use_mcp_tool: (args) => getUseMcpToolDescription(args),
 	access_mcp_resource: (args) => getAccessMcpResourceDescription(args),
@@ -124,10 +126,11 @@ export function getToolDescriptionsForMode(
 	ALWAYS_AVAILABLE_TOOLS.forEach((tool) => tools.add(tool))
 
 	// kilocode_change start
-	// Conditionally exclude ask_followup_question in yolo mode
+	// Conditionally exclude user question tools in yolo mode
 	// This prevents the agent from asking itself questions and auto-answering them
 	if (clineProviderState?.yoloMode) {
 		tools.delete("ask_followup_question")
+		tools.delete("request_user_input")
 	}
 	// kilocode_change end
 
@@ -197,6 +200,7 @@ export {
 	getListFilesDescription,
 	getBrowserActionDescription,
 	getAskFollowupQuestionDescription,
+	getRequestUserInputDescription,
 	getAttemptCompletionDescription,
 	getUseMcpToolDescription,
 	getAccessMcpResourceDescription,

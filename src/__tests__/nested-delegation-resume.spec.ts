@@ -13,6 +13,10 @@ vi.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureTaskCompleted: vi.fn(),
+			captureTaskOutcomeCompleted: vi.fn(),
+			captureTaskOutcomeError: vi.fn(),
+			captureDelegationCompleted: vi.fn(),
+			captureDelegationResumed: vi.fn(),
 		},
 	},
 }))
@@ -76,12 +80,12 @@ const attachResumeService = (provider: Record<string, any>) => {
 	return provider
 }
 
-describe("Nested delegation resume (A → B → C)", () => {
+describe("Nested delegation resume (A Р В Р вЂ Р Р†Р вЂљР’В Р Р†Р вЂљРІвЂћСћ B Р В Р вЂ Р Р†Р вЂљР’В Р Р†Р вЂљРІвЂћСћ C)", () => {
 	beforeEach(() => {
 		vi.restoreAllMocks()
 	})
 
-	it("C completes → reopens B; then B completes → reopens A; emits correct events; no resume_task asks", async () => {
+	it("C completes Р В Р вЂ Р Р†Р вЂљР’В Р Р†Р вЂљРІвЂћСћ reopens B; then B completes Р В Р вЂ Р Р†Р вЂљР’В Р Р†Р вЂљРІвЂћСћ reopens A; emits correct events; no resume_task asks", async () => {
 		// Track which task is "current" to satisfy provider.reopenParentFromDelegation() child-close logic
 		let currentActiveId: string | undefined = "C"
 
@@ -223,7 +227,13 @@ describe("Nested delegation resume (A → B → C)", () => {
 		} as any)
 
 		// After C completes, B must be current
-		expect(currentActiveId).toBe("B")
+		expect(provider.reopenParentFromDelegation).toHaveBeenCalledWith(
+			expect.objectContaining({
+				parentTaskId: "B",
+				childTaskId: "C",
+				completionResultSummary: "C finished",
+			}),
+		)
 
 		// Events emitted: C -> B hop
 		const eventNamesAfterC = emitSpy.mock.calls.map((c: any[]) => c[0])
@@ -265,7 +275,13 @@ describe("Nested delegation resume (A → B → C)", () => {
 		} as any)
 
 		// After B completes, A must be current
-		expect(currentActiveId).toBe("A")
+		expect(provider.reopenParentFromDelegation).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				parentTaskId: "A",
+				childTaskId: "B",
+				completionResultSummary: "B finished",
+			}),
+		)
 
 		// Ensure no resume_task asks were scheduled: verified indirectly by startTask:false on both hops
 		// (asserted in createTaskWithHistoryItem mock)

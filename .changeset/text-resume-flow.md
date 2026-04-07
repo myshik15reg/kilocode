@@ -2,4 +2,4 @@
 "kilo-code": patch
 ---
 
-Resume a single paused task when the user types continue, resume, or ����������.
+Resume a single paused task when the user types continue, resume, or the localized continue command.

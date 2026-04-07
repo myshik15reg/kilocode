@@ -6,6 +6,7 @@ import { sessionMessagesAtomFamily } from "../../state/atoms/messages"
 import { sessionInputAtomFamily } from "../../state/atoms/sessions"
 import { sessionMessageQueueAtomFamily } from "../../state/atoms/messageQueue"
 import type { ClineMessage } from "@roo-code/types"
+import { vscode } from "../../utils/vscode"
 
 // Mock react-i18next
 vi.mock("react-i18next", () => ({
@@ -199,6 +200,51 @@ describe("MessageList", () => {
 			expect(screen.getByText("Metadata question")).toBeInTheDocument()
 			expect(screen.getByText("From metadata")).toBeInTheDocument()
 			expect(screen.queryByText("JSON question")).not.toBeInTheDocument()
+		})
+
+		it("renders structured request_user_input cards and submits selected values", () => {
+			const store = createStore()
+			store.set(sessionMessagesAtomFamily(sessionId), [
+				{
+					ts: 1,
+					type: "ask",
+					ask: "followup",
+					text: "Please answer the structured questions.",
+					metadata: {
+						requestUserInput: {
+							questions: [
+								{
+									header: "Scope",
+									question: "Which slice should I implement first?",
+									options: [
+										{ label: "Search", description: "Start with provider-aware search." },
+										{ label: "UI", description: "Start with the structured form UI." },
+									],
+								},
+							],
+						},
+					},
+				} as unknown as ClineMessage,
+			])
+
+			render(
+				<Provider store={store}>
+					<MessageList sessionId={sessionId} />
+				</Provider>,
+			)
+
+			expect(screen.getByText("Which slice should I implement first?")).toBeInTheDocument()
+			expect(screen.getByText("Search")).toBeInTheDocument()
+			expect(screen.getByText("UI")).toBeInTheDocument()
+
+			fireEvent.click(screen.getByLabelText("Scope: Search"))
+			fireEvent.click(screen.getByRole("button", { name: "Send selections" }))
+
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "agentManager.sendMessage",
+				sessionId,
+				content: "Scope: Search",
+			})
 		})
 	})
 

@@ -1,7 +1,15 @@
 // kilocode_change - new file
 import type { ActivityItem, HistoryItem } from "@roo-code/types"
 
-export type OrchestrationStatus = "queued" | "running" | "paused" | "recoverable" | "completed" | "cancelled" | "failed"
+export type OrchestrationStatus =
+	| "queued"
+	| "running"
+	| "paused"
+	| "recoverable"
+	| "completed"
+	| "cancelled"
+	| "abstained"
+	| "failed"
 
 export interface OrchestrationExplainabilityEntry {
 	title: string
@@ -53,6 +61,7 @@ export const orchestrationStatusLabelKeys: Record<OrchestrationStatus, string> =
 	recoverable: "chat:orchestration.status.recoverable",
 	completed: "chat:orchestration.status.completed",
 	cancelled: "chat:orchestration.status.cancelled",
+	abstained: "chat:orchestration.status.abstained",
 	failed: "chat:orchestration.status.failed",
 }
 
@@ -63,6 +72,7 @@ export const orchestrationStatusDefaultLabels: Record<OrchestrationStatus, strin
 	recoverable: "Recoverable",
 	completed: "Completed",
 	cancelled: "Cancelled",
+	abstained: "Abstained",
 	failed: "Failed",
 }
 
@@ -73,6 +83,7 @@ export const orchestrationStatusCountLabelKeys: Record<OrchestrationStatus, stri
 	recoverable: "chat:orchestration.recoverableCount",
 	completed: "chat:orchestration.completedCount",
 	cancelled: "chat:orchestration.cancelledCount",
+	abstained: "chat:orchestration.abstainedCount",
 	failed: "chat:orchestration.failedCount",
 }
 
@@ -83,6 +94,7 @@ const orchestrationStatusCountDisplayOrder: readonly OrchestrationStatus[] = [
 	"paused",
 	"queued",
 	"cancelled",
+	"abstained",
 	"completed",
 ]
 
@@ -184,6 +196,7 @@ const DEFAULT_COUNTS: Record<OrchestrationStatus, number> = {
 	recoverable: 0,
 	completed: 0,
 	cancelled: 0,
+	abstained: 0,
 	failed: 0,
 }
 
@@ -282,6 +295,50 @@ function getLatestStatusActivityItems(activity: ActivityItem[] | undefined): Act
 	return getLatestActivityItems(activity, isStatusBearingActivityItem)
 }
 
+function shouldIncludeTaskItemStatusSignal(item: ActivityItem, currentTaskItem?: HistoryItem): boolean {
+	if (!currentTaskItem || item.kind !== "taskControl") {
+		return true
+	}
+
+	const isRootTask =
+		!currentTaskItem.parentTaskId &&
+		(!currentTaskItem.rootTaskId || currentTaskItem.rootTaskId === currentTaskItem.id)
+
+	if (!isRootTask) {
+		return true
+	}
+
+	return item.taskId !== currentTaskItem.id
+}
+
+function shouldCollapseTimelineItem(previous: ActivityItem | undefined, current: ActivityItem): boolean {
+	if (!previous || previous.kind !== "taskControl" || current.kind !== "taskControl") {
+		return false
+	}
+
+	return (
+		previous.taskId === current.taskId &&
+		previous.control === current.control &&
+		previous.summary.trim() === current.summary.trim()
+	)
+}
+
+function collapseTimelineItems(items: ActivityItem[]): ActivityItem[] {
+	const collapsed: ActivityItem[] = []
+
+	for (const item of items) {
+		const previous = collapsed.at(-1)
+		if (shouldCollapseTimelineItem(previous, item)) {
+			collapsed[collapsed.length - 1] = item
+			continue
+		}
+
+		collapsed.push(item)
+	}
+
+	return collapsed
+}
+
 export function getExplainabilityEntries(item: ActivityItem | undefined): OrchestrationExplainabilityEntry[] {
 	const explainability = item?.kind === "subagent" ? item.explainability : undefined
 	if (!explainability) {
@@ -326,10 +383,16 @@ export function getExplainabilityEntries(item: ActivityItem | undefined): Orches
 		title: "Outcome",
 		detail: explainability.outcomeSummary ?? explainability.reasonCode,
 	})
-	if (explainability.recommendationReasonCode) {
+	const outcomeReason = [
+		explainability.lastSubagentOutcome ? `evaluator ${explainability.lastSubagentOutcome}` : undefined,
+		explainability.recommendationReasonCode,
+	]
+		.filter(Boolean)
+		.join(" / ")
+	if (outcomeReason) {
 		entries.push({
 			title: "Reason",
-			detail: explainability.recommendationReasonCode,
+			detail: outcomeReason,
 		})
 	}
 	return entries
@@ -348,6 +411,8 @@ export function normalizeActivityStatus(item: ActivityItem): OrchestrationStatus
 				return "completed"
 			case "cancelled":
 				return "cancelled"
+			case "abstained":
+				return "abstained"
 			case "failed":
 				return "failed"
 		}
@@ -409,8 +474,8 @@ export function getActivityGroups(activity: ActivityItem[] | undefined): Activit
 	const sorted = [...activity].sort((left, right) => left.timestamp - right.timestamp)
 	const backgroundActions = getLatestActivityItems(sorted, (item) => item.kind === "toolBatch")
 	const subagents = getLatestActivityItems(sorted, (item) => item.kind === "subagent")
-	const timeline = sorted.filter(
-		(item) => item.kind === "taskControl" || item.kind === "techDebt" || item.kind === "relay",
+	const timeline = collapseTimelineItems(
+		sorted.filter((item) => item.kind === "taskControl" || item.kind === "techDebt" || item.kind === "relay"),
 	)
 	const groups: ActivityGroup[] = []
 
@@ -440,9 +505,11 @@ function resolveSummaryStatus(counts: Record<OrchestrationStatus, number>): Orch
 						? "queued"
 						: counts.cancelled
 							? "cancelled"
-							: counts.completed
-								? "completed"
-								: "completed"
+							: counts.abstained
+								? "abstained"
+								: counts.completed
+									? "completed"
+									: "completed"
 }
 
 export function getActivityStatusSummary(activity: ActivityItem[] | undefined): OrchestrationStatusSummary {
@@ -464,7 +531,6 @@ export function getActivityStatusSummary(activity: ActivityItem[] | undefined): 
 		hasStatusSignals,
 	}
 }
-
 // kilocode_change start
 export function getHistoryItemOrchestrationStatus(
 	item: HistoryItem,
@@ -478,6 +544,10 @@ export function getHistoryItemOrchestrationStatus(
 
 	if (item.lifecycleState === "paused" && item.lastStopReason === "streaming_failed") {
 		return "recoverable"
+	}
+
+	if (item.delegationOutcomeStatus === "abstained") {
+		return "abstained"
 	}
 
 	switch (item.lifecycleState) {
@@ -550,7 +620,9 @@ export function getTaskOrchestrationSummary(params: {
 	taskHistory?: HistoryItem[]
 }): OrchestrationStatusSummary {
 	const { activity, currentTaskItem, taskHistory } = params
-	const latestStatusItems = getLatestStatusActivityItems(activity)
+	const latestStatusItems = getLatestStatusActivityItems(activity).filter((item) =>
+		shouldIncludeTaskItemStatusSignal(item, currentTaskItem),
+	)
 	const childTasks = getBackgroundChildTasks({
 		currentTaskItem,
 		taskHistory,

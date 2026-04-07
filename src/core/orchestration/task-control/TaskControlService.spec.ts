@@ -1,4 +1,4 @@
-import { RooCodeEventName, type HistoryItem } from "@roo-code/types"
+﻿import { RooCodeEventName, type HistoryItem } from "@roo-code/types"
 
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -113,20 +113,18 @@ describe("TaskControlService", () => {
 		)
 	})
 
-	it("resumes the bound task, normalizes parent status, cascades resume to unfinished descendants, publishes resume activity, and reopens the task", async () => {
+	it("resumes a paused task, cascades resume to descendants, publishes activity, and reopens the task", async () => {
 		historyItem = {
 			...historyItem,
-			status: "delegated",
+			status: "active",
 			lifecycleState: "paused",
-			awaitingChildId: "child-1",
 		}
-		getBindingForTask.mockReturnValue({ childTaskId: "task-1" })
 		const service = new TaskControlService(runtime)
 
 		service.resumeTask("task-1")
 		await vi.waitFor(() => expect(updateTaskHistory).toHaveBeenCalled())
 
-		expect(coordinator.resume).toHaveBeenCalledWith("task-1")
+		expect(coordinator.resume).not.toHaveBeenCalled()
 		expect(currentTask?.isPaused).toBe(false)
 		expect(currentTask?.emit).toHaveBeenCalledWith(RooCodeEventName.TaskUnpaused, "task-1")
 		expect(updateTaskHistory).toHaveBeenCalledWith(
@@ -148,6 +146,27 @@ describe("TaskControlService", () => {
 		expect(showTaskWithId).toHaveBeenCalledWith("task-1")
 	})
 
+	it("blocks manual resume while the task is still awaiting a child", async () => {
+		historyItem = {
+			...historyItem,
+			status: "delegated",
+			lifecycleState: "paused",
+			awaitingChildId: "child-1",
+		}
+		const service = new TaskControlService(runtime)
+
+		service.resumeTask("task-1")
+		await vi.waitFor(() =>
+			expect(log).toHaveBeenCalledWith(
+				"[resumeTask] Skipping resume for task task-1 while awaiting child child-1",
+			),
+		)
+
+		expect(updateTaskHistory).not.toHaveBeenCalled()
+		expect(runtime.cascadeResumeDescendantTasks).not.toHaveBeenCalled()
+		expect(showTaskWithId).not.toHaveBeenCalled()
+	})
+
 	it("publishes continue activity when resume control is continue", async () => {
 		const service = new TaskControlService(runtime)
 
@@ -160,7 +179,26 @@ describe("TaskControlService", () => {
 		)
 	})
 
-	it("logs resume persistence failures without interrupting task reopening", async () => {
+	it("skips resume for terminal tasks and does not reopen them", async () => {
+		historyItem = {
+			...historyItem,
+			status: "completed",
+			lifecycleState: "completed",
+		}
+		;(runtime.getTaskWithId as ReturnType<typeof vi.fn>).mockResolvedValue({ historyItem })
+		const service = new TaskControlService(runtime)
+
+		service.resumeTask("task-1")
+		await vi.waitFor(() =>
+			expect(log).toHaveBeenCalledWith("[resumeTask] Skipping resume for terminal task task-1"),
+		)
+
+		expect(updateTaskHistory).not.toHaveBeenCalled()
+		expect(runtime.cascadeResumeDescendantTasks).not.toHaveBeenCalled()
+		expect(showTaskWithId).not.toHaveBeenCalled()
+	})
+
+	it("logs resume persistence failures and does not reopen the task after a failed transition", async () => {
 		updateTaskHistory.mockRejectedValueOnce(new Error("history failed"))
 		const service = new TaskControlService(runtime)
 
@@ -169,7 +207,7 @@ describe("TaskControlService", () => {
 
 		expect(log).toHaveBeenCalledWith("Failed to update task state for resume task-1: history failed")
 		expect(postStateToWebview).toHaveBeenCalledTimes(1)
-		expect(showTaskWithId).toHaveBeenCalledWith("task-1")
+		expect(showTaskWithId).not.toHaveBeenCalled()
 	})
 
 	it("keeps completed and aborted descendants untouched when parent resume triggers cascade", async () => {

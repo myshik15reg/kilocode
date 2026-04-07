@@ -35,10 +35,23 @@ function normalizeCypherInt(value: unknown, { defaultValue, min, max }: Normaliz
 	if (intValue > max) return max
 	return intValue
 }
+
+function escapeFullTextTerm(value: string): string {
+	return value.replace(/[+\-!(){}\[\]^"~*?:\\/]/g, "\\$&")
+}
+
+function tokenizeFullTextCriteria(value: string): string[] {
+	return value
+		.split(/[\\/\s._:-]+/)
+		.map((token) => token.trim())
+		.filter(Boolean)
+}
 // kilocode_change end
 
 export class Neo4jGraphService implements IGraphStore {
 	private connectionManager: Neo4jConnectionManager
+	private initializedState?: boolean
+	private initializationCheckPromise: Promise<boolean> | null = null
 
 	constructor(connectionManager?: Neo4jConnectionManager) {
 		this.connectionManager = connectionManager || Neo4jConnectionManager.getInstance()
@@ -70,22 +83,13 @@ export class Neo4jGraphService implements IGraphStore {
 		}
 
 		try {
-			// Check if constraints already exist
 			const existingConstraints = await this.connectionManager.executeRead<{ name: string }>("SHOW CONSTRAINTS")
-
 			const hasEntityConstraint = existingConstraints.some((c) => c.name?.includes("entity_id_unique"))
 
-			if (hasEntityConstraint) {
-				// Already initialized
-				return false
-			}
-
-			// Create unique constraint on CodeEntity.id
 			await this.connectionManager.executeWrite(
 				"CREATE CONSTRAINT entity_id_unique IF NOT EXISTS FOR (e:CodeEntity) REQUIRE e.id IS UNIQUE",
 			)
 
-			// Create indexes for better query performance
 			await this.connectionManager.executeWrite(
 				"CREATE INDEX entity_type_idx IF NOT EXISTS FOR (e:CodeEntity) ON (e.type)",
 			)
@@ -98,9 +102,19 @@ export class Neo4jGraphService implements IGraphStore {
 				"CREATE INDEX entity_name_idx IF NOT EXISTS FOR (e:CodeEntity) ON (e.name)",
 			)
 
+			await this.connectionManager.executeWrite(
+				"CREATE INDEX entity_language_idx IF NOT EXISTS FOR (e:CodeEntity) ON (e.language)",
+			)
+
+			await this.connectionManager.executeWrite(
+				"CREATE FULLTEXT INDEX entity_name_filepath_ft IF NOT EXISTS FOR (e:CodeEntity) ON EACH [e.name, e.filePath]",
+			)
+
+			this.initializedState = true
 			console.log("[Neo4j] Graph store initialized with constraints and indexes")
-			return true
+			return !hasEntityConstraint
 		} catch (error) {
+			this.initializedState = false
 			throw new Error(
 				`Failed to initialize Neo4j graph store: ${error instanceof Error ? error.message : String(error)}`,
 			)
@@ -399,35 +413,86 @@ export class Neo4jGraphService implements IGraphStore {
 	 * @returns Array of entities in the file
 	 */
 	public async getEntitiesByFilePath(filePath: string): Promise<CodeEntity[]> {
+		const entitiesByPath = await this.getEntitiesByFilePaths([filePath])
+		return entitiesByPath.get(filePath) ?? []
+	}
+
+	public async getEntitiesByFilePaths(filePaths: string[]): Promise<Map<string, CodeEntity[]>> {
+		const results = new Map<string, CodeEntity[]>()
+		if (filePaths.length === 0) {
+			return results
+		}
+
+		const uniquePaths = [...new Set(filePaths)]
 		const query = `
-			MATCH (e:CodeEntity {filePath: $filePath})
-			RETURN e
+			UNWIND $filePaths AS filePath
+			MATCH (e:CodeEntity {filePath: filePath})
+			RETURN filePath, collect(e) AS entities
 		`
 
-		const result = await this.connectionManager.executeRead<{ e: Record<string, unknown> }>(query, { filePath })
-		return result.map((r) => this.mapToCodeEntity(r.e))
+		const rows = await this.connectionManager.executeRead<{
+			filePath: string
+			entities: Array<Record<string, unknown>>
+		}>(query, {
+			filePaths: uniquePaths,
+		})
+
+		for (const filePath of uniquePaths) {
+			results.set(filePath, [])
+		}
+
+		for (const row of rows) {
+			results.set(
+				row.filePath,
+				(row.entities ?? []).map((entity) => this.mapToCodeEntity(entity)),
+			)
+		}
+
+		return results
 	}
 
 	/**
 	 * Search entities by criteria
 	 */
 	public async searchEntities(criteria: Partial<CodeEntity>, options?: GraphSearchOptions): Promise<CodeEntity[]> {
+		const safeLimit =
+			options?.limit !== undefined
+				? normalizeCypherInt(options.limit, { defaultValue: 100, min: 1, max: 1000 })
+				: undefined
+		const fullTextQuery = this.buildFullTextQuery(criteria)
+
+		if (fullTextQuery) {
+			let query =
+				'CALL db.index.fulltext.queryNodes("entity_name_filepath_ft", $fullTextQuery) YIELD node AS e, score WHERE 1=1'
+			const params: Record<string, any> = { fullTextQuery }
+
+			if (criteria.type) {
+				query += " AND e.type = $type"
+				params.type = criteria.type
+			}
+
+			if (criteria.language) {
+				query += " AND e.language = $language"
+				params.language = criteria.language
+			}
+
+			query += " RETURN e, score ORDER BY score DESC"
+			query += ` LIMIT ${safeLimit !== undefined ? Math.min(safeLimit * 5, 1000) : 500}`
+
+			const result = await this.connectionManager.executeRead<{ e: any; score: number }>(query, params)
+			const filtered = result
+				.map((row) => this.mapToCodeEntity(row.e))
+				.filter((entity) => this.matchesEntityCriteria(entity, criteria))
+
+			return safeLimit !== undefined ? filtered.slice(0, safeLimit) : filtered
+		}
+
 		let query = "MATCH (e:CodeEntity) WHERE 1=1"
 		const params: Record<string, any> = {}
 
 		if (criteria.type) {
 			query += " AND e.type = $type"
 			params.type = criteria.type
-		}
-
-		if (criteria.name) {
-			query += " AND e.name CONTAINS $name"
-			params.name = criteria.name
-		}
-
-		if (criteria.filePath) {
-			query += " AND e.filePath CONTAINS $filePath"
-			params.filePath = criteria.filePath
 		}
 
 		if (criteria.language) {
@@ -437,11 +502,7 @@ export class Neo4jGraphService implements IGraphStore {
 
 		query += " RETURN e"
 
-		if (options?.limit !== undefined) {
-			// FIX: 2026-02-19-reviewer-neo4j-cypher-numeric-normalization (TestAnalyzer)
-			// Root cause: `limit` интерполировался в Cypher как строка без валидации → риск Cypher-injection.
-			// Решение: нормализуем до integer и clamp диапазон перед интерполяцией.
-			const safeLimit = normalizeCypherInt(options.limit, { defaultValue: 100, min: 1, max: 1000 })
+		if (safeLimit !== undefined) {
 			query += ` LIMIT ${safeLimit}`
 		}
 
@@ -492,12 +553,68 @@ export class Neo4jGraphService implements IGraphStore {
 	 * Check if initialized
 	 */
 	public async isInitialized(): Promise<boolean> {
-		try {
-			const constraints = await this.connectionManager.executeRead<{ name: string }>("SHOW CONSTRAINTS")
-			return constraints.some((c) => c.name?.includes("entity_id_unique"))
-		} catch (error) {
+		if (!this.connectionManager.isConnected()) {
+			this.initializedState = false
 			return false
 		}
+
+		if (this.initializedState === true) {
+			return true
+		}
+
+		if (this.initializationCheckPromise) {
+			return await this.initializationCheckPromise
+		}
+
+		this.initializationCheckPromise = this.connectionManager
+			.executeRead<{ name: string }>("SHOW CONSTRAINTS")
+			.then((constraints) => {
+				const initialized = constraints.some((c) => c.name?.includes("entity_id_unique"))
+				this.initializedState = initialized
+				return initialized
+			})
+			.catch(() => {
+				this.initializedState = false
+				return false
+			})
+			.finally(() => {
+				this.initializationCheckPromise = null
+			})
+
+		return await this.initializationCheckPromise
+	}
+
+	private buildFullTextQuery(criteria: Partial<CodeEntity>): string | undefined {
+		const tokens = [
+			...(criteria.name ? tokenizeFullTextCriteria(criteria.name) : []),
+			...(criteria.filePath ? tokenizeFullTextCriteria(criteria.filePath) : []),
+		]
+		const uniqueTokens = [...new Set(tokens.map((token) => escapeFullTextTerm(token)).filter(Boolean))]
+		if (uniqueTokens.length === 0) {
+			return undefined
+		}
+
+		return uniqueTokens.map((token) => `"${token}"`).join(" AND ")
+	}
+
+	private matchesEntityCriteria(entity: CodeEntity, criteria: Partial<CodeEntity>): boolean {
+		if (criteria.type && entity.type !== criteria.type) {
+			return false
+		}
+
+		if (criteria.language && entity.language !== criteria.language) {
+			return false
+		}
+
+		if (criteria.name && !entity.name.includes(criteria.name)) {
+			return false
+		}
+
+		if (criteria.filePath && !entity.filePath.includes(criteria.filePath)) {
+			return false
+		}
+
+		return true
 	}
 
 	/**

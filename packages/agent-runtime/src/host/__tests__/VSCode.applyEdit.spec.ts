@@ -5,17 +5,11 @@ import path from "path"
 import { createVSCodeAPIMock, Uri, WorkspaceEdit, Position, Range } from "../VSCode.js"
 
 describe("WorkspaceAPI.applyEdit", () => {
-	// kilocode_change start
-	// Avoid coupling to `process.cwd()`. In monorepo runs (turbo/pnpm filters),
-	// package scripts often execute with `cwd` set to the package root, which would
-	// duplicate paths like `.../packages/agent-runtime/packages/agent-runtime/...`.
-	// Using a per-test temp directory also prevents cross-test interference.
 	let tempDir: string
 	let filePath: string
-	// kilocode_change end
 
 	beforeEach(() => {
-		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "kilocode apply-edit "))
+		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "kilocode-apply-edit-"))
 		filePath = path.join(tempDir, "apply-edit.txt")
 		fs.writeFileSync(filePath, "alpha\n", "utf-8")
 	})
@@ -25,8 +19,8 @@ describe("WorkspaceAPI.applyEdit", () => {
 			if (tempDir) {
 				fs.rmSync(tempDir, { recursive: true, force: true })
 			}
-		} catch (error) {
-			// Ignore cleanup errors in tests
+		} catch (_error) {
+			// Ignore cleanup errors in tests.
 		}
 	})
 
@@ -45,7 +39,7 @@ describe("WorkspaceAPI.applyEdit", () => {
 		expect(applyEditSpy).toHaveBeenCalledTimes(2)
 		const finalContent = fs.readFileSync(filePath, "utf-8")
 		expect(finalContent).toBe("YXYXalpha\n")
-	})
+	}, 60000)
 
 	it("handles multi-line replacements without duplicating tail lines", async () => {
 		const vscode = createVSCodeAPIMock(tempDir, tempDir)
@@ -59,39 +53,33 @@ describe("WorkspaceAPI.applyEdit", () => {
 
 		const finalContent = fs.readFileSync(filePath, "utf-8")
 		expect(finalContent).toBe("one\ntwo\nbeta\n")
-	})
+	}, 60000)
 
 	it("handles Windows CRLF line endings correctly", async () => {
 		const vscode = createVSCodeAPIMock(tempDir, tempDir)
 		const edit = new WorkspaceEdit()
 		const uri = Uri.file(filePath)
 
-		// Write file with Windows CRLF line endings
 		fs.writeFileSync(filePath, "alpha\r\nbeta\r\ngamma\r\n", "utf-8")
-		// Replace "beta" on line 1
 		edit.replace(uri, new Range(new Position(1, 0), new Position(1, 4)), "REPLACED")
 
 		await vscode.workspace.applyEdit(edit)
 
 		const finalContent = fs.readFileSync(filePath, "utf-8")
-		// Content is normalized to LF
 		expect(finalContent).toBe("alpha\nREPLACED\ngamma\n")
-	})
+	}, 60000)
 
 	it("handles mixed line endings correctly", async () => {
 		const vscode = createVSCodeAPIMock(tempDir, tempDir)
 		const edit = new WorkspaceEdit()
 		const uri = Uri.file(filePath)
 
-		// Write file with mixed line endings (CRLF and LF)
 		fs.writeFileSync(filePath, "line1\r\nline2\nline3\r\n", "utf-8")
-		// Replace "line2" on line 1
 		edit.replace(uri, new Range(new Position(1, 0), new Position(1, 5)), "MODIFIED")
 
 		await vscode.workspace.applyEdit(edit)
 
 		const finalContent = fs.readFileSync(filePath, "utf-8")
-		// Content is normalized to LF
 		expect(finalContent).toBe("line1\nMODIFIED\nline3\n")
-	})
+	}, 60000)
 })

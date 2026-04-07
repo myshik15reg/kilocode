@@ -1,7 +1,8 @@
 import * as vscode from "vscode"
 import { ContextProxy } from "../../core/config/ContextProxy"
-import { VectorStoreSearchResult } from "./interfaces"
-import { IndexingState } from "./interfaces/manager"
+import { CodeIndexStructuredSearchResult, VectorStoreSearchResult } from "./interfaces"
+import type { IVectorStore } from "./interfaces/vector-store"
+import { type CodeIndexSearchRequest, IndexingState } from "./interfaces/manager"
 import { CodeIndexConfigManager } from "./config-manager"
 import { CodeIndexStateManager } from "./state-manager"
 import { CodeIndexServiceFactory } from "./service-factory"
@@ -15,6 +16,9 @@ import path from "path"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 
+import { ArtifactSearchService } from "./ArtifactSearchService"
+import type { RetrievalSource } from "./interfaces"
+
 export class CodeIndexManager {
 	// --- Singleton Implementation ---
 	private static instances = new Map<string, CodeIndexManager>() // Map workspace path to instance
@@ -25,7 +29,9 @@ export class CodeIndexManager {
 	private _serviceFactory: CodeIndexServiceFactory | undefined
 	private _orchestrator: CodeIndexOrchestrator | undefined
 	private _searchService: CodeIndexSearchService | undefined
+	private _vectorStore: IVectorStore | undefined
 	private _cacheManager: CacheManager | undefined
+	private _artifactSearchService: ArtifactSearchService | undefined
 
 	// Flag to prevent race conditions during error recovery
 	private _isRecoveringFromError = false
@@ -63,9 +69,9 @@ export class CodeIndexManager {
 		return CodeIndexManager.instances.get(workspacePath)!
 	}
 
-	public static disposeAll(): void {
+	public static async disposeAll(): Promise<void> {
 		for (const instance of CodeIndexManager.instances.values()) {
-			instance.dispose()
+			await instance.dispose()
 		}
 		CodeIndexManager.instances.clear()
 	}
@@ -291,11 +297,10 @@ export class CodeIndexManager {
 	/**
 	 * Cleans up the manager instance.
 	 */
-	public dispose(): void {
-		if (this._orchestrator) {
-			this.stopWatcher()
-		}
+	public async dispose(): Promise<void> {
+		await this.disposeOperationalServices()
 		this._stateManager.dispose()
+		CodeIndexManager.instances.delete(this.workspacePath)
 	}
 
 	/**
@@ -351,26 +356,274 @@ export class CodeIndexManager {
 		}
 	}
 
-	public async searchIndex(query: string, directoryPrefix?: string): Promise<VectorStoreSearchResult[]> {
+	public async searchIndex(query: string, directoryPrefix?: string): Promise<VectorStoreSearchResult[]>
+	public async searchIndex(request: CodeIndexSearchRequest): Promise<VectorStoreSearchResult[]>
+	public async searchIndex(
+		queryOrRequest: string | CodeIndexSearchRequest,
+		directoryPrefix?: string,
+	): Promise<VectorStoreSearchResult[]> {
 		if (!this.isFeatureEnabled) {
 			return []
 		}
 		this.assertInitialized()
-		return this._searchService!.searchIndex(query, directoryPrefix)
+		return this._searchService!.searchIndex(this.normalizeSearchRequest(queryOrRequest, directoryPrefix))
 	}
 
+	public async searchIndexDetailed(query: string, directoryPrefix?: string): Promise<CodeIndexStructuredSearchResult>
+	public async searchIndexDetailed(request: CodeIndexSearchRequest): Promise<CodeIndexStructuredSearchResult>
+	public async searchIndexDetailed(
+		queryOrRequest: string | CodeIndexSearchRequest,
+		directoryPrefix?: string,
+	): Promise<CodeIndexStructuredSearchResult> {
+		const request = this.normalizeSearchRequest(queryOrRequest, directoryPrefix)
+		const artifactResult = await this.searchArtifactsIfRelevant(request)
+		const hasArtifactResults = Boolean(artifactResult && artifactResult.results.length > 0)
+
+		if (!this.isFeatureEnabled) {
+			if (artifactResult && hasArtifactResults) {
+				return this.withSearchWarnings(artifactResult, [
+					"Code indexing is disabled; returned artifact matches only.",
+				])
+			}
+			return {
+				query: request.query,
+				queryClass: "broad_repo_research",
+				retrievalMode: request.retrievalMode ?? "adaptive",
+				retrievalConfidence: 0,
+				results: [],
+				keyPoints: [],
+				sources: [],
+				warnings: ["Code indexing is disabled."],
+				postprocessUsed: false,
+				compressionApplied: false,
+			}
+		}
+
+		if (!this.isInitialized) {
+			if (artifactResult && hasArtifactResults) {
+				return this.withSearchWarnings(artifactResult, [
+					"Code indexing is not initialized; returned artifact matches only.",
+				])
+			}
+			const fallbackResult = await this.tryCodeFallback(
+				request,
+				"Code indexing is not initialized; returned degraded lexical code matches.",
+			)
+			if (fallbackResult) {
+				return fallbackResult
+			}
+			this.assertInitialized()
+		}
+
+		const status = this.getCurrentStatus()
+		if (status.systemStatus !== "Indexed") {
+			if (artifactResult && hasArtifactResults) {
+				return this.withSearchWarnings(artifactResult, [this.buildArtifactFallbackWarning(status.systemStatus)])
+			}
+			const fallbackResult = await this.tryCodeFallback(
+				request,
+				this.buildCodeFallbackWarning(status.systemStatus),
+			)
+			if (fallbackResult) {
+				return fallbackResult
+			}
+		}
+
+		this.assertInitialized()
+
+		try {
+			const codeResult = await this._searchService!.searchIndexDetailed(request)
+			if (!artifactResult || !hasArtifactResults) {
+				return codeResult
+			}
+			return this.mergeArtifactAndCodeResults(artifactResult, codeResult)
+		} catch (error) {
+			if (artifactResult && hasArtifactResults) {
+				return this.withSearchWarnings(artifactResult, [
+					"Code index retrieval failed; returned artifact matches only.",
+				])
+			}
+
+			const fallbackResult = await this.tryCodeFallback(
+				request,
+				"Code index retrieval failed; returned degraded lexical code matches.",
+			)
+			if (fallbackResult) {
+				return fallbackResult
+			}
+
+			throw error
+		}
+	}
+
+	private async tryCodeFallback(
+		request: CodeIndexSearchRequest,
+		warning: string,
+	): Promise<CodeIndexStructuredSearchResult | undefined> {
+		try {
+			const fallbackResult = await this.getArtifactSearchService().searchCodeFallbackDetailed(request)
+			if (fallbackResult.results.length > 0) {
+				return this.withSearchWarnings(fallbackResult, [warning])
+			}
+		} catch (fallbackError) {
+			console.warn("[CodeIndexManager] Degraded code fallback failed:", fallbackError)
+		}
+		return undefined
+	}
+
+	private normalizeSearchRequest(
+		queryOrRequest: string | CodeIndexSearchRequest,
+		directoryPrefix?: string,
+	): CodeIndexSearchRequest {
+		if (typeof queryOrRequest === "string") {
+			return { query: queryOrRequest, directoryPrefix }
+		}
+
+		return queryOrRequest
+	}
+
+	private getArtifactSearchService(): ArtifactSearchService {
+		if (!this._artifactSearchService) {
+			this._artifactSearchService = new ArtifactSearchService(this.workspacePath)
+		}
+		return this._artifactSearchService
+	}
+
+	private async searchArtifactsIfRelevant(
+		request: CodeIndexSearchRequest,
+	): Promise<CodeIndexStructuredSearchResult | undefined> {
+		if (!ArtifactSearchService.shouldSearchArtifacts(request.query, request.directoryPrefix)) {
+			return undefined
+		}
+		try {
+			return await this.getArtifactSearchService().searchDetailed(request)
+		} catch (error) {
+			console.warn("[CodeIndexManager] Artifact retrieval failed:", error)
+			return undefined
+		}
+	}
+
+	private withSearchWarnings(
+		result: CodeIndexStructuredSearchResult,
+		warnings: string[],
+	): CodeIndexStructuredSearchResult {
+		return {
+			...result,
+			warnings: [...new Set([...result.warnings, ...warnings])],
+		}
+	}
+
+	private mergeArtifactAndCodeResults(
+		artifactResult: CodeIndexStructuredSearchResult,
+		codeResult: CodeIndexStructuredSearchResult,
+	): CodeIndexStructuredSearchResult {
+		const maxResults =
+			this._configManager?.currentSearchMaxResults ??
+			Math.max(codeResult.results.length, artifactResult.results.length, 5)
+		const results = this.dedupeResults([...artifactResult.results, ...codeResult.results]).slice(0, maxResults)
+		return {
+			...codeResult,
+			queryClass: artifactResult.queryClass,
+			results,
+			keyPoints: results
+				.slice(0, 3)
+				.map((entry) => entry.citationLabel ?? `${entry.filePath}:${entry.startLine}-${entry.endLine}`),
+			sources: this.dedupeSources([...artifactResult.sources, ...codeResult.sources]),
+			warnings: [...new Set([...artifactResult.warnings, ...codeResult.warnings])],
+			postprocessUsed: artifactResult.postprocessUsed || codeResult.postprocessUsed,
+			retrievalConfidence: this.aggregateConfidence(results),
+		}
+	}
+
+	private async disposeOperationalServices(): Promise<void> {
+		if (this.hasStopWatcher(this._orchestrator)) {
+			this._orchestrator.stopWatcher()
+		}
+
+		const vectorStore = this._vectorStore
+		this._orchestrator = undefined
+		this._searchService = undefined
+		this._vectorStore = undefined
+
+		if (vectorStore?.dispose) {
+			try {
+				await vectorStore.dispose()
+			} catch (error) {
+				console.warn("[CodeIndexManager] Failed to dispose vector store:", error)
+			}
+		}
+	}
+
+	private dedupeResults(results: VectorStoreSearchResult[]): VectorStoreSearchResult[] {
+		const seen = new Set<string>()
+		return results.filter((entry) => {
+			const key = entry.citationLabel ?? `${entry.filePath}:${entry.startLine}-${entry.endLine}`
+			if (seen.has(key)) {
+				return false
+			}
+			seen.add(key)
+			return true
+		})
+	}
+
+	private dedupeSources(sources: RetrievalSource[]): RetrievalSource[] {
+		const seen = new Set<string>()
+		return sources.filter((source) => {
+			const key = `${source.type}:${source.label}:${source.details ?? ""}`
+			if (seen.has(key)) {
+				return false
+			}
+			seen.add(key)
+			return true
+		})
+	}
+
+	private aggregateConfidence(results: VectorStoreSearchResult[]): number {
+		if (results.length === 0) {
+			return 0
+		}
+		const sample = results.slice(0, 3)
+		return Math.max(
+			0,
+			Math.min(
+				1,
+				sample.reduce((sum, entry) => sum + (entry.confidence ?? entry.retrievalConfidence ?? entry.score), 0) /
+					sample.length,
+			),
+		)
+	}
+
+	private buildArtifactFallbackWarning(state: IndexingState): string {
+		switch (state) {
+			case "Indexing":
+				return "Code indexing is still running; returned artifact matches only."
+			case "Standby":
+				return "Code indexing has not started; returned artifact matches only."
+			case "Error":
+				return "Code indexing is in an error state; returned artifact matches only."
+			default:
+				return "Code indexing is not ready; returned artifact matches only."
+		}
+	}
+
+	private buildCodeFallbackWarning(state: IndexingState): string {
+		switch (state) {
+			case "Indexing":
+				return "Code indexing is still running; returned degraded lexical code matches."
+			case "Standby":
+				return "Code indexing has not started; returned degraded lexical code matches."
+			case "Error":
+				return "Code indexing is in an error state; returned degraded lexical code matches."
+			default:
+				return "Code indexing is not ready; returned degraded lexical code matches."
+		}
+	}
 	/**
 	 * Private helper method to recreate services with current configuration.
 	 * Used by both initialize() and handleSettingsChange().
 	 */
 	private async _recreateServices(): Promise<void> {
-		// Stop watcher if it exists
-		if (this._orchestrator) {
-			this.stopWatcher()
-		}
-		// Clear existing services to ensure clean state
-		this._orchestrator = undefined
-		this._searchService = undefined
+		await this.disposeOperationalServices()
 
 		// (Re)Initialize service factory
 		this._serviceFactory = new CodeIndexServiceFactory(
@@ -433,6 +686,8 @@ export class CodeIndexManager {
 			}
 		}
 		// kilocode_change end
+
+		this._vectorStore = vectorStore
 
 		// (Re)Initialize orchestrator
 		this._orchestrator = new CodeIndexOrchestrator(

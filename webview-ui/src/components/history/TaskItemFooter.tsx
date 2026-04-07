@@ -32,14 +32,12 @@ const TaskItemFooter: React.FC<TaskItemFooterProps> = ({
 	// kilocode_change start
 	const isCompletedItem = item.status === "completed" || item.lifecycleState === "completed"
 	const isRootTask = !item.parentTaskId && (!item.rootTaskId || item.rootTaskId === item.id)
-	const rootTaskStatus =
-		item.status && isRootTask ? getHistoryRootTaskStatus(item, { runningRootTaskIds }) : undefined
+	const rootTaskStatus = isRootTask ? getHistoryRootTaskStatus(item, { runningRootTaskIds }) : undefined
+	const isStoppedRootTask = isRootTask && rootTaskStatus === "stopped"
 	const showResumeTask =
 		!isCompletedItem &&
 		(item.lifecycleState === "paused" ||
-			((item.status === "active" || item.status === "aborted") &&
-				!!item.lastStopReason &&
-				rootTaskStatus === "stopped"))
+			(isStoppedRootTask && !(item.status === undefined && item.lifecycleState === "running")))
 	const showPauseTask =
 		!isCompletedItem &&
 		!showResumeTask &&

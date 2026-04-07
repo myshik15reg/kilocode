@@ -3,6 +3,10 @@ import { vi, describe, it, expect, beforeEach } from "vitest"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React from "react"
 
+const mockState = vi.hoisted(() => ({
+	autoHydrateAlfaCodeDefaults: false,
+}))
+
 // Mock vscode API
 const mockPostMessage = vi.fn()
 const mockVscode = {
@@ -123,7 +127,25 @@ vi.mock("../PromptsSettings", () => ({
 	default: () => null,
 }))
 vi.mock("../AlfaCodeSettings", () => ({
-	AlfaCodeSettings: () => null,
+	AlfaCodeSettings: ({ setCachedStateField }: any) => {
+		React.useEffect(() => {
+			if (!mockState.autoHydrateAlfaCodeDefaults) {
+				return
+			}
+
+			setCachedStateField("parallelAgentsEnabled", false)
+			setCachedStateField("orchestrationTelemetryEnabled", true)
+			setCachedStateField("helperLocalityPreference", "prefer")
+			setCachedStateField("orchestrationEscalationSensitivity", "balanced")
+			setCachedStateField("structuredDelegationEnabled", false)
+			setCachedStateField("evaluatorPassEnabled", false)
+			setCachedStateField("memoryPromotionEnabled", false)
+			setCachedStateField("retrievalPolicy", "adaptive")
+			setCachedStateField("queryClassifierDebug", false)
+		}, [setCachedStateField])
+
+		return null
+	},
 }))
 vi.mock("../SlashCommandsSettings", () => ({
 	SlashCommandsSettings: () => null,
@@ -210,6 +232,7 @@ describe("SettingsView - Change Detection Fix", () => {
 		followupAutoApproveTimeoutMs: undefined,
 		includeDiagnosticMessages: false,
 		maxDiagnosticMessages: 50,
+		memoryPromotionEnabled: false,
 		includeTaskHistoryInEnhance: true,
 		openRouterImageApiKey: undefined,
 		openRouterImageGenerationSelectedModel: undefined,
@@ -219,6 +242,7 @@ describe("SettingsView - Change Detection Fix", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
+		mockState.autoHydrateAlfaCodeDefaults = false
 		queryClient = new QueryClient({
 			defaultOptions: {
 				queries: { retry: false },
@@ -255,6 +279,78 @@ describe("SettingsView - Change Detection Fix", () => {
 
 		// onDone should be called
 		expect(onDone).toHaveBeenCalled()
+	})
+
+	// kilocode_change start
+	it("should keep save disabled when AlfaCode defaults hydrate from undefined state", async () => {
+		const onDone = vi.fn()
+		mockState.autoHydrateAlfaCodeDefaults = true
+		;(useExtensionState as any).mockReturnValue(
+			createExtensionState({
+				parallelAgentsEnabled: undefined,
+				orchestrationTelemetryEnabled: undefined,
+				helperLocalityPreference: undefined,
+				orchestrationEscalationSensitivity: undefined,
+				structuredDelegationEnabled: undefined,
+				evaluatorPassEnabled: undefined,
+				memoryPromotionEnabled: undefined,
+				retrievalPolicy: undefined,
+				queryClassifierDebug: undefined,
+			}),
+		)
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<SettingsView onDone={onDone} />
+			</QueryClientProvider>,
+		)
+
+		await waitFor(() => {
+			expect(screen.getByTestId("save-button")).toBeInTheDocument()
+		})
+
+		await waitFor(() => {
+			const saveButton = screen.getByTestId("save-button") as HTMLButtonElement
+			expect(saveButton.disabled).toBe(true)
+		})
+	})
+	// kilocode_change end
+
+	it("should keep save disabled when openai model sync hydrates apiModelId from openAiModelId", async () => {
+		const onDone = vi.fn()
+		;(useExtensionState as any).mockReturnValue(
+			createExtensionState({
+				apiConfiguration: {
+					apiProvider: "openai",
+					openAiBaseUrl: "https://llm-api.yc.alfaleasing.ru/v1",
+					openAiModelId: "codex/gpt-5.3-codex",
+					apiModelId: undefined,
+					openAiStreamingEnabled: true,
+					enableReasoningEffort: true,
+					reasoningEffort: "high",
+					openAiCustomModelInfo: {
+						contextWindow: 258000,
+						supportsImages: true,
+						supportsPromptCache: true,
+					},
+				},
+			}),
+		)
+
+		render(
+			<QueryClientProvider client={queryClient}>
+				<SettingsView onDone={onDone} />
+			</QueryClientProvider>,
+		)
+
+		await waitFor(() => {
+			expect(screen.getByTestId("save-button")).toBeInTheDocument()
+		})
+
+		await waitFor(() => {
+			const saveButton = screen.getByTestId("save-button") as HTMLButtonElement
+			expect(saveButton.disabled).toBe(true)
+		})
 	})
 
 	// These tests are passing for the basic case but failing due to vi.doMock limitations

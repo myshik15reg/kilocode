@@ -58,11 +58,16 @@ services:
             - PRODUCTION_DATABASE_URL
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-            # Mount log files so web can access task logs
             - /tmp/evals:/tmp/evals:ro
         depends_on:
             db:
                 condition: service_healthy
+        healthcheck:
+            test: ["CMD-SHELL", "curl -fsS http://localhost:3446/api/health >/dev/null"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
         profiles:
             - server
 

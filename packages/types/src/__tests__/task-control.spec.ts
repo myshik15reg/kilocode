@@ -1,15 +1,17 @@
 import {
 	activityItemSchema,
+	branchTaskOptionsSchema,
 	historyItemSchema,
-	normalizeTaskControl,
 	normalizeSubagentLaunchRequest,
+	normalizeTaskControl,
+	orchestrationExplainabilitySchema,
 	resolveSubagentLaunchTargetTaskId,
+	subagentStatusEventSchema,
 	taskControlSchema,
 	taskControlValueSchema,
-	taskResumeControlSchema,
 	taskHistoryStatusSchema,
+	taskResumeControlSchema,
 	taskStopReasonSchema,
-	branchTaskOptionsSchema,
 } from "../index.js"
 
 describe("task control contracts", () => {
@@ -169,5 +171,79 @@ describe("task control contracts", () => {
 	it("resolves legacy subagent launch target task ids from the parent id", () => {
 		expect(resolveSubagentLaunchTargetTaskId({ parentTaskId: "parent-1" })).toBe("parent-1")
 		expect(resolveSubagentLaunchTargetTaskId({ parentTaskId: "parent-1", targetTaskId: "child-1" })).toBe("child-1")
+	})
+
+	it("accepts structured handoff metadata for sequential delegation", () => {
+		expect(
+			normalizeSubagentLaunchRequest({
+				parentTaskId: "parent-1",
+				rootTaskId: "root-1",
+				mode: "code",
+				handoff: {
+					summary: "Research",
+					goal: "Investigate a failure",
+					doneWhen: "Return a source-backed summary",
+					budget: { maxTokens: 1200, maxSteps: 4 },
+					canAbstain: true,
+					strategy: "sequential",
+				},
+				execution: "background",
+				taskIntent: "research",
+				retrievalMode: "hybrid",
+				structuredDelegation: true,
+			}),
+		).toMatchObject({
+			execution: "background",
+			taskIntent: "research",
+			retrievalMode: "hybrid",
+			structuredDelegation: true,
+			handoff: {
+				goal: "Investigate a failure",
+				doneWhen: "Return a source-backed summary",
+				budget: { maxTokens: 1200, maxSteps: 4 },
+				canAbstain: true,
+				strategy: "sequential",
+			},
+		})
+	})
+
+	it("persists delegation outcome status in history items", () => {
+		expect(
+			historyItemSchema.parse({
+				id: "child-1",
+				number: 1,
+				ts: 1,
+				task: "Child",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				status: "aborted",
+				lifecycleState: "completed",
+				delegationOutcomeStatus: "abstained",
+			}),
+		).toMatchObject({ delegationOutcomeStatus: "abstained" })
+	})
+
+	it("accepts abstained statuses and enriched explainability metadata", () => {
+		expect(
+			subagentStatusEventSchema.parse({
+				taskId: "child-1",
+				sessionId: "session-1",
+				state: "abstained",
+				message: "Need more evidence",
+				timestamp: 1,
+			}),
+		).toMatchObject({ state: "abstained" })
+
+		expect(
+			orchestrationExplainabilitySchema.parse({
+				stage: "delegation",
+				reasonCode: "background_subagent_selected",
+				execution: "background",
+				strategy: "sequential",
+				canAbstain: true,
+				budgetSummary: "tokens:1200,steps:4",
+			}),
+		).toMatchObject({ strategy: "sequential", canAbstain: true })
 	})
 })

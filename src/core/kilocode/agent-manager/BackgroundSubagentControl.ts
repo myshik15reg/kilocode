@@ -2,6 +2,7 @@
 import { listBackgroundSubagentBindings, type BackgroundSessionBinding } from "./BackgroundSubagentLifecycle"
 import type { AgentSession, AgentStatus } from "./types"
 import type { HistoryItem, SubagentResultEvent, SubagentStatusEvent } from "@roo-code/types"
+import { inferDelegationOutcomeStatus } from "../../orchestration/subagents/delegationOutcome"
 
 interface BackgroundTaskHistoryLifecyclePatch {
 	lifecycleState: "paused" | "running" | "completed" | "cancelled"
@@ -80,15 +81,23 @@ export class BackgroundSubagentControl {
 	public handleSessionCompleted(
 		sessionId: string,
 		exitCode: number,
-	): { isSuccess: boolean; terminalStatus: "completed" | "cancelled" | "failed" } {
+	): { isSuccess: boolean; terminalStatus: "completed" | "cancelled" | "failed" | "abstained" } {
 		const session = this.deps.getSession(sessionId)
-		const isSuccess = exitCode === 0
-		const terminalStatus = isSuccess ? "completed" : session?.status === "stopped" ? "cancelled" : "failed"
+		const summary = this.deps.summarizeCompletion(sessionId)
+		const terminalStatus =
+			exitCode === 0
+				? session?.lifecycleStatus === "abstained"
+					? "abstained"
+					: inferDelegationOutcomeStatus(summary)
+				: session?.status === "stopped"
+					? "cancelled"
+					: "failed"
+		const isSuccess = exitCode === 0 && (terminalStatus === "completed" || terminalStatus === "abstained")
 
 		this.deps.updateSession(sessionId, {
 			lifecycleStatus: terminalStatus,
 			activityState: "idle",
-			needsAttention: !isSuccess,
+			needsAttention: terminalStatus === "failed",
 			recoveryState: undefined,
 			pendingReaction: undefined,
 			lastEventAt: this.getNow(),
@@ -97,18 +106,19 @@ export class BackgroundSubagentControl {
 		const binding = this.consumeBinding(sessionId)
 		if (binding) {
 			if (isSuccess) {
-				const summary = this.deps.summarizeCompletion(sessionId)
+				const statusMessage =
+					terminalStatus === "abstained" ? "Background subagent abstained" : "Background subagent completed"
 				this.emitStatus({
 					taskId: binding.taskId,
 					sessionId,
-					state: "completed",
-					message: "Background subagent completed",
+					state: terminalStatus,
+					message: statusMessage,
 					timestamp: this.getNow(),
 				})
 				this.emitResult({
 					taskId: binding.taskId,
 					sessionId,
-					status: "completed",
+					status: terminalStatus,
 					output: summary,
 					summary,
 					timestamp: this.getNow(),
@@ -126,6 +136,10 @@ export class BackgroundSubagentControl {
 		}
 
 		return { isSuccess, terminalStatus }
+	}
+
+	public async releaseSession(sessionId: string): Promise<void> {
+		this.consumeBinding(sessionId)
 	}
 
 	public async cancelSession(sessionId: string): Promise<void> {

@@ -101,9 +101,9 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 	const testGlobalStoragePath = path.join(path.sep, "test", "global-storage")
 	const testLogPath = path.join(path.sep, "test", "log")
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		// Clear all instances before each test
-		CodeIndexManager.disposeAll()
+		await CodeIndexManager.disposeAll()
 
 		mockContext = {
 			subscriptions: [],
@@ -128,8 +128,8 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 		manager = CodeIndexManager.getInstance(mockContext)!
 	})
 
-	afterEach(() => {
-		CodeIndexManager.disposeAll()
+	afterEach(async () => {
+		await CodeIndexManager.disposeAll()
 	})
 
 	describe("handleSettingsChange", () => {
@@ -640,6 +640,327 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 
 			// Cleanup
 			consoleErrorSpy.mockRestore()
+		})
+	})
+
+	describe("searchIndexDetailed", () => {
+		it("returns a disabled structured envelope when the feature is off", async () => {
+			vi.spyOn(manager, "isFeatureEnabled", "get").mockReturnValue(false)
+
+			await expect(manager.searchIndexDetailed("impact query")).resolves.toEqual({
+				query: "impact query",
+				queryClass: "broad_repo_research",
+				retrievalMode: "adaptive",
+				retrievalConfidence: 0,
+				results: [],
+				keyPoints: [],
+				sources: [],
+				warnings: ["Code indexing is disabled."],
+				postprocessUsed: false,
+				compressionApplied: false,
+			})
+		})
+
+		it("returns artifact-only matches when code indexing is disabled for workflow queries", async () => {
+			vi.spyOn(manager, "isFeatureEnabled", "get").mockReturnValue(false)
+			;(manager as any)._artifactSearchService = {
+				searchDetailed: vi.fn().mockResolvedValue({
+					query: "workflow protocol guide",
+					queryClass: "workflow_docs",
+					retrievalMode: "adaptive",
+					retrievalConfidence: 0.82,
+					results: [
+						{
+							id: "artifact-1",
+							score: 0.82,
+							filePath: "/test/workspace/.kilocode/workflows/quickref.md",
+							codeChunk: "workflow docs guidance",
+							startLine: 1,
+							endLine: 3,
+							citationLabel: ".kilocode/workflows/quickref.md:1-3",
+							sources: [{ type: "lexical", label: "artifact match in quickref.md", score: 0.82 }],
+							confidence: 0.82,
+						},
+					],
+					keyPoints: [".kilocode/workflows/quickref.md:1-3"],
+					sources: [{ type: "lexical", label: "artifact match in quickref.md", score: 0.82 }],
+					warnings: [],
+					postprocessUsed: true,
+					compressionApplied: false,
+				}),
+			}
+
+			await expect(manager.searchIndexDetailed("workflow protocol guide")).resolves.toMatchObject({
+				queryClass: "workflow_docs",
+				results: [expect.objectContaining({ filePath: "/test/workspace/.kilocode/workflows/quickref.md" })],
+				warnings: ["Code indexing is disabled; returned artifact matches only."],
+			})
+		})
+
+		it("merges artifact hits ahead of code search results for workflow queries", async () => {
+			vi.spyOn(manager, "isFeatureEnabled", "get").mockReturnValue(true)
+			;(manager as any)._configManager = {
+				isFeatureEnabled: true,
+				isFeatureConfigured: true,
+				currentSearchMaxResults: 5,
+			}
+			;(manager as any)._orchestrator = {}
+			;(manager as any)._cacheManager = {}
+			;(manager as any)._stateManager.getCurrentStatus = vi.fn().mockReturnValue({ systemStatus: "Indexed" })
+			;(manager as any)._artifactSearchService = {
+				searchDetailed: vi.fn().mockResolvedValue({
+					query: "workflow protocol guide",
+					queryClass: "workflow_docs",
+					retrievalMode: "adaptive",
+					retrievalConfidence: 0.71,
+					results: [
+						{
+							id: "artifact-1",
+							score: 0.71,
+							filePath: "/test/workspace/.kilocode/workflows/quickref.md",
+							codeChunk: "workflow docs guidance",
+							startLine: 1,
+							endLine: 3,
+							citationLabel: ".kilocode/workflows/quickref.md:1-3",
+							sources: [{ type: "lexical", label: "artifact match in quickref.md", score: 0.71 }],
+							confidence: 0.71,
+						},
+					],
+					keyPoints: [".kilocode/workflows/quickref.md:1-3"],
+					sources: [{ type: "lexical", label: "artifact match in quickref.md", score: 0.71 }],
+					warnings: [],
+					postprocessUsed: true,
+					compressionApplied: false,
+				}),
+			}
+			;(manager as any)._searchService = {
+				searchIndexDetailed: vi.fn().mockResolvedValue({
+					query: "workflow protocol guide",
+					queryClass: "workflow_docs",
+					retrievalMode: "hybrid",
+					retrievalConfidence: 0.65,
+					results: [
+						{
+							id: "code-1",
+							score: 0.65,
+							filePath: "/test/workspace/src/core/task/Task.ts",
+							codeChunk: "load protocol context",
+							startLine: 40,
+							endLine: 42,
+							citationLabel: "src/core/task/Task.ts:40-42",
+							sources: [{ type: "semantic", label: "semantic match", score: 0.65 }],
+							confidence: 0.65,
+						},
+					],
+					keyPoints: ["src/core/task/Task.ts:40-42"],
+					sources: [{ type: "semantic", label: "semantic match", score: 0.65 }],
+					warnings: [],
+					postprocessUsed: true,
+					compressionApplied: false,
+				}),
+			}
+
+			await expect(manager.searchIndexDetailed("workflow protocol guide")).resolves.toMatchObject({
+				retrievalMode: "hybrid",
+				results: [
+					expect.objectContaining({ filePath: "/test/workspace/.kilocode/workflows/quickref.md" }),
+					expect.objectContaining({ filePath: "/test/workspace/src/core/task/Task.ts" }),
+				],
+			})
+		})
+
+		it("returns degraded lexical code matches when code indexing is not initialized and artifact search is irrelevant", async () => {
+			vi.spyOn(manager, "isFeatureEnabled", "get").mockReturnValue(true)
+			;(manager as any)._artifactSearchService = {
+				searchCodeFallbackDetailed: vi.fn().mockResolvedValue({
+					query: "load config",
+					queryClass: "implementation_search",
+					retrievalMode: "adaptive",
+					retrievalConfidence: 0.41,
+					results: [
+						{
+							id: "fallback-1",
+							score: 0.41,
+							filePath: "/test/workspace/src/config.ts",
+							codeChunk: "load config",
+							startLine: 10,
+							endLine: 12,
+							citationLabel: "src/config.ts:10-12",
+							sources: [{ type: "lexical", label: "degraded code fallback in config.ts", score: 0.41 }],
+							confidence: 0.41,
+						},
+					],
+					keyPoints: ["src/config.ts:10-12"],
+					sources: [{ type: "lexical", label: "degraded code fallback in config.ts", score: 0.41 }],
+					warnings: ["Semantic retrieval failed; returned bounded lexical fallback over code surfaces."],
+					postprocessUsed: true,
+					compressionApplied: false,
+				}),
+			}
+
+			await expect(manager.searchIndexDetailed("load config", "src")).resolves.toMatchObject({
+				results: [expect.objectContaining({ filePath: "/test/workspace/src/config.ts" })],
+				warnings: [
+					"Semantic retrieval failed; returned bounded lexical fallback over code surfaces.",
+					"Code indexing is not initialized; returned degraded lexical code matches.",
+				],
+			})
+			expect((manager as any)._artifactSearchService.searchCodeFallbackDetailed).toHaveBeenCalledWith({
+				query: "load config",
+				directoryPrefix: "src",
+			})
+		})
+
+		it("returns degraded lexical code matches when index status is not ready and artifact search is irrelevant", async () => {
+			vi.spyOn(manager, "isFeatureEnabled", "get").mockReturnValue(true)
+			;(manager as any)._configManager = { isFeatureEnabled: true, isFeatureConfigured: true }
+			;(manager as any)._orchestrator = {}
+			;(manager as any)._cacheManager = {}
+			;(manager as any)._searchService = { searchIndexDetailed: vi.fn() }
+			;(manager as any)._stateManager.getCurrentStatus = vi.fn().mockReturnValue({ systemStatus: "Standby" })
+			;(manager as any)._artifactSearchService = {
+				searchCodeFallbackDetailed: vi.fn().mockResolvedValue({
+					query: "load config",
+					queryClass: "implementation_search",
+					retrievalMode: "adaptive",
+					retrievalConfidence: 0.39,
+					results: [
+						{
+							id: "fallback-standby-1",
+							score: 0.39,
+							filePath: "/test/workspace/src/config.ts",
+							codeChunk: "load config",
+							startLine: 10,
+							endLine: 12,
+							citationLabel: "src/config.ts:10-12",
+							sources: [{ type: "lexical", label: "degraded code fallback in config.ts", score: 0.39 }],
+							confidence: 0.39,
+						},
+					],
+					keyPoints: ["src/config.ts:10-12"],
+					sources: [{ type: "lexical", label: "degraded code fallback in config.ts", score: 0.39 }],
+					warnings: ["Semantic retrieval failed; returned bounded lexical fallback over code surfaces."],
+					postprocessUsed: true,
+					compressionApplied: false,
+				}),
+			}
+
+			await expect(manager.searchIndexDetailed("load config", "src")).resolves.toMatchObject({
+				results: [expect.objectContaining({ filePath: "/test/workspace/src/config.ts" })],
+				warnings: [
+					"Semantic retrieval failed; returned bounded lexical fallback over code surfaces.",
+					"Code indexing has not started; returned degraded lexical code matches.",
+				],
+			})
+			expect((manager as any)._searchService.searchIndexDetailed).not.toHaveBeenCalled()
+		})
+
+		it("delegates detailed retrieval to the search service when initialized", async () => {
+			vi.spyOn(manager, "isFeatureEnabled", "get").mockReturnValue(true)
+			;(manager as any)._configManager = { isFeatureEnabled: true, isFeatureConfigured: true }
+			;(manager as any)._orchestrator = {}
+			;(manager as any)._cacheManager = {}
+			;(manager as any)._searchService = {
+				searchIndexDetailed: vi.fn().mockResolvedValue({
+					query: "load config",
+					queryClass: "symbol_lookup",
+					retrievalMode: "hybrid",
+					retrievalConfidence: 0.91,
+					results: [],
+					keyPoints: ["src/config.ts:10-14"],
+					sources: [{ type: "semantic", label: "semantic match", score: 0.9 }],
+					warnings: [],
+					postprocessUsed: true,
+					compressionApplied: false,
+				}),
+			}
+
+			await expect(manager.searchIndexDetailed("load config", "src")).resolves.toMatchObject({
+				query: "load config",
+				retrievalMode: "hybrid",
+				keyPoints: ["src/config.ts:10-14"],
+			})
+			expect((manager as any)._searchService.searchIndexDetailed).toHaveBeenCalledWith({
+				query: "load config",
+				directoryPrefix: "src",
+			})
+		})
+
+		it("returns degraded lexical code matches when semantic retrieval fails without artifact hits", async () => {
+			vi.spyOn(manager, "isFeatureEnabled", "get").mockReturnValue(true)
+			;(manager as any)._configManager = { isFeatureEnabled: true, isFeatureConfigured: true }
+			;(manager as any)._orchestrator = {}
+			;(manager as any)._cacheManager = {}
+			;(manager as any)._stateManager.getCurrentStatus = vi.fn().mockReturnValue({ systemStatus: "Indexed" })
+			;(manager as any)._searchService = {
+				searchIndexDetailed: vi.fn().mockRejectedValue(new Error("Qdrant unavailable")),
+			}
+			;(manager as any)._artifactSearchService = {
+				searchCodeFallbackDetailed: vi.fn().mockResolvedValue({
+					query: "load config",
+					queryClass: "implementation_search",
+					retrievalMode: "adaptive",
+					retrievalConfidence: 0.44,
+					results: [
+						{
+							id: "fallback-1",
+							score: 0.44,
+							filePath: "/test/workspace/src/config.ts",
+							codeChunk: "load config",
+							startLine: 10,
+							endLine: 12,
+							citationLabel: "src/config.ts:10-12",
+							sources: [{ type: "lexical", label: "degraded code fallback in config.ts", score: 0.44 }],
+							confidence: 0.44,
+						},
+					],
+					keyPoints: ["src/config.ts:10-12"],
+					sources: [{ type: "lexical", label: "degraded code fallback in config.ts", score: 0.44 }],
+					warnings: ["Semantic retrieval failed; returned bounded lexical fallback over code surfaces."],
+					postprocessUsed: true,
+					compressionApplied: false,
+				}),
+			}
+
+			await expect(manager.searchIndexDetailed("load config", "src")).resolves.toMatchObject({
+				queryClass: "implementation_search",
+				results: [expect.objectContaining({ filePath: "/test/workspace/src/config.ts" })],
+				warnings: [
+					"Semantic retrieval failed; returned bounded lexical fallback over code surfaces.",
+					"Code index retrieval failed; returned degraded lexical code matches.",
+				],
+			})
+			expect((manager as any)._artifactSearchService.searchCodeFallbackDetailed).toHaveBeenCalledWith({
+				query: "load config",
+				directoryPrefix: "src",
+			})
+		})
+
+		it("rethrows the original retrieval error when degraded fallback is empty", async () => {
+			vi.spyOn(manager, "isFeatureEnabled", "get").mockReturnValue(true)
+			;(manager as any)._configManager = { isFeatureEnabled: true, isFeatureConfigured: true }
+			;(manager as any)._orchestrator = {}
+			;(manager as any)._cacheManager = {}
+			;(manager as any)._stateManager.getCurrentStatus = vi.fn().mockReturnValue({ systemStatus: "Indexed" })
+			;(manager as any)._searchService = {
+				searchIndexDetailed: vi.fn().mockRejectedValue(new Error("Qdrant unavailable")),
+			}
+			;(manager as any)._artifactSearchService = {
+				searchCodeFallbackDetailed: vi.fn().mockResolvedValue({
+					query: "load config",
+					queryClass: "implementation_search",
+					retrievalMode: "adaptive",
+					retrievalConfidence: 0,
+					results: [],
+					keyPoints: [],
+					sources: [],
+					warnings: [],
+					postprocessUsed: false,
+					compressionApplied: false,
+				}),
+			}
+
+			await expect(manager.searchIndexDetailed("load config", "src")).rejects.toThrow("Qdrant unavailable")
 		})
 	})
 })

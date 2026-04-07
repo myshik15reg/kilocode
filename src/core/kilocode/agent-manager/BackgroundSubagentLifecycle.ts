@@ -86,6 +86,15 @@ export function mapSessionToBackgroundSubagentState(
 	if (!session) {
 		return undefined
 	}
+	if (session.lifecycleStatus === "completed") {
+		return "completed"
+	}
+	if (session.lifecycleStatus === "failed") {
+		return "failed"
+	}
+	if (session.lifecycleStatus === "cancelled") {
+		return "cancelled"
+	}
 	if (session.lifecycleStatus === "recoverable" || session.recoveryState === "recoverable") {
 		return "paused"
 	}
@@ -166,18 +175,62 @@ export function planPersistedBackgroundBindingRestoration(
 		const resolvedTaskId = resolveSubagentLaunchTargetTaskId(normalizedRequest)
 		const historyItem = options.getHistoryItem(binding.sessionId)
 		const existingSession = options.getExistingSession(binding.sessionId)
+		const isHistoryCompleted = historyItem?.lifecycleState === "completed"
+		const isHistoryCancelled = historyItem?.lifecycleState === "cancelled"
 		const isPaused = historyItem?.lifecycleState === "paused" || binding.lastKnownState === "paused"
-		const isCompleted = historyItem?.lifecycleState === "completed" || binding.lastKnownState === "completed"
-		const isCancelled = historyItem?.lifecycleState === "cancelled" || binding.lastKnownState === "cancelled"
+		const isCompleted = binding.lastKnownState === "completed"
+		const isCancelled = binding.lastKnownState === "cancelled"
+		const isFailed = binding.lastKnownState === "failed"
+		const isWaitingInput = binding.lastKnownState === "waiting_input"
+		const isWaitingApproval = binding.lastKnownState === "waiting_approval"
 		const isRunningLike =
 			binding.lastKnownState === "running" ||
 			binding.lastKnownState === "starting" ||
-			binding.lastKnownState === "waiting_input" ||
-			binding.lastKnownState === "waiting_approval"
+			isWaitingInput ||
+			isWaitingApproval
+		const shouldDiscardTerminalBinding =
+			(isCompleted && isHistoryCompleted) || ((isCancelled || isFailed) && isHistoryCancelled)
 
-		if (isCompleted || isCancelled) {
+		if (shouldDiscardTerminalBinding) {
 			terminalSessionIds.push(binding.sessionId)
 			continue
+		}
+
+		let restoredLifecycleStatus: AgentSession["lifecycleStatus"]
+		let restoredActivityState: AgentSession["activityState"]
+		let restoredRecoveryState: AgentSession["recoveryState"]
+		let restoredPendingReaction: AgentSession["pendingReaction"]
+
+		if (isCompleted) {
+			restoredLifecycleStatus = "completed"
+			restoredActivityState = "idle"
+			restoredRecoveryState = undefined
+			restoredPendingReaction = undefined
+		} else if (isCancelled) {
+			restoredLifecycleStatus = "cancelled"
+			restoredActivityState = "idle"
+			restoredRecoveryState = undefined
+			restoredPendingReaction = undefined
+		} else if (isFailed) {
+			restoredLifecycleStatus = "failed"
+			restoredActivityState = "idle"
+			restoredRecoveryState = undefined
+			restoredPendingReaction = undefined
+		} else if (isPaused) {
+			restoredLifecycleStatus = "paused"
+			restoredActivityState = "paused"
+			restoredRecoveryState = "recoverable"
+			restoredPendingReaction = "resume"
+		} else if (isRunningLike) {
+			restoredLifecycleStatus = "recoverable"
+			restoredActivityState = isWaitingInput ? "waiting_input" : isWaitingApproval ? "waiting_approval" : "active"
+			restoredRecoveryState = "recoverable"
+			restoredPendingReaction = "resume"
+		} else {
+			restoredLifecycleStatus = existingSession?.lifecycleStatus ?? "recoverable"
+			restoredActivityState = existingSession?.activityState ?? "idle"
+			restoredRecoveryState = existingSession?.recoveryState ?? "recoverable"
+			restoredPendingReaction = existingSession?.pendingReaction ?? "resume"
 		}
 
 		plans.push({
@@ -188,18 +241,10 @@ export function planPersistedBackgroundBindingRestoration(
 			},
 			historyItem,
 			updatedAt: binding.updatedAt,
-			restoredLifecycleStatus: isPaused ? "paused" : isRunningLike ? "recoverable" : "recoverable",
-			restoredActivityState: isPaused
-				? "paused"
-				: binding.lastKnownState === "waiting_input"
-					? "waiting_input"
-					: binding.lastKnownState === "waiting_approval"
-						? "waiting_approval"
-						: isRunningLike
-							? "active"
-							: "idle",
-			restoredRecoveryState: isPaused ? "recoverable" : "recoverable",
-			restoredPendingReaction: isPaused ? "resume" : existingSession?.pendingReaction,
+			restoredLifecycleStatus,
+			restoredActivityState,
+			restoredRecoveryState,
+			restoredPendingReaction,
 		})
 	}
 

@@ -55,60 +55,56 @@ export abstract class BaseProvider implements ApiHandler {
 
 	/**
 	 * Converts tool schemas to be compatible with OpenAI's strict mode by:
-	 * - Ensuring all properties are in the required array (strict mode requirement)
-	 * - Converting nullable types (["type", "null"]) to non-nullable ("type")
-	 * - Adding additionalProperties: false to all object schemas (required by OpenAI Responses API)
-	 * - Recursively processing nested objects and arrays
-	 *
-	 * This matches the behavior of ensureAllRequired in openai-native.ts
+	 * - Ensuring all object properties are listed in required arrays
+	 * - Adding additionalProperties: false to all object schemas
+	 * - Recursively processing nested properties, items, and composition keywords
 	 */
 	protected convertToolSchemaForOpenAI(schema: any): any {
-		if (!schema || typeof schema !== "object" || schema.type !== "object") {
-			return schema
-		}
+		const convertSchemaNode = (node: any): any => {
+			if (!node || typeof node !== "object") {
+				return node
+			}
 
-		const result = { ...schema }
+			if (Array.isArray(node)) {
+				return node.map((item) => convertSchemaNode(item))
+			}
 
-		// OpenAI Responses API requires additionalProperties: false on all object schemas
-		// Only add if not already set to false (to avoid unnecessary mutations)
-		if (result.additionalProperties !== false) {
-			result.additionalProperties = false
-		}
+			const result = { ...node }
 
-		if (result.properties) {
-			const allKeys = Object.keys(result.properties)
-			// OpenAI strict mode requires ALL properties to be in required array
-			result.required = allKeys
-
-			// Recursively process nested objects and convert nullable types
-			const newProps = { ...result.properties }
-			for (const key of allKeys) {
-				const prop = newProps[key]
-
-				// Handle nullable types by removing null
-				// kilocode_change start: this is wrong https://platform.openai.com/docs/guides/function-calling?api-mode=chat#strict-mode
-				/*
-				if (prop && Array.isArray(prop.type) && prop.type.includes("null")) {
-					const nonNullTypes = prop.type.filter((t: string) => t !== "null")
-					prop.type = nonNullTypes.length === 1 ? nonNullTypes[0] : nonNullTypes
-				}
-				*/
-				// kilocode_change end
-
-				// Recursively process nested objects
-				if (prop && prop.type === "object") {
-					newProps[key] = this.convertToolSchemaForOpenAI(prop)
-				} else if (prop && prop.type === "array" && prop.items?.type === "object") {
-					newProps[key] = {
-						...prop,
-						items: this.convertToolSchemaForOpenAI(prop.items),
-					}
+			for (const key of ["anyOf", "oneOf", "allOf"] as const) {
+				if (Array.isArray(result[key])) {
+					result[key] = result[key].map((item: any) => convertSchemaNode(item))
 				}
 			}
-			result.properties = newProps
+
+			if (result.items !== undefined) {
+				result.items = convertSchemaNode(result.items)
+			}
+
+			if (result.properties && typeof result.properties === "object") {
+				const nextProps = { ...result.properties }
+				for (const [propKey, propSchema] of Object.entries(nextProps)) {
+					nextProps[propKey] = convertSchemaNode(propSchema)
+				}
+				result.properties = nextProps
+
+				// OpenAI strict mode requires all declared properties to be listed in required.
+				result.required = Object.keys(nextProps)
+			}
+
+			const isObjectSchema =
+				result.type === "object" ||
+				(Array.isArray(result.type) && result.type.includes("object")) ||
+				(result.properties && typeof result.properties === "object")
+
+			if (isObjectSchema && result.additionalProperties !== false) {
+				result.additionalProperties = false
+			}
+
+			return normalizeObjectAdditionalPropertiesFalse(result)
 		}
 
-		return normalizeObjectAdditionalPropertiesFalse(result) // kilocode_change: normalize invalid schemes for strict mode
+		return convertSchemaNode(schema)
 	}
 
 	/**

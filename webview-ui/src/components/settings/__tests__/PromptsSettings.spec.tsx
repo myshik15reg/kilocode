@@ -1,4 +1,4 @@
-﻿import { render, screen, fireEvent } from "@/utils/test-utils"
+import { fireEvent, render, screen } from "@/utils/test-utils"
 
 import PromptsSettings from "../PromptsSettings"
 
@@ -98,7 +98,6 @@ vi.mock("@/components/ui", () => ({
 
 vi.mock("../Section", () => ({ Section: ({ children }: any) => <div>{children}</div> }))
 vi.mock("../SectionHeader", () => ({ SectionHeader: ({ children }: any) => <div>{children}</div> }))
-vi.mock("../SearchableSetting", () => ({ SearchableSetting: ({ children }: any) => <div>{children}</div> }))
 vi.mock("../CommitMessagePromptSettings", () => ({ default: () => <div>commit</div> }))
 
 describe("PromptsSettings", () => {
@@ -106,7 +105,7 @@ describe("PromptsSettings", () => {
 		vi.clearAllMocks()
 	})
 
-	it("renders include task history toggle in prompts tab", () => {
+	it("renders moved AlfaCode controls by default", () => {
 		render(
 			<PromptsSettings
 				customSupportPrompts={{}}
@@ -118,24 +117,10 @@ describe("PromptsSettings", () => {
 
 		expect(screen.getByTestId("alfa-code-change-author-input")).toBeInTheDocument()
 		expect(screen.getByRole("checkbox")).toBeInTheDocument()
+		expect(screen.getByTestId("support-prompt-select-trigger")).toBeInTheDocument()
 	})
 
-	it("updates include task history from prompts tab", () => {
-		render(
-			<PromptsSettings
-				customSupportPrompts={{}}
-				setCustomSupportPrompts={vi.fn()}
-				alfaCodeChangeAuthor=""
-				setAlfaCodeChangeAuthor={vi.fn()}
-			/>,
-		)
-
-		fireEvent.click(screen.getByRole("checkbox"))
-
-		expect(setIncludeTaskHistoryInEnhance).toHaveBeenCalledWith(false)
-	})
-
-	it("updates 1C author from prompts tab", () => {
+	it("updates include task history and 1C author when visible", () => {
 		const setAlfaCodeChangeAuthor = vi.fn()
 
 		render(
@@ -147,8 +132,26 @@ describe("PromptsSettings", () => {
 			/>,
 		)
 
+		fireEvent.click(screen.getByRole("checkbox"))
 		fireEvent.change(screen.getByTestId("alfa-code-change-author-input"), { target: { value: "Ivanov I.I." } })
 
+		expect(setIncludeTaskHistoryInEnhance).toHaveBeenCalledWith(false)
 		expect(setAlfaCodeChangeAuthor).toHaveBeenCalledWith("Ivanov I.I.")
+	})
+
+	it("hides moved AlfaCode controls when Prompts tab is in legacy mode", () => {
+		render(
+			<PromptsSettings
+				customSupportPrompts={{}}
+				setCustomSupportPrompts={vi.fn()}
+				alfaCodeChangeAuthor=""
+				setAlfaCodeChangeAuthor={vi.fn()}
+				hideAlfaCodeFields={true}
+			/>,
+		)
+
+		expect(screen.queryByTestId("alfa-code-change-author-input")).not.toBeInTheDocument()
+		expect(screen.queryByRole("checkbox")).not.toBeInTheDocument()
+		expect(screen.getByTestId("test-prompt-textarea")).toBeInTheDocument()
 	})
 })

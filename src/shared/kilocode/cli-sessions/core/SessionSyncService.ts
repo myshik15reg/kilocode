@@ -1,5 +1,5 @@
 import { promises as fs } from "fs"
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage, HistoryItem } from "@roo-code/types"
 import type { ILogger } from "../types/ILogger.js"
 import type { SessionClient } from "./SessionClient.js"
 import type { SessionPersistenceManager } from "../utils/SessionPersistenceManager.js"
@@ -50,6 +50,7 @@ export interface SessionSyncServiceDependencies {
 	getMode: (taskId: string) => Promise<string | undefined>
 	getModel: (taskId: string) => Promise<string | undefined>
 	getParentTaskId: (taskId: string) => Promise<string | undefined>
+	getHistoryItem: (taskId: string) => Promise<HistoryItem | undefined>
 	onSessionCreated?: (message: SessionCreatedMessage) => void
 	onSessionSynced?: (message: SessionSyncedMessage) => void
 }
@@ -83,6 +84,7 @@ export class SessionSyncService {
 	private readonly getMode: (taskId: string) => Promise<string | undefined>
 	private readonly getModel: (taskId: string) => Promise<string | undefined>
 	private readonly getParentTaskId: (taskId: string) => Promise<string | undefined>
+	private readonly getHistoryItem: (taskId: string) => Promise<HistoryItem | undefined>
 	private readonly onSessionCreated: (message: SessionCreatedMessage) => void
 	private readonly onSessionSynced: (message: SessionSyncedMessage) => void
 
@@ -103,6 +105,7 @@ export class SessionSyncService {
 		this.getMode = dependencies.getMode
 		this.getModel = dependencies.getModel
 		this.getParentTaskId = dependencies.getParentTaskId
+		this.getHistoryItem = dependencies.getHistoryItem
 		this.onSessionCreated = dependencies.onSessionCreated ?? (() => {})
 		this.onSessionSynced = dependencies.onSessionSynced ?? (() => {})
 	}
@@ -494,12 +497,14 @@ export class SessionSyncService {
 				continue
 			}
 
+			const blobPayload = await this.prepareBlobPayload(taskId, blobName, fileContents)
+
 			blobUploads.push(
 				this.sessionClient
 					.uploadBlob(
 						sessionId,
 						lastBlobItem.blobName as Parameters<typeof this.sessionClient.uploadBlob>[1],
-						fileContents,
+						blobPayload,
 					)
 					.then((result) => {
 						this.logger.debug("Blob uploaded successfully", LOG_SOURCES.SESSION_SYNC, {
@@ -574,10 +579,9 @@ export class SessionSyncService {
 			head: gitInfo.head?.substring(0, 8),
 		})
 
-		this.stateManager.setGitHash(taskId, gitStateHash)
-
 		try {
 			const result = await this.sessionClient.uploadBlob(sessionId, "git_state", gitStateData)
+			this.stateManager.setGitHash(taskId, gitStateHash)
 			// Track the updated_at timestamp from git state upload using high-water mark
 			this.stateManager.updateTimestamp(sessionId, result.updated_at)
 		} catch (error) {
@@ -618,6 +622,99 @@ export class SessionSyncService {
 	 * @param pathKey - The path key (e.g., 'apiConversationHistoryPath')
 	 * @returns The blob key (e.g., 'api_conversation_history') or null if not recognized
 	 */
+	private async prepareBlobPayload(taskId: string, blobName: string, fileContents: unknown): Promise<unknown> {
+		if (blobName !== "task_metadata") {
+			return fileContents
+		}
+
+		const historyItem = await this.getHistoryItem(taskId).catch(() => undefined)
+		if (!historyItem) {
+			return fileContents
+		}
+
+		return this.normalizeTaskMetadataPayload(fileContents, historyItem)
+	}
+
+	private normalizeTaskMetadataPayload(fileContents: unknown, historyItem: HistoryItem): Record<string, unknown> {
+		const base = this.isObjectRecord(fileContents) ? { ...fileContents } : { files_in_context: [] }
+		return {
+			...base,
+			historyItem: this.buildSessionHistorySnapshot(historyItem),
+		}
+	}
+
+	private buildSessionHistorySnapshot(historyItem: HistoryItem): Record<string, unknown> {
+		const {
+			number,
+			ts,
+			task,
+			tokensIn,
+			tokensOut,
+			cacheWrites,
+			cacheReads,
+			totalCost,
+			size,
+			workspace,
+			mode,
+			toolProtocol,
+			apiConfigName,
+			status,
+			delegationDepth,
+			completionResultSummary,
+			lastStopReason,
+			lastStopSummary,
+			restartCount,
+			statusUpdatedAt,
+			execution,
+			isolation,
+			lifecycleState,
+			pauseReason,
+			pausedAt,
+			resumeContextSummary,
+			branchFromMessageTs,
+			branchSummary,
+			branchStrategy,
+			patternContext,
+		} = historyItem
+
+		return {
+			number,
+			ts,
+			task,
+			tokensIn,
+			tokensOut,
+			cacheWrites,
+			cacheReads,
+			totalCost,
+			size,
+			workspace,
+			mode,
+			toolProtocol,
+			apiConfigName,
+			status,
+			delegationDepth,
+			completionResultSummary,
+			lastStopReason,
+			lastStopSummary,
+			restartCount,
+			statusUpdatedAt,
+			execution,
+			isolation,
+			lifecycleState,
+			pauseReason,
+			pausedAt,
+			resumeContextSummary,
+			branchFromMessageTs,
+			branchSummary,
+			branchStrategy,
+			patternContext,
+		}
+	}
+
+	private isObjectRecord(value: unknown): value is Record<string, unknown> {
+		return typeof value === "object" && value !== null && !Array.isArray(value)
+	}
+
 	private pathKeyToBlobKey(pathKey: string): string | null {
 		switch (pathKey) {
 			case "apiConversationHistoryPath":

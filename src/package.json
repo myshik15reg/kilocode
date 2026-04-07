@@ -657,8 +657,8 @@
 	"scripts": {
 		"lint": "eslint . --ext=ts --max-warnings=0",
 		"check-types": "tsc --noEmit",
-		"pretest": "turbo run alfa-code-assistant#bundle --cwd ..",
 		"test": "vitest run",
+		"test:coverage": "vitest run --coverage",
 		"benchmark:neo4j": "tsx ../scripts/run-neo4j-benchmarks.ts",
 		"check:qdrant": "tsx ../scripts/check-qdrant.ts",
 		"setup:neo4j": "powershell -ExecutionPolicy Bypass -File ../scripts/setup-neo4j.ps1",
@@ -671,7 +671,8 @@
 		"publish:marketplace": "vsce publish --no-dependencies && ovsx publish --no-dependencies",
 		"watch:bundle": "pnpm bundle --watch",
 		"watch:tsc": "cd .. && tsc --noEmit --watch --project src/tsconfig.json",
-		"clean": "rimraf README.md CHANGELOG.md LICENSE dist logs mock .turbo"
+		"clean": "rimraf README.md CHANGELOG.md LICENSE dist logs mock .turbo",
+		"test:bundled": "pnpm bundle && vitest run"
 	},
 	"dependencies": {
 		"@anthropic-ai/bedrock-sdk": "^0.22.0",

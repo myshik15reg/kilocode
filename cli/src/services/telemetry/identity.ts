@@ -9,7 +9,9 @@ import * as crypto from "crypto"
 import { KiloCodePaths } from "@kilocode/agent-runtime"
 import { logs } from "../logs.js"
 import { getApiUrl } from "@roo-code/types"
-import { machineIdSync } from "node-machine-id"
+import nodeMachineId from "node-machine-id"
+
+const { machineIdSync } = nodeMachineId
 
 /**
  * User identity structure

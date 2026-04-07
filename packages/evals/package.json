@@ -25,7 +25,8 @@
 		"redis:up": "dotenvx run -f .env.development .env.local -- docker compose up -d redis",
 		"redis:down": "dotenvx run -f .env.development .env.local -- docker compose down redis",
 		"services:up": "dotenvx run -f .env.development .env.local -- docker compose up -d db redis",
-		"services:down": "dotenvx run -f .env.development .env.local -- docker compose down db redis"
+		"services:down": "dotenvx run -f .env.development .env.local -- docker compose down db redis",
+		"test": "dotenvx run -f .env.test -- vitest run"
 	},
 	"dependencies": {
 		"@roo-code/ipc": "workspace:^",
@@ -43,6 +44,7 @@
 		"zod": "^3.25.61"
 	},
 	"devDependencies": {
+		"@electric-sql/pglite": "^0.4.4",
 		"@roo-code/config-eslint": "workspace:^",
 		"@roo-code/config-typescript": "workspace:^",
 		"@types/node": "20.x",

@@ -16,6 +16,14 @@ export interface SyncQueueItem {
 	timestamp: number
 }
 
+export interface SyncQueueOverflowEvent {
+	previousLength: number
+	newLength: number
+	droppedCount: number
+	deduplicatedCount: number
+	maxItems: number
+}
+
 /**
  * SyncQueue - Manages the queue of pending sync operations.
  *
@@ -31,20 +39,27 @@ export interface SyncQueueItem {
  */
 export class SyncQueue {
 	private readonly queueFlushThreshold: number
+	private readonly queueMaxItems: number
 
 	private items: SyncQueueItem[] = []
 	private taskIndex: Map<string, SyncQueueItem[]> = new Map()
 	private blobIndex: Map<string, SyncQueueItem> = new Map() // key: `${taskId}:${blobName}`
 	private flushHandler: (() => Promise<void>) | null = null
+	private overflowHandler: ((event: SyncQueueOverflowEvent) => void) | null = null
 
 	/**
 	 * Creates a new SyncQueue instance.
 	 *
 	 * @param queueFlushThreshold - Optional threshold for triggering automatic flush.
 	 *                              Defaults to the value from DEFAULT_CONFIG.
+	 * @param queueMaxItems - Hard cap for queued items before stale entries are trimmed.
 	 */
-	constructor(queueFlushThreshold: number = DEFAULT_CONFIG.sync.queueFlushThreshold) {
+	constructor(
+		queueFlushThreshold: number = DEFAULT_CONFIG.sync.queueFlushThreshold,
+		queueMaxItems: number = DEFAULT_CONFIG.sync.queueMaxItems,
+	) {
 		this.queueFlushThreshold = queueFlushThreshold
+		this.queueMaxItems = queueMaxItems
 	}
 
 	/**
@@ -55,23 +70,25 @@ export class SyncQueue {
 		this.flushHandler = handler
 	}
 
+	setOverflowHandler(handler: (event: SyncQueueOverflowEvent) => void): void {
+		this.overflowHandler = handler
+	}
+
 	/**
 	 * Adds an item to the queue.
 	 */
 	enqueue(item: SyncQueueItem): void {
 		this.items.push(item)
 
-		// Update task index
 		const taskItems = this.taskIndex.get(item.taskId) || []
 		taskItems.push(item)
 		this.taskIndex.set(item.taskId, taskItems)
 
-		// Update blob index (keep only latest)
-		const blobKey = `${item.taskId}:${item.blobName}`
-		this.blobIndex.set(blobKey, item)
+		this.blobIndex.set(this.getBlobKey(item.taskId, item.blobName), item)
+		this.enforceCapacity()
 
 		if (this.length > this.queueFlushThreshold) {
-			this.flushHandler?.()
+			void this.flushHandler?.()
 		}
 	}
 
@@ -110,7 +127,7 @@ export class SyncQueue {
 	 * Uses the blob index for O(1) lookup.
 	 */
 	getLastItemForBlob(taskId: string, blobName: string): SyncQueueItem | undefined {
-		return this.blobIndex.get(`${taskId}:${blobName}`)
+		return this.blobIndex.get(this.getBlobKey(taskId, blobName))
 	}
 
 	/**
@@ -131,24 +148,7 @@ export class SyncQueue {
 		this.items = this.items.filter(
 			(item) => !(item.taskId === taskId && item.blobName === blobName && item.timestamp <= beforeTimestamp),
 		)
-
-		// Rebuild task index for affected task
-		const remainingTaskItems = this.items.filter((item) => item.taskId === taskId)
-		if (remainingTaskItems.length > 0) {
-			this.taskIndex.set(taskId, remainingTaskItems)
-		} else {
-			this.taskIndex.delete(taskId)
-		}
-
-		// Update blob index - find the latest item for this blob if any remain
-		const blobKey = `${taskId}:${blobName}`
-		const remainingBlobItems = this.items.filter((item) => item.taskId === taskId && item.blobName === blobName)
-		if (remainingBlobItems.length > 0) {
-			// Set to the last remaining item (most recent)
-			this.blobIndex.set(blobKey, remainingBlobItems[remainingBlobItems.length - 1]!)
-		} else {
-			this.blobIndex.delete(blobKey)
-		}
+		this.rebuildIndexes()
 	}
 
 	/**
@@ -172,5 +172,65 @@ export class SyncQueue {
 	 */
 	get isEmpty(): boolean {
 		return this.items.length === 0
+	}
+
+	private getBlobKey(taskId: string, blobName: string): string {
+		return `${taskId}:${blobName}`
+	}
+
+	private enforceCapacity(): void {
+		if (this.queueMaxItems <= 0 || this.items.length <= this.queueMaxItems) {
+			return
+		}
+
+		const previousLength = this.items.length
+		const latestIndexByBlobKey = new Map<string, number>()
+
+		this.items.forEach((item, index) => {
+			latestIndexByBlobKey.set(this.getBlobKey(item.taskId, item.blobName), index)
+		})
+
+		let trimmedItems = this.items.filter(
+			(item, index) => latestIndexByBlobKey.get(this.getBlobKey(item.taskId, item.blobName)) === index,
+		)
+		const deduplicatedCount = previousLength - trimmedItems.length
+
+		if (trimmedItems.length > this.queueMaxItems) {
+			trimmedItems = trimmedItems.slice(trimmedItems.length - this.queueMaxItems)
+		}
+
+		const droppedCount = previousLength - trimmedItems.length
+		if (droppedCount <= 0) {
+			return
+		}
+
+		this.items = trimmedItems
+		this.rebuildIndexes()
+
+		if (this.overflowHandler) {
+			try {
+				this.overflowHandler({
+					previousLength,
+					newLength: this.items.length,
+					droppedCount,
+					deduplicatedCount,
+					maxItems: this.queueMaxItems,
+				})
+			} catch (error) {
+				console.error("[SyncQueue] Overflow handler failed", error)
+			}
+		}
+	}
+
+	private rebuildIndexes(): void {
+		this.taskIndex.clear()
+		this.blobIndex.clear()
+
+		for (const item of this.items) {
+			const taskItems = this.taskIndex.get(item.taskId) || []
+			taskItems.push(item)
+			this.taskIndex.set(item.taskId, taskItems)
+			this.blobIndex.set(this.getBlobKey(item.taskId, item.blobName), item)
+		}
 	}
 }

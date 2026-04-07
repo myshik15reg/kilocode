@@ -42,6 +42,7 @@ const createMockVectorStore = (): IVectorStore => ({
 		},
 	] as VectorStoreSearchResult[]),
 	upsertPoints: vi.fn().mockResolvedValue(undefined),
+	getPointsByFilePaths: vi.fn().mockResolvedValue([]),
 	deletePointsByFilePath: vi.fn().mockResolvedValue(undefined),
 	deletePointsByMultipleFilePaths: vi.fn().mockResolvedValue(undefined),
 	clearCollection: vi.fn().mockResolvedValue(undefined),
@@ -50,10 +51,8 @@ const createMockVectorStore = (): IVectorStore => ({
 	markIndexingIncomplete: vi.fn().mockResolvedValue(undefined),
 })
 
-const createMockGraphService = () => ({
-	initialize: vi.fn().mockResolvedValue(true),
-	isInitialized: vi.fn().mockResolvedValue(true),
-	getEntitiesByFilePath: vi.fn().mockImplementation((filePath: string) => {
+const createMockGraphService = () => {
+	const getEntitiesByFilePath = vi.fn().mockImplementation((filePath: string) => {
 		if (filePath === "src/calculator.ts") {
 			return Promise.resolve([
 				{
@@ -67,32 +66,44 @@ const createMockGraphService = () => ({
 			])
 		}
 		return Promise.resolve([])
-	}),
-	getImpactGraph: vi.fn().mockResolvedValue({
-		rootEntity: {
-			id: "function:src/calculator.ts:add",
-			type: "function",
-			name: "add",
-			filePath: "src/calculator.ts",
-			line: 1,
-			language: "typescript",
-		},
-		directImpact: [],
-		indirectImpact: [],
-		relationshipPaths: [],
-	}),
-	bulkCreateEntities: vi.fn().mockResolvedValue(undefined),
-	bulkCreateRelationships: vi.fn().mockResolvedValue(undefined),
-	deleteEntitiesByFilePath: vi.fn().mockResolvedValue(undefined),
-	deleteEntitiesByMultipleFilePaths: vi.fn().mockResolvedValue(undefined),
-	clearAll: vi.fn().mockResolvedValue(undefined),
-	getStatistics: vi.fn().mockResolvedValue({
-		totalEntities: 100,
-		totalRelationships: 50,
-		entitiesByType: {},
-		relationshipsByType: {},
-	}),
-})
+	})
+
+	return {
+		initialize: vi.fn().mockResolvedValue(true),
+		isInitialized: vi.fn().mockResolvedValue(true),
+		getEntitiesByFilePath,
+		getEntitiesByFilePaths: vi.fn().mockImplementation(async (filePaths: string[]) => {
+			const entries = await Promise.all(
+				filePaths.map(async (filePath) => [filePath, await getEntitiesByFilePath(filePath)] as const),
+			)
+			return new Map(entries)
+		}),
+		getImpactGraph: vi.fn().mockResolvedValue({
+			rootEntity: {
+				id: "function:src/calculator.ts:add",
+				type: "function",
+				name: "add",
+				filePath: "src/calculator.ts",
+				line: 1,
+				language: "typescript",
+			},
+			directImpact: [],
+			indirectImpact: [],
+			relationshipPaths: [],
+		}),
+		bulkCreateEntities: vi.fn().mockResolvedValue(undefined),
+		bulkCreateRelationships: vi.fn().mockResolvedValue(undefined),
+		deleteEntitiesByFilePath: vi.fn().mockResolvedValue(undefined),
+		deleteEntitiesByMultipleFilePaths: vi.fn().mockResolvedValue(undefined),
+		clearAll: vi.fn().mockResolvedValue(undefined),
+		getStatistics: vi.fn().mockResolvedValue({
+			totalEntities: 100,
+			totalRelationships: 50,
+			entitiesByType: {},
+			relationshipsByType: {},
+		}),
+	}
+}
 
 describe("HybridSearchService", () => {
 	let service: HybridSearchService
@@ -128,7 +139,7 @@ describe("HybridSearchService", () => {
 
 			const results = await service.search("add function", { minScore: 0 })
 
-			expect(mockGraphService.getEntitiesByFilePath).toHaveBeenCalledWith("src/calculator.ts")
+			expect(mockGraphService.getEntitiesByFilePaths).toHaveBeenCalledWith(["src/calculator.ts"])
 			expect(results[0]?.relatedEntities.length).toBeGreaterThan(0)
 		})
 
@@ -245,7 +256,7 @@ describe("HybridSearchService", () => {
 
 		it("should handle errors in graph enhancement gracefully", async () => {
 			// Mock error in graph service
-			mockGraphService.getEntitiesByFilePath.mockRejectedValue(new Error("Neo4j connection failed"))
+			mockGraphService.getEntitiesByFilePaths.mockRejectedValue(new Error("Neo4j connection failed"))
 
 			const results = await service.search("add function", { minScore: 0 })
 

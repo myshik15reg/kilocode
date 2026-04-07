@@ -1,239 +1,122 @@
-# AGENTS.md
+# AlfaFlowAI for AI agents (manifest)
 
-AlfaCode assistant is an AI coding agent for VS Code that generates code from natural language, automates tasks, and supports 500+ AI models.
+## Corridor (read in order)
 
-## Start here / Corridor
+| Level | File                                                       | Purpose                                |
+| ----: | ---------------------------------------------------------- | -------------------------------------- |
+|     0 | [`QUICK.md`](.kilocode/QUICK.md:1)                         | Минимальные правила и старт задачи     |
+|     1 | [`memory-bank/index.md`](.kilocode/memory-bank/index.md:1) | Контекст проекта (только нужные файлы) |
+|     2 | [`quickref.md`](.kilocode/workflows/quickref.md:1)         | Меню процессов и ссылок                |
+|     3 | [`rules/index.md`](.kilocode/rules/index.md:1)             | Индекс SoT и wrappers                  |
 
-If you arrived here after reading [`.clinerules`](.clinerules:1), follow this corridor:
+После чтения Memory Bank агент MUST вывести строку `[MB: OK]`.
 
-| Step | Read                                                                                                                        | Purpose                                                       |
-| ---: | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-|    1 | [`.kilocode/QUICK.md`](.kilocode/QUICK.md:1)                                                                                | Process quickstart (protocols, modes, quality gates)          |
-|    2 | [`.kilocode/memory-bank/index.md`](.kilocode/memory-bank/index.md:1)                                                        | Project context (product, architecture, tech, current status) |
-|    3 | [`.kilocode/rules/index.md`](.kilocode/rules/index.md:1) + [`.kilocode/workflows/index.md`](.kilocode/workflows/index.md:1) | Navigation for rules and workflows                            |
+## Non-negotiables (Zero tolerance)
 
-## Project Structure
+| Rule                        | Requirement                                                                                                      | Source                                                                                                                                                       |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| No Protocol, No Code        | Любое изменение репозитория MUST иметь протокол `.protocols/YYYY-MM-DD-name/`                                    | [`protocol-new.md`](.kilocode/workflows/protocol-new.md:1)                                                                                                   |
+| Quality gates               | Coverage MUST be 100% (lines/branches/functions); lint MUST be 0/0; TDD MUST be used                             | [`quality-gates.md`](.kilocode/rules/quality-gates.md:1)                                                                                                     |
+| Specialist-first            | MUST выбирать самый узкий specialist; `code` только last resort                                                  | [`mode-selection/SKILL.md`](.kilocode/skills/mode-selection/SKILL.md:1)                                                                                      |
+| Zero-analytics orchestrator | Orchestrator MUST NOT делать аналитику; только маршрутизация/делегирование                                       | [`agent-routing.md`](.kilocode/rules/agent-routing.md:1)                                                                                                     |
+| Strict handoff              | Любое делегирование MUST использовать `CONTEXT HANDOFF` + `Result Contract`                                      | [`context-handoff.md`](.kilocode/patterns/orchestration/context-handoff.md:1), [`result-contract.md`](.kilocode/patterns/orchestration/result-contract.md:1) |
+| Execution contract prompts  | Workflow/prompts MUST use explicit `GOAL/INPUTS/CONSTRAINTS/VERIFY/EXPECTED OUTPUT`, not persona-heavy role-play | [`workflow-prompt-writing.md`](.kilocode/rules/workflow-prompt-writing.md:1)                                                                                 |
+| Evidence discipline         | Facts MUST be sourced; assumptions MUST be explicit                                                              | [`evidence-rules.md`](.kilocode/rules/evidence-rules.md:1)                                                                                                   |
+| Curated memory              | Memory Bank updates MUST follow write policy; no automatic dumps                                                 | [`memory-write-policy.md`](.kilocode/rules/memory-write-policy.md:1)                                                                                         |
+| Language and UTF-8          | Чат с пользователем, протоколы и Memory Bank MUST быть на русском; файлы с кириллицей MUST быть UTF-8 без BOM    | [`language-and-encoding.md`](.kilocode/rules/language-and-encoding.md:1)                                                                                     |
+| Fresh verification          | MUST NOT claim `done`/`ready`/`merged`/`completed` without fresh verification for the current state              | [`verification-before-completion.md`](.kilocode/rules/verification-before-completion.md:1)                                                                   |
+| Risky actions               | Before deploy/start/env-change/commit/push/external-service ops, run pre-action check                            | [`pre-action-check.md`](.kilocode/workflows/pre-action-check.md:1)                                                                                           |
 
-This is a pnpm monorepo using Turbo for task orchestration:
+## Task classification (trivial vs non-trivial)
 
-- **`src/`** - VSCode extension (core logic, API providers, tools)
-- **`webview-ui/`** - React frontend (chat UI, settings)
-- **`cli/`** - Standalone CLI package
-- **`packages/`** - Shared packages (`types`, `ipc`, `telemetry`, `cloud`)
-- **`jetbrains/`** - JetBrains plugin (Kotlin + Node.js host)
-- **`apps/`** - E2E tests, Storybook, docs
+Тривиальная правка существует только если одновременно выполнены все условия.
 
-Key source directories:
+| Condition                          | Trivial requires |
+| ---------------------------------- | ---------------- |
+| Files changed                      | 1 file           |
+| Size                               | ≤ 10 lines       |
+| Behavior/API                       | no change        |
+| Dependencies/CI/scripts/migrations | no changes       |
 
-- `src/api/providers/` - AI provider implementations (50+ providers)
-- `src/core/tools/` - Tool implementations (ReadFile, ApplyDiff, ExecuteCommand, etc.)
-- `src/services/` - Services (MCP, browser, checkpoints, code-index)
-- `packages/agent-runtime/` - Standalone agent runtime (runs extension without VS Code)
+Любой другой случай MUST считаться нетривиальным. Протокол обязателен в обоих случаях; различается только глубина `plan.md`.
 
-## Agent Runtime Architecture
+## Design discovery (before protocol)
 
-The `@kilocode/agent-runtime` package enables running AlfaCode assistant agents as isolated Node.js processes without VS Code.
+Если запрос design-heavy, solution space широкий или успех нельзя безопасно зафиксировать сразу, агент SHOULD сначала запустить [`brainstorm-design.md`](.kilocode/workflows/brainstorm-design.md:1), а уже потом переходить к [`protocol-new.md`](.kilocode/workflows/protocol-new.md:1).
 
-### How It Works
+Use `brainstorm-design` when the request includes one of these triggers:
 
+1. ambiguous request;
+2. design exploration;
+3. compare options;
+4. need architecture direction;
+5. unclear success criteria;
+6. large initiative requiring decomposition before protocol.
+
+Do not use it for exact bug fixes, trivial repo changes, docs-only micro-changes, or already approved designs/specs.
+
+## FAST PATH (Micro-change / Quick fix)
+
+Для запросов вида «быстрая правка / микро‑рефакторинг / extract method / обёртка» при наличии точного фрагмента кода агент SHOULD использовать FAST PATH workflow: [`quick-fix.md`](.kilocode/workflows/quick-fix.md:1).
+
+| Rule               | Meaning                                                          |
+| ------------------ | ---------------------------------------------------------------- |
+| Patch first        | сначала выдать готовый код/патч, затем verify                    |
+| Questions cap      | максимум 1 blocking question, иначе `TEMP:` safe default         |
+| Protocol unchanged | repo changes всё равно требуют протокол ("No Protocol, No Code") |
+
+## Mode selection (entrypoint)
+
+1. Выбор режима MUST следовать SoT: [`mode-selection/SKILL.md`](.kilocode/skills/mode-selection/SKILL.md:1).
+2. Маршрутизация orchestrator MUST следовать SoT: [`agent-routing.md`](.kilocode/rules/agent-routing.md:1).
+3. Полный список режимов: [`REGISTRY.md`](.kilocode/modes/REGISTRY.md:1).
+
+## Delegation (Alfa Code)
+
+1. В Alfa Code смена режима MUST быть через `new_task`; `switch_mode` MUST NOT использоваться.
+2. Любая делегация MUST содержать блок `=== CONTEXT HANDOFF ===` по SoT: [`context-handoff.md`](.kilocode/patterns/orchestration/context-handoff.md:1).
+3. Для tool-heavy задач SHOULD использоваться split planner/executor: [`planner-executor.md`](.kilocode/workflows/planner-executor.md:1).
+4. При multi-agent работе MUST быть определён degraded mode path. Source: [`agent-orchestration.md`](.kilocode/workflows/agent-orchestration.md:1).
+
+## Delegation example
+
+```text
+<new_task>
+<mode>code</mode>
+<message>
+ЗАДАЧА: Implement according to protocol plan
+
+=== CONTEXT HANDOFF ===
+ROOT: d:/path/to/project
+PROTOCOL: .protocols/YYYY-MM-DD-name/
+ORIGIN: architect -> code
+DOMAIN: <domain>
+PHASE: Implementation
+
+GOAL:
+<measurable goal>
+
+INPUTS:
+1. .protocols/YYYY-MM-DD-name/brief.md:1 - requirements
+2. .protocols/YYYY-MM-DD-name/plan.md:1 - steps
+
+CONSTRAINTS:
+1. TDD MUST be used.
+2. Coverage MUST be 100% (lines/branches/functions).
+3. Lint MUST be 0 errors and 0 warnings.
+
+OUT OF SCOPE:
+1. Do not change requirements without updating brief.md.
+
+VERIFY:
+1. Tests pass and coverage is 100%.
+
+RESULT CONTRACT:
+Use the default contract from `.kilocode/patterns/orchestration/result-contract.md`.
+
+EXPECTED OUTPUT:
+Code + tests + updated execution.md.
+=======================
+</message>
+</new_task>
 ```
-┌─────────────────────┐     fork()      ┌─────────────────────┐
-│  CLI / Manager      │ ───────────────▶│  Agent Process      │
-│                     │◀───── IPC ─────▶│  (extension host)   │
-└─────────────────────┘                 └─────────────────────┘
-```
-
-1. **ExtensionHost**: Hosts the AlfaCode assistant extension with a complete VS Code API mock
-2. **MessageBridge**: Bidirectional IPC communication (request/response with timeout)
-3. **ExtensionService**: Orchestrates host and bridge lifecycle
-
-### Spawning Agents
-
-Agents are forked processes configured via the `AGENT_CONFIG` environment variable:
-
-```typescript
-import { fork } from "child_process"
-
-const agent = fork(require.resolve("@kilocode/agent-runtime/process"), [], {
-	env: {
-		AGENT_CONFIG: JSON.stringify({
-			workspace: "/path/to/project",
-			providerSettings: { apiProvider: "anthropic", apiKey: "..." },
-			mode: "code",
-			autoApprove: false,
-		}),
-	},
-	stdio: ["pipe", "pipe", "pipe", "ipc"],
-})
-
-agent.on("message", (msg) => {
-	if (msg.type === "ready") {
-		agent.send({ type: "sendMessage", payload: { type: "newTask", text: "Fix the bug" } })
-	}
-})
-```
-
-### Message Protocol
-
-| Direction      | Type           | Description                    |
-| -------------- | -------------- | ------------------------------ |
-| Parent → Agent | `sendMessage`  | Send user message to extension |
-| Parent → Agent | `injectConfig` | Update extension configuration |
-| Parent → Agent | `shutdown`     | Gracefully terminate agent     |
-| Agent → Parent | `ready`        | Agent initialized              |
-| Agent → Parent | `message`      | Extension message              |
-| Agent → Parent | `stateChange`  | State updated                  |
-
-### Detecting Agent Context
-
-Code running in agent processes can check for the `AGENT_CONFIG` environment variable. This is set by the agent manager when spawning processes:
-
-```typescript
-if (process.env.AGENT_CONFIG) {
-	// Running as spawned agent - disable worker pools, etc.
-}
-```
-
-### State Management Pattern
-
-The Agent Manager follows a **read-shared, write-isolated** pattern:
-
-- **Read**: Get config (models, API settings) from extension via `provider.getState()`
-- **Write**: Inject state via `AGENT_CONFIG` env var when spawning - each agent gets isolated config
-
-```typescript
-fork(agentRuntimePath, [], {
-	env: { AGENT_CONFIG: JSON.stringify({ workspace, providerSettings, mode, sessionId }) },
-})
-```
-
-This ensures parallel agents have independent state with no race conditions or file I/O conflicts.
-
-## Build Commands
-
-```bash
-pnpm install          # Install all dependencies
-pnpm build            # Build extension (.vsix)
-pnpm lint             # Run ESLint
-pnpm check-types      # TypeScript type checking
-```
-
-## Skills
-
-- **Translation**: `.kilocode/skills/translation/SKILL.md` - Translation and localization guidelines
-
-## Workflows
-
-- **Add Missing Translations**: `.kilocode/workflows/add-missing-translations.md` - Run `/add-missing-translations` to find and fix missing translations
-- **Init Protocol**: `.kilocode/workflows/init-protocol.md` - Run `/init-protocol` to scaffold a new `.protocols/YYYY-MM-DD-.../` folder
-- **Close Protocol**: `.kilocode/workflows/close-protocol.md` - Run `/close-protocol` to wrap up and delete an existing protocol folder
-
-## Changesets
-
-Each PR requires a changeset unless it's documentation-only or internal tooling. Create one with:
-
-```bash
-pnpm changeset
-```
-
-Format (in `.changeset/<random-name>.md`):
-
-```md
----
-"kilo-code": patch
----
-
-Brief description of the change
-```
-
-- Use `patch` for fixes, `minor` for features, `major` for breaking changes
-- For CLI changes, use `"@kilocode/cli": patch` instead
-
-Keep changesets concise and feature-oriented as they appear directly in release notes.
-
-- **Only for actual changes**: Documentation-only or internal tooling changes do not need a changeset.
-- **User-focused**: Avoid technical descriptions, code references, or PR numbers. Readers may not know the codebase.
-- **Concise**: Use a one-liner for small fixes. For larger features, a few words or a short sentence is sufficient.
-
-## Fork Merge Process
-
-AlfaCode assistant is a fork of [Roo Code](https://github.com/RooVetGit/Roo-Code). We periodically merge upstream changes using scripts in `scripts/kilocode/`.
-
-## kilocode_change Markers
-
-To minimize merge conflicts when syncing with upstream, mark AlfaCode assistant-specific changes in shared code with `kilocode_change` comments.
-
-**Single line:**
-
-```typescript
-const value = 42 // kilocode_change
-```
-
-**Multi-line:**
-
-```typescript
-// kilocode_change start
-const foo = 1
-const bar = 2
-// kilocode_change end
-```
-
-**New files:**
-
-```typescript
-// kilocode_change - new file
-```
-
-### When markers are NOT needed
-
-Code in these directories is AlfaCode assistant-specific and doesn't need markers:
-
-- `cli/` - CLI package
-- `jetbrains/` - JetBrains plugin
-- `agent-manager/` directories
-- Any path containing `kilocode` in filename or directory name
-- `src/services/ghost/` - Ghost service
-
-### When markers ARE needed
-
-All modifications to core extension code (files that exist in upstream Roo Code) require markers:
-
-- `src/` (except Kilo-specific subdirectories listed above)
-- `webview-ui/`
-- `packages/` (shared packages)
-
-Keep changes to core extension code minimal to reduce merge conflicts during upstream syncs.
-
-## Code Quality Rules
-
-1. Test Coverage:
-
-    - Before attempting completion, always make sure that any code changes have test coverage
-    - Ensure all tests pass before submitting changes
-    - The vitest framework is used for testing; the `vi`, `describe`, `test`, `it`, etc functions are defined by default in `tsconfig.json` and therefore don't need to be imported from `vitest`
-    - Tests must be run from the same directory as the `package.json` file that specifies `vitest` in `devDependencies`
-    - Run tests with: `pnpm test <relative-path-from-workspace-root>`
-    - Do NOT run tests from project root - this causes "vitest: command not found" error
-    - Tests must be run from inside the correct workspace:
-        - Backend tests: `cd src && pnpm test path/to/test-file` (don't include `src/` in path)
-        - UI tests: `cd webview-ui && pnpm test src/path/to/test-file`
-    - Example: For `src/tests/user.spec.ts`, run `cd src && pnpm test tests/user.spec.ts` NOT `pnpm test src/tests/user.spec.ts`
-    - **Test File Naming Convention**:
-        - Monorepo default: `.spec.ts` / `.spec.tsx`
-        - CLI package exception: `.test.ts` / `.test.tsx` (match existing CLI convention)
-
-2. Lint Rules:
-
-    - Never disable any lint rules without explicit user approval
-
-3. Error Handling:
-
-    - Never use empty catch blocks - always log or handle the error
-    - Handle expected errors explicitly, or omit try-catch if the error should propagate
-    - Consider user impact when deciding whether to throw or log errors
-
-4. Styling Guidelines:
-
-    - Use Tailwind CSS classes instead of inline style objects for new markup
-    - VSCode CSS variables must be added to webview-ui/src/index.css before using them in Tailwind classes
-    - Example: `<div className="text-md text-vscode-descriptionForeground mb-2" />` instead of style objects

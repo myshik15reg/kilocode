@@ -2,9 +2,37 @@ import OpenAI from "openai"
 
 import { OpenAiHandler } from "../openai"
 import { OpenAiNativeHandler } from "../openai-native"
+import { getNativeTools } from "../../../core/prompts/tools/native-tools"
 import type { ApiHandlerOptions } from "../../../shared/api"
 
 describe("OpenAiHandler native tools", () => {
+	it("keeps new_task schema free of oneOf for OpenAI strict mode compatibility", () => {
+		const newTaskTool = getNativeTools().find(
+			(tool) => tool.type === "function" && "function" in tool && tool.function.name === "new_task",
+		) as Extract<OpenAI.Chat.ChatCompletionTool, { type: "function" }> | undefined
+		expect(newTaskTool).toBeDefined()
+
+		const walk = (value: unknown): void => {
+			if (Array.isArray(value)) {
+				for (const item of value) {
+					walk(item)
+				}
+				return
+			}
+
+			if (!value || typeof value !== "object") {
+				return
+			}
+
+			expect(Object.prototype.hasOwnProperty.call(value, "oneOf")).toBe(false)
+			for (const nested of Object.values(value as Record<string, unknown>)) {
+				walk(nested)
+			}
+		}
+
+		walk(newTaskTool?.function.parameters)
+	})
+
 	it("includes tools in request when custom model info lacks supportsNativeTools (regression test)", async () => {
 		const mockCreate = vi.fn().mockImplementationOnce(() => ({
 			[Symbol.asyncIterator]: async function* () {
@@ -297,6 +325,74 @@ describe("OpenAiNativeHandler MCP tool schema handling", () => {
 		expect(tool.parameters.properties.metadata.properties.labels.items.additionalProperties).toBe(false) // Array items
 	})
 
+	it("should require all keys for nested object variants inside union-typed array items", async () => {
+		let capturedRequestBody: any
+
+		const handler = new OpenAiNativeHandler({
+			openAiNativeApiKey: "test-key",
+			apiModelId: "gpt-4o",
+		} as ApiHandlerOptions)
+
+		const mockClient = {
+			responses: {
+				create: vi.fn().mockImplementation((body: any) => {
+					capturedRequestBody = body
+					return {
+						[Symbol.asyncIterator]: async function* () {
+							yield {
+								type: "response.done",
+								response: {
+									output: [{ type: "message", content: [{ type: "output_text", text: "test" }] }],
+									usage: { input_tokens: 10, output_tokens: 5 },
+								},
+							}
+						},
+					}
+				}),
+			},
+		}
+		;(handler as any).client = mockClient
+
+		const tools: OpenAI.Chat.ChatCompletionTool[] = [
+			{
+				type: "function",
+				function: {
+					name: "new_task",
+					description: "Create task",
+					parameters: {
+						type: "object",
+						properties: {
+							inputs: {
+								type: ["string", "array", "null"],
+								items: {
+									type: ["string", "object"],
+									properties: {
+										kind: { type: "string" },
+										ref: { type: "string" },
+									},
+									required: ["ref"],
+								},
+							},
+						},
+					},
+				},
+			},
+		]
+
+		const stream = handler.createMessage("system prompt", [], {
+			taskId: "test-task-id",
+			tools,
+			toolProtocol: "native" as const,
+		})
+
+		for await (const _ of stream) {
+			// Just consume
+		}
+
+		const parameters = capturedRequestBody.tools[0].parameters
+		expect(parameters.properties.inputs.items.additionalProperties).toBe(false)
+		expect(parameters.properties.inputs.items.required).toEqual(["kind", "ref"])
+	})
 	it("should handle missing call_id and name in tool_call_arguments.delta by using pending tool identity", async () => {
 		const handler = new OpenAiNativeHandler({
 			openAiNativeApiKey: "test-key",

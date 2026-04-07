@@ -501,7 +501,7 @@ describe("TaskActions", () => {
 		it("sends pauseTask when pause button is clicked", () => {
 			render(<TaskActions item={{ ...mockItem, lifecycleState: "running" } as any} buttonsDisabled={false} />)
 
-			fireEvent.click(screen.getByLabelText("Pause task"))
+			fireEvent.click(screen.getByLabelText("chat:task.pause"))
 
 			expect(mockPostMessage).toHaveBeenCalledWith({ type: "pauseTask", text: "test-task-id" })
 		})
@@ -509,14 +509,14 @@ describe("TaskActions", () => {
 		it("shows only resume control for paused tasks", () => {
 			render(<TaskActions item={{ ...mockItem, lifecycleState: "paused" } as any} buttonsDisabled={false} />)
 
-			expect(screen.queryByLabelText("Pause task")).not.toBeInTheDocument()
-			expect(screen.getByLabelText("Resume task")).toBeInTheDocument()
+			expect(screen.queryByLabelText("chat:task.pause")).not.toBeInTheDocument()
+			expect(screen.getByLabelText("chat:resumeTask.title")).toBeInTheDocument()
 		})
 
 		it("sends resumeTask when resume button is clicked", () => {
 			render(<TaskActions item={{ ...mockItem, lifecycleState: "paused" } as any} buttonsDisabled={false} />)
 
-			fireEvent.click(screen.getByLabelText("Resume task"))
+			fireEvent.click(screen.getByLabelText("chat:resumeTask.title"))
 
 			expect(mockPostMessage).toHaveBeenCalledWith({ type: "resumeTask", text: "test-task-id" })
 		})
@@ -540,8 +540,34 @@ describe("TaskActions", () => {
 				/>,
 			)
 
-			expect(screen.queryByLabelText("Pause task")).not.toBeInTheDocument()
-			expect(screen.getByLabelText("Resume task")).toBeInTheDocument()
+			expect(screen.queryByLabelText("chat:task.pause")).not.toBeInTheDocument()
+			expect(screen.getByLabelText("chat:resumeTask.title")).toBeInTheDocument()
+		})
+
+		it("shows only resume control for stopped tasks when persisted status is missing", () => {
+			render(
+				<TaskActions
+					item={{ ...mockItem, status: undefined, lifecycleState: undefined } as any}
+					buttonsDisabled={false}
+				/>,
+			)
+
+			expect(screen.queryByLabelText("chat:task.pause")).not.toBeInTheDocument()
+			expect(screen.getByLabelText("chat:resumeTask.title")).toBeInTheDocument()
+		})
+
+		it("hides task control buttons when showTaskControls is false but keeps other actions", () => {
+			render(
+				<TaskActions
+					item={{ ...mockItem, lifecycleState: "paused" } as any}
+					buttonsDisabled={false}
+					showTaskControls={false}
+				/>,
+			)
+
+			expect(screen.queryByLabelText("chat:task.pause")).not.toBeInTheDocument()
+			expect(screen.queryByLabelText("chat:resumeTask.title")).not.toBeInTheDocument()
+			expect(screen.getByLabelText("Export task history")).toBeInTheDocument()
 		})
 
 		// kilocode_change start
@@ -553,8 +579,15 @@ describe("TaskActions", () => {
 				/>,
 			)
 
-			expect(screen.queryByLabelText("Pause task")).not.toBeInTheDocument()
-			expect(screen.queryByLabelText("Resume task")).not.toBeInTheDocument()
+			expect(screen.queryByLabelText("chat:task.pause")).not.toBeInTheDocument()
+			expect(screen.queryByLabelText("chat:resumeTask.title")).not.toBeInTheDocument()
+		})
+
+		it("hides pause and resume controls after completion even when task status is not hydrated yet", () => {
+			render(<TaskActions item={mockItem} buttonsDisabled={false} isTaskComplete />)
+
+			expect(screen.queryByLabelText("chat:task.pause")).not.toBeInTheDocument()
+			expect(screen.queryByLabelText("chat:resumeTask.title")).not.toBeInTheDocument()
 		})
 		// kilocode_change end
 	})

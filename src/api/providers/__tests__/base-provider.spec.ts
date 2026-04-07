@@ -109,6 +109,29 @@ describe("BaseProvider", () => {
 			expect(result.properties.users.items.additionalProperties).toBe(false)
 		})
 
+		it("should require all keys for object variants nested inside union-typed array items", () => {
+			const schema = {
+				type: "object",
+				properties: {
+					inputs: {
+						type: ["string", "array", "null"],
+						items: {
+							type: ["string", "object"],
+							properties: {
+								kind: { type: "string" },
+								ref: { type: "string" },
+							},
+							required: ["ref"],
+						},
+					},
+				},
+			}
+
+			const result = provider.testConvertToolSchemaForOpenAI(schema)
+
+			expect(result.properties.inputs.items.additionalProperties).toBe(false)
+			expect(result.properties.inputs.items.required).toEqual(["kind", "ref"])
+		})
 		it("should handle deeply nested objects", () => {
 			const schema = {
 				type: "object",

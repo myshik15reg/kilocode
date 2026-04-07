@@ -30,7 +30,8 @@
 		"clean:kilocode": "npx del-cli ./dist/kilocode --force && npx mkdirp ./dist/kilocode",
 		"copy:kilocode": "node scripts/copy-extension.mjs",
 		"lint": "eslint .",
-		"changeset:version": "jq --arg version \"$(jq -r '.version' package.json)\" '.version = $version' package.dist.json > tmp.json && mv tmp.json package.dist.json && prettier --write package.dist.json"
+		"changeset:version": "jq --arg version \"$(jq -r '.version' package.json)\" '.version = $version' package.dist.json > tmp.json && mv tmp.json package.dist.json && prettier --write package.dist.json",
+		"test:coverage": "vitest run --config vitest.config.ts ./src --coverage"
 	},
 	"dependencies": {
 		"@anthropic-ai/bedrock-sdk": "^0.26.0",
@@ -164,7 +165,8 @@
 		"tsx": "^4.21.0",
 		"typescript": "5.8.3",
 		"typescript-eslint": "^8.52.0",
-		"vitest": "^4.0.16"
+		"vitest": "^4.0.16",
+		"@vitest/coverage-v8": "^4.0.17"
 	},
 	"engines": {
 		"node": ">=20.20.0"

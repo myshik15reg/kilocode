@@ -73,6 +73,14 @@ describe("filterNativeToolsForMode", () => {
 		{
 			type: "function",
 			function: {
+				name: "request_user_input",
+				description: "Request structured input",
+				parameters: {},
+			},
+		},
+		{
+			type: "function",
+			function: {
 				name: "attempt_completion",
 				description: "Complete task",
 				parameters: {},
@@ -115,6 +123,7 @@ describe("filterNativeToolsForMode", () => {
 
 		// Should ALWAYS include always-available tools
 		expect(toolNames).toContain("ask_followup_question")
+		expect(toolNames).toContain("request_user_input")
 		expect(toolNames).toContain("attempt_completion")
 	})
 
@@ -451,6 +460,7 @@ describe("filterNativeToolsForMode", () => {
 		)
 		const toolNames = filtered.map((t) => ("function" in t ? t.function.name : ""))
 		expect(toolNames).not.toContain("ask_followup_question")
+		expect(toolNames).not.toContain("request_user_input")
 		// Other always-available tools should still be present
 		expect(toolNames).toContain("attempt_completion")
 	})
@@ -474,6 +484,7 @@ describe("filterNativeToolsForMode", () => {
 		)
 		const toolNames = filtered.map((t) => ("function" in t ? t.function.name : ""))
 		expect(toolNames).toContain("ask_followup_question")
+		expect(toolNames).toContain("request_user_input")
 	})
 	// kilocode_change end
 })
@@ -944,6 +955,7 @@ describe("getToolDescriptionsForMode", () => {
 			{ yoloMode: true } as any, // clineProviderState with yoloMode enabled
 		)
 		expect(result).not.toContain("ask_followup_question")
+		expect(result).not.toContain("request_user_input")
 	})
 
 	it("should include ask_followup_question when yoloMode is disabled", () => {
@@ -964,6 +976,7 @@ describe("getToolDescriptionsForMode", () => {
 			{ yoloMode: false } as any, // clineProviderState with yoloMode disabled
 		)
 		expect(result).toContain("ask_followup_question")
+		expect(result).toContain("request_user_input")
 	})
 })
 // kilocode_change end

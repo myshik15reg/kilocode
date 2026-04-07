@@ -1,10 +1,25 @@
 import fs from "fs"
 import os from "os"
 import path from "path"
+import { threadId } from "worker_threads"
 import { localPathOrUriToPath, localPathToUri } from "../util/pathToUri"
 
 // Want this outside of the git repository so we can change branches in tests
-const TEST_DIR_PATH = path.join(os.tmpdir(), "testWorkspaceDir")
+// kilocode_change start
+const resolveTestDirPath = () => {
+	const osTempDir = os.tmpdir()
+	const workerSuffix = `${process.pid}-${process.env.VITEST_POOL_ID ?? process.env.VITEST_WORKER_ID ?? "0"}`
+
+	try {
+		// Expand 8.3 temp paths like ECHERN~1 to a canonical path for Windows fs APIs.
+		return path.join(fs.realpathSync.native(osTempDir), `testWorkspaceDir-${workerSuffix}`)
+	} catch {
+		return path.join(osTempDir, `testWorkspaceDir-${workerSuffix}`)
+	}
+}
+
+const TEST_DIR_PATH = resolveTestDirPath()
+// kilocode_change end
 export const TEST_DIR = localPathToUri(TEST_DIR_PATH) // URI
 
 export function setUpTestDir() {
@@ -16,7 +31,7 @@ export function setUpTestDir() {
 			retryDelay: 50,
 		})
 	}
-	fs.mkdirSync(TEST_DIR_PATH)
+	fs.mkdirSync(TEST_DIR_PATH, { recursive: true })
 }
 
 export function tearDownTestDir() {

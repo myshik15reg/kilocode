@@ -416,6 +416,31 @@ describe("SessionLifecycleService", () => {
 			})
 		})
 
+		it("fails closed when a required signed blob cannot be restored", async () => {
+			mockSessionClient.get.mockResolvedValue(mockSession)
+			vi.mocked(fetchSignedBlob).mockImplementation((url) => {
+				if (url === "https://api.example.com") {
+					return Promise.reject(new Error("blob failed"))
+				}
+				if (url === "https://git.example.com") {
+					return Promise.resolve({ repoUrl: "https://github.com/test/repo", head: "main", patch: "" })
+				}
+				return Promise.resolve([])
+			})
+
+			await expect(service.restoreSession("session-123", true)).rejects.toThrow(
+				"Failed to restore required session blobs: api_conversation_history",
+			)
+
+			expect(mockPersistenceManager.setSessionForTask).not.toHaveBeenCalled()
+			expect(mockStateManager.setActiveSessionId).not.toHaveBeenCalled()
+			expect(mockStateManager.markSessionVerified).not.toHaveBeenCalled()
+			expect(mockExtensionMessenger.sendWebviewMessage).not.toHaveBeenCalledWith(
+				expect.objectContaining({ type: "addTaskToHistory" }),
+			)
+			expect(mockOnSessionRestored).not.toHaveBeenCalled()
+		})
+
 		describe("empty session handling", () => {
 			it("creates empty JSON files when session has no blob URLs", async () => {
 				const emptySession = {

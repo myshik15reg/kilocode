@@ -1,53 +1,95 @@
-﻿# Workflow: quick-fix
+# Quick Fix (FAST PATH / Micro-change)
 
-## Goal
+Назначение: дать **короткий путь** для «быстрых правок / микро‑рефакторинга» (например, _extract method_, «оберни в процедуру», «поправь пару строк») так, чтобы агент **сначала** выдавал готовый код/патч, а **затем** — краткий verify-checklist.
 
-Handle a very small, low-risk change with minimal context and minimal token cost.
+Нормативная рамка: [`docs-standards.md`](../rules/docs-standards.md:1). Non-negotiables: [`AGENTS.md`](../../AGENTS.md:14).
 
-This workflow optimizes for speed, but it does not cancel protocol rules for real repository changes.
+## Когда использовать
 
-## Use when
+| Signal                                     | Пример                                                         | Используй этот workflow |
+| ------------------------------------------ | -------------------------------------------------------------- | ----------------------- |
+| Пользователь явно просит быстрый результат | «быстро вынеси в метод», «сделай обёртку», «микро‑рефакторинг» | Да                      |
+| Даны точные входные данные                 | код‑фрагмент + контекст (имена переменных/параметров)          | Да                      |
+| Изменение локальное и небольшое            | ≤10–20 строк вокруг фрагмента, без изменения требований        | Да                      |
 
-Use this workflow only when all of these are true:
+## Когда НЕ использовать
 
-- the change is small and local
-- the intent is clear
-- no broad redesign is required
-- the agent can explain the fix with a short patch and short verification plan
+| Signal                                              | Почему                              |
+| --------------------------------------------------- | ----------------------------------- |
+| Требуется дизайн/архитектура или меняется поведение | Это уже не micro-change             |
+| Не хватает контекста для корректного патча          | Нужно уточнение или другой workflow |
+| Изменение затрагивает много файлов/слоёв            | Нужен протокол и план полноценнее   |
 
-Typical examples:
+## Правило FAST PATH (обязательное)
 
-- extract a tiny helper
-- rename or wrap a small fragment
-- adjust a localized condition or message
-- make a narrow mechanical fix in one area
+1. **PATCH FIRST:** сначала выдай готовый код/патч (минимальный, компилируемый/валидный в рамках фрагмента).
+2. **Questions cap:** максимум **1 blocking question**; иначе используй `TEMP:` safe default.
+3. **Protocol still mandatory for repo changes:** этот workflow **не отменяет** правило "No Protocol, No Code". Он меняет порядок: _патч → verify → (если требуется применить к репозиторию) минимальный протокол_.
 
-## Do not use when
+Источник правила протокола: [`protocol-new.md`](protocol-new.md:1).
 
-- the root cause is unclear
-- multiple subsystems are involved
-- requirements or behavior are changing materially
-- the fix needs architectural reasoning or broad regression review
+## Формат ответа (шаблон)
 
-In those cases, use the normal protocol path or a more appropriate workflow such as [`protocol-new.md`](protocol-new.md:1), [`deep-analysis.md`](deep-analysis.md:1), or [`refactoring-workflow.md`](refactoring-workflow.md:1).
+### 1) PATCH (обязательно)
 
-## Rules
+Вариант A (предпочтительно): готовая функция/процедура/метод целиком.
 
-1. Prefer the smallest viable patch.
-2. Ask at most one blocking question.
-3. If the task changes a real repository, protocol rules still apply.
-4. Verification must stay proportional to the change, but it must still be explicit.
+Вариант B: минимальный diff (если формат площадки позволяет).
 
-## Response shape
+### 2) QUESTION (опционально, ≤1)
 
-1. Show the intended patch or exact change.
-2. State any assumption if one was needed.
-3. Give a short verification checklist.
-4. If the task is no longer truly small, escalate out of quick-fix.
+Если без ответа нельзя гарантировать корректность патча, задай один вопрос в таком формате:
 
-## Verification checklist
+```text
+QUESTION: <один конкретный вопрос>
+TEMP: <безопасное значение по умолчанию, если ответа нет>
+```
 
-- change stays scoped to the stated goal
-- no unrelated refactor slips in
-- the smallest relevant test or check is identified
-- the result preserves intended behavior unless a behavior change was requested
+### 3) VERIFY (коротко)
+
+| Check                              | Как проверить                             |
+| ---------------------------------- | ----------------------------------------- |
+| Компиляция/линтер (если применимо) | без ошибок                                |
+| Тест/минимальная проверка          | воспроизвести кейс на одном примере       |
+| Нет изменения требований           | результат соответствует исходному запросу |
+
+## Минимальные safe defaults (если контекста недостаточно)
+
+| Что неизвестно              | Safe default                                                                             |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| Имя нового метода/процедуры | Сформировать из смысла запроса + терминов из фрагмента (не переименовывать существующее) |
+| Тип/структура параметров    | Сохранить параметры как есть из фрагмента; не вводить новые типы                         |
+| Где размещать (файл/модуль) | `TEMP:` предложить место, не внося repo-change автоматически                             |
+
+## Пример: 1C/BSL — «вынеси в процедуру»
+
+**Вход:** пользователь просит «Добавить почту руководителя группы в копию» и даёт фрагмент.
+
+**Выход (PATCH FIRST):**
+
+```bsl
+Процедура ДобавитьПочтуРуководителяГруппыВКопию(ПолучателиКопия, ПодразделениеМенеджера, ВидЦЛ) Экспорт
+	// NOTE: это пример структуры. Тело процедуры должно быть извлечено из исходного фрагмента без изменения логики.
+	// TEMP: ПодразделениеМенеджера и ВидЦЛ считаем заполненными; если это не так — добавить проверки до вызова.
+
+	ПочтаРуководителяГруппы = "";
+	// ВСТАВЬ: логика получения почты руководителя группы по ПодразделениеМенеджера и ВидЦЛ.
+
+	Если ЗначениеЗаполнено(ПочтаРуководителяГруппы) Тогда
+		ПолучателиКопия.Добавить(ПочтаРуководителяГруппы);
+	КонецЕсли;
+КонецПроцедуры
+```
+
+```text
+QUESTION: Какой контракт у ПолучателиКопия (массив строк, структура, таблица значений)?
+TEMP: считаю, что это коллекция с методом .Добавить(<строка email>).
+```
+
+VERIFY: прогнать один сценарий, где у группы есть руководитель с почтой, и один — где почта отсутствует.
+
+## Если нужно применить патч к репозиторию
+
+1. Сначала выдай патч в ответе (как выше).
+2. Затем, **до изменения файлов**, создай минимальный протокол через [`protocol-new.md`](protocol-new.md:1).
+3. После применения патча: кратко зафиксируй verify в `execution.md` протокола.

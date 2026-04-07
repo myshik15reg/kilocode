@@ -142,6 +142,7 @@ export class AgentManagerProvider implements vscode.Disposable {
 	private lastPostedChatMessages: Map<string, string> = new Map() // kilocode_change
 	private lastPostedStateSignature: string | undefined // kilocode_change
 	private lastPostedRemoteSessionsSignature: string | undefined // kilocode_change
+	private visibleRemoteSessionIds: Set<string> = new Set()
 	private lastPostedAvailableModesSignature: string | undefined // kilocode_change
 	private lastPostedAvailableModelsSignature: string | undefined // kilocode_change
 	private lastPostedBranchesSignature: string | undefined // kilocode_change
@@ -440,6 +441,55 @@ export class AgentManagerProvider implements vscode.Disposable {
 		this.lastPostedAvailableModesSignature = undefined // kilocode_change
 		this.lastPostedAvailableModelsSignature = undefined // kilocode_change
 		this.lastPostedBranchesSignature = undefined // kilocode_change
+		this.visibleRemoteSessionIds.clear()
+	}
+
+	private getVisibleLocalSessions(): AgentSession[] {
+		return this.registry.getSessionsForGitUrl(this.currentGitUrl)
+	}
+
+	private isLocalSessionVisibleInCurrentScope(sessionId: string): boolean {
+		return this.getVisibleLocalSessions().some((session) => session.sessionId === sessionId)
+	}
+
+	private isRemoteSessionVisibleInCurrentScope(sessionId: string): boolean {
+		return this.visibleRemoteSessionIds.has(sessionId)
+	}
+
+	private authorizeLocalSessionAccess(sessionId: string, action: string): boolean {
+		if (sessionId && this.isLocalSessionVisibleInCurrentScope(sessionId)) {
+			return true
+		}
+
+		this.outputChannel.appendLine(`[AgentManager] Rejected ${action} for out-of-scope local session: ${sessionId}`)
+		void vscode.window.showErrorMessage(`Cannot ${action} a session outside the current workspace scope.`)
+		return false
+	}
+
+	private authorizeVisibleSessionAccess(sessionId: string, action: string): boolean {
+		if (
+			sessionId &&
+			(this.isLocalSessionVisibleInCurrentScope(sessionId) ||
+				this.isRemoteSessionVisibleInCurrentScope(sessionId))
+		) {
+			return true
+		}
+
+		this.outputChannel.appendLine(
+			`[AgentManager] Rejected ${action} for out-of-scope visible session: ${sessionId}`,
+		)
+		void vscode.window.showErrorMessage(`Cannot ${action} a session outside the current workspace scope.`)
+		return false
+	}
+
+	private authorizeGroupAccess(groupId: string, action: string): boolean {
+		if (groupId && this.getVisibleLocalSessions().some((session) => session.sessionGroup?.groupId === groupId)) {
+			return true
+		}
+
+		this.outputChannel.appendLine(`[AgentManager] Rejected ${action} for out-of-scope session group: ${groupId}`)
+		void vscode.window.showErrorMessage(`Cannot ${action} a session group outside the current workspace scope.`)
+		return false
 	}
 
 	private handleMessage(message: { type: string; [key: string]: unknown }): void {
@@ -461,84 +511,119 @@ export class AgentManagerProvider implements vscode.Disposable {
 					void this.handleStartSession(message)
 					break
 				case "agentManager.stopSession":
-					this.stopAgentSession(message.sessionId as string)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "stop")) {
+						this.stopAgentSession(message.sessionId as string)
+					}
 					break
 				case "agentManager.restartSession":
-					void this.restartSession(message.sessionId as string)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "restart")) {
+						void this.restartSession(message.sessionId as string)
+					}
 					break
 				case "agentManager.restartSessionCompact":
-					void this.restartSession(message.sessionId as string, { compact: true })
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "restart")) {
+						void this.restartSession(message.sessionId as string, { compact: true })
+					}
 					break
 				case "agentManager.setSessionAutoRestart":
-					this.setSessionAutoRestart(message.sessionId as string, Boolean(message.enabled))
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "change auto-restart for")) {
+						this.setSessionAutoRestart(message.sessionId as string, Boolean(message.enabled))
+					}
 					break
 				case "agentManager.restartSessionGroupCompact":
-					void this.restartSessionGroupCompact(message.groupId as string)
+					if (this.authorizeGroupAccess(message.groupId as string, "restart")) {
+						void this.restartSessionGroupCompact(message.groupId as string)
+					}
 					break
 				case "agentManager.stopSessionGroup":
-					this.stopSessionGroup(message.groupId as string)
+					if (this.authorizeGroupAccess(message.groupId as string, "stop")) {
+						this.stopSessionGroup(message.groupId as string)
+					}
 					break
 				case "agentManager.finishWorktreeSession":
-					void this.finishWorktreeSession(message.sessionId as string)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "finish")) {
+						void this.finishWorktreeSession(message.sessionId as string)
+					}
 					break
 				case "agentManager.sendMessage":
-					void this.sendMessage(
-						message.sessionId as string,
-						message.content as string,
-						message.sessionLabel as string | undefined,
-						message.images as string[] | undefined,
-					)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "send a message to")) {
+						void this.sendMessage(
+							message.sessionId as string,
+							message.content as string,
+							message.sessionLabel as string | undefined,
+							message.images as string[] | undefined,
+						)
+					}
 					break
 				case "agentManager.broadcastToGroup":
-					void this.broadcastToSessionGroup(
-						message.sessionId as string,
-						message.content as string,
-						Boolean(message.includeSender),
-					)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "broadcast from")) {
+						void this.broadcastToSessionGroup(
+							message.sessionId as string,
+							message.content as string,
+							Boolean(message.includeSender),
+						)
+					}
 					break
 				case "agentManager.broadcastToRootTask":
-					void this.broadcastToRootTask(
-						message.sessionId as string,
-						message.content as string | undefined,
-						Boolean(message.includeSender),
-						message.compact !== false,
-					)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "broadcast from")) {
+						void this.broadcastToRootTask(
+							message.sessionId as string,
+							message.content as string | undefined,
+							Boolean(message.includeSender),
+							message.compact !== false,
+						)
+					}
 					break
 				case "agentManager.messageQueued":
-					void this.handleQueuedMessage(
-						message.sessionId as string,
-						message.messageId as string,
-						message.content as string,
-						message.sessionLabel as string | undefined,
-						message.images as string[] | undefined,
-					)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "queue a message for")) {
+						void this.handleQueuedMessage(
+							message.sessionId as string,
+							message.messageId as string,
+							message.content as string,
+							message.sessionLabel as string | undefined,
+							message.images as string[] | undefined,
+						)
+					}
 					break
 				case "agentManager.resumeSession":
-					void this.resumeSession(
-						message.sessionId as string,
-						message.content as string,
-						message.sessionLabel as string | undefined,
-						message.images as string[] | undefined,
-					)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "resume")) {
+						void this.resumeSession(
+							message.sessionId as string,
+							message.content as string,
+							message.sessionLabel as string | undefined,
+							message.images as string[] | undefined,
+						)
+					}
 					break
 				case "agentManager.cancelSession":
-					void this.cancelSession(message.sessionId as string)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "cancel")) {
+						void this.cancelSession(message.sessionId as string)
+					}
 					break
 				case "agentManager.respondToApproval":
-					void this.respondToApproval(
-						message.sessionId as string,
-						message.approved as boolean,
-						message.text as string | undefined,
-					)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "respond to approval for")) {
+						void this.respondToApproval(
+							message.sessionId as string,
+							message.approved as boolean,
+							message.text as string | undefined,
+						)
+					}
 					break
 				case "agentManager.removeSession":
-					this.removeSession(message.sessionId as string)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "remove")) {
+						this.removeSession(message.sessionId as string)
+					}
 					break
 				case "agentManager.cancelPendingSession":
 					this.cancelPendingSession()
 					break
 				case "agentManager.selectSession":
-					this.selectSession(message.sessionId as string | null)
+					if (
+						message.sessionId === null ||
+						this.authorizeLocalSessionAccess(message.sessionId as string, "select")
+					) {
+						this.selectSession(message.sessionId as string | null)
+					}
 					break
 				case "agentManager.refreshRemoteSessions":
 					void this.fetchAndPostRemoteSessions()
@@ -547,15 +632,22 @@ export class AgentManagerProvider implements vscode.Disposable {
 					void this.handleListBranches()
 					break
 				case "agentManager.refreshSessionMessages":
-					void this.refreshSessionMessages(message.sessionId as string)
+					if (this.authorizeVisibleSessionAccess(message.sessionId as string, "refresh")) {
+						void this.refreshSessionMessages(message.sessionId as string)
+					}
 					break
 				case "agentManager.showTerminal":
-					this.terminalManager.showTerminal(message.sessionId as string)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "show terminal for")) {
+						this.terminalManager.showTerminal(message.sessionId as string)
+					}
 					break
 				case "agentManager.configureSetupScript":
 					void this.configureSetupScript()
 					break
 				case "agentManager.sessionShare":
+					if (!this.authorizeVisibleSessionAccess(message.sessionId as string, "share")) {
+						break
+					}
 					SessionManager.init()
 						?.shareSession(message.sessionId as string)
 						.then((result) => {
@@ -576,7 +668,9 @@ export class AgentManagerProvider implements vscode.Disposable {
 					void openImage(message.text as string)
 					break
 				case "agentManager.setMode":
-					void this.setSessionMode(message.sessionId as string, message.mode as string)
+					if (this.authorizeLocalSessionAccess(message.sessionId as string, "change mode for")) {
+						void this.setSessionMode(message.sessionId as string, message.mode as string)
+					}
 					break
 			}
 		} catch (error) {
@@ -1626,6 +1720,10 @@ export class AgentManagerProvider implements vscode.Disposable {
 		await this.backgroundSubagentControl.resumeBackgroundSubagent(sessionId)
 	}
 
+	public async releaseBackgroundSubagentBinding(sessionId: string): Promise<void> {
+		await this.backgroundSubagentControl.releaseSession(sessionId)
+	}
+
 	/**
 	 * Respond to an approval prompt (yes/no button click).
 	 * Optionally includes additional text context.
@@ -1919,8 +2017,13 @@ export class AgentManagerProvider implements vscode.Disposable {
 	// kilocode_change end
 
 	// kilocode_change start
-	private postRemoteSessionsToWebview(sessions: RemoteSession[], options?: { force?: boolean }): void {
-		const signature = JSON.stringify(sessions)
+	private postRemoteSessionsToWebview(
+		sessions: RemoteSession[],
+		availability: { available: boolean; reason?: string } = { available: true },
+		options?: { force?: boolean },
+	): void {
+		this.visibleRemoteSessionIds = new Set(sessions.map((session) => session.session_id))
+		const signature = JSON.stringify({ sessions, availability })
 		if (!options?.force && this.lastPostedRemoteSessionsSignature === signature) {
 			return
 		}
@@ -1929,6 +2032,7 @@ export class AgentManagerProvider implements vscode.Disposable {
 		this.postMessage({
 			type: "agentManager.remoteSessions",
 			sessions,
+			availability,
 		})
 	}
 
@@ -1959,14 +2063,19 @@ export class AgentManagerProvider implements vscode.Disposable {
 
 	private async fetchAndPostRemoteSessions(): Promise<void> {
 		try {
-			const remoteSessions = await this.remoteSessionService.fetchRemoteSessions()
+			const remoteSessionResult = await this.remoteSessionService.fetchRemoteSessions()
 
 			// Filter remote sessions by git_url (only if git_url is available from API)
-			const filteredSessions = this.filterRemoteSessionsByGitUrl(remoteSessions)
+			const filteredSessions = this.filterRemoteSessionsByGitUrl(remoteSessionResult.sessions)
 
-			this.postRemoteSessionsToWebview(filteredSessions) // kilocode_change
+			this.postRemoteSessionsToWebview(filteredSessions, {
+				available: remoteSessionResult.available,
+				...(remoteSessionResult.reason ? { reason: remoteSessionResult.reason } : {}),
+			}) // kilocode_change
 		} catch (error) {
-			this.outputChannel.appendLine(`[AgentManager] Failed to fetch remote sessions: ${error}`)
+			const reason = error instanceof Error ? error.message : String(error)
+			this.outputChannel.appendLine(`[AgentManager] Failed to fetch remote sessions: ${reason}`)
+			this.postRemoteSessionsToWebview([], { available: false, reason })
 		}
 	}
 

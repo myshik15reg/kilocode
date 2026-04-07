@@ -1,0 +1,4156 @@
+{
+	"time": "2026-02-03T12:58:31",
+	"root": "D:\\WorkFlowAI",
+	"excludedDirs": [".git", "node_modules", "temp"],
+	"stats": {
+		"ScannedFiles": 303,
+		"UnreadableFiles": 0,
+		"InlineLinksFound": 786,
+		"RefLinksFound": 0,
+		"ImageLinksFound": 3,
+		"BrokenInvalidPath": 0,
+		"BrokenFileNotFound": 0,
+		"BrokenAnchorNotFound": 0,
+		"BrokenRefNotDefined": 0,
+		"BrokenPathEscapesRoot": 0
+	},
+	"broken": [],
+	"suspicious": [
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 76,
+			"Target": "filename.md",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 77,
+			"Target": "filename2.md",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 139,
+			"Target": "brief.md",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 140,
+			"Target": "plan.md",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 141,
+			"Target": "execution.md",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 142,
+			"Target": "context.md",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 151,
+			"Target": "cli-master/",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 152,
+			"Target": "git-workflow/",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 153,
+			"Target": "project-tests/",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 162,
+			"Target": "index.md",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 163,
+			"Target": "brief.md",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 164,
+			"Target": "product.md",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 165,
+			"Target": "architecture.md",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 166,
+			"Target": "tech.md",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.kilocode\\workflows\\update-indexes.md",
+			"Line": 167,
+			"Target": "context.md",
+			"Kind": "link",
+			"Note": "link inside code fence",
+			"InCode": true
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\knowledge-map.md",
+			"Line": 7,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\knowledge-map.md",
+			"Line": 7,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\knowledge-map.md",
+			"Line": 8,
+			"Target": "temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:17",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\knowledge-map.md",
+			"Line": 8,
+			"Target": "temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:17",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\knowledge-map.md",
+			"Line": 9,
+			"Target": "temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\knowledge-map.md",
+			"Line": 9,
+			"Target": "temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 7,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 7,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 8,
+			"Target": " temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:17",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 8,
+			"Target": " temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:17",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 9,
+			"Target": " temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 9,
+			"Target": " temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 27,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 27,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 31,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 31,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 37,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 37,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 44,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 44,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 44,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 44,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 49,
+			"Target": " temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:129",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 49,
+			"Target": " temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:129",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 56,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 56,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 64,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 64,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 68,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 68,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 83,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\pack-gap-analysis.md",
+			"Line": 83,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 6,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 6,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 7,
+			"Target": "temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:17",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 7,
+			"Target": "temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:17",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 8,
+			"Target": "temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 8,
+			"Target": "temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 19,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 19,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 20,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 20,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 20,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 20,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 21,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 21,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 22,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 22,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 23,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 23,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 24,
+			"Target": "temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:73",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 24,
+			"Target": "temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:73",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 24,
+			"Target": "temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:129",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 24,
+			"Target": "temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:129",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 25,
+			"Target": "temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:7",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 25,
+			"Target": "temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:7",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 26,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 26,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 27,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 27,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 28,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\task-to-workflow-matrix.md",
+			"Line": 28,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 26,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 26,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 27,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 27,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 28,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 28,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 28,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 28,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 29,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 29,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 30,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 30,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 31,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 31,
+			"Target": "temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 32,
+			"Target": "temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:129",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 32,
+			"Target": "temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:129",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 33,
+			"Target": "temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:7",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 33,
+			"Target": "temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:7",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 49,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 49,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 50,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 50,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 62,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 62,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 63,
+			"Target": " temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:129",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 63,
+			"Target": " temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:129",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 64,
+			"Target": " temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:7",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 64,
+			"Target": " temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:7",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 73,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 73,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 74,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 74,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 75,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 75,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 76,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 76,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 77,
+			"Target": " temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:129",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 77,
+			"Target": " temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:129",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 78,
+			"Target": " temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:7",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 78,
+			"Target": " temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:7",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 87,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 87,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 88,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 88,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 89,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 89,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 89,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 89,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 90,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 90,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 91,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 91,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 92,
+			"Target": " temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:129",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 92,
+			"Target": " temp/Документация нашей фирмы/РЕГЛАМЕНТ доработки и CR правил КД 3.docx:129",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 93,
+			"Target": " temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:7",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 93,
+			"Target": " temp/Документация нашей фирмы/Приложение №1 к регламенту разработки 1С. Компоновка форм.docx:7",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 94,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 94,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 109,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 109,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 117,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\workflow-skill-design.md",
+			"Line": 117,
+			"Target": " temp/Документация нашей фирмы/1. РЕГЛАМЕНТ РАЗРАБОТКИ СИСТЕМ НА ПЛАТФОРМЕ 1С ГК АЛЬФА-ЛИЗИНГ v.1.17 (1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 3,
+			"Target": "temp/Документация%20нашей%20фирмы:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 3,
+			"Target": "temp/Документация%20нашей%20фирмы:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 21,
+			"Target": "temp/Документация%20нашей%20фирмы/3.1.+Точка+старта+и+завершения.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 21,
+			"Target": "temp/Документация%20нашей%20фирмы/3.1.+Точка+старта+и+завершения.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 22,
+			"Target": "temp/Документация%20нашей%20фирмы/3.2.+Точка+старта.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 22,
+			"Target": "temp/Документация%20нашей%20фирмы/3.2.+Точка+старта.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 23,
+			"Target": "temp/Документация%20нашей%20фирмы/3.3.+Точка+завершения.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 23,
+			"Target": "temp/Документация%20нашей%20фирмы/3.3.+Точка+завершения.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 24,
+			"Target": "temp/Документация%20нашей%20фирмы/3.4.+Точка+действия.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 24,
+			"Target": "temp/Документация%20нашей%20фирмы/3.4.+Точка+действия.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 25,
+			"Target": "temp/Документация%20нашей%20фирмы/3.5.+Точка+условия.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 25,
+			"Target": "temp/Документация%20нашей%20фирмы/3.5.+Точка+условия.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 26,
+			"Target": "temp/Документация%20нашей%20фирмы/3.6.+Точка+выбора+варианта.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 26,
+			"Target": "temp/Документация%20нашей%20фирмы/3.6.+Точка+выбора+варианта.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 27,
+			"Target": "temp/Документация%20нашей%20фирмы/3.7.+Точка+разделения+и+слияния.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 27,
+			"Target": "temp/Документация%20нашей%20фирмы/3.7.+Точка+разделения+и+слияния.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 28,
+			"Target": "temp/Документация%20нашей%20фирмы/3.8.+Точка+обработки.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 28,
+			"Target": "temp/Документация%20нашей%20фирмы/3.8.+Точка+обработки.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 29,
+			"Target": "temp/Документация%20нашей%20фирмы/4.+Управляющие+регламентные+задания+бизнес-процессов.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 29,
+			"Target": "temp/Документация%20нашей%20фирмы/4.+Управляющие+регламентные+задания+бизнес-процессов.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 30,
+			"Target": "temp/Документация%20нашей%20фирмы/5.+Модули+и+методы+движка+Бизнес-процессов+в+CRM+(Верхнеуровнево",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 30,
+			"Target": "temp/Документация%20нашей%20фирмы/5.+Модули+и+методы+движка+Бизнес-процессов+в+CRM+(Верхнеуровнево",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 31,
+			"Target": "temp/Документация%20нашей%20фирмы/7.+Описание+обменов+RabbitMQ.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 31,
+			"Target": "temp/Документация%20нашей%20фирмы/7.+Описание+обменов+RabbitMQ.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 32,
+			"Target": "temp/Документация%20нашей%20фирмы/CRM.+Описание+движка+бизнес-процессов.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 32,
+			"Target": "temp/Документация%20нашей%20фирмы/CRM.+Описание+движка+бизнес-процессов.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 33,
+			"Target": "temp/Документация%20нашей%20фирмы/RabbitMQ+-+правила+игры%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 33,
+			"Target": "temp/Документация%20нашей%20фирмы/RabbitMQ+-+правила+игры%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 34,
+			"Target": "temp/Документация%20нашей%20фирмы/template+generator+Практическое+применение+сервиса+генерации+по+шаблону+в+среде+1С..doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 34,
+			"Target": "temp/Документация%20нашей%20фирмы/template+generator+Практическое+применение+сервиса+генерации+по+шаблону+в+среде+1С..doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 35,
+			"Target": "temp/Документация%20нашей%20фирмы/Концепция+очистки+старого+функционала.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 35,
+			"Target": "temp/Документация%20нашей%20фирмы/Концепция+очистки+старого+функционала.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 36,
+			"Target": "temp/Документация%20нашей%20фирмы/Логирование+использования.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 36,
+			"Target": "temp/Документация%20нашей%20фирмы/Логирование+использования.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 37,
+			"Target": "temp/Документация%20нашей%20фирмы/Описание_обмена.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 37,
+			"Target": "temp/Документация%20нашей%20фирмы/Описание_обмена.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 38,
+			"Target": "temp/Документация%20нашей%20фирмы/Описание+JSON+при+обменах.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 38,
+			"Target": "temp/Документация%20нашей%20фирмы/Описание+JSON+при+обменах.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 39,
+			"Target": "temp/Документация%20нашей%20фирмы/Описание+реализации+управленческого+контура+взаиморасчетов.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 39,
+			"Target": "temp/Документация%20нашей%20фирмы/Описание+реализации+управленческого+контура+взаиморасчетов.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 40,
+			"Target": "temp/Документация%20нашей%20фирмы/Отключаемый+функционал.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 40,
+			"Target": "temp/Документация%20нашей%20фирмы/Отключаемый+функционал.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 41,
+			"Target": "temp/Документация%20нашей%20фирмы/Очередь+обработки+отложенных+заданий.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 41,
+			"Target": "temp/Документация%20нашей%20фирмы/Очередь+обработки+отложенных+заданий.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 42,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Отправка+сообщений+в+очереди+(RMQ",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 42,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Отправка+сообщений+в+очереди+(RMQ",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 43,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Отправка+сообщений+в+очереди+(RMQ",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 43,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Отправка+сообщений+в+очереди+(RMQ",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 44,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Получение+сообщений+из+очередей+(RMQ",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 44,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Получение+сообщений+из+очередей+(RMQ",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 45,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Получение+сообщений+из+очередей+(RMQ",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 45,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Получение+сообщений+из+очередей+(RMQ",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 46,
+			"Target": "temp/Документация%20нашей%20фирмы/Регистр+сведений+_Временная+информация+по+объектам_+в+1С+CRM.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 46,
+			"Target": "temp/Документация%20нашей%20фирмы/Регистр+сведений+_Временная+информация+по+объектам_+в+1С+CRM.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 47,
+			"Target": "temp/Документация%20нашей%20фирмы/Регистр+сведений+_Логирование+вызовов+сервисов+по+запросам_+в+1С+CRM.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 47,
+			"Target": "temp/Документация%20нашей%20фирмы/Регистр+сведений+_Логирование+вызовов+сервисов+по+запросам_+в+1С+CRM.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 48,
+			"Target": "temp/Документация%20нашей%20фирмы/Соответствие+объектов+из+конфигурации+и+из+описания.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 48,
+			"Target": "temp/Документация%20нашей%20фирмы/Соответствие+объектов+из+конфигурации+и+из+описания.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 49,
+			"Target": "temp/Документация%20нашей%20фирмы/Хранение+настроек+интеграции+с+внешними+системами.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-doc-conversion.md",
+			"Line": 49,
+			"Target": "temp/Документация%20нашей%20фирмы/Хранение+настроек+интеграции+с+внешними+системами.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 3,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 3,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 6,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 6,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 7,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 7,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 8,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 8,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 11,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 11,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 12,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 12,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 13,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 13,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 16,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 16,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 19,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 19,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 22,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 22,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 23,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 23,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 26,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 26,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 27,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 27,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 28,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 28,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 29,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 29,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 32,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 32,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 35,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 35,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 36,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 36,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 37,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 37,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 38,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 38,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 41,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 41,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 44,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 44,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 47,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 47,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 48,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 48,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 51,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 51,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 52,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 52,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 53,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 53,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 54,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 54,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 57,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 57,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 58,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 58,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 61,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 61,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 62,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 62,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 65,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 65,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 66,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 66,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 67,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 67,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 70,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 70,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 71,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-1c-dev-reglament.md",
+			"Line": 71,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 3,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 3,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 6,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:7",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 6,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:7",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 7,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:21",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 7,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:21",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 8,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:31",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 8,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:31",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 9,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:43",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 9,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:43",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 10,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:47",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 10,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:47",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 11,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:63",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 11,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:63",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 14,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:81",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 14,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:81",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 15,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:121",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 15,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:121",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 16,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:123",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 16,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:123",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 17,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:125",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 17,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:125",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 20,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:137",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 20,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:137",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 21,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:139",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 21,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:139",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 22,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:141",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 22,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:141",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 25,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:145",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 25,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:145",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 26,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:153",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 26,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:153",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 27,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:183",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 27,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:183",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 28,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:189",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 28,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:189",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 31,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:197",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-forms-layout.md",
+			"Line": 31,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:197",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 3,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 3,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 6,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:73",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 6,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:73",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 7,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:75",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 7,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:75",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 8,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:97",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 8,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:97",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 11,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:129",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 11,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:129",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 12,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:145",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 12,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:145",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 15,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:179",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 15,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:179",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 16,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:189",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 16,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:189",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 17,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:191",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 17,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:191",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 20,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:212",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 20,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:212",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 21,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:215",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 21,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:215",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 22,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:233",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 22,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:233",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 23,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:247",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 23,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:247",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 26,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:249",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 26,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:249",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 27,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:277",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 27,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:277",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 30,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:303",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 30,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:303",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 31,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:307",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 31,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:307",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 32,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:319",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 32,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:319",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 33,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:325",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 33,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:325",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 36,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:349",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 36,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:349",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 37,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:385",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 37,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:385",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 38,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:401",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 38,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:401",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 39,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:535",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 39,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:535",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 42,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:573",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 42,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:573",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 45,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:599",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 45,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:599",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 46,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:603",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 46,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:603",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 47,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:615",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 47,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:615",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 50,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:631",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 50,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:631",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 51,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:635",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 51,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:635",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 52,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:645",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-extracts-kd3-reglament.md",
+			"Line": 52,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:645",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 7,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 7,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 8,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 8,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 9,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 9,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 15,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 15,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 16,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 16,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 17,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 17,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 18,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 18,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 19,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 19,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 20,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 20,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 21,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 21,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 24,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 24,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 25,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 25,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 26,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 26,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 27,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 27,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 28,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 28,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 31,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 31,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 32,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 32,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 33,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 33,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 36,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 36,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 37,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 37,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 38,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 38,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 39,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 39,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 40,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 40,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 43,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 43,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 46,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 46,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 49,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 49,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 50,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 50,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 51,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 51,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 52,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 52,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 55,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 55,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 56,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 56,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 57,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 57,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 60,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 60,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 61,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 61,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 62,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:97",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 62,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:97",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 63,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:129",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 63,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:129",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 64,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:615",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 64,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:615",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 67,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:5",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 67,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:5",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 70,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 70,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 71,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-firm-knowledge-map.md",
+			"Line": 71,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 3,
+			"Target": "temp/Документация%20нашей%20фирмы:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 3,
+			"Target": "temp/Документация%20нашей%20фирмы:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 13,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 13,
+			"Target": "temp/Документация%20нашей%20фирмы/1.%20РЕГЛАМЕНТ%20РАЗРАБОТКИ%20СИСТЕМ%20НА%20ПЛАТФОРМЕ%201С%20ГК%20АЛЬФА-ЛИЗИНГ%20v.1.17%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 14,
+			"Target": "temp/Документация%20нашей%20фирмы/3.1.+Точка+старта+и+завершения.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 14,
+			"Target": "temp/Документация%20нашей%20фирмы/3.1.+Точка+старта+и+завершения.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 15,
+			"Target": "temp/Документация%20нашей%20фирмы/3.2.+Точка+старта.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 15,
+			"Target": "temp/Документация%20нашей%20фирмы/3.2.+Точка+старта.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 16,
+			"Target": "temp/Документация%20нашей%20фирмы/3.3.+Точка+завершения.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 16,
+			"Target": "temp/Документация%20нашей%20фирмы/3.3.+Точка+завершения.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 17,
+			"Target": "temp/Документация%20нашей%20фирмы/3.4.+Точка+действия.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 17,
+			"Target": "temp/Документация%20нашей%20фирмы/3.4.+Точка+действия.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 18,
+			"Target": "temp/Документация%20нашей%20фирмы/3.5.+Точка+условия.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 18,
+			"Target": "temp/Документация%20нашей%20фирмы/3.5.+Точка+условия.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 19,
+			"Target": "temp/Документация%20нашей%20фирмы/3.6.+Точка+выбора+варианта.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 19,
+			"Target": "temp/Документация%20нашей%20фирмы/3.6.+Точка+выбора+варианта.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 20,
+			"Target": "temp/Документация%20нашей%20фирмы/3.7.+Точка+разделения+и+слияния.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 20,
+			"Target": "temp/Документация%20нашей%20фирмы/3.7.+Точка+разделения+и+слияния.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 21,
+			"Target": "temp/Документация%20нашей%20фирмы/3.8.+Точка+обработки.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 21,
+			"Target": "temp/Документация%20нашей%20фирмы/3.8.+Точка+обработки.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 22,
+			"Target": "temp/Документация%20нашей%20фирмы/4.+Управляющие+регламентные+задания+бизнес-процессов.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 22,
+			"Target": "temp/Документация%20нашей%20фирмы/4.+Управляющие+регламентные+задания+бизнес-процессов.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 23,
+			"Target": "temp/Документация%20нашей%20фирмы/5.+Модули+и+методы+движка+Бизнес-процессов+в+CRM+(Верхнеуровнево",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 23,
+			"Target": "temp/Документация%20нашей%20фирмы/5.+Модули+и+методы+движка+Бизнес-процессов+в+CRM+(Верхнеуровнево",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 24,
+			"Target": "temp/Документация%20нашей%20фирмы/7.+Описание+обменов+RabbitMQ.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 24,
+			"Target": "temp/Документация%20нашей%20фирмы/7.+Описание+обменов+RabbitMQ.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 25,
+			"Target": "temp/Документация%20нашей%20фирмы/CRM.+Описание+движка+бизнес-процессов.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 25,
+			"Target": "temp/Документация%20нашей%20фирмы/CRM.+Описание+движка+бизнес-процессов.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 26,
+			"Target": "temp/Документация%20нашей%20фирмы/RabbitMQ+-+правила+игры%20(1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 26,
+			"Target": "temp/Документация%20нашей%20фирмы/RabbitMQ+-+правила+игры%20(1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 27,
+			"Target": "temp/Документация%20нашей%20фирмы/template+generator+Практическое+применение+сервиса+генерации+по+шаблону+в+среде+1С..doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 27,
+			"Target": "temp/Документация%20нашей%20фирмы/template+generator+Практическое+применение+сервиса+генерации+по+шаблону+в+среде+1С..doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 28,
+			"Target": "temp/Документация%20нашей%20фирмы/Концепция+очистки+старого+функционала.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 28,
+			"Target": "temp/Документация%20нашей%20фирмы/Концепция+очистки+старого+функционала.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 29,
+			"Target": "temp/Документация%20нашей%20фирмы/Логирование+использования.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 29,
+			"Target": "temp/Документация%20нашей%20фирмы/Логирование+использования.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 30,
+			"Target": "temp/Документация%20нашей%20фирмы/Описание_обмена.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 30,
+			"Target": "temp/Документация%20нашей%20фирмы/Описание_обмена.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 31,
+			"Target": "temp/Документация%20нашей%20фирмы/Описание+JSON+при+обменах.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 31,
+			"Target": "temp/Документация%20нашей%20фирмы/Описание+JSON+при+обменах.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 32,
+			"Target": "temp/Документация%20нашей%20фирмы/Описание+реализации+управленческого+контура+взаиморасчетов.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 32,
+			"Target": "temp/Документация%20нашей%20фирмы/Описание+реализации+управленческого+контура+взаиморасчетов.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 33,
+			"Target": "temp/Документация%20нашей%20фирмы/Отключаемый+функционал.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 33,
+			"Target": "temp/Документация%20нашей%20фирмы/Отключаемый+функционал.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 34,
+			"Target": "temp/Документация%20нашей%20фирмы/Очередь+обработки+отложенных+заданий.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 34,
+			"Target": "temp/Документация%20нашей%20фирмы/Очередь+обработки+отложенных+заданий.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 35,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Отправка+сообщений+в+очереди+(RMQ",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 35,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Отправка+сообщений+в+очереди+(RMQ",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 36,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Отправка+сообщений+в+очереди+(RMQ",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 36,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Отправка+сообщений+в+очереди+(RMQ",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 37,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Получение+сообщений+из+очередей+(RMQ",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 37,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Получение+сообщений+из+очередей+(RMQ",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 38,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Получение+сообщений+из+очередей+(RMQ",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 38,
+			"Target": "temp/Документация%20нашей%20фирмы/Подсистема+Получение+сообщений+из+очередей+(RMQ",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 39,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 39,
+			"Target": "temp/Документация%20нашей%20фирмы/Приложение%20№1%20к%20регламенту%20разработки%201С.%20Компоновка%20форм.docx:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 40,
+			"Target": "temp/Документация%20нашей%20фирмы/Регистр+сведений+_Временная+информация+по+объектам_+в+1С+CRM.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 40,
+			"Target": "temp/Документация%20нашей%20фирмы/Регистр+сведений+_Временная+информация+по+объектам_+в+1С+CRM.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 41,
+			"Target": "temp/Документация%20нашей%20фирмы/Регистр+сведений+_Логирование+вызовов+сервисов+по+запросам_+в+1С+CRM.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 41,
+			"Target": "temp/Документация%20нашей%20фирмы/Регистр+сведений+_Логирование+вызовов+сервисов+по+запросам_+в+1С+CRM.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 42,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 42,
+			"Target": "temp/Документация%20нашей%20фирмы/РЕГЛАМЕНТ%20доработки%20и%20CR%20правил%20КД%203.docx:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 43,
+			"Target": "temp/Документация%20нашей%20фирмы/Соответствие+объектов+из+конфигурации+и+из+описания.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 43,
+			"Target": "temp/Документация%20нашей%20фирмы/Соответствие+объектов+из+конфигурации+и+из+описания.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 44,
+			"Target": "temp/Документация%20нашей%20фирмы/Хранение+настроек+интеграции+с+внешними+системами.doc:1",
+			"Kind": "link",
+			"Note": "target is in excluded dir (skipped existence/anchor check)",
+			"InCode": false
+		},
+		{
+			"Source": "D:\\WorkFlowAI\\.protocols\\2026-01-30-1c-alfa-knowledge-pack\\artifacts\\research\\2026-01-30-inventory.md",
+			"Line": 44,
+			"Target": "temp/Документация%20нашей%20фирмы/Хранение+настроек+интеграции+с+внешними+системами.doc:1",
+			"Kind": "link",
+			"Note": "whitespace/%20/backslash in target (may be title or bad path)",
+			"InCode": false
+		}
+	]
+}

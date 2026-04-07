@@ -1,4 +1,4 @@
-// Copyright 2009-2025 Weibo, Inc.
+﻿// Copyright 2009-2025 Weibo, Inc.
 // SPDX-FileCopyrightText: 2025 Weibo, Inc.
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -22,7 +22,7 @@ import { IRemoteConsoleLog } from "../deps/vscode/vs/base/common/console.js"
 import { FileType, FilePermission, FileSystemProviderErrorCode } from "../deps/vscode/vs/platform/files/common/files.js"
 import * as fs from "fs"
 import { promisify } from "util"
-import { exec } from "child_process"
+import { execFile } from "child_process"
 import { ConfigurationModel } from "../deps/vscode/vs/platform/configuration/common/configurationModels.js"
 import { NullLogService } from "../deps/vscode/vs/platform/log/common/log.js"
 import { ExtensionIdentifier } from "../deps/vscode/vs/platform/extensions/common/extensions.js"
@@ -42,6 +42,7 @@ const fsCopyFile = promisify(fs.copyFile)
 const fsUnlink = promisify(fs.unlink)
 const fsLstat = promisify(fs.lstat)
 const fsMkdir = promisify(fs.mkdir)
+const execFileAsync = promisify(execFile)
 
 class RPCLogger implements IRPCProtocolLogger {
 	logIncoming(msgLength: number, req: number, initiator: RequestInitiator, msg: string, data?: any): void {
@@ -322,25 +323,34 @@ export class RPCManager {
 
 					console.log("Opening URL in browser:", urlToOpen)
 
-					// Open URL in default browser based on platform
-					const execAsync = promisify(exec)
-					let command: string
+					const openCommands =
+						process.platform === "win32"
+							? [
+									{ command: "rundll32.exe", args: ["url.dll,FileProtocolHandler", urlToOpen] },
+									{ command: "explorer.exe", args: [urlToOpen] },
+								]
+							: process.platform === "darwin"
+								? [{ command: "open", args: [urlToOpen] }]
+								: [
+										{ command: "xdg-open", args: [urlToOpen] },
+										{ command: "gnome-open", args: [urlToOpen] },
+										{ command: "kde-open", args: [urlToOpen] },
+										{ command: "wslview", args: [urlToOpen] },
+									]
 
-					switch (process.platform) {
-						case "darwin": // macOS
-							command = `open "${urlToOpen}"`
-							break
-						case "win32": // Windows
-							command = `start "" "${urlToOpen}"`
-							break
-						default: // Linux and others
-							command = `xdg-open "${urlToOpen}"`
-							break
+					let lastError: unknown
+					for (const { command, args } of openCommands) {
+						try {
+							await execFileAsync(command, args)
+							console.log("Successfully opened URL in browser")
+							return true
+						} catch (error) {
+							lastError = error
+							console.error(`Failed to open URL with ${command}:`, error)
+						}
 					}
 
-					await execAsync(command)
-					console.log("Successfully opened URL in browser")
-					return true
+					throw lastError ?? new Error("Failed to open URI")
 				} catch (error) {
 					console.error("Failed to open URI:", error)
 					return false

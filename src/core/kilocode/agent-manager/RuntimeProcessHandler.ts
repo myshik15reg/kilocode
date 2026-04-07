@@ -1,4 +1,4 @@
-﻿/**
+/**
  * RuntimeProcessHandler - Spawns agent processes using @kilocode/agent-runtime
  *
  * This handler uses Node.js fork() to spawn agent-runtime processes instead of
@@ -24,6 +24,7 @@ import type {
 	CompleteStreamEvent,
 } from "./CliOutputParser"
 import type { ClineMessage, ModeConfig, ProviderSettings } from "@roo-code/types"
+import type { AgentExecutionGuardrails } from "../../../../packages/agent-runtime/src/types"
 import { Package } from "../../../shared/package"
 
 /**
@@ -244,6 +245,7 @@ export class RuntimeProcessHandler {
 			model?: string
 			mode?: string // Mode slug (e.g., "code", "architect", "debug")
 			customModes?: ModeConfig[] // Custom modes including organization modes
+			guardrails?: AgentExecutionGuardrails
 			images?: string[]
 			autoApprove?: boolean
 			sessionData?: SessionData // For resuming with history
@@ -265,8 +267,9 @@ export class RuntimeProcessHandler {
 			providerSettings: options?.apiConfiguration || {},
 			mode: modeToUse, // Use provided mode or default to "code"
 			customModes: options?.customModes, // Pass custom modes to agent process
-			autoApprove: options?.autoApprove ?? true, // Default to auto-approve for agent manager
+			autoApprove: options?.guardrails?.shadowMode ? false : (options?.autoApprove ?? true), // Shadow mode must never auto-approve mutations
 			sessionId: options?.sessionId,
+			guardrails: options?.guardrails,
 		}
 
 		// Add model override if specified
@@ -473,7 +476,7 @@ export class RuntimeProcessHandler {
 		// Log incoming IPC message from agent (except verbose log messages)
 		if (msg.type !== "log") {
 			const payloadSummary = this.summarizePayload(msg)
-			this.callbacks.onLog(`[IPCв†ђAgent] ${sessionId}: ${msg.type} ${payloadSummary}`)
+			this.callbacks.onLog(`[IPC←Agent] ${sessionId}: ${msg.type} ${payloadSummary}`)
 		}
 
 		switch (msg.type) {
@@ -896,6 +899,7 @@ export class RuntimeProcessHandler {
 		onEvent: (sessionId: string, event: StreamEvent) => void,
 	): void {
 		const sessionId = this.getSessionIdForProcess(proc)
+		const existingSession = sessionId ? this.registry.getSession(sessionId) : undefined
 
 		const pendingProcess = this.getPendingProcessByProc(proc) // kilocode_change
 
@@ -919,6 +923,16 @@ export class RuntimeProcessHandler {
 			// Update session status based on exit code
 			if (code === 0) {
 				this.registry.updateSessionStatus(sessionId, "done")
+				if (existingSession?.lifecycleStatus === "abstained") {
+					this.registry.updateSession(sessionId, {
+						lifecycleStatus: "abstained",
+						activityState: "idle",
+						needsAttention: false,
+						recoveryState: undefined,
+						pendingReaction: undefined,
+						lastEventAt: Date.now(),
+					})
+				}
 			} else if (signal === "SIGTERM" || signal === "SIGINT" || signal === "SIGKILL") {
 				this.registry.updateSessionStatus(sessionId, "stopped")
 			} else {
@@ -995,7 +1009,7 @@ export class RuntimeProcessHandler {
 		// Log outgoing IPC message to agent
 		const msgType = (message as { type?: string })?.type || "unknown"
 		const msgText = (message as { text?: string })?.text?.slice(0, 50) || ""
-		this.callbacks.onLog(`[IPCв†’Agent] ${sessionId}: sendMessage(${msgType}) ${msgText ? `"${msgText}..."` : ""}`)
+		this.callbacks.onLog(`[IPC→Agent] ${sessionId}: sendMessage(${msgType}) ${msgText ? `"${msgText}..."` : ""}`)
 
 		return new Promise((resolve, reject) => {
 			info.process.send(ipcMessage, (error) => {

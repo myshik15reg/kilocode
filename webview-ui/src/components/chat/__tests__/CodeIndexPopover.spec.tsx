@@ -1,6 +1,7 @@
 import { render, screen, within, fireEvent, act } from "@/utils/test-utils"
 import React from "react"
 import type { IndexingStatus } from "@roo/ExtensionMessage"
+import type { CodebaseIndexConfig } from "@roo-code/types"
 import { CodeIndexPopover } from "../CodeIndexPopover"
 import { vscode } from "@src/utils/vscode"
 
@@ -40,7 +41,7 @@ vi.mock("react-i18next", () => ({
 	),
 }))
 
-const mockExtensionState = {
+const mockExtensionState: any = {
 	codebaseIndexConfig: {
 		codebaseIndexEnabled: true,
 		codebaseIndexQdrantUrl: "http://localhost:6333",
@@ -54,7 +55,7 @@ const mockExtensionState = {
 		codebaseIndexVectorStoreName: "",
 		codebaseIndexNeo4jEnabled: false,
 		codebaseIndexNeo4jDatabase: "",
-	},
+	} as CodebaseIndexConfig,
 	codebaseIndexModels: {
 		openai: {
 			"text-embedding-3-small": { dimension: 1536 },
@@ -164,7 +165,7 @@ vi.mock("@src/components/ui", () => ({
 	AlertDialogFooter: ({ children }: { children: React.ReactNode }) => <footer>{children}</footer>,
 	AlertDialogHeader: ({ children }: { children: React.ReactNode }) => <header>{children}</header>,
 	AlertDialogTitle: ({ children }: { children: React.ReactNode }) => <h4>{children}</h4>,
-	Slider: () => <div>Slider</div>,
+	Slider: ({ "data-testid": dataTestId }: { "data-testid"?: string }) => <div data-testid={dataTestId}>Slider</div>,
 	StandardTooltip: ({ children, content }: { children: React.ReactNode; content: string }) => (
 		<div title={content}>{children}</div>
 	),
@@ -544,6 +545,31 @@ describe("CodeIndexPopover", () => {
 				fireEvent.blur(neo4jPasswordInput)
 			})
 			expect(neo4jPasswordInput).toHaveAttribute("placeholder", SAVED_PASSWORD_PLACEHOLDER)
+		} finally {
+			mockExtensionState.codebaseIndexConfig = previousConfig
+		}
+	})
+	it("shows adaptive retrieval controls when adaptive retrieval is enabled", () => {
+		const previousConfig = mockExtensionState.codebaseIndexConfig
+		mockExtensionState.codebaseIndexConfig = {
+			...previousConfig,
+			codebaseIndexAdaptiveRetrievalEnabled: true,
+			codebaseIndexAdaptiveRetrievalMinConfidence: 0.72,
+			codebaseIndexAdaptiveRetrievalKneeSensitivity: 0.18,
+		}
+
+		try {
+			render(
+				<CodeIndexPopover indexingStatus={initialIndexingStatus}>
+					<button>Open Popover</button>
+				</CodeIndexPopover>,
+			)
+
+			fireEvent.click(screen.getByRole("button", { name: "Advanced" }))
+
+			expect(screen.getByTestId("adaptive-retrieval-enabled-checkbox")).toBeInTheDocument()
+			expect(screen.getByTestId("adaptive-retrieval-min-confidence-slider")).toBeInTheDocument()
+			expect(screen.getByTestId("adaptive-retrieval-knee-sensitivity-slider")).toBeInTheDocument()
 		} finally {
 			mockExtensionState.codebaseIndexConfig = previousConfig
 		}

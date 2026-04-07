@@ -25,28 +25,34 @@ import { LucideIconButton } from "./LucideIconButton"
 interface TaskActionsProps {
 	item?: HistoryItem
 	buttonsDisabled: boolean
+	isTaskComplete?: boolean
+	showTaskControls?: boolean
 }
 
-export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
+export const TaskActions = ({
+	item,
+	buttonsDisabled,
+	isTaskComplete = false,
+	showTaskControls = true,
+}: TaskActionsProps) => {
 	const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null)
 	const { t } = useTranslation()
 	const { copyWithFeedback } = useCopyToClipboard()
 	const { debug, runningRootTaskIds = [] } = useExtensionState()
 	// kilocode_change start
-	const isCompletedItem = item?.status === "completed" || item?.lifecycleState === "completed"
+	const taskControlsEnabled = showTaskControls && !!item?.id
+	const isCompletedItem = isTaskComplete || item?.status === "completed" || item?.lifecycleState === "completed"
 	const isRootTask = !!item && !item.parentTaskId && (!item.rootTaskId || item.rootTaskId === item.id)
-	const rootTaskStatus =
-		item?.status && isRootTask ? getHistoryRootTaskStatus(item, { runningRootTaskIds }) : undefined
+	const rootTaskStatus = item && isRootTask ? getHistoryRootTaskStatus(item, { runningRootTaskIds }) : undefined
+	const isStoppedRootTask = isRootTask && rootTaskStatus === "stopped"
 	const showResumeTask =
-		!!item?.id &&
+		taskControlsEnabled &&
 		!isCompletedItem &&
 		(item.lifecycleState === "paused" ||
 			item.lifecycleState === "cancelled" ||
-			((item.status === "active" || item.status === "aborted") &&
-				!!item.lastStopReason &&
-				rootTaskStatus === "stopped"))
+			(isStoppedRootTask && !(item.status === undefined && item.lifecycleState === "running")))
 	const showPauseTask =
-		!!item?.id &&
+		taskControlsEnabled &&
 		!isCompletedItem &&
 		!showResumeTask &&
 		(item.lifecycleState === "running" ||
@@ -59,7 +65,7 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 			{showPauseTask && (
 				<LucideIconButton
 					icon={PauseIcon}
-					title="Pause task"
+					title={t("chat:task.pause")}
 					disabled={buttonsDisabled}
 					onClick={() =>
 						vscode.postMessage({
@@ -72,7 +78,7 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 			{showResumeTask && (
 				<LucideIconButton
 					icon={PlayIcon}
-					title="Resume task"
+					title={t("chat:resumeTask.title")}
 					disabled={buttonsDisabled}
 					onClick={() =>
 						vscode.postMessage({

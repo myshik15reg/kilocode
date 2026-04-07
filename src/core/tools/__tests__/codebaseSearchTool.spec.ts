@@ -1,6 +1,12 @@
 // kilocode_change: file added
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+vi.mock("vscode", () => ({
+	workspace: {
+		asRelativePath: vi.fn((value: string) => value.replace(/^.*[\\/]repo[\\/]/, "")),
+	},
+}))
+
 import { codebaseSearchTool } from "../CodebaseSearchTool"
 import { formatResponse } from "../../prompts/responses"
 import { Task } from "../../task/Task"
@@ -34,8 +40,10 @@ describe("codebaseSearchTool", () => {
 		vi.clearAllMocks()
 
 		mockTask = {
+			taskId: "task-1",
 			cwd: "/repo",
 			consecutiveMistakeCount: 0,
+			getTaskScopedRetrievalMode: vi.fn(() => undefined),
 			say: vi.fn().mockResolvedValue(undefined),
 			ask: vi.fn(),
 			sayAndCreateMissingParamError: vi.fn(),
@@ -143,6 +151,75 @@ describe("codebaseSearchTool", () => {
 		})
 	})
 
+	it("uses artifact retrieval when code indexing is disabled but the query targets workflow docs", async () => {
+		const managerMock = {
+			isFeatureEnabled: false,
+			isFeatureConfigured: false,
+			getCurrentStatus: vi.fn().mockReturnValue({
+				systemStatus: "Standby" as const,
+				message: "Code indexing disabled",
+				processedItems: 0,
+				totalItems: 0,
+				currentItemUnit: "files",
+			}),
+			searchIndexDetailed: vi.fn().mockResolvedValue({
+				query: "workflow protocol guide",
+				queryClass: "workflow_docs",
+				retrievalMode: "adaptive",
+				retrievalConfidence: 0.84,
+				results: [
+					{
+						score: 0.84,
+						confidence: 0.84,
+						sourceKind: "workflow",
+						citationLabel: ".kilocode/workflows/quickref.md:1-3",
+						retrievalPath: ["workspace", ".kilocode", "workflows", "quickref.md"],
+						sources: [{ type: "lexical", label: "artifact match in quickref.md", score: 0.84 }],
+						scoreBreakdown: { total: 0.84, lexical: 0.84 },
+						payload: {
+							filePath: "/repo/.kilocode/workflows/quickref.md",
+							startLine: 1,
+							endLine: 3,
+							codeChunk: "workflow docs guidance",
+						},
+					},
+				],
+				keyPoints: [".kilocode/workflows/quickref.md:1-3"],
+				sources: [{ type: "lexical", label: "artifact match in quickref.md", score: 0.84 }],
+				warnings: ["Code indexing is disabled; returned artifact matches only."],
+				postprocessUsed: true,
+				compressionApplied: false,
+			}),
+		}
+
+		vi.mocked(CodeIndexManager.getInstance).mockReturnValue(managerMock as any)
+
+		const block = {
+			type: "tool_use" as const,
+			name: "codebase_search" as const,
+			params: { query: "workflow protocol guide" },
+			partial: false,
+		}
+
+		await codebaseSearchTool.handle(mockTask as Task, block, {
+			askApproval,
+			handleError,
+			pushToolResult,
+			removeClosingTag,
+			toolProtocol,
+		})
+
+		expect(managerMock.searchIndexDetailed).toHaveBeenCalledWith({
+			query: "workflow protocol guide",
+			directoryPrefix: undefined,
+			retrievalMode: undefined,
+			taskId: "task-1",
+		})
+		expect(handleError).not.toHaveBeenCalled()
+		expect(pushToolResult).toHaveBeenCalledWith(expect.stringContaining("Query class: workflow_docs"))
+		expect(pushToolResult).toHaveBeenCalledWith(expect.stringContaining("Source kind: workflow"))
+	})
+
 	it("sanitizes managed search failures and avoids logging sensitive error details", async () => {
 		// FIX: 2026-02-19-reviewer-managed-search-log-redaction (TestAnalyzer)
 		const managerMock = {
@@ -186,5 +263,104 @@ describe("codebaseSearchTool", () => {
 		const loggedMessages = logSpy.mock.calls.map((call) => String(call[0])).join("\n")
 		expect(loggedMessages).not.toContain("secret.example.com")
 		expect(loggedMessages).not.toContain("token=abc")
+	})
+	it("includes structured retrieval metadata in the UI payload and formatted tool output", async () => {
+		const managerMock = {
+			isFeatureEnabled: true,
+			isFeatureConfigured: true,
+			getCurrentStatus: vi.fn().mockReturnValue({
+				systemStatus: "Indexed",
+				message: "Ready",
+				processedItems: 100,
+				totalItems: 100,
+				currentItemUnit: "files",
+			}),
+			searchIndexDetailed: vi.fn().mockResolvedValue({
+				query: "investigate delegation flow",
+				queryClass: "broad_repo_research",
+				queryRewrite: "investigate delegation orchestration flow",
+				results: [
+					{
+						score: 0.91,
+						confidence: 0.74,
+						retrievalStage: "rerank",
+						sourceKind: "code",
+						citationLabel: "SubagentDelegationService.ts:120",
+						retrievalPath: ["semantic", "rerank"],
+						sources: [{ label: "delegation" }],
+						scoreBreakdown: { total: 0.91, semantic: 0.81, rerank: 0.94 },
+						payload: {
+							filePath: "/repo/src/core/orchestration/subagents/SubagentDelegationService.ts",
+							startLine: 120,
+							endLine: 148,
+							codeChunk: "const request = buildBackgroundRequest()",
+						},
+					},
+				],
+				keyPoints: ["background delegation uses structured handoff"],
+				sources: [{ label: "delegation" }],
+				warnings: ["rerank applied"],
+				postprocessUsed: true,
+				retrievalMode: "hybrid",
+				retrievalConfidence: 0.61,
+				compressionApplied: true,
+				adaptiveCutoffApplied: true,
+			}),
+		}
+
+		vi.mocked(CodeIndexManager.getInstance).mockReturnValue(managerMock as any)
+
+		const block = {
+			type: "tool_use" as const,
+			name: "codebase_search" as const,
+			params: { query: "investigate delegation flow" },
+			partial: false,
+		}
+
+		await codebaseSearchTool.handle(mockTask as Task, block, {
+			askApproval,
+			handleError,
+			pushToolResult,
+			removeClosingTag,
+			toolProtocol,
+		})
+
+		expect(managerMock.searchIndexDetailed).toHaveBeenCalledWith({
+			query: "investigate delegation flow",
+			directoryPrefix: undefined,
+			retrievalMode: undefined,
+			taskId: "task-1",
+		})
+		const sayMock = mockTask.say as unknown as ReturnType<typeof vi.fn>
+		const payload = JSON.parse(sayMock.mock.calls[0][1])
+		expect(payload.content).toEqual(
+			expect.objectContaining({
+				queryClass: "broad_repo_research",
+				queryRewrite: "investigate delegation orchestration flow",
+				retrievalMode: "hybrid",
+				retrievalConfidence: 0.61,
+				compressionApplied: true,
+				adaptiveCutoffApplied: true,
+			}),
+		)
+		expect(payload.content.results[0]).toEqual(
+			expect.objectContaining({
+				filePath: "src/core/orchestration/subagents/SubagentDelegationService.ts",
+				retrievalStage: "rerank",
+				sourceKind: "code",
+				citationLabel: "SubagentDelegationService.ts:120",
+				scoreBreakdown: { total: 0.91, semantic: 0.81, rerank: 0.94 },
+			}),
+		)
+
+		const output = pushToolResult.mock.calls.at(-1)?.[0]
+		expect(output).toContain("Query class: broad_repo_research")
+		expect(output).toContain("Query rewrite: investigate delegation orchestration flow")
+		expect(output).toContain("Retrieval mode: hybrid")
+		expect(output).toContain("Retrieval confidence: 0.61")
+		expect(output).toContain("Compression: applied")
+		expect(output).toContain("Adaptive cutoff: applied")
+		expect(output).toContain("Citation: SubagentDelegationService.ts:120")
+		expect(output).toContain("Score breakdown: total=0.91 semantic=0.81 rerank=0.94")
 	})
 })

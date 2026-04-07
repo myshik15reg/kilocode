@@ -13,6 +13,10 @@ export const CODEBASE_INDEX_DEFAULTS = {
 	DEFAULT_SEARCH_MIN_SCORE: 0.4,
 	SEARCH_SCORE_STEP: 0.05,
 	// kilocode_change start
+	DEFAULT_ADAPTIVE_RETRIEVAL_MIN_CONFIDENCE: 0.45,
+	DEFAULT_ADAPTIVE_RETRIEVAL_KNEE_SENSITIVITY: 0.12,
+	// kilocode_change end
+	// kilocode_change start
 	MIN_EMBEDDING_BATCH_SIZE: 10,
 	MAX_EMBEDDING_BATCH_SIZE: 2000,
 	DEFAULT_EMBEDDING_BATCH_SIZE: 60,
@@ -66,6 +70,11 @@ export const codebaseIndexConfigSchema = z.object({
 		.min(CODEBASE_INDEX_DEFAULTS.MIN_SEARCH_RESULTS)
 		.max(CODEBASE_INDEX_DEFAULTS.MAX_SEARCH_RESULTS)
 		.optional(),
+	// kilocode_change start
+	codebaseIndexAdaptiveRetrievalEnabled: z.boolean().optional(),
+	codebaseIndexAdaptiveRetrievalMinConfidence: z.number().min(0).max(1).optional(),
+	codebaseIndexAdaptiveRetrievalKneeSensitivity: z.number().min(0).max(1).optional(),
+	// kilocode_change end
 	// kilocode_change start
 	codebaseIndexRerankEnabled: z.boolean().optional(),
 	codebaseIndexRerankBaseUrl: z.string().optional(),

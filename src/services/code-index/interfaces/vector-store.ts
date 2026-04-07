@@ -1,6 +1,8 @@
 /**
  * Interface for vector database clients
  */
+import type { RetrievalMode } from "@roo-code/types"
+
 export type PointStruct = {
 	id: string
 	vector: number[]
@@ -8,89 +10,91 @@ export type PointStruct = {
 }
 
 export interface IVectorStore {
-	/**
-	 * Initializes the vector store
-	 * @returns Promise resolving to boolean indicating if a new collection was created
-	 */
 	initialize(): Promise<boolean>
-
-	/**
-	 * Upserts points into the vector store
-	 * @param points Array of points to upsert
-	 */
 	upsertPoints(points: PointStruct[]): Promise<void>
-
-	/**
-	 * Searches for similar vectors
-	 * @param queryVector Vector to search for
-	 * @param directoryPrefix Optional directory prefix to filter results
-	 * @param minScore Optional minimum score threshold
-	 * @param maxResults Optional maximum number of results to return
-	 * @returns Promise resolving to search results
-	 */
+	getPointsByFilePaths(filePaths: string[]): Promise<PointStruct[]>
 	search(
 		queryVector: number[],
 		directoryPrefix?: string,
 		minScore?: number,
 		maxResults?: number,
 	): Promise<VectorStoreSearchResult[]>
-
-	/**
-	 * Deletes points by file path
-	 * @param filePath Path of the file to delete points for
-	 */
 	deletePointsByFilePath(filePath: string): Promise<void>
-
-	/**
-	 * Deletes points by multiple file paths
-	 * @param filePaths Array of file paths to delete points for
-	 */
 	deletePointsByMultipleFilePaths(filePaths: string[]): Promise<void>
-
-	/**
-	 * Clears all points from the collection
-	 */
 	clearCollection(): Promise<void>
-
-	/**
-	 * Deletes the entire collection.
-	 */
 	deleteCollection(): Promise<void>
-
-	/**
-	 * Checks if the collection exists
-	 * @returns Promise resolving to boolean indicating if the collection exists
-	 */
 	collectionExists(): Promise<boolean>
-
-	/**
-	 * Checks if the collection exists and has indexed points
-	 * @returns Promise resolving to boolean indicating if the collection exists and has points
-	 */
 	hasIndexedData(): Promise<boolean>
-
-	/**
-	 * Marks the indexing process as complete by storing metadata
-	 * Should be called after a successful full workspace scan or incremental scan
-	 */
 	markIndexingComplete(): Promise<void>
-
-	/**
-	 * Marks the indexing process as incomplete by storing metadata
-	 * Should be called at the start of indexing to indicate work in progress
-	 */
 	markIndexingIncomplete(): Promise<void>
+	dispose?(): Promise<void>
+}
+
+export type RetrievalQueryClass =
+	| "symbol_lookup"
+	| "implementation_search"
+	| "impact_analysis"
+	| "workflow_docs"
+	| "broad_repo_research"
+
+export type RetrievalStage = "semantic" | "semantic_rerank" | "semantic_graph" | "semantic_graph_rerank"
+
+export type RetrievalSourceKind = "code" | "test" | "markdown" | "config" | "workflow" | "protocol"
+
+export interface RetrievalScoreBreakdown {
+	total: number
+	semantic?: number
+	lexical?: number
+	rerank?: number
+	graph?: number
+}
+
+export interface RetrievalSource {
+	type: "semantic" | "lexical" | "graph" | "rerank"
+	label: string
+	score?: number
+	details?: string
 }
 
 export interface VectorStoreSearchResult {
 	id: string | number
 	score: number
 	payload?: Payload | null
-	// Direct fields for easier access (duplicates payload data)
 	filePath: string
 	codeChunk: string
 	startLine: number
 	endLine: number
+	retrievalPath?: string[]
+	vectorScore?: number
+	lexicalScore?: number
+	rerankScore?: number
+	sources?: RetrievalSource[]
+	warnings?: string[]
+	postprocessUsed?: boolean
+	retrievalStage?: RetrievalStage
+	sourceKind?: RetrievalSourceKind
+	queryRewrite?: string
+	compressionApplied?: boolean
+	citationLabel?: string
+	scoreBreakdown?: RetrievalScoreBreakdown
+	retrievalConfidence?: number
+	confidence?: number
+}
+
+export interface CodeIndexStructuredSearchResult {
+	query: string
+	queryClass: RetrievalQueryClass
+	queryRewrite?: string
+	results: VectorStoreSearchResult[]
+	keyPoints: string[]
+	sources: RetrievalSource[]
+	warnings: string[]
+	postprocessUsed: boolean
+	retrievalMode: RetrievalMode
+	retrievalConfidence: number
+	compressionApplied: boolean
+	adaptiveExpansionUsed?: boolean
+	adaptiveCutoffApplied?: boolean
 }
 
 export interface Payload {

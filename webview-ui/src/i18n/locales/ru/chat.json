@@ -268,6 +268,7 @@
 		"wantsToCreate": "AlfaCode хочет создать новую подзадачу в режиме {{mode}}",
 		"wantsToFinish": "AlfaCode хочет завершить эту подзадачу",
 		"newTaskContent": "Инструкции по подзадаче",
+		"createTask": "Создать подзадачу",
 		"completionContent": "Подзадача завершена",
 		"resultContent": "Результаты подзадачи",
 		"defaultResult": "Пожалуйста, переходите к следующей задаче.",
@@ -468,6 +469,7 @@
 			"recoverable": "Можно продолжить",
 			"completed": "Завершено",
 			"cancelled": "Отменено",
+			"abstained": "Воздержался",
 			"failed": "Ошибка"
 		},
 		"queuedCount_one": "{{count}} в очереди",
@@ -482,6 +484,8 @@
 		"completedCount_other": "{{count}} завершено",
 		"cancelledCount_one": "{{count}} отменено",
 		"cancelledCount_other": "{{count}} отменено",
+		"abstainedCount_one": "{{count}} воздержалось",
+		"abstainedCount_other": "{{count}} воздержалось",
 		"failedCount_one": "{{count}} с ошибкой",
 		"failedCount_other": "{{count}} с ошибкой"
 	},

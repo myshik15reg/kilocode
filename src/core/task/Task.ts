@@ -22,6 +22,7 @@ import {
 	type TaskMetadata,
 	type TaskEvents,
 	type ProviderSettings,
+	type RetrievalMode,
 	type TokenUsage,
 	type ToolUsage,
 	type ToolName,
@@ -148,6 +149,7 @@ import { ensureLocalKilorulesDirExists } from "../context/instructions/kilo-rule
 import { processUserContentMentions } from "../mentions/processUserContentMentions"
 import { getMessagesSinceLastSummary, summarizeConversation, getEffectiveApiHistory } from "../condense"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
+import { HelperRoutingContextBuilder } from "../helper-routing/HelperRoutingContextBuilder"
 import { HelperModelRouter } from "../helper-routing/HelperModelRouter"
 
 import { isAnyRecognizedKiloCodeError, isPaymentRequiredError } from "../../shared/kilocode/errorUtils"
@@ -161,8 +163,23 @@ import { validateAndFixToolResultIds } from "./validateToolResultIds"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
+const DEFAULT_FIRST_CHUNK_TIMEOUT_MS = 120000 // 2 minutes
 const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
 const MAX_CONTEXT_WINDOW_RETRIES = 3 // Maximum retries for context window errors
+
+type AutomaticRetryPhase = "first_chunk" | "mid_stream" | "empty_response"
+
+class AutomaticRetryBudgetExceededError extends Error {
+	constructor(
+		public readonly phase: AutomaticRetryPhase,
+		public readonly retryAttempt: number,
+		cause?: unknown,
+	) {
+		super(`Automatic retry budget exhausted for ${phase} after ${retryAttempt} retries`)
+		this.name = "AutomaticRetryBudgetExceededError"
+		;(this as Error & { cause?: unknown }).cause = cause
+	}
+}
 
 export interface TaskOptions extends CreateTaskOptions {
 	context: vscode.ExtensionContext // kilocode_change
@@ -345,6 +362,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	apiConfiguration: ProviderSettings
 	api: ApiHandler
 	private static lastGlobalApiRequestTime?: number
+	private static readonly MAX_AUTOMATIC_REQUEST_RETRIES = 3
 	private autoApprovalHandler: AutoApprovalHandler
 
 	/**
@@ -1382,6 +1400,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		partial?: boolean,
 		progressStatus?: ToolProgressStatus,
 		isProtected?: boolean,
+		options: {
+			metadata?: Record<string, unknown>
+		} = {},
 	): Promise<{ response: ClineAskResponse; text?: string; images?: string[] }> {
 		// If this Cline instance was aborted by the provider, then the only
 		// thing keeping us alive is a promise still running in the background,
@@ -1410,6 +1431,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					lastMessage.partial = partial
 					lastMessage.progressStatus = progressStatus
 					lastMessage.isProtected = isProtected
+					if (options.metadata) {
+						lastMessage.metadata = Object.assign(lastMessage.metadata ?? {}, options.metadata)
+					}
 					// TODO: Be more efficient about saving and posting only new
 					// data or one whole message at a time so ignore partial for
 					// saves, and only post parts of partial message instead of
@@ -1422,7 +1446,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// state.
 					askTs = await this.nextClineMessageTimestamp_kilocode()
 					this.lastMessageTs = askTs
-					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, partial, isProtected })
+					await this.addToClineMessages({
+						ts: askTs,
+						type: "ask",
+						ask: type,
+						text,
+						partial,
+						isProtected,
+						metadata: options.metadata,
+					})
 					// console.log("Task#ask: current ask promise was ignored (#2)")
 					throw new AskIgnoredError("new partial")
 				}
@@ -1451,6 +1483,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					lastMessage.partial = false
 					lastMessage.progressStatus = progressStatus
 					lastMessage.isProtected = isProtected
+					if (options.metadata) {
+						lastMessage.metadata = Object.assign(lastMessage.metadata ?? {}, options.metadata)
+					}
 					await this.saveClineMessages()
 					this.updateClineMessage(lastMessage)
 				} else {
@@ -1460,7 +1495,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					this.askResponseImages = undefined
 					askTs = await this.nextClineMessageTimestamp_kilocode() // kilocode_change
 					this.lastMessageTs = askTs
-					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
+					await this.addToClineMessages({
+						ts: askTs,
+						type: "ask",
+						ask: type,
+						text,
+						isProtected,
+						metadata: options.metadata,
+					})
 				}
 			}
 		} else {
@@ -1470,7 +1512,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.askResponseImages = undefined
 			askTs = await this.nextClineMessageTimestamp_kilocode() // kilocode_change
 			this.lastMessageTs = askTs
-			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
+			await this.addToClineMessages({
+				ts: askTs,
+				type: "ask",
+				ask: type,
+				text,
+				isProtected,
+				metadata: options.metadata,
+			})
 		}
 
 		// kilocode_change start: YOLO mode auto-answer for follow-up questions
@@ -1786,6 +1835,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
+	public getTaskScopedRetrievalMode(): RetrievalMode | undefined {
+		return this.patternContext?.retrievalPolicy
+	}
+
 	public async condenseContext(): Promise<void> {
 		// CRITICAL: Flush any pending tool results before condensing
 		// to ensure tool_use/tool_result pairs are complete in history
@@ -1797,20 +1850,30 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const state = await this.providerRef.deref()?.getState()
 		// These properties may not exist in the state type yet, but are used for condensing configuration
 		const customCondensingPrompt = state?.customCondensingPrompt
+		const { contextTokens: prevContextTokens } = this.getTokenUsage()
 
 		let condensingApiHandler: ApiHandler | undefined
 		const provider = this.providerRef.deref()
 		if (state && provider) {
 			try {
-				const route = await HelperModelRouter.selectConfig({
-					job: "condense",
-					state: {
-						apiConfiguration: state.apiConfiguration,
-						condensingApiConfigId: state.condensingApiConfigId,
-						listApiConfigMeta: state.listApiConfigMeta,
-					},
-					providerSettingsManager: provider.providerSettingsManager,
-				})
+				const route = await HelperModelRouter.selectConfig(
+					HelperRoutingContextBuilder.build({
+						job: "condense",
+						state: {
+							apiConfiguration: state.apiConfiguration,
+							condensingApiConfigId: state.condensingApiConfigId,
+							listApiConfigMeta: state.listApiConfigMeta,
+							helperLocalityPreference: state.helperLocalityPreference,
+							orchestrationEscalationSensitivity: state.orchestrationEscalationSensitivity,
+							orchestrationTelemetryEnabled: state.orchestrationTelemetryEnabled,
+						},
+						providerSettingsManager: provider.providerSettingsManager,
+						decisionContext: {
+							taskId: this.taskId,
+							contextWindowSize: prevContextTokens,
+						},
+					}),
+				)
 				if (route.source !== "primary" && route.config.apiProvider) {
 					condensingApiHandler = buildApiHandler(route.config)
 				}
@@ -1820,8 +1883,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				)
 			}
 		}
-
-		const { contextTokens: prevContextTokens } = this.getTokenUsage()
 
 		// Determine if we're using native tool protocol for proper message handling
 		// Use the task's locked protocol, NOT the current settings (fallback to xml if not set)
@@ -2558,6 +2619,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		const child = await (provider as any).delegateParentAndOpenChild({
 			parentTaskId: this.taskId,
+			parentTask: this,
 			message,
 			initialTodos,
 			mode,
@@ -3604,9 +3666,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							)
 
 							// Apply exponential backoff similar to first-chunk errors when auto-resubmit is enabled
+							const retryAttempt = currentItem.retryAttempt ?? 0
+							if (this.isAutomaticRetryBudgetExhausted(retryAttempt)) {
+								await this.failAutomaticRetryBudget("mid_stream", retryAttempt, error)
+							}
+
 							const stateForBackoff = await this.providerRef.deref()?.getState()
 							if (stateForBackoff?.autoApprovalEnabled) {
-								await this.backoffAndAnnounce(currentItem.retryAttempt ?? 0, error)
+								await this.backoffAndAnnounce(retryAttempt, error)
 
 								// Check if task was aborted during the backoff
 								if (this.abort) {
@@ -3908,14 +3975,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// Check if we should auto-retry or prompt the user
 					// Reuse the state variable from above
+					const emptyAssistantError = new Error(
+						"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
+					)
+
 					if (state?.autoApprovalEnabled) {
+						const retryAttempt = currentItem.retryAttempt ?? 0
+						if (this.isAutomaticRetryBudgetExhausted(retryAttempt)) {
+							await this.failAutomaticRetryBudget("empty_response", retryAttempt, emptyAssistantError, {
+								restoreUserMessageContent: isNativeProtocol(this._taskToolProtocol ?? "xml")
+									? currentUserContent
+									: undefined,
+								appendFailureAssistant: true,
+							})
+						}
+
 						// Auto-retry with backoff - don't persist failure message when retrying
-						await this.backoffAndAnnounce(
-							currentItem.retryAttempt ?? 0,
-							new Error(
-								"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
-							),
-						)
+						await this.backoffAndAnnounce(retryAttempt, emptyAssistantError)
 
 						// Check if task was aborted during the backoff
 						if (this.abort) {
@@ -3982,6 +4058,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// If we reach here without continuing, return false (will always be false for now)
 				return false
 			} catch (error) {
+				if (error instanceof AutomaticRetryBudgetExceededError) {
+					return true
+				}
+
 				// This should never happen since the only thing that can throw an
 				// error is the attemptApiRequest, which is wrapped in a try catch
 				// that sends an ask where if noButtonClicked, will clear current
@@ -4322,6 +4402,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
+	private getFirstChunkTimeoutMs(): number {
+		return DEFAULT_FIRST_CHUNK_TIMEOUT_MS
+	}
+
 	public async *attemptApiRequest(
 		retryAttempt: number = 0,
 		options: { skipProviderRateLimit?: boolean } = {},
@@ -4344,15 +4428,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const provider = this.providerRef.deref()
 		if (state && provider) {
 			try {
-				const route = await HelperModelRouter.selectConfig({
-					job: "condense",
-					state: {
-						apiConfiguration: state.apiConfiguration,
-						condensingApiConfigId: state.condensingApiConfigId,
-						listApiConfigMeta: state.listApiConfigMeta,
-					},
-					providerSettingsManager: provider.providerSettingsManager,
-				})
+				const route = await HelperModelRouter.selectConfig(
+					HelperRoutingContextBuilder.build({
+						job: "condense",
+						state: {
+							apiConfiguration: state.apiConfiguration,
+							condensingApiConfigId: state.condensingApiConfigId,
+							listApiConfigMeta: state.listApiConfigMeta,
+							helperLocalityPreference: state.helperLocalityPreference,
+							orchestrationEscalationSensitivity: state.orchestrationEscalationSensitivity,
+							orchestrationTelemetryEnabled: state.orchestrationTelemetryEnabled,
+						},
+						providerSettingsManager: provider.providerSettingsManager,
+						decisionContext: {
+							taskId: this.taskId,
+							retryCount: retryAttempt,
+						},
+					}),
+				)
 				if (route.source !== "primary" && route.config.apiProvider) {
 					condensingApiHandler = buildApiHandler(route.config)
 				}
@@ -4368,7 +4461,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		// Update last request time right before making the request so that subsequent
-		// requests вЂ” even from new subtasks вЂ” will honour the provider's rate-limit.
+		// requests — even from new subtasks — will honour the provider's rate-limit.
 		//
 		// NOTE: When recursivelyMakeClineRequests handles rate limiting, it sets the
 		// timestamp earlier to include the environment details build. We still set it
@@ -4638,6 +4731,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Create a single abort promise/listener for racing with first chunk
 		// to avoid accumulating listeners per attempt
 		let firstChunkAbortListener: (() => void) | undefined
+		let firstChunkTimeoutId: NodeJS.Timeout | undefined
 		const abortPromise = new Promise<never>((_, reject) => {
 			if (abortSignal.aborted) {
 				reject(new Error("Request cancelled by user"))
@@ -4651,14 +4745,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Awaiting first chunk to see if it will throw an error.
 			this.isWaitingForFirstChunk = true
 
-			// Race between the first chunk and the abort signal
+			// Race between the first chunk, a stalled-stream watchdog, and the abort signal.
 			const firstChunkPromise = iterator.next()
+			const firstChunkTimeoutMs = this.getFirstChunkTimeoutMs()
+			const firstChunkTimeoutPromise = new Promise<never>((_, reject) => {
+				firstChunkTimeoutId = setTimeout(() => {
+					const timeoutError = new Error(
+						`Timed out waiting for the first response chunk after ${Math.ceil(firstChunkTimeoutMs / 1000)} seconds`,
+					)
+					queueMicrotask(() => this.currentRequestAbortController?.abort())
+					reject(timeoutError)
+				}, firstChunkTimeoutMs)
+			})
 
-			const firstChunk = await Promise.race([firstChunkPromise, abortPromise])
+			const firstChunk = await Promise.race([firstChunkPromise, abortPromise, firstChunkTimeoutPromise])
 			yield firstChunk.value
-			this.isWaitingForFirstChunk = false
 		} catch (error) {
-			this.isWaitingForFirstChunk = false
 			// kilocode_change start
 			if (apiConfiguration?.apiProvider === "kilocode" && isAnyRecognizedKiloCodeError(error)) {
 				const defaultFreeModel = (
@@ -4703,6 +4805,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// kilocode_change end
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
 			if (autoApprovalEnabled) {
+				if (this.isAutomaticRetryBudgetExhausted(retryAttempt)) {
+					await this.failAutomaticRetryBudget("first_chunk", retryAttempt, error)
+				}
+
 				// Apply shared exponential backoff and countdown UX
 				await this.backoffAndAnnounce(retryAttempt, error)
 
@@ -4738,6 +4844,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				yield* this.attemptApiRequest()
 				return
 			}
+		} finally {
+			this.isWaitingForFirstChunk = false
+			if (firstChunkTimeoutId) {
+				clearTimeout(firstChunkTimeoutId)
+			}
+			if (firstChunkAbortListener) {
+				abortSignal.removeEventListener("abort", firstChunkAbortListener)
+			}
 		}
 
 		// No error, so we can continue to yield all remaining chunks.
@@ -4758,9 +4872,50 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Clean up abort listeners to prevent memory leaks
 		abortSignal.removeEventListener("abort", abortCleanupListener)
-		if (firstChunkAbortListener) {
-			abortSignal.removeEventListener("abort", firstChunkAbortListener)
+	}
+
+	private isAutomaticRetryBudgetExhausted(retryAttempt: number): boolean {
+		return retryAttempt >= Task.MAX_AUTOMATIC_REQUEST_RETRIES
+	}
+
+	private buildAutomaticRetryBudgetMessage(phase: AutomaticRetryPhase, error: unknown): string {
+		const detail = error instanceof Error ? error.message : String(error ?? "Unknown error")
+		switch (phase) {
+			case "first_chunk":
+				return `Automatic retry budget exhausted after ${Task.MAX_AUTOMATIC_REQUEST_RETRIES} retries while waiting for the first response chunk. Last error: ${detail}`
+			case "mid_stream":
+				return `Automatic retry budget exhausted after ${Task.MAX_AUTOMATIC_REQUEST_RETRIES} retries after the provider interrupted streaming. Last error: ${detail}`
+			case "empty_response":
+				return `Automatic retry budget exhausted after ${Task.MAX_AUTOMATIC_REQUEST_RETRIES} retries because the model returned no assistant messages. Last error: ${detail}`
 		}
+	}
+
+	private async failAutomaticRetryBudget(
+		phase: AutomaticRetryPhase,
+		retryAttempt: number,
+		error: unknown,
+		options?: {
+			restoreUserMessageContent?: Anthropic.Messages.ContentBlockParam[]
+			appendFailureAssistant?: boolean
+		},
+	): Promise<never> {
+		if (options?.restoreUserMessageContent) {
+			await this.addToApiConversationHistory({
+				role: "user",
+				content: options.restoreUserMessageContent,
+			})
+		}
+
+		await this.say("error", this.buildAutomaticRetryBudgetMessage(phase, error))
+
+		if (options?.appendFailureAssistant) {
+			await this.addToApiConversationHistory({
+				role: "assistant",
+				content: [{ type: "text", text: "Failure: I did not provide a response." }],
+			})
+		}
+
+		throw new AutomaticRetryBudgetExceededError(phase, retryAttempt, error)
 	}
 
 	// Shared exponential backoff for retries (first-chunk and mid-stream)
@@ -5073,7 +5228,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return this.metadata.task ?? ""
 	}
 
-	public async getOrchestrationFlags(): Promise<{ hasBackgroundCapacity: boolean; hasHelperRouting: boolean }> {
+	public async getOrchestrationFlags(): Promise<{
+		hasBackgroundCapacity: boolean
+		hasHelperRouting: boolean
+		requireStructuredDelegation: boolean
+	}> {
 		const state = await this.providerRef.deref()?.getState()
 
 		return {
@@ -5081,6 +5240,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			hasHelperRouting: Boolean(
 				state?.enhancementApiConfigId || state?.condensingApiConfigId || state?.terminalCommandApiConfigId,
 			),
+			requireStructuredDelegation: state?.structuredDelegationEnabled === true,
 		}
 	}
 
@@ -5092,6 +5252,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			candidateToolCalls,
 			hasBackgroundCapacity: false,
 			hasHelperRouting: false,
+			requireStructuredDelegation: false,
 		})
 	}
 
@@ -5105,6 +5266,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			candidateToolCalls,
 			hasBackgroundCapacity: flags.hasBackgroundCapacity,
 			hasHelperRouting: flags.hasHelperRouting,
+			requireStructuredDelegation: flags.requireStructuredDelegation,
 		})
 	}
 

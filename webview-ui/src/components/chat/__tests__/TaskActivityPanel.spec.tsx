@@ -239,6 +239,47 @@ describe("TaskActivityPanel", () => {
 		expect(screen.queryByText("chat:orchestration.completedCount 1")).not.toBeInTheDocument()
 	})
 
+	it("derives abstained summary-only state from persisted delegation outcome after reload", () => {
+		render(
+			<TaskActivityPanel
+				currentTaskItem={{ id: "parent-1", childIds: ["child-1"] } as any}
+				taskHistory={
+					[
+						{
+							id: "parent-1",
+							task: "Parent task",
+							number: 1,
+							ts: 1,
+							tokensIn: 0,
+							tokensOut: 0,
+							totalCost: 0,
+							childIds: ["child-1"],
+						},
+						{
+							id: "child-1",
+							task: "Abstained background child",
+							number: 2,
+							ts: 2,
+							tokensIn: 0,
+							tokensOut: 0,
+							totalCost: 0,
+							parentTaskId: "parent-1",
+							rootTaskId: "parent-1",
+							execution: "background",
+							status: "aborted",
+							lifecycleState: "completed",
+							delegationOutcomeStatus: "abstained",
+						},
+					] as any
+				}
+			/>,
+		)
+
+		expect(screen.getByTestId("orchestration-summary-only")).toBeInTheDocument()
+		expect(screen.getAllByTestId("orchestration-status-badge-abstained").length).toBeGreaterThan(0)
+		expect(screen.queryByText("chat:orchestration.abstainedCount 1")).not.toBeInTheDocument()
+	})
+
 	it("derives queued summary-only state from background child history before activity arrives", () => {
 		render(
 			<TaskActivityPanel
@@ -521,6 +562,45 @@ describe("TaskActivityPanel", () => {
 		expect(screen.getByTestId("activity-item-explanation-sa-outcome")).toHaveTextContent(
 			"outcome: Produced concise implementation summary · 20",
 		)
+	})
+
+	it("collapses repeated stop entries in the timeline down to the latest duplicate", () => {
+		render(
+			<TaskActivityPanel
+				activity={
+					[
+						{
+							kind: "taskControl",
+							id: "tc-1",
+							taskId: "parent-1",
+							control: "pause",
+							summary: "Task cancelled by user",
+							timestamp: 10,
+						},
+						{
+							kind: "taskControl",
+							id: "tc-2",
+							taskId: "parent-1",
+							control: "pause",
+							summary: "Task cancelled by user",
+							timestamp: 20,
+						},
+						{
+							kind: "taskControl",
+							id: "tc-3",
+							taskId: "parent-1",
+							control: "pause",
+							summary: "Task cancelled by user",
+							timestamp: 30,
+						},
+					] as any
+				}
+			/>,
+		)
+
+		expect(screen.getAllByText("Task cancelled by user")).toHaveLength(1)
+		expect(screen.getByTestId("activity-item-tc-3")).toBeInTheDocument()
+		expect(screen.queryByTestId("activity-item-tc-1")).not.toBeInTheDocument()
 	})
 
 	it("renders blocked relay events with a failed orchestration badge", () => {

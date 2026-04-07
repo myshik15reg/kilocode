@@ -39,13 +39,30 @@ vi.mock("p-wait-for", () => ({
 	default: vi.fn().mockResolvedValue(undefined),
 }))
 
-vi.mock("fs/promises", () => ({
-	mkdir: vi.fn().mockResolvedValue(undefined),
-	writeFile: vi.fn().mockResolvedValue(undefined),
-	readFile: vi.fn().mockResolvedValue(""),
-	unlink: vi.fn().mockResolvedValue(undefined),
-	rmdir: vi.fn().mockResolvedValue(undefined),
-}))
+vi.mock("fs/promises", () => {
+	const mockFs = {
+		mkdir: vi.fn().mockResolvedValue(undefined),
+		writeFile: vi.fn().mockResolvedValue(undefined),
+		readFile: vi.fn().mockResolvedValue(""),
+		unlink: vi.fn().mockResolvedValue(undefined),
+		rmdir: vi.fn().mockResolvedValue(undefined),
+		rm: vi.fn().mockResolvedValue(undefined),
+		readdir: vi.fn().mockResolvedValue([]),
+		realpath: vi.fn().mockImplementation(async (value: string) => value),
+		stat: vi.fn().mockResolvedValue({
+			isDirectory: () => false,
+		}),
+		access: vi.fn().mockResolvedValue(undefined),
+		existsSync: vi.fn().mockReturnValue(false),
+		readFileSync: vi.fn().mockReturnValue(""),
+	}
+
+	return {
+		__esModule: true,
+		default: mockFs,
+		...mockFs,
+	}
+})
 
 vi.mock("axios", () => ({
 	default: {
@@ -161,6 +178,11 @@ vi.mock("vscode", () => ({
 	commands: {
 		executeCommand: vi.fn().mockResolvedValue(undefined),
 	},
+	ConfigurationTarget: {
+		Global: 1,
+		Workspace: 2,
+		WorkspaceFolder: 3,
+	},
 	window: {
 		showInformationMessage: vi.fn(),
 		showWarningMessage: vi.fn(),
@@ -170,7 +192,11 @@ vi.mock("vscode", () => ({
 	},
 	workspace: {
 		getConfiguration: vi.fn().mockReturnValue({
-			get: vi.fn().mockReturnValue([]),
+			get: vi
+				.fn()
+				.mockImplementation((key: string, fallback?: any) =>
+					key === "colorTheme" ? "Default Dark Modern" : (fallback ?? []),
+				),
 			update: vi.fn(),
 		}),
 		onDidChangeConfiguration: vi.fn().mockImplementation(() => ({
@@ -180,6 +206,15 @@ vi.mock("vscode", () => ({
 		onDidChangeTextDocument: vi.fn(() => ({ dispose: vi.fn() })),
 		onDidOpenTextDocument: vi.fn(() => ({ dispose: vi.fn() })),
 		onDidCloseTextDocument: vi.fn(() => ({ dispose: vi.fn() })),
+		workspaceFolders: [],
+	},
+	extensions: {
+		all: [],
+		getExtension: vi.fn().mockReturnValue({
+			extensionPath: "/test/extension",
+			extensionUri: { fsPath: "/test/extension" },
+			packageJSON: {},
+		}),
 	},
 	env: {
 		uriScheme: "vscode",
@@ -239,6 +274,10 @@ vi.mock("../../task/Task", () => ({
 		setTaskNumber: vi.fn(),
 		setParentTask: vi.fn(),
 		setRootTask: vi.fn(),
+		updateApiConfiguration: vi.fn(),
+		setTaskApiConfigName: vi.fn(),
+		_taskApiConfigName: options?.historyItem?.apiConfigName,
+		taskApiConfigName: options?.historyItem?.apiConfigName,
 		taskId: options?.historyItem?.id || "test-task-id",
 		emit: vi.fn(),
 	})),
@@ -339,14 +378,32 @@ vi.mock("../diff/strategies/multi-search-replace", () => ({
 }))
 
 vi.mock("@roo-code/cloud", () => ({
-	CloudService: {
-		hasInstance: vi.fn().mockReturnValue(true),
-		get instance() {
-			return {
-				isAuthenticated: vi.fn().mockReturnValue(false),
-			}
-		},
-	},
+	CloudService: (() => {
+		const instance = {
+			isAuthenticated: vi.fn().mockReturnValue(false),
+			on: vi.fn(),
+			off: vi.fn(),
+			getUserSettings: vi.fn().mockReturnValue(undefined),
+			getAllowList: vi.fn().mockResolvedValue(undefined),
+			getUserInfo: vi.fn().mockReturnValue(null),
+			canShareTask: vi.fn().mockResolvedValue(false),
+			canSharePublicly: vi.fn().mockResolvedValue(false),
+			getOrganizationSettings: vi.fn().mockReturnValue(undefined),
+			isTaskSyncEnabled: vi.fn().mockReturnValue(false),
+			getOrganizationMemberships: vi.fn().mockResolvedValue([]),
+			isCloudAgent: false,
+			cloudAPI: {
+				bridgeConfig: vi.fn().mockResolvedValue(undefined),
+			},
+		}
+
+		return {
+			hasInstance: vi.fn().mockReturnValue(true),
+			get instance() {
+				return instance
+			},
+		}
+	})(),
 	BridgeOrchestrator: {
 		isEnabled: vi.fn().mockReturnValue(false),
 	},
@@ -383,6 +440,10 @@ describe("ClineProvider", () => {
 				setTaskNumber: vi.fn(),
 				setParentTask: vi.fn(),
 				setRootTask: vi.fn(),
+				updateApiConfiguration: vi.fn(),
+				setTaskApiConfigName: vi.fn(),
+				_taskApiConfigName: options?.historyItem?.apiConfigName,
+				taskApiConfigName: options?.historyItem?.apiConfigName,
 				taskId: options?.historyItem?.id || "test-task-id",
 				emit: vi.fn(),
 			}
@@ -515,6 +576,77 @@ describe("ClineProvider", () => {
 		expect(ClineProvider.getVisibleInstance()).toBe(provider)
 	})
 
+	test("getTaskWithId tolerates transiently missing api history when task exists in history", async () => {
+		await provider.contextProxy.initialize()
+		await provider.contextProxy.setValue("taskHistory", [
+			{
+				id: "task-transient-history",
+				number: 1,
+				task: "Transient history task",
+				ts: 1,
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+			},
+		])
+
+		const fsUtils = await import("../../../utils/fs")
+		const taskPersistence = await import("../../task-persistence")
+		vi.spyOn(fsUtils, "fileExistsAtPath").mockResolvedValue(false)
+		const readApiMessagesSpy = vi.spyOn(taskPersistence, "readApiMessages").mockResolvedValue([] as any)
+		vi.mocked(vscode.window.showErrorMessage).mockClear()
+
+		const result = await provider.getTaskWithId("task-transient-history")
+
+		expect(result.historyItem.id).toBe("task-transient-history")
+		expect(result.apiConversationHistory).toEqual([])
+		expect(readApiMessagesSpy).toHaveBeenCalledWith({
+			taskId: "task-transient-history",
+			globalStoragePath: "/test/storage/path",
+		})
+		expect(vscode.window.showErrorMessage).not.toHaveBeenCalled()
+	})
+
+	test("getTaskWithAggregatedCosts uses task history only and tolerates missing child tasks", async () => {
+		await provider.contextProxy.initialize()
+		await provider.contextProxy.setValue("taskHistory", [
+			{
+				id: "task-parent-aggregate",
+				number: 1,
+				task: "Parent aggregate task",
+				ts: 1,
+				tokensIn: 10,
+				tokensOut: 20,
+				totalCost: 1.25,
+				childIds: ["task-child-present", "task-child-missing"],
+			},
+			{
+				id: "task-child-present",
+				number: 2,
+				task: "Present child task",
+				ts: 2,
+				tokensIn: 5,
+				tokensOut: 5,
+				totalCost: 0.75,
+				childIds: [],
+			},
+		])
+
+		const taskPersistence = await import("../../task-persistence")
+		const readApiMessagesSpy = vi.spyOn(taskPersistence, "readApiMessages")
+		vi.mocked(vscode.window.showErrorMessage).mockClear()
+
+		const result = await provider.getTaskWithAggregatedCosts("task-parent-aggregate")
+
+		expect(result.historyItem.id).toBe("task-parent-aggregate")
+		expect(result.aggregatedCosts.ownCost).toBe(1.25)
+		expect(result.aggregatedCosts.childrenCost).toBe(0.75)
+		expect(result.aggregatedCosts.totalCost).toBe(2)
+		expect(result.aggregatedCosts.childBreakdown?.["task-child-present"]?.totalCost).toBe(0.75)
+		expect(result.aggregatedCosts.childBreakdown?.["task-child-missing"]?.totalCost).toBe(0)
+		expect(readApiMessagesSpy).not.toHaveBeenCalled()
+		expect(vscode.window.showErrorMessage).not.toHaveBeenCalled()
+	})
 	test("resolveWebviewView sets up webview correctly", async () => {
 		await provider.resolveWebviewView(mockWebviewView)
 
@@ -948,6 +1080,33 @@ describe("ClineProvider", () => {
 		expect(state).toHaveProperty("ttsEnabled")
 		expect(state).toHaveProperty("diffEnabled")
 		expect(state).toHaveProperty("writeDelayMs")
+	})
+
+	test("getStateToPostToWebview redacts global image and fast-apply secrets while exposing presence flags", async () => {
+		await provider.contextProxy.initialize()
+		await provider.contextProxy.setValue("morphApiKey", "morph-secret")
+		await provider.contextProxy.setValue("openRouterImageApiKey", "openrouter-secret")
+		await provider.contextProxy.setValue("kiloCodeImageApiKey", "kilocode-secret")
+		await provider.contextProxy.setValue("litellmImageApiKey", "litellm-secret")
+		await provider.contextProxy.setValue("litellmImageBaseUrl", "https://litellm.example")
+
+		const hostState = await provider.getState()
+		const webviewState = await provider.getStateToPostToWebview()
+
+		expect(hostState.morphApiKey).toBe("morph-secret")
+		expect(hostState.openRouterImageApiKey).toBe("openrouter-secret")
+		expect(hostState.kiloCodeImageApiKey).toBe("kilocode-secret")
+		expect(hostState.litellmImageApiKey).toBe("litellm-secret")
+
+		expect(webviewState.morphApiKey).toBe("")
+		expect(webviewState.hasMorphApiKey).toBe(true)
+		expect(webviewState.openRouterImageApiKey).toBe("")
+		expect(webviewState.hasOpenRouterImageApiKey).toBe(true)
+		expect(webviewState.kiloCodeImageApiKey).toBe("")
+		expect(webviewState.hasKiloCodeImageApiKey).toBe(true)
+		expect(webviewState.litellmImageApiKey).toBe("")
+		expect(webviewState.hasLitellmImageApiKey).toBe(true)
+		expect(webviewState.litellmImageBaseUrl).toBe("https://litellm.example")
 	})
 
 	test("getStateToPostToWebview merges persisted and live current task activity through the canonical projection", async () => {
@@ -1767,6 +1926,31 @@ describe("ClineProvider", () => {
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("parallelAgentCount", 4)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("parallelAgentCount", 4)
 		expect(mockPostMessage).toHaveBeenCalled()
+	})
+
+	test("getState exposes orchestration expert settings", async () => {
+		await provider.contextProxy.initialize()
+		await provider.contextProxy.setValue("orchestrationTelemetryEnabled", false)
+		await provider.contextProxy.setValue("helperLocalityPreference", "require")
+		await provider.contextProxy.setValue("orchestrationEscalationSensitivity", "aggressive")
+		await provider.contextProxy.setValue("structuredDelegationEnabled", true)
+		await provider.contextProxy.setValue("evaluatorPassEnabled", true)
+		await provider.contextProxy.setValue("memoryPromotionEnabled", true)
+		await provider.contextProxy.setValue("retrievalPolicy", "hybrid")
+		await provider.contextProxy.setValue("queryClassifierDebug", true)
+
+		const state = await provider.getState()
+
+		expect(state).toMatchObject({
+			orchestrationTelemetryEnabled: false,
+			helperLocalityPreference: "require",
+			orchestrationEscalationSensitivity: "aggressive",
+			structuredDelegationEnabled: true,
+			evaluatorPassEnabled: true,
+			memoryPromotionEnabled: true,
+			retrievalPolicy: "hybrid",
+			queryClassifierDebug: true,
+		})
 	})
 
 	test("contextRoutingEnabled defaults to true", async () => {
@@ -4973,6 +5157,57 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				// Should handle future timestamps correctly
 				expect(mockCline.overwriteClineMessages).toHaveBeenCalled()
 				expect(mockCline.submitUserMessage).toHaveBeenCalled()
+			})
+		})
+	})
+	describe("MCP marketplace hardening", () => {
+		test("uses cached MCP marketplace catalog after retryable fetch failures", async () => {
+			const cachedCatalog = {
+				items: [
+					{
+						id: "cached-server",
+						name: "Cached Server",
+						githubStars: 0,
+						downloadCount: 0,
+						tags: [],
+					},
+				],
+			} as any
+			;(axios.get as any).mockRejectedValue({ isAxiosError: true, response: { status: 503 } })
+			vi.spyOn(provider as any, "getCachedMcpMarketplaceCatalog").mockResolvedValue(cachedCatalog)
+
+			const result = await (provider as any).fetchMcpMarketplaceFromApi(true)
+
+			expect(result).toEqual(cachedCatalog)
+			expect(axios.get).toHaveBeenCalledTimes(1)
+			expect(axios.get).toHaveBeenCalledWith("https://api.cline.bot/v1/mcp/marketplace", {
+				headers: {
+					"Content-Type": "application/json",
+				},
+				timeout: 10000,
+			})
+		})
+
+		test("retries MCP download requests before succeeding", async () => {
+			;(provider as any).mcpHub = { getServers: vi.fn().mockReturnValue([]) }
+			const createTaskSpy = vi.spyOn(provider, "createTask").mockResolvedValue(undefined as any)
+			const postMessageSpy = vi.spyOn(provider as any, "postMessageToWebview").mockResolvedValue(undefined)
+			;(axios.post as any).mockRejectedValueOnce({ request: {}, code: "ECONNRESET" }).mockResolvedValueOnce({
+				data: {
+					mcpId: "retry-server",
+					githubUrl: "https://github.com/example/retry-server",
+					readmeContent: "README",
+					llmsInstallationContent: "",
+				},
+			})
+
+			await provider.downloadMcp("retry-server")
+
+			expect(axios.post).toHaveBeenCalledTimes(2)
+			expect(createTaskSpy).toHaveBeenCalled()
+			expect(postMessageSpy).toHaveBeenCalledWith({
+				type: "mcpDownloadDetails",
+				mcpDownloadDetails: expect.objectContaining({ mcpId: "retry-server" }),
 			})
 		})
 	})

@@ -12,6 +12,9 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 	private isProcessing = false
 	private retryTimer?: NodeJS.Timeout
 	private readonly STORAGE_KEY = "roo.retryQueue"
+	private static readonly DEFAULT_MAX_RETRIES = 5
+	private static readonly MAX_PERSISTED_BODY_BYTES = 64 * 1024
+	private static readonly MAX_PERSISTED_HEADERS = 32
 	private authHeaderProvider?: AuthHeaderProvider
 	private queuePausedUntil?: number // Timestamp when the queue can resume processing
 	private isPaused = false // Manual pause state (e.g., for auth state changes)
@@ -30,7 +33,7 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 		this.authHeaderProvider = authHeaderProvider
 
 		this.config = {
-			maxRetries: 0,
+			maxRetries: RetryQueue.DEFAULT_MAX_RETRIES,
 			retryDelay: 60000,
 			maxQueueSize: 100,
 			persistQueue: true,
@@ -49,10 +52,16 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 		try {
 			const stored = this.context.workspaceState.get<QueuedRequest[]>(this.STORAGE_KEY)
 			if (stored && Array.isArray(stored)) {
+				let loadedCount = 0
 				stored.forEach((request) => {
-					this.queue.set(request.id, request)
+					const sanitizedOptions = this.sanitizeRequestOptions(request.options)
+					if (!sanitizedOptions) {
+						return
+					}
+					this.queue.set(request.id, { ...request, options: sanitizedOptions })
+					loadedCount++
 				})
-				this.log(`[RetryQueue] Loaded ${stored.length} persisted requests from workspace storage`)
+				this.log(`[RetryQueue] Loaded ${loadedCount} persisted requests from workspace storage`)
 			}
 		} catch (error) {
 			this.log("[RetryQueue] Failed to load persisted queue:", error)
@@ -83,10 +92,16 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 			}
 		}
 
+		const sanitizedOptions = this.sanitizeRequestOptions(options)
+		if (!sanitizedOptions) {
+			this.log(`[RetryQueue] Skipping queue for request with unsupported or oversized payload: ${url}`)
+			return
+		}
+
 		const request: QueuedRequest = {
 			id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 			url,
-			options,
+			options: sanitizedOptions,
 			timestamp: Date.now(),
 			retryCount: 0,
 			type,
@@ -169,7 +184,7 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 					request.lastError = error instanceof Error ? error.message : String(error)
 
 					// Check if we've exceeded max retries
-					if (this.config.maxRetries > 0 && request.retryCount >= this.config.maxRetries) {
+					if (request.retryCount >= this.config.maxRetries) {
 						this.log(
 							`[RetryQueue] Max retries (${this.config.maxRetries}) reached for request: ${request.url}`,
 						)
@@ -360,6 +375,70 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 		}
 
 		return false
+	}
+
+	private sanitizeRequestOptions(options: RequestInit): RequestInit | null {
+		const normalizedHeaders = this.normalizeHeaders(options.headers)
+		if (normalizedHeaders === null) {
+			return null
+		}
+
+		const sanitizedBody = this.normalizeBody(options.body)
+		if (options.body !== undefined && sanitizedBody === undefined) {
+			return null
+		}
+
+		return {
+			method: options.method,
+			headers: normalizedHeaders,
+			body: sanitizedBody,
+			cache: options.cache,
+			credentials: options.credentials,
+			integrity: options.integrity,
+			keepalive: options.keepalive,
+			mode: options.mode,
+			redirect: options.redirect,
+			referrer: options.referrer,
+			referrerPolicy: options.referrerPolicy,
+		}
+	}
+
+	private normalizeHeaders(headers: RequestInit["headers"]): Record<string, string> | undefined | null {
+		if (!headers) {
+			return undefined
+		}
+
+		try {
+			const normalized = new Headers(headers)
+			const result: Record<string, string> = {}
+			let count = 0
+			for (const [key, value] of normalized.entries()) {
+				if (count >= RetryQueue.MAX_PERSISTED_HEADERS) {
+					break
+				}
+				result[key] = value
+				count++
+			}
+			return result
+		} catch {
+			return null
+		}
+	}
+
+	private normalizeBody(body: RequestInit["body"]): string | undefined {
+		if (body === undefined || body === null) {
+			return undefined
+		}
+
+		if (typeof body !== "string") {
+			return undefined
+		}
+
+		if (Buffer.byteLength(body, "utf8") > RetryQueue.MAX_PERSISTED_BODY_BYTES) {
+			return undefined
+		}
+
+		return body
 	}
 
 	public dispose(): void {

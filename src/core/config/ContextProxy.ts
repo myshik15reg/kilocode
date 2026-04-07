@@ -1,4 +1,4 @@
-import * as vscode from "vscode"
+﻿import * as vscode from "vscode"
 import { ZodError } from "zod"
 import { EventEmitter } from "events"
 import crypto from "crypto"
@@ -106,6 +106,9 @@ export class ContextProxy {
 		// Migration: Check for old nested image generation settings and migrate them
 		await this.migrateImageGenerationSettings()
 
+		// Migration: Move legacy plaintext global secrets into SecretStorage
+		await this.migrateLegacyGlobalSecrets()
+
 		// Migration: Sanitize invalid/removed API providers
 		await this.migrateInvalidApiProvider()
 
@@ -169,6 +172,27 @@ export class ContextProxy {
 				`Error during image generation settings migration: ${error instanceof Error ? error.message : String(error)}`,
 			)
 		}
+	}
+
+	private async migrateLegacyGlobalSecrets() {
+		try {
+			await this.migrateLegacyGlobalSecret("morphApiKey")
+		} catch (error) {
+			logger.error(
+				`Error during legacy global secret migration: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
+
+	private async migrateLegacyGlobalSecret(key: SecretStateKey) {
+		const plaintextValue = this.originalContext.globalState.get<string>(key)
+		if (!plaintextValue || this.secretCache[key]) {
+			return
+		}
+
+		await this.storeSecret(key, plaintextValue)
+		await this.originalContext.globalState.update(key, undefined)
+		logger.info(`Migrated legacy plaintext secret ${key} to secret storage`)
 	}
 
 	public get extensionUri() {

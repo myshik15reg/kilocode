@@ -1,4 +1,4 @@
-import { RooCodeEventName, type HistoryItem, type TaskResumeControl } from "@roo-code/types"
+﻿import { RooCodeEventName, type HistoryItem, type TaskResumeControl } from "@roo-code/types"
 
 import type { SubagentCoordinatorRuntime } from "../subagents/SubagentDelegationService"
 import type { Task } from "../../task/Task"
@@ -71,21 +71,35 @@ export class TaskControlService {
 	}
 
 	public resumeTask(taskId: string, control: TaskResumeControl = "resume"): void {
-		const coordinator = this.runtime.getSubagentCoordinator()
-		const backgroundBinding = coordinator?.getBindingForTask?.(taskId)
-		if (backgroundBinding && coordinator?.resume) {
-			void coordinator.resume(taskId)
-		}
-
-		const task = this.runtime.getCurrentTask()
-		if (task?.taskId === taskId) {
-			task.isPaused = false
-			task.emit(RooCodeEventName.TaskUnpaused, taskId)
-		}
-
 		void (async () => {
+			let shouldShowTask = false
+			let shouldUnpauseCurrentTask = false
+
 			try {
 				const { historyItem } = await this.runtime.getTaskWithId(taskId)
+				const isTerminalTask =
+					historyItem.status === "completed" ||
+					historyItem.status === "aborted" ||
+					historyItem.lifecycleState === "completed" ||
+					historyItem.lifecycleState === "cancelled"
+				if (isTerminalTask) {
+					this.runtime.log(`[resumeTask] Skipping resume for terminal task ${taskId}`)
+					return
+				}
+
+				if (historyItem.awaitingChildId) {
+					this.runtime.log(
+						`[resumeTask] Skipping resume for task ${taskId} while awaiting child ${historyItem.awaitingChildId}`,
+					)
+					return
+				}
+
+				const coordinator = this.runtime.getSubagentCoordinator()
+				const backgroundBinding = coordinator?.getBindingForTask?.(taskId)
+				if (backgroundBinding && coordinator?.resume) {
+					await coordinator.resume(taskId)
+				}
+
 				const statusUpdatedAt = Date.now()
 				await this.runtime.updateTaskHistory({
 					...historyItem,
@@ -110,13 +124,30 @@ export class TaskControlService {
 					summary: control === "continue" ? "Task continued" : "Task resumed",
 					timestamp,
 				})
+
+				shouldUnpauseCurrentTask = true
+				shouldShowTask = true
 			} catch (error) {
-				this.runtime.log(`Failed to update task state for resume ${taskId}: ${(error as Error).message}`)
+				this.runtime.log(
+					`Failed to update task state for resume ${taskId}: ${error instanceof Error ? error.message : String(error)}`,
+				)
 			} finally {
+				if (shouldUnpauseCurrentTask) {
+					const task = this.runtime.getCurrentTask()
+					if (task?.taskId === taskId) {
+						task.isPaused = false
+						task.emit(RooCodeEventName.TaskUnpaused, taskId)
+					}
+				}
+
 				await this.runtime.postStateToWebview()
-				await this.runtime.showTaskWithId(taskId).catch((error) => {
-					this.runtime.log(`Failed to resume task ${taskId}: ${error.message}`)
-				})
+				if (shouldShowTask) {
+					await this.runtime.showTaskWithId(taskId).catch((error) => {
+						this.runtime.log(
+							`Failed to resume task ${taskId}: ${error instanceof Error ? error.message : String(error)}`,
+						)
+					})
+				}
 			}
 		})()
 	}

@@ -127,6 +127,21 @@ export function kilo_initializeSessionManager({
 
 					return result || undefined
 				},
+				getHistoryItem: async (taskId: string) => {
+					try {
+						const currentTask = provider.getCurrentTask()
+
+						if (currentTask?.taskId === taskId) {
+							const task = await provider.getTaskWithId(taskId, false)
+							return task.historyItem
+						}
+
+						const task = await provider.getTaskWithId(taskId, false)
+						return task.historyItem
+					} catch {
+						return undefined
+					}
+				},
 				getParentTaskId: async (taskId: string) => {
 					const result = await (async () => {
 						try {

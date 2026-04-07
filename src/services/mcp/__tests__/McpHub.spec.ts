@@ -7,6 +7,7 @@ import type { ClineProvider } from "../../../core/webview/ClineProvider"
 
 import type { McpHub as McpHubType, McpConnection, ConnectedMcpConnection, DisconnectedMcpConnection } from "../McpHub"
 import { ServerConfigSchema, McpHub } from "../McpHub"
+import { McpServerManager } from "../McpServerManager"
 
 // Mock fs/promises before importing anything that uses it
 vi.mock("fs/promises", () => ({
@@ -125,6 +126,7 @@ describe("McpHub", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
+		McpHub.clearRegisteredProviders()
 
 		// Mock console.error to suppress error messages during tests
 		console.error = vi.fn()
@@ -2315,5 +2317,124 @@ describe("McpHub", () => {
 				}),
 			)
 		})
+	})
+	it("schedules reconnect even when webview notify fails after a transport error", async () => {
+		const stdioModule = await import("@modelcontextprotocol/sdk/client/stdio.js")
+		const StdioClientTransport = stdioModule.StdioClientTransport as ReturnType<typeof vi.fn>
+
+		const mockTransport = {
+			start: vi.fn().mockResolvedValue(undefined),
+			close: vi.fn().mockResolvedValue(undefined),
+			stderr: {
+				on: vi.fn(),
+			},
+			onerror: null,
+			onclose: null,
+		}
+
+		StdioClientTransport.mockImplementation(() => mockTransport)
+
+		const clientModule = await import("@modelcontextprotocol/sdk/client/index.js")
+		const Client = clientModule.Client as ReturnType<typeof vi.fn>
+		Client.mockImplementation(() => ({
+			connect: vi.fn().mockResolvedValue(undefined),
+			close: vi.fn().mockResolvedValue(undefined),
+			getInstructions: vi.fn().mockReturnValue("test instructions"),
+			request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			getServerCapabilities: vi.fn().mockResolvedValue({ tools: {} }),
+		}))
+
+		vi.mocked(fs.readFile).mockResolvedValue(
+			JSON.stringify({
+				mcpServers: {
+					"reconnect-test-server": {
+						command: "node",
+						args: ["test.js"],
+					},
+				},
+			}),
+		)
+
+		const hub = new McpHub(mockProvider as ClineProvider) as any
+		await new Promise((resolve) => setTimeout(resolve, 50))
+
+		const scheduleReconnectSpy = vi.spyOn(hub, "scheduleReconnect").mockImplementation(() => {})
+		vi.spyOn(hub, "notifyWebviewOfServerChanges").mockRejectedValue(new Error("notify failed"))
+
+		await expect((mockTransport.onerror as any)(new Error("transport down"))).resolves.toBeUndefined()
+		expect(scheduleReconnectSpy).toHaveBeenCalledWith("reconnect-test-server", "global")
+	})
+
+	it("tolerates config read failures while notifying webviews", async () => {
+		const hub = new McpHub(mockProvider as ClineProvider) as any
+		hub.connections = [
+			{
+				type: "disconnected",
+				client: null,
+				transport: null,
+				server: {
+					name: "test-server",
+					config: JSON.stringify({ command: "node", args: ["test.js"] }),
+					status: "disconnected",
+					source: "global",
+					errorHistory: [],
+				},
+			},
+		]
+
+		vi.mocked(fs.readFile).mockRejectedValue(new Error("read failed"))
+
+		await expect(hub.notifyWebviewOfServerChanges()).resolves.toBeUndefined()
+		expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "mcpServers",
+			mcpServers: [hub.connections[0].server],
+		})
+	})
+
+	it("broadcasts server updates to all registered providers", async () => {
+		const secondProvider = {
+			postMessageToWebview: vi.fn().mockResolvedValue(undefined),
+		} as unknown as ClineProvider
+		McpHub.registerProvider(secondProvider)
+
+		const hub = new McpHub(mockProvider as ClineProvider) as any
+		hub.connections = [
+			{
+				type: "disconnected",
+				client: null,
+				transport: null,
+				server: {
+					name: "fanout-server",
+					config: JSON.stringify({ command: "node", args: ["test.js"] }),
+					status: "disconnected",
+					source: "global",
+					errorHistory: [],
+				},
+			},
+		]
+
+		await hub.notifyWebviewOfServerChanges()
+		expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "mcpServers",
+			mcpServers: [hub.connections[0].server],
+		})
+		expect(secondProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "mcpServers",
+			mcpServers: [hub.connections[0].server],
+		})
+	})
+
+	it("uses the manager fan-out helper for registered providers", async () => {
+		const secondProvider = {
+			postMessageToWebview: vi.fn().mockResolvedValue(undefined),
+		} as unknown as ClineProvider
+		McpHub.registerProvider(mockProvider as ClineProvider)
+		McpHub.registerProvider(secondProvider)
+
+		McpServerManager.notifyProviders({ type: "mcpServers", mcpServers: [] })
+		await Promise.resolve()
+
+		expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({ type: "mcpServers", mcpServers: [] })
+		expect(secondProvider.postMessageToWebview).toHaveBeenCalledWith({ type: "mcpServers", mcpServers: [] })
 	})
 })

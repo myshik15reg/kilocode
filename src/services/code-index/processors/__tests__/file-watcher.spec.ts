@@ -119,6 +119,7 @@ describe("FileWatcher", () => {
 			upsertPoints: vi.fn().mockResolvedValue(undefined),
 			deletePointsByFilePath: vi.fn().mockResolvedValue(undefined),
 			deletePointsByMultipleFilePaths: vi.fn().mockResolvedValue(undefined),
+			getPointsByFilePaths: vi.fn().mockResolvedValue([]),
 		}
 
 		mockIgnoreInstance = {
@@ -294,6 +295,53 @@ describe("FileWatcher", () => {
 			expect(processedFiles).not.toContain("src/.hidden/components/Button.tsx")
 			expect(processedFiles).not.toContain(".hidden/src/components/Button.tsx")
 			expect(processedFiles).not.toContain("src/components/.hidden/Button.tsx")
+		})
+	})
+
+	describe("rollback protection", () => {
+		it("restores previous points when changed-file processing fails after delete", async () => {
+			mockCacheManager.getHash.mockReturnValue("old-hash")
+			vi.mocked(codeParser.parseFile).mockResolvedValue([
+				{
+					file_path: "/mock/workspace/src/file.ts",
+					content: "updated content",
+					start_line: 1,
+					end_line: 4,
+					identifier: "handler",
+					type: "function",
+					fileHash: "new-hash",
+					segmentHash: "new-segment-hash",
+				},
+			] as any)
+			mockEmbedder.createEmbeddings.mockRejectedValue(new Error("Embedding failed"))
+			const previousPoints = [
+				{
+					id: "previous-point",
+					vector: [0.9, 0.8, 0.7],
+					payload: {
+						filePath: "src\\file.ts",
+						codeChunk: "old content",
+						startLine: 1,
+						endLine: 3,
+					},
+				},
+			]
+			mockVectorStore.getPointsByFilePaths.mockResolvedValue(previousPoints)
+
+			await (fileWatcher as any).processBatch(
+				new Map([
+					["/mock/workspace/src/file.ts", { uri: { fsPath: "/mock/workspace/src/file.ts" }, type: "change" }],
+				]),
+			)
+
+			expect(mockVectorStore.getPointsByFilePaths).toHaveBeenCalledWith(["/mock/workspace/src/file.ts"])
+			expect(mockVectorStore.deletePointsByMultipleFilePaths).toHaveBeenNthCalledWith(1, [
+				"/mock/workspace/src/file.ts",
+			])
+			expect(mockVectorStore.deletePointsByMultipleFilePaths).toHaveBeenLastCalledWith([
+				"/mock/workspace/src/file.ts",
+			])
+			expect(mockVectorStore.upsertPoints).toHaveBeenCalledWith(previousPoints)
 		})
 	})
 

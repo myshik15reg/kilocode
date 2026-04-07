@@ -1,15 +1,19 @@
 import * as vscode from "vscode"
 import * as dotenvx from "@dotenvx/dotenvx"
 import * as path from "path"
+import { existsSync } from "fs"
 
-// Load environment variables from .env file
-try {
-	// Specify path to .env file in the project root directory
-	const envPath = path.join(__dirname, "..", ".env")
-	dotenvx.config({ path: envPath })
-} catch (e) {
-	// Silently handle environment loading errors
-	console.warn("Failed to load environment variables:", e)
+const shouldLoadBundledEnv = process.env.NODE_ENV === "development" || process.env.KILOCODE_LOAD_DOTENV === "true"
+
+if (shouldLoadBundledEnv) {
+	try {
+		const envPath = path.join(__dirname, "..", ".env")
+		if (existsSync(envPath)) {
+			dotenvx.config({ path: envPath })
+		}
+	} catch (e) {
+		console.warn("Failed to load environment variables:", e)
+	}
 }
 
 import type { CloudUserInfo, AuthState } from "@roo-code/types"
@@ -31,6 +35,7 @@ import { claudeCodeOAuthManager } from "./integrations/claude-code/oauth"
 import { openAiCodexOAuthManager } from "./integrations/openai-codex/oauth"
 import { McpServerManager } from "./services/mcp/McpServerManager"
 import { CodeIndexManager } from "./services/code-index/manager"
+import { Neo4jConnectionManager } from "./services/neo4j/connection-manager"
 import { registerCommitMessageProvider } from "./services/commit-message"
 import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
@@ -63,6 +68,11 @@ import { getGlobalRooDirectory } from "./services/roo-config" // kilocode_change
 
 // kilocode_change start
 async function findKilocodeTokenFromAnyProfile(provider: ClineProvider): Promise<string | undefined> {
+	const envKilocodeToken = process.env.KILOCODE_TOKEN
+	if (process.env.KILO_CLI_MODE === "true" && envKilocodeToken) {
+		return envKilocodeToken
+	}
+
 	const { apiConfiguration } = await provider.getState()
 	if (apiConfiguration.kilocodeToken) {
 		return apiConfiguration.kilocodeToken
@@ -232,18 +242,24 @@ export async function activate(context: vscode.ExtensionContext) {
 		const globalCustomModesFilePath = path.join(globalKiloDir, "custom_modes.yaml")
 
 		let installResult: { didInstall: boolean } | null = null
-		try {
-			installResult = await ensureWorkflowAiAssetsInstalled({
-				context,
-				embeddedAssetsRoot,
-				overrideAssetsRoot: workflowAssetsPathOverride,
-				customModesFilePaths: [customModesFilePath, globalCustomModesFilePath],
-				log: (message) => outputChannel.appendLine(message),
-			})
-		} catch (error) {
-			outputChannel.appendLine(
-				`[WorkFlowAI] Failed to install bundled assets: ${error instanceof Error ? error.message : String(error)}`,
-			)
+		const skipWorkflowAssetsInstall =
+			process.env.KILO_CLI_MODE === "true" && process.env.KILO_EPHEMERAL_MODE === "true"
+		if (skipWorkflowAssetsInstall) {
+			installResult = { didInstall: false }
+		} else {
+			try {
+				installResult = await ensureWorkflowAiAssetsInstalled({
+					context,
+					embeddedAssetsRoot,
+					overrideAssetsRoot: workflowAssetsPathOverride,
+					customModesFilePaths: [customModesFilePath, globalCustomModesFilePath],
+					log: (message) => outputChannel.appendLine(message),
+				})
+			} catch (error) {
+				outputChannel.appendLine(
+					`[WorkFlowAI] Failed to install bundled assets: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
 		}
 
 		// Best-effort auto-init for project Memory Bank (creates .kilocode/memory-bank from global templates).
@@ -359,6 +375,12 @@ export async function activate(context: vscode.ExtensionContext) {
 	}
 
 	settingsUpdatedHandler = async () => {
+		if (!CloudService.hasInstance()) {
+			cloudLogger("[settingsUpdatedHandler] CloudService is not available")
+			postStateListener()
+			return
+		}
+
 		const userInfo = CloudService.instance.getUserInfo()
 
 		if (userInfo && CloudService.instance.cloudAPI) {
@@ -377,6 +399,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	userInfoHandler = async ({ userInfo }: { userInfo: CloudUserInfo }) => {
 		postStateListener()
 
+		if (!CloudService.hasInstance()) {
+			cloudLogger("[userInfoHandler] CloudService is not available")
+			return
+		}
+
 		if (!CloudService.instance.cloudAPI) {
 			cloudLogger("[userInfoHandler] CloudAPI is not initialized")
 			return
@@ -391,32 +418,46 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
-	cloudService = await CloudService.createInstance(context, cloudLogger, {
-		"auth-state-changed": authStateChangedHandler,
-		"settings-updated": settingsUpdatedHandler,
-		"user-info": userInfoHandler,
-	})
-
 	try {
-		if (cloudService.telemetryClient) {
-			// TelemetryService.instance.register(cloudService.telemetryClient) kilocode_change
+		cloudService = await CloudService.createInstance(context, cloudLogger, {
+			"auth-state-changed": authStateChangedHandler,
+			"settings-updated": settingsUpdatedHandler,
+			"user-info": userInfoHandler,
+		})
+
+		try {
+			if (cloudService.telemetryClient) {
+				// TelemetryService.instance.register(cloudService.telemetryClient) kilocode_change
+			}
+		} catch (error) {
+			outputChannel.appendLine(
+				`[CloudService] Failed to register TelemetryClient: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+
+		// Add to subscriptions for proper cleanup on deactivate.
+		context.subscriptions.push(cloudService)
+
+		// Trigger initial cloud profile sync now that CloudService is ready.
+		try {
+			await provider.initializeCloudProfileSyncWhenReady()
+		} catch (error) {
+			outputChannel.appendLine(
+				`[CloudService] Failed to initialize cloud profile sync: ${error instanceof Error ? error.message : String(error)}`,
+			)
 		}
 	} catch (error) {
+		cloudService = undefined
 		outputChannel.appendLine(
-			`[CloudService] Failed to register TelemetryClient: ${error instanceof Error ? error.message : String(error)}`,
+			`[CloudService] Failed to initialize cloud services, continuing in local degraded mode: ${error instanceof Error ? error.message : String(error)}`,
 		)
-	}
-
-	// Add to subscriptions for proper cleanup on deactivate.
-	context.subscriptions.push(cloudService)
-
-	// Trigger initial cloud profile sync now that CloudService is ready.
-	try {
-		await provider.initializeCloudProfileSyncWhenReady()
-	} catch (error) {
-		outputChannel.appendLine(
-			`[CloudService] Failed to initialize cloud profile sync: ${error instanceof Error ? error.message : String(error)}`,
-		)
+		try {
+			await provider.remoteControlEnabled(false)
+		} catch (remoteControlError) {
+			outputChannel.appendLine(
+				`[CloudService] Failed to force local degraded mode: ${remoteControlError instanceof Error ? remoteControlError.message : String(remoteControlError)}`,
+			)
+		}
 	}
 
 	// kilocode_change start
@@ -458,7 +499,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			// https://discord.com/channels/1349288496988160052/1395865796026040470
 			await vscode.commands.executeCommand(
 				"workbench.action.openWalkthrough",
-				"kilocode.alfa-code-assistant#kiloCodeWalkthrough", // kilocode_change
+				"alfacode.alfa-code-assistant#kiloCodeWalkthrough", // kilocode_change
 				false,
 			)
 
@@ -605,9 +646,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			{ path: path.join(context.extensionPath, "node_modules/@roo-code/cloud"), pattern: "**/*" },
 		]
 
-		console.log(
-			`♻️♻️♻️ Core auto-reloading: Watching for changes in ${watchPaths.map(({ path }) => path).join(", ")}`,
-		)
+		console.log(`[core-reload] Watching for changes in ${watchPaths.map(({ path }) => path).join(", ")}`)
 
 		// Create a debounced reload function to prevent excessive reloads
 		let reloadTimeout: NodeJS.Timeout | undefined
@@ -618,10 +657,10 @@ export async function activate(context: vscode.ExtensionContext) {
 				clearTimeout(reloadTimeout)
 			}
 
-			console.log(`♻️ ${uri.fsPath} changed; scheduling reload...`)
+			console.log(`[core-reload] ${uri.fsPath} changed; scheduling reload...`)
 
 			reloadTimeout = setTimeout(() => {
-				console.log(`♻️ Reloading host after debounce delay...`)
+				console.log(`[core-reload] Reloading host after debounce delay...`)
 				vscode.commands.executeCommand("workbench.action.reloadWindow")
 			}, DEBOUNCE_DELAY)
 		}
@@ -687,6 +726,9 @@ export async function deactivate() {
 			)
 		}
 	}
+
+	await CodeIndexManager.disposeAll()
+	await Neo4jConnectionManager.getInstance().disconnect()
 
 	const bridge = BridgeOrchestrator.getInstance()
 

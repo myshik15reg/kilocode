@@ -10,7 +10,8 @@ import {
 import { SUPPORTED_IMAGE_EXTENSIONS } from "../media/images.js"
 
 // Mock fs.existsSync
-vi.mock("fs", () => ({
+vi.mock("fs", async (importOriginal) => ({
+	...(await importOriginal<typeof import("fs")>()),
 	existsSync: vi.fn(),
 }))
 

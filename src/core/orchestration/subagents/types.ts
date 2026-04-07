@@ -63,6 +63,7 @@ export interface SubagentBridge {
 	cancel(sessionId: string): Promise<void>
 	pause?(sessionId: string): Promise<void>
 	resume?(sessionId: string): Promise<void>
+	release?(sessionId: string): Promise<void>
 	listBindings?(): Array<{
 		request: SubagentLaunchRequest
 		parentTaskId: string

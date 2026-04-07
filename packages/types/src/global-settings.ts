@@ -1,4 +1,4 @@
-import { z } from "zod"
+﻿import { z } from "zod"
 
 import { type Keys } from "./type-fu.js"
 import {
@@ -30,6 +30,14 @@ export const DEFAULT_WRITE_DELAY_MS = 1000
  * while preventing context window explosions from extremely long lines.
  */
 export const DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT = 50_000
+
+// kilocode_change start
+export const helperLocalityPreferenceSchema = z.enum(["prefer", "require", "off"])
+export type HelperLocalityPreference = z.infer<typeof helperLocalityPreferenceSchema>
+
+export const orchestrationEscalationSensitivitySchema = z.enum(["conservative", "balanced", "aggressive"])
+export type OrchestrationEscalationSensitivity = z.infer<typeof orchestrationEscalationSensitivitySchema>
+// kilocode_change end
 
 /**
  * Minimum checkpoint timeout in seconds.
@@ -105,6 +113,14 @@ export const globalSettingsSchema = z.object({
 	problematicProcessRestartLimit: z.number().int().min(0).optional(), // kilocode_change
 	parallelAgentsEnabled: z.boolean().optional(), // kilocode_change
 	parallelAgentCount: z.number().int().min(1).optional(), // kilocode_change
+	orchestrationTelemetryEnabled: z.boolean().optional(), // kilocode_change
+	helperLocalityPreference: helperLocalityPreferenceSchema.optional(), // kilocode_change
+	orchestrationEscalationSensitivity: orchestrationEscalationSensitivitySchema.optional(), // kilocode_change
+	structuredDelegationEnabled: z.boolean().optional(),
+	evaluatorPassEnabled: z.boolean().optional(),
+	memoryPromotionEnabled: z.boolean().optional(),
+	retrievalPolicy: z.enum(["adaptive", "semantic_only", "hybrid", "rerank_heavy"]).optional(),
+	queryClassifierDebug: z.boolean().optional(),
 	// kilocode_change: 2026-01-24 Context routing thresholds
 	contextRoutingEnabled: z.boolean().optional(),
 	contextRoutingFastThresholdPercent: z.number().optional(),
@@ -335,6 +351,7 @@ export const GLOBAL_SECRET_KEYS = [
 	// kilocode_change start: LiteLLM image generation secrets
 	"litellmImageApiKey",
 	// kilocode_change end
+	"morphApiKey",
 ] as const
 
 // Type for the actual secret storage keys
@@ -407,6 +424,11 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	dismissedNotificationIds: [], // kilocode_change
 	systemNotificationsEnabled: true, // kilocode_change
 	ghostServiceSettings: {}, // kilocode_change
+	structuredDelegationEnabled: false,
+	evaluatorPassEnabled: false,
+	memoryPromotionEnabled: false,
+	retrievalPolicy: "adaptive",
+	queryClassifierDebug: false,
 
 	terminalOutputLineLimit: 500,
 	terminalOutputCharacterLimit: DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,

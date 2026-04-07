@@ -30,6 +30,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalZdotdir?: boolean
 	terminalCompressProgressBar?: boolean
 	terminalCommandApiConfigId?: string // kilocode_change
+	hideAlfaCodeFields?: boolean
 	setCachedStateField: SetCachedStateField<
 		| "terminalOutputLineLimit"
 		| "terminalOutputCharacterLimit"
@@ -59,6 +60,7 @@ export const TerminalSettings = ({
 	terminalZdotdir,
 	terminalCompressProgressBar,
 	terminalCommandApiConfigId, // kilocode_change
+	hideAlfaCodeFields = false,
 	setCachedStateField,
 	className,
 	...props
@@ -473,10 +475,12 @@ export const TerminalSettings = ({
 					</div>
 				</div>
 				{/* kilocode_change start */}
-				<TerminalCommandGeneratorSettings
-					terminalCommandApiConfigId={terminalCommandApiConfigId}
-					setCachedStateField={setCachedStateField}
-				/>
+				{!hideAlfaCodeFields && (
+					<TerminalCommandGeneratorSettings
+						terminalCommandApiConfigId={terminalCommandApiConfigId}
+						setCachedStateField={setCachedStateField}
+					/>
+				)}
 				{/* kilocode_change end */}
 			</Section>
 		</div>

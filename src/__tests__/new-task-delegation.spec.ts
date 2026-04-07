@@ -25,6 +25,7 @@ describe("Task.startSubtask() metadata-driven delegation", () => {
 
 		expect(provider.delegateParentAndOpenChild).toHaveBeenCalledWith({
 			parentTaskId: "parent-1",
+			parentTask: parent,
 			message: "Do something",
 			initialTodos: [],
 			mode: "code",

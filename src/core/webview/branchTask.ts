@@ -1,6 +1,7 @@
 // kilocode_change - new file
 import type { BranchTaskOptions, ProviderSettings } from "@roo-code/types"
 
+import { HelperRoutingContextBuilder } from "../helper-routing/HelperRoutingContextBuilder"
 import { HelperModelRouter } from "../helper-routing/HelperModelRouter"
 import type { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { singleCompletionHandler } from "../../utils/single-completion-handler"
@@ -16,6 +17,9 @@ export async function summarizeBranchMessage(params: {
 		apiConfiguration: ProviderSettings
 		condensingApiConfigId?: string
 		listApiConfigMeta?: Array<{ id: string; name?: string }>
+		helperLocalityPreference?: "off" | "prefer" | "require"
+		orchestrationEscalationSensitivity?: "conservative" | "balanced" | "aggressive"
+		orchestrationTelemetryEnabled?: boolean
 	}
 }) {
 	const { rawBranchMessage, branchStrategy, providerSettingsManager, state } = params
@@ -24,15 +28,20 @@ export async function summarizeBranchMessage(params: {
 	}
 
 	try {
-		const route = await HelperModelRouter.selectConfig({
-			job: "summarize_branch",
-			state: {
-				apiConfiguration: state.apiConfiguration,
-				condensingApiConfigId: state.condensingApiConfigId,
-				listApiConfigMeta: state.listApiConfigMeta,
-			},
-			providerSettingsManager,
-		})
+		const route = await HelperModelRouter.selectConfig(
+			HelperRoutingContextBuilder.build({
+				job: "summarize_branch",
+				state: {
+					apiConfiguration: state.apiConfiguration,
+					condensingApiConfigId: state.condensingApiConfigId,
+					listApiConfigMeta: state.listApiConfigMeta,
+					helperLocalityPreference: state.helperLocalityPreference,
+					orchestrationEscalationSensitivity: state.orchestrationEscalationSensitivity,
+					orchestrationTelemetryEnabled: state.orchestrationTelemetryEnabled,
+				},
+				providerSettingsManager,
+			}),
+		)
 
 		const summarized = await singleCompletionHandler(
 			route.config,

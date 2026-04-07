@@ -35,6 +35,9 @@ export interface CodeIndexConfig {
 	rerankTopK?: number
 	rerankApiKey?: string
 	rerankAvailable?: boolean
+	adaptiveRetrievalEnabled?: boolean
+	adaptiveRetrievalMinConfidence?: number
+	adaptiveRetrievalKneeSensitivity?: number
 	// kilocode_change end
 	// kilocode_change start
 	embeddingBatchSize?: number

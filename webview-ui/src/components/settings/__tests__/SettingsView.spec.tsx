@@ -861,14 +861,16 @@ describe("SettingsView - 1C Change Author", () => {
 		vi.clearAllMocks()
 	})
 
-	it("does not clear the author field after clicking Save", () => {
+	it("does not clear the author field after clicking Save", async () => {
 		const { activateTab } = renderSettingsView()
 
 		activateTab("prompts")
 
 		const authorInput = screen.getByTestId("alfa-code-change-author-input")
 		fireEvent.change(authorInput, { target: { value: "Ivanov I.I." } })
-		expect(authorInput).toHaveValue("Ivanov I.I.")
+		await waitFor(() => {
+			expect(screen.getByTestId("alfa-code-change-author-input")).toHaveValue("Ivanov I.I.")
+		})
 
 		const saveButtons = screen.getAllByTestId("save-button")
 		fireEvent.click(saveButtons[0])
@@ -883,5 +885,47 @@ describe("SettingsView - 1C Change Author", () => {
 		)
 
 		expect(screen.getByTestId("alfa-code-change-author-input")).toHaveValue("Ivanov I.I.")
+	})
+})
+
+describe("SettingsView - AlfaCode Tab Layout", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("labels the dedicated tab as AlfaCode", () => {
+		renderSettingsView()
+
+		expect(screen.getByTestId("tab-alfaCode")).toHaveTextContent("settings:sections.alfaCode")
+	})
+
+	it("keeps shared settings on their legacy tabs and removes duplicates from the AlfaCode tab", () => {
+		const { activateTab, getSettingsContent } = renderSettingsView({
+			systemNotificationsEnabled: true,
+			showTaskTimeline: true,
+			alfaCodeChangeAuthor: "Ivanov I.I.",
+		})
+
+		activateTab("display")
+		let content = getSettingsContent()
+		expect(within(content).getByTestId("collapse-thinking-checkbox")).toBeInTheDocument()
+		expect(within(content).getByTestId("display-show-task-timeline-checkbox")).toBeInTheDocument()
+
+		activateTab("notifications")
+		content = getSettingsContent()
+		expect(within(content).getByTestId("tts-enabled-checkbox")).toBeInTheDocument()
+		expect(within(content).getByTestId("system-notifications-enabled-checkbox")).toBeInTheDocument()
+
+		activateTab("prompts")
+		content = getSettingsContent()
+		expect(within(content).getByTestId("test-prompt-textarea")).toBeInTheDocument()
+		expect(within(content).getByTestId("alfa-code-change-author-input")).toBeInTheDocument()
+
+		activateTab("alfaCode")
+		content = getSettingsContent()
+		expect(within(content).queryByTestId("display-show-task-timeline-checkbox")).not.toBeInTheDocument()
+		expect(within(content).queryByTestId("system-notifications-enabled-checkbox")).not.toBeInTheDocument()
+		expect(within(content).queryByTestId("alfa-code-change-author-input")).not.toBeInTheDocument()
+		expect(within(content).getByTestId("alfacode-terminal-command-api-config-select")).toBeInTheDocument()
 	})
 })

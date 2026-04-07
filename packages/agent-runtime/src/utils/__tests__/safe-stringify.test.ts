@@ -56,6 +56,30 @@ describe("safeStringify", () => {
 		it("should handle nested objects", () => {
 			expect(safeStringify({ a: { b: { c: 1 } } })).toEqual({ a: { b: { c: 1 } } })
 		})
+
+		it("should serialize shared object references without treating the second reference as circular", () => {
+			const shared = { value: 42 }
+			const result = safeStringify({ first: shared, second: shared })
+
+			expect(result).toEqual({
+				first: { value: 42 },
+				second: { value: 42 },
+			})
+		})
+
+		it("should mark a property when nested serialization throws", () => {
+			const brokenChild = {}
+			Object.defineProperty(brokenChild, "boom", {
+				enumerable: true,
+				get() {
+					throw new Error("boom")
+				},
+			})
+
+			expect(safeStringify({ brokenChild })).toEqual({
+				brokenChild: "[Serialization Error]",
+			})
+		})
 	})
 
 	describe("circular references", () => {
@@ -110,6 +134,46 @@ describe("safeStringify", () => {
 			const result = safeStringify(error) as Record<string, unknown>
 			expect(result.code).toBe("ERR_CUSTOM")
 		})
+
+		it("should not re-read standard error fields through the extra-properties reducer", () => {
+			const accessCount = {
+				message: 0,
+				name: 0,
+				stack: 0,
+			}
+			const error = new Error("tracked")
+
+			Object.defineProperty(error, "message", {
+				configurable: true,
+				get() {
+					accessCount.message += 1
+					return "tracked"
+				},
+			})
+			Object.defineProperty(error, "name", {
+				configurable: true,
+				get() {
+					accessCount.name += 1
+					return "TrackedError"
+				},
+			})
+			Object.defineProperty(error, "stack", {
+				configurable: true,
+				get() {
+					accessCount.stack += 1
+					return "TrackedError: tracked"
+				},
+			})
+
+			const result = safeStringify(error) as Record<string, unknown>
+
+			expect(result).toMatchObject({
+				message: "tracked",
+				name: "TrackedError",
+				stack: "TrackedError: tracked",
+			})
+			expect(accessCount).toEqual({ message: 1, name: 1, stack: 1 })
+		})
 	})
 
 	describe("Date objects", () => {
@@ -144,6 +208,10 @@ describe("argToString", () => {
 		obj.self = obj
 
 		expect(argToString(obj)).toBe('{"a":1,"self":"[Circular]"}')
+	})
+
+	it("should return a fallback when JSON serialization still fails", () => {
+		expect(argToString(1n)).toBe("[Unable to stringify]")
 	})
 })
 

@@ -108,7 +108,11 @@ describe("TaskCancellationService", () => {
 		)
 		expect(postStateToWebview).toHaveBeenCalledTimes(1)
 		expect(publishActivity).not.toHaveBeenCalled()
-		expect(cascadeStopDescendantTasks).not.toHaveBeenCalled()
+		expect(cascadeStopDescendantTasks).toHaveBeenCalledWith(
+			"task-1",
+			"parent_cancelled",
+			"Parent task task-1 was cancelled by the user.",
+		)
 		expect(createTaskWithHistoryItem).not.toHaveBeenCalled()
 	})
 

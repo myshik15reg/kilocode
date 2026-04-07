@@ -11,6 +11,7 @@ import { createStore } from "jotai"
 import { ciModeAtom } from "../../atoms/ci.js"
 import type { ExtensionChatMessage } from "../../../types/messages.js"
 import { CI_MODE_MESSAGES } from "../../../constants/ci.js"
+import * as hooks from "../index.js"
 
 // Mock the webview message hook
 const mockSendAskResponse = vi.fn()
@@ -91,9 +92,7 @@ describe("useFollowupCIResponse Logic", () => {
 	})
 
 	describe("Hook Export", () => {
-		it("should export useFollowupCIResponse hook", async () => {
-			const hooks = await import("../index.js")
-
+		it("should export useFollowupCIResponse hook", () => {
 			expect(hooks.useFollowupCIResponse).toBeDefined()
 			expect(typeof hooks.useFollowupCIResponse).toBe("function")
 		})

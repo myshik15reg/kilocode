@@ -1,4 +1,4 @@
-﻿// kilocode_change: new file
+// kilocode_change: new file
 import { memo, useMemo, useRef, useState } from "react"
 import { useWindowSize } from "react-use"
 import { useTranslation } from "react-i18next"
@@ -8,10 +8,11 @@ import { validateSlashCommand } from "@/utils/slash-commands"
 import type { ClineMessage, Command } from "@roo-code/types"
 
 import { getModelMaxOutputTokens } from "@roo/api"
+import { findLastIndex } from "@roo/array"
 
 import { formatLargeNumber } from "@src/utils/format"
 import { cn } from "@src/lib/utils"
-import { Button, StandardTooltip } from "@src/components/ui"
+import { StandardTooltip } from "@src/components/ui"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useSelectedModel } from "@/components/ui/hooks/useSelectedModel"
 import { useTaskDiffStats } from "@/components/ui/hooks/kilocode/useTaskDiffStats"
@@ -26,10 +27,6 @@ import { mentionRegexGlobal } from "@roo/context-mentions"
 
 import { vscode } from "@/utils/vscode"
 import { TodoListDisplay } from "../chat/TodoListDisplay"
-import { formatRootTaskSummaryLabel, getRootTaskDescendantSummaryMap } from "../history/taskTree" // kilocode_change
-import OrchestrationStatusSummary from "../chat/OrchestrationStatusSummary" // kilocode_change
-import TaskActivityPanel from "../chat/TaskActivityPanel"
-import { getTaskOrchestrationSummary } from "../chat/orchestration" // kilocode_change
 import DiffStatsDisplay from "./DiffStatsDisplay"
 
 const TASK_HIERARCHY_LABEL_LIMIT = 28
@@ -52,7 +49,7 @@ function shortenTaskLabel(label: string | undefined, fallbackId: string): string
 		return candidate
 	}
 
-	return `${candidate.slice(0, TASK_HIERARCHY_LABEL_LIMIT - 1).trimEnd()}…`
+	return `${candidate.slice(0, TASK_HIERARCHY_LABEL_LIMIT - 1).trimEnd()}...`
 }
 
 export interface TaskHeaderProps {
@@ -95,7 +92,6 @@ const KiloTaskHeader = ({
 		clineMessages,
 		apiConfiguration,
 		currentTaskItem,
-		currentTaskActivity,
 		customModes,
 		commands,
 		taskHistory = [],
@@ -169,18 +165,18 @@ const KiloTaskHeader = ({
 
 		return items
 	}, [currentTaskItem, task.text, taskHistory, taskHistoryById])
-	const rootTaskSummaryMap = getRootTaskDescendantSummaryMap(taskHistory) // kilocode_change
-	const orchestrationSummary = useMemo(
-		() => getTaskOrchestrationSummary({ activity: currentTaskActivity, currentTaskItem, taskHistory }),
-		[currentTaskActivity, currentTaskItem, taskHistory],
-	)
-	const currentRootSummaryLabel = formatRootTaskSummaryLabel(
-		currentTaskItem?.rootTaskId
-			? rootTaskSummaryMap.get(currentTaskItem.rootTaskId)
-			: currentTaskItem?.id
-				? rootTaskSummaryMap.get(currentTaskItem.id)
-				: undefined,
-	) // kilocode_change
+	const isTaskComplete = useMemo(() => {
+		if (!clineMessages?.length) {
+			return false
+		}
+
+		const lastRelevantIndex = findLastIndex(
+			clineMessages,
+			(message) => !(message.ask === "resume_task" || message.ask === "resume_completed_task"),
+		)
+
+		return lastRelevantIndex !== -1 ? clineMessages[lastRelevantIndex]?.ask === "completion_result" : false
+	}, [clineMessages])
 
 	const handleTaskSwitch = (taskId: string) => {
 		if (taskId === currentTaskItem?.id) {
@@ -217,44 +213,28 @@ const KiloTaskHeader = ({
 									{highlightText(task.text ?? "", false, customModes, commands)}
 								</span>
 							)}
-							{!isTaskExpanded && orchestrationSummary.hasStatusSignals && (
-								<span
-									className="ml-2 inline-flex shrink-0 items-center"
-									data-testid="task-orchestration-badge">
-									<OrchestrationStatusSummary
-										summary={orchestrationSummary}
-										showTitle={false}
-										className="gap-1"
-										badgeClassName="text-[10px]"
-										countsClassName="text-[10px]"
-										dataTestId="task-orchestration-summary"
-									/>
-								</span>
-							)}
-							{!isTaskExpanded && currentRootSummaryLabel && !orchestrationSummary.hasStatusSignals && (
-								<span
-									className="ml-2 truncate text-[10px] text-vscode-descriptionForeground"
-									data-testid="current-root-summary">
-									{currentRootSummaryLabel}
-								</span>
-							)}
 						</div>
 					</div>
 					<StandardTooltip content={t("chat:task.closeAndStart")}>
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={onClose}
-							className="shrink-0 h-5 w-5 rounded-md border-0 bg-transparent p-0 text-vscode-descriptionForeground hover:bg-vscode-list-hoverBackground hover:text-vscode-foreground">
-							<span className="codicon codicon-close text-[12px] leading-none" />
-						</Button>
+						{/* kilocode_change start - use a native button for the task close control */}
+						<button
+							type="button"
+							aria-label={t("chat:task.closeAndStart")}
+							onClick={(event) => {
+								event.stopPropagation()
+								onClose()
+							}}
+							className="shrink-0 h-5 w-5 cursor-pointer rounded-md border-0 bg-transparent p-0 text-vscode-descriptionForeground hover:bg-vscode-list-hoverBackground hover:text-vscode-foreground">
+							<span aria-hidden="true" className="codicon codicon-close text-[12px] leading-none" />
+						</button>
+						{/* kilocode_change end */}
 					</StandardTooltip>
 				</div>
 				{taskHierarchyItems.length > 1 && (
 					<div className="mt-2 w-full flex flex-wrap items-start gap-1" data-testid="task-hierarchy-nav">
 						{taskHierarchyItems.map((hierarchyItem, index) => (
 							<div key={hierarchyItem.id} className="flex max-w-full min-w-0 items-center gap-1">
-								{index > 0 && <span className="text-xs text-vscode-descriptionForeground">›</span>}
+								{index > 0 && <span className="text-xs text-vscode-descriptionForeground">{">"}</span>}
 								<button
 									type="button"
 									onClick={() => handleTaskSwitch(hierarchyItem.id)}
@@ -276,14 +256,6 @@ const KiloTaskHeader = ({
 				)}
 				{!isTaskExpanded && contextWindow > 0 && (
 					<div className={`w-full flex flex-col gap-1 h-auto`}>
-						<TaskActivityPanel
-							activity={currentTaskActivity}
-							currentTaskItem={currentTaskItem}
-							taskHistory={taskHistory}
-							compact
-							showSummary={false}
-							showChildTasks={false}
-						/>
 						{showTaskTimeline && (
 							<TaskTimeline
 								groupedMessages={groupedMessages}
@@ -337,12 +309,6 @@ const KiloTaskHeader = ({
 							/>
 						)}
 
-						<TaskActivityPanel
-							activity={currentTaskActivity}
-							currentTaskItem={currentTaskItem}
-							taskHistory={taskHistory}
-						/>
-
 						<div className="flex flex-col gap-1">
 							{isTaskExpanded && contextWindow > 0 && (
 								<div
@@ -384,7 +350,14 @@ const KiloTaskHeader = ({
 										</span>
 									)}
 								</div>
-								{!totalCost && <TaskActions item={currentTaskItem} buttonsDisabled={buttonsDisabled} />}
+								{!totalCost && (
+									<TaskActions
+										item={currentTaskItem}
+										buttonsDisabled={buttonsDisabled}
+										isTaskComplete={isTaskComplete}
+										showTaskControls={false}
+									/>
+								)}
 							</div>
 
 							{((typeof cacheReads === "number" && cacheReads > 0) ||
@@ -412,7 +385,12 @@ const KiloTaskHeader = ({
 										<span className="font-bold">{t("chat:task.apiCost")}</span>
 										<span>${totalCost?.toFixed(2)}</span>
 									</div>
-									<TaskActions item={currentTaskItem} buttonsDisabled={buttonsDisabled} />
+									<TaskActions
+										item={currentTaskItem}
+										buttonsDisabled={buttonsDisabled}
+										isTaskComplete={isTaskComplete}
+										showTaskControls={false}
+									/>
 								</div>
 							)}
 
@@ -423,10 +401,12 @@ const KiloTaskHeader = ({
 								</div>
 							)}
 
-							<div className="flex items-center gap-1 h-[20px]">
-								<span className="font-bold">{t("chat:task.depth")}</span>
-								<span>{delegationDepth}</span>
-							</div>
+							{delegationDepth > 0 && (
+								<div className="flex items-center gap-1 h-[20px]">
+									<span className="font-bold">{t("chat:task.depth")}</span>
+									<span>{delegationDepth}</span>
+								</div>
+							)}
 
 							{subtaskCount > 0 && (
 								<div className="flex items-center gap-1 h-[20px]">

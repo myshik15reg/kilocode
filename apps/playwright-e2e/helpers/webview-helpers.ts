@@ -3,6 +3,14 @@ import { type Page, type FrameLocator, expect } from "@playwright/test"
 import type { WebviewMessage } from "../../../src/shared/WebviewMessage"
 import { ProviderSettings } from "@roo-code/types"
 
+function requireOpenRouterApiKey(): string {
+	const apiKey = process.env.OPENROUTER_API_KEY
+	if (!apiKey) {
+		throw new Error("OPENROUTER_API_KEY is required for API-backed Playwright scenarios")
+	}
+	return apiKey
+}
+
 const defaultPlaywrightApiConfig = {
 	apiProvider: "openrouter" as const,
 	openRouterApiKey: process.env.OPENROUTER_API_KEY,
@@ -11,7 +19,7 @@ const defaultPlaywrightApiConfig = {
 
 export async function findWebview(workbox: Page): Promise<FrameLocator> {
 	const webviewFrameEl = workbox.frameLocator(
-		'iframe[src*="extensionId=kilocode.alfa-code-assistant"][src*="purpose=webviewView"]',
+		'iframe[src*="extensionId=alfacode.alfa-code-assistant"][src*="purpose=webviewView"]',
 	)
 	await webviewFrameEl.locator("#active-frame")
 	return webviewFrameEl.frameLocator("#active-frame")
@@ -30,7 +38,6 @@ export async function waitForModelSelector(page: Page, timeout: number = 30000):
 export async function postWebviewMessage(page: Page, message: WebviewMessage): Promise<void> {
 	const webviewFrame = await findWebview(page)
 
-	// Retry mechanism for VSCode API availability
 	const maxRetries = 3
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
 		try {
@@ -41,10 +48,10 @@ export async function postWebviewMessage(page: Page, message: WebviewMessage): P
 
 				window.vscode.postMessage(msg)
 			}, message)
-			return // Success - exit the retry loop
+			return
 		} catch (error) {
 			if (attempt === maxRetries) {
-				throw error // Re-throw on final attempt
+				throw error
 			}
 			await page.waitForTimeout(1000)
 		}
@@ -52,82 +59,71 @@ export async function postWebviewMessage(page: Page, message: WebviewMessage): P
 }
 
 export async function upsertApiConfiguration(page: Page, apiConfiguration?: Partial<ProviderSettings>): Promise<void> {
+	const resolvedApiConfiguration = apiConfiguration ?? {
+		...defaultPlaywrightApiConfig,
+		openRouterApiKey: requireOpenRouterApiKey(),
+	}
+
 	await postWebviewMessage(page, {
 		type: "upsertApiConfiguration",
 		text: "default",
-		apiConfiguration: apiConfiguration ?? defaultPlaywrightApiConfig,
+		apiConfiguration: resolvedApiConfiguration,
 	})
 	await postWebviewMessage(page, { type: "currentApiConfigName", text: "default" })
 }
 
 export async function configureApiKeyThroughUI(page: Page): Promise<void> {
+	const apiKey = requireOpenRouterApiKey()
 	const webviewFrame = await findWebview(page)
-	console.log("✅ Webview found!")
+	console.log("Webview found")
 
-	// Click "Use your own API key" button
 	const useOwnKeyButton = webviewFrame.locator('button:has-text("Use your own API key")')
 	await useOwnKeyButton.waitFor()
 	await useOwnKeyButton.click()
 
-	// Wait for the provider selection dropdown to appear
 	const providerDropdown = webviewFrame.locator('[role="combobox"]').first()
 	await providerDropdown.waitFor()
 	await providerDropdown.click()
 
-	// Select OpenRouter from the dropdown
 	const openRouterOption = webviewFrame.locator('[role="option"]:has-text("OpenRouter")')
 	await openRouterOption.waitFor()
 	await openRouterOption.click()
 
-	// Fill in the OpenRouter API key (password field)
 	const apiKeyInput = webviewFrame.locator('input[type="password"]').first()
 	await apiKeyInput.waitFor()
-	await apiKeyInput.fill(process.env.OPENROUTER_API_KEY || "")
-	console.log("✅ Filled in OpenRouter key!")
+	await apiKeyInput.fill(apiKey)
+	console.log("Filled OpenRouter key")
 
-	// Submit the configuration by clicking "Let's go!" button
 	const submitButton = webviewFrame.locator('button:has-text("Let\'s go!")')
 	await submitButton.waitFor()
 	await submitButton.click()
-	console.log("✅ Provider configured!")
+	console.log("Provider configured")
 }
 
 export async function clickSaveSettingsButton(webviewFrame: FrameLocator): Promise<void> {
 	const saveButton = webviewFrame.locator('[data-testid="save-button"]')
 	const saveButtonExists = (await saveButton.count()) > 0
 	if (saveButtonExists) {
-		await saveButton.click({ force: true }) // Click it even its disabled
+		await saveButton.click({ force: true })
 	}
 }
 
-/**
- * Waits for all tooltips to be dismissed before proceeding.
- * This is necessary when tooltips appear after clicking elements and need to animate away
- * before taking screenshots to avoid inconsistent visual states.
- */
 export async function waitForTooltipsToDismiss(webviewFrame: FrameLocator): Promise<void> {
 	const tooltipContent = webviewFrame.locator('[data-slot="tooltip-content"]')
 	await tooltipContent.waitFor({ state: "detached", timeout: 3000 }).catch(() => {
-		// If timeout, tooltips should be gone by now anyway
+		// Ignore tooltip timeout in screenshot stabilization path.
 	})
 }
 
-/**
- * Freezes all GIFs on the page by converting them to static PNG images.
- * Also sets up a MutationObserver to handle dynamically added GIFs.
- * Works inside the VSCode extension webview iframe.
- */
 export async function freezeGifs(page: Page): Promise<void> {
 	await page.emulateMedia({ reducedMotion: "reduce" })
 
-	// Get the webview frame to work inside the extension iframe
 	const webviewFrame = await findWebview(page)
 
 	await webviewFrame.locator("body").evaluate(() => {
-		// Function to freeze a single GIF
 		const freezeGif = (img: HTMLImageElement) => {
 			if (!img.src.toLowerCase().includes(".gif")) return
-			if (img.dataset.gifFrozen === "true") return // Already processed
+			if (img.dataset.gifFrozen === "true") return
 
 			const canvas = document.createElement("canvas")
 			const ctx = canvas.getContext("2d")
@@ -143,13 +139,11 @@ export async function freezeGifs(page: Page): Promise<void> {
 				img.dataset.gifFrozen = "true"
 			}
 			frame.onerror = () => {
-				// Fallback: just mark as processed to avoid infinite loops
 				img.dataset.gifFrozen = "true"
 			}
 			frame.src = img.src
 		}
 
-		// Freeze existing GIFs in the webview
 		document.querySelectorAll('img[src*=".gif"]').forEach((img) => {
 			freezeGif(img as HTMLImageElement)
 		})

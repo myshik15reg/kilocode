@@ -7,8 +7,6 @@ import type { ModelInfo, ProviderSettings } from "@roo-code/types"
 import { ProviderSettingsManager } from "../../core/config/ProviderSettingsManager"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { ApiStream } from "../transform/stream"
-import pWaitFor from "p-wait-for"
-
 import type { ApiHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { buildApiHandler } from "../index"
 import { virtualQuotaFallbackProfileDataSchema } from "../../../packages/types/src/provider-settings"
@@ -23,6 +21,11 @@ interface HandlerConfig {
 	profileId: string
 	config: VirtualQuotaFallbackProfile
 }
+
+const PROFILE_COOLDOWN_MS = 10 * 1000
+const MAX_FALLBACK_HOPS = 3
+const FALLBACK_BACKOFF_BASE_MS = 250
+const FALLBACK_BACKOFF_MAX_MS = 1_500
 
 /**
  * Virtual Quota Fallback Provider API processor.
@@ -79,43 +82,59 @@ export class VirtualQuotaFallbackHandler extends EventEmitter implements ApiHand
 	): ApiStream {
 		try {
 			await this.initialize()
-			await this.adjustActiveHandler("Message Call")
+			let remainingHops = this.getFallbackHopBudget()
+			let hop = 0
+			let lastError: unknown
 
-			if (!this.activeHandler || !this.activeProfileId) {
-				throw new Error("All configured providers are unavailable or over limits.")
-			}
+			while (remainingHops > 0) {
+				await this.adjustActiveHandler(hop === 0 ? "Message Call" : `Retryable Error Hop ${hop}`)
 
-			await this.usage.consume(this.activeProfileId, "requests", 1)
+				if (!this.activeHandler || !this.activeProfileId) {
+					break
+				}
 
-			const stream = this.activeHandler.createMessage(systemPrompt, messages, metadata)
-			try {
-				for await (const chunk of stream) {
-					if (chunk.type === "usage") {
-						const totalTokens = (chunk.inputTokens || 0) + (chunk.outputTokens || 0)
-						if (totalTokens > 0) {
-							await this.usage.consume(this.activeProfileId, "tokens", totalTokens)
+				const activeHandler = this.activeHandler
+				const activeProfileId = this.activeProfileId
+
+				await this.usage.consume(activeProfileId, "requests", 1)
+
+				try {
+					const stream = activeHandler.createMessage(systemPrompt, messages, metadata)
+					for await (const chunk of stream) {
+						if (chunk.type === "usage") {
+							const totalTokens = (chunk.inputTokens || 0) + (chunk.outputTokens || 0)
+							if (totalTokens > 0) {
+								await this.usage.consume(activeProfileId, "tokens", totalTokens)
+							}
 						}
+						yield chunk
 					}
-					yield chunk
-				}
-			} catch (error) {
-				// Check if this is a retryable error (rate limit or overload)
-				if (this.isRateLimitError(error) || this.isOverloadError(error)) {
-					// Set a short cooldown (10 seconds) to prevent rapid cycling
-					await this.usage.setCooldown(this.activeProfileId, 10 * 1000)
-
-					// Switch to a different provider and retry
-					await this.adjustActiveHandler("Retryable Error")
-
-					// Retry the request with the new provider
-					yield* this.createMessage(systemPrompt, messages, metadata)
 					return
-				}
+				} catch (error) {
+					lastError = error
+					await this.usage.setCooldown(activeProfileId, PROFILE_COOLDOWN_MS)
 
-				// For non-retryable errors, set cooldown and rethrow
-				await this.usage.setCooldown(this.activeProfileId, 10 * 1000)
-				throw error
+					if (!this.isRetryableFallbackError(error)) {
+						throw error
+					}
+
+					remainingHops -= 1
+					if (remainingHops <= 0) {
+						break
+					}
+
+					hop += 1
+					this.activeHandler = undefined
+					this.activeProfileId = undefined
+					await this.waitBeforeFallbackHop(hop)
+				}
 			}
+
+			if (lastError) {
+				throw lastError
+			}
+
+			throw new Error("All configured providers are unavailable or over limits.")
 		} catch (error) {
 			console.error("Error in createMessage:", error)
 			throw error
@@ -267,6 +286,19 @@ export class VirtualQuotaFallbackHandler extends EventEmitter implements ApiHand
 		this.emit("handlerChanged", this.activeHandler)
 	}
 
+	private getFallbackHopBudget(): number {
+		return Math.max(1, Math.min(this.handlerConfigs.length || 1, MAX_FALLBACK_HOPS))
+	}
+
+	private isRetryableFallbackError(error: unknown): boolean {
+		return this.isRateLimitError(error) || this.isOverloadError(error)
+	}
+
+	private async waitBeforeFallbackHop(hop: number): Promise<void> {
+		const baseDelay = Math.min(FALLBACK_BACKOFF_BASE_MS * 2 ** Math.max(0, hop - 1), FALLBACK_BACKOFF_MAX_MS)
+		const jitter = Math.floor(Math.random() * 100)
+		await new Promise((resolve) => setTimeout(resolve, baseDelay + jitter))
+	}
 	private async notifyHandlerSwitch(newProfileId: string | undefined, reason?: string): Promise<void> {
 		let message: string
 		if (newProfileId) {
