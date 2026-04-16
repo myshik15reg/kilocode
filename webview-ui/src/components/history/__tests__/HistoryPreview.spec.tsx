@@ -459,7 +459,7 @@ describe("HistoryPreview", () => {
 	})
 
 	it("keeps a manually collapsed branch collapsed after history refresh", async () => {
-		const parentTask = {
+		const parentTask: HistoryItem = {
 			id: "parent",
 			number: 1,
 			task: "Parent task",
@@ -469,7 +469,7 @@ describe("HistoryPreview", () => {
 			totalCost: 0,
 			childIds: ["child"],
 		}
-		const childTask = {
+		const childTask: HistoryItem = {
 			id: "child",
 			number: 2,
 			task: "Child task",
